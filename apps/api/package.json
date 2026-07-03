@@ -1,0 +1,15 @@
+{
+  "name": "@vibepulse/api",
+  "version": "0.0.1",
+  "private": true,
+  "description": "VibePulse FastAPI backend",
+  "scripts": {
+    "dev": "uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload",
+    "start": "uv run uvicorn app.main:app --host 0.0.0.0 --port 8000",
+    "lint": "uv run ruff check app/",
+    "lint:fix": "uv run ruff check app/ --fix",
+    "format": "uv run ruff format app/",
+    "typecheck": "uv run pyright app/ || true",
+    "test": "uv run pytest"
+  }
+}
