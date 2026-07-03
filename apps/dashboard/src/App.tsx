@@ -1,21 +1,18 @@
 import { Routes, Route } from "react-router-dom";
-import { DashboardPage } from "./pages/dashboard/DashboardPage";
+import { EventsPage } from "./pages/events/EventsPage";
 import { NotFoundPage } from "./pages/not-found/NotFoundPage";
 
 /**
  * Application router.
  *
- * Route structure follows feature-first organisation:
- *   /          → Dashboard overview
- *   /sessions  → Session replay (Sprint 2)
- *   /health    → Project health (Sprint 2)
- *   /settings  → Settings (Sprint 3)
- *   *          → 404
+ * Sprint 1 ships exactly one page: the Live Event Feed.
+ *   /  → Live Event Feed
+ *   *  → 404
  */
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<DashboardPage />} />
+      <Route path="/" element={<EventsPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

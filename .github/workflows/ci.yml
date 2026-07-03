@@ -39,6 +39,9 @@ jobs:
       - name: Type-check
         run: pnpm typecheck
 
+      - name: Test
+        run: pnpm test
+
       - name: Format check
         run: pnpm format:check
 
@@ -49,6 +52,22 @@ jobs:
     defaults:
       run:
         working-directory: apps/api
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: vibepulse
+          POSTGRES_PASSWORD: vibepulse_dev
+          POSTGRES_DB: vibepulse
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U vibepulse"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql+asyncpg://vibepulse:vibepulse_dev@localhost:5432/vibepulse
     steps:
       - name: Checkout
         uses: actions/checkout@v4

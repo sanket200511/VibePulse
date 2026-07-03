@@ -10,9 +10,11 @@
  * Sprint 1: File watching and event emission will be wired up.
  */
 
-import { parsePort } from "@vibepulse/config";
+import { randomUUID } from "crypto";
+import { parsePort, getEnv } from "@vibepulse/config";
 import { createWatcher } from "./watcher";
 import { createHealthServer } from "./health-server";
+import { createHttpPublisher } from "./publisher/http-publisher";
 import { logger } from "./logger";
 
 const PORT = parsePort("DAEMON_PORT", 9000);
@@ -29,11 +31,16 @@ async function main(): Promise<void> {
 
   // ── File watcher ──────────────────────────────────────────────────────────
   const watchRoot = process.env["WATCH_ROOT"] ?? process.cwd();
-  const watcher = createWatcher(watchRoot);
+  const apiUrl = getEnv("API_URL") ?? "http://localhost:8000";
+  const sessionId = randomUUID();
+  const publisher = createHttpPublisher(apiUrl);
+  const watcher = createWatcher({ root: watchRoot, publisher, sessionId });
   await watcher.start();
 
   logger.info(`✅  VibePulse Daemon running on port ${PORT}`);
   logger.info(`   Watching : ${watchRoot}`);
+  logger.info(`   API      : ${apiUrl}`);
+  logger.info(`   Session  : ${sessionId}`);
 
   // ── Graceful shutdown ─────────────────────────────────────────────────────
   const shutdown = async (signal: string): Promise<void> => {

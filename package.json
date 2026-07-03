@@ -14,6 +14,7 @@
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint:fix",
     "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,mjs,cjs,json,yaml,yml,md,css}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mjs,cjs,json,yaml,yml,md,css}\"",
     "clean": "turbo run clean && rm -rf node_modules",
@@ -43,8 +44,8 @@
       "prettier --write"
     ],
     "*.py": [
-      "uv run ruff check --fix",
-      "uv run ruff format"
+      "uv run --project apps/api ruff check --fix",
+      "uv run --project apps/api ruff format"
     ]
   }
 }

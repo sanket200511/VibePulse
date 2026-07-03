@@ -8,14 +8,14 @@ VibePulse continuously observes software evolution during AI-assisted developmen
 
 ## What VibePulse Does
 
-| Capability | Description |
-|---|---|
-| **Event Collection** | Real-time ingestion of file changes, git operations, and AI tool interactions |
-| **Session Replay** | Reconstruct coding sessions to understand how a codebase evolved |
-| **AI Fingerprinting** | Identify AI-generated patterns and their downstream effects |
-| **Architecture Drift** | Detect when the codebase deviates from intended structure |
-| **Project Health** | Continuous health scoring across complexity, coverage, and consistency dimensions |
-| **Recommendations** | Actionable, context-aware suggestions from the platform |
+| Capability             | Description                                                                       |
+| ---------------------- | --------------------------------------------------------------------------------- |
+| **Event Collection**   | Real-time ingestion of file changes, git operations, and AI tool interactions     |
+| **Session Replay**     | Reconstruct coding sessions to understand how a codebase evolved                  |
+| **AI Fingerprinting**  | Identify AI-generated patterns and their downstream effects                       |
+| **Architecture Drift** | Detect when the codebase deviates from intended structure                         |
+| **Project Health**     | Continuous health scoring across complexity, coverage, and consistency dimensions |
+| **Recommendations**    | Actionable, context-aware suggestions from the platform                           |
 
 ---
 
@@ -43,27 +43,27 @@ vibepulse/
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| **Dashboard** | React 18, Vite, TypeScript, Tailwind CSS, shadcn/ui, TanStack Query, Zustand |
-| **API** | FastAPI, Python 3.12, SQLAlchemy 2.x, Pydantic v2, Alembic |
-| **Daemon** | Node.js, TypeScript, Chokidar |
-| **Database** | PostgreSQL 16 |
-| **Cache / Events** | Redis 7 |
-| **Monorepo** | pnpm workspaces, Turborepo |
-| **Containers** | Docker, Docker Compose |
+| Layer              | Technology                                                                   |
+| ------------------ | ---------------------------------------------------------------------------- |
+| **Dashboard**      | React 18, Vite, TypeScript, Tailwind CSS, shadcn/ui, TanStack Query, Zustand |
+| **API**            | FastAPI, Python 3.12, SQLAlchemy 2.x, Pydantic v2, Alembic                   |
+| **Daemon**         | Node.js, TypeScript, Chokidar                                                |
+| **Database**       | PostgreSQL 16                                                                |
+| **Cache / Events** | Redis 7                                                                      |
+| **Monorepo**       | pnpm workspaces, Turborepo                                                   |
+| **Containers**     | Docker, Docker Compose                                                       |
 
 ---
 
 ## Prerequisites
 
-| Tool | Version | Purpose |
-|---|---|---|
-| [Node.js](https://nodejs.org/) | ≥ 20 | Dashboard + Daemon runtime |
-| [pnpm](https://pnpm.io/) | ≥ 9 | Package manager |
-| [Python](https://python.org/) | 3.12 | API runtime |
-| [uv](https://docs.astral.sh/uv/) | latest | Python package manager |
-| [Docker](https://www.docker.com/) | latest | Infrastructure services |
+| Tool                              | Version | Purpose                    |
+| --------------------------------- | ------- | -------------------------- |
+| [Node.js](https://nodejs.org/)    | ≥ 20    | Dashboard + Daemon runtime |
+| [pnpm](https://pnpm.io/)          | ≥ 9     | Package manager            |
+| [Python](https://python.org/)     | 3.12    | API runtime                |
+| [uv](https://docs.astral.sh/uv/)  | latest  | Python package manager     |
+| [Docker](https://www.docker.com/) | latest  | Infrastructure services    |
 
 ---
 
@@ -101,6 +101,7 @@ docker compose up -d
 ```
 
 This starts:
+
 - **PostgreSQL** on `localhost:5432`
 - **Redis** on `localhost:6379`
 - **pgAdmin** on `http://localhost:5050` (email: `admin@vibepulse.dev`, password: `admin`)
@@ -113,6 +114,7 @@ pnpm dev
 ```
 
 This starts:
+
 - ✅ **Dashboard** → `http://localhost:5173`
 - ✅ **API** → `http://localhost:8000` (also available in Docker)
 - ✅ **Daemon** → health on `http://localhost:9000/health`
@@ -121,13 +123,13 @@ This starts:
 
 ## Services at a Glance
 
-| Service | URL | Description |
-|---|---|---|
-| Dashboard | http://localhost:5173 | React web application |
-| API | http://localhost:8000 | FastAPI backend |
-| API Docs | http://localhost:8000/docs | Swagger UI (dev only) |
+| Service       | URL                          | Description           |
+| ------------- | ---------------------------- | --------------------- |
+| Dashboard     | http://localhost:5173        | React web application |
+| API           | http://localhost:8000        | FastAPI backend       |
+| API Docs      | http://localhost:8000/docs   | Swagger UI (dev only) |
 | Daemon Health | http://localhost:9000/health | Daemon liveness probe |
-| pgAdmin | http://localhost:5050 | Database GUI |
+| pgAdmin       | http://localhost:5050        | Database GUI          |
 
 ---
 
@@ -165,33 +167,55 @@ pnpm --filter @vibepulse/dashboard dev
 # Run only the daemon
 pnpm --filter @vibepulse/daemon dev
 
-# Run API tests
+# Run all TS/JS tests (daemon; dashboard has none yet)
+pnpm test
+
+# Run API tests (requires a running Postgres — see below)
 cd apps/api && uv run pytest
 
 # Lint Python code
 cd apps/api && uv run ruff check app/
 ```
 
+> **API tests require PostgreSQL.** They connect using `DATABASE_URL` from
+> `apps/api/.env` and exercise the real `development_events` table (create → insert →
+> drop per session). CI provisions a `postgres:16-alpine` service for this; locally,
+> run `docker compose up -d postgres` first.
+
 ---
 
 ## Architecture
 
-VibePulse follows an **event-driven architecture**:
+VibePulse follows an **event-driven architecture**. Sprint 1 ships the first complete
+vertical slice with a direct-write interim transport (see [ADR 0003](./docs/adr/0003-event-driven-core.md)
+for why, and the planned migration to Redis Streams):
 
 ```
 Developer Machine
-      │
+      │  file saved
       ▼
-  ┌─────────┐       Redis Streams       ┌─────────┐
-  │  Daemon  │ ──── XADD events ──────► │   API   │
-  │(observer)│                          │(FastAPI)│
-  └─────────┘                          └────┬────┘
-                                            │ WebSocket
-                                       ┌────▼────┐
-                                       │Dashboard│
-                                       │ (React) │
-                                       └─────────┘
+  ┌─────────┐   POST /events (via Publisher)   ┌─────────┐
+  │  Daemon  │ ────────────────────────────────► │   API   │
+  │(observer)│                                   │(FastAPI)│──► PostgreSQL
+  └─────────┘                                   └────┬────┘
+                                                       │ WebSocket
+                                                  ┌────▼────┐
+                                                  │Dashboard│
+                                                  │ (React) │
+                                                  └─────────┘
 ```
+
+### Events API (Sprint 1)
+
+| Endpoint        | Description                                                                                                                                 |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /events`  | Daemon publishes a `DevelopmentEvent` (idempotent — duplicate `(session_id, file_path, event_type, timestamp)` returns the existing record) |
+| `GET /events`   | Recent events, newest first — used for the dashboard's initial load                                                                         |
+| `WS /ws/events` | Live broadcast of newly stored events, consumed by the dashboard                                                                            |
+
+Every event carries `schema_version` and an `event_type` of `FILE_CREATED`,
+`FILE_MODIFIED`, or `FILE_DELETED`. Events are stored in a single `development_events`
+table.
 
 See [`docs/adr/`](./docs/adr/) for Architecture Decision Records explaining key decisions.
 

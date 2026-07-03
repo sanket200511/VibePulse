@@ -48,12 +48,30 @@ Adopt an **event-driven architecture** as the core integration pattern between t
 
 **Sprint 0**: No event processing implemented. Domain model and vocabulary established in this ADR.
 
-**Sprint 1 implementation**:
-- Daemon → publishes to **Redis Streams** (`XADD vibepulse:events *`)
-- API consumer → **reads from Redis Streams** (`XREAD`), enriches, writes to PostgreSQL
-- Dashboard → receives live updates via **WebSocket** (FastAPI + `asyncio.Queue` fan-out)
+**Sprint 1 implementation (interim deviation — see below)**:
+- Daemon → **HTTP `POST /events`** directly to the API, via a `Publisher` abstraction
+  (`apps/daemon/src/publisher/`) so the transport is swappable without touching the watcher
+- API → validates and writes directly to PostgreSQL (`development_events` table)
+- Dashboard → receives live updates via **WebSocket** (`GET /ws/events`, FastAPI
+  `ConnectionManager` fan-out)
 
-Redis Streams are chosen over a traditional message queue (RabbitMQ, Kafka) for Sprint 1 because:
+This is **Option A (Direct REST writes)** from the options considered above, not the
+originally planned Option B (Redis Streams). It was adopted for Sprint 1 to ship the
+first complete vertical slice (file save → daemon → API → DB → WebSocket → dashboard)
+with the smallest possible surface area: one table, no message broker, no consumer
+group bookkeeping. Resilience to API downtime is handled at the application layer
+instead of via broker buffering — the `HttpPublisher` retries with bounded exponential
+backoff (`MAX_ATTEMPTS = 3`) and never throws, so a daemon that outlives the API simply
+drops unacknowledged events rather than crashing.
+
+The `Publisher` interface exists specifically to make this swap non-breaking: the
+watcher only depends on `Publisher.publish(event): Promise<void>`, so introducing a
+`RedisStreamsPublisher` later is an additive change, not a rewrite.
+
+**Planned migration**: revisit Redis Streams (Option B) once event volume or the need
+for replay/consumer-group scaling makes direct writes insufficient — see Future
+considerations below. Until then, Redis Streams are chosen over a traditional message
+queue (RabbitMQ, Kafka) as the target design because:
 - Redis is already in the stack (cache layer)
 - Streams support consumer groups, acknowledgement, and replay — sufficient for initial scale
 - Avoids introducing a fourth infrastructure dependency
@@ -74,6 +92,16 @@ class DomainEvent(BaseModel):
     data: dict[str, Any]  # event-specific payload
     metadata: dict[str, Any] = {}  # extensible context
 ```
+
+**Sprint 1 actual envelope** (`DevelopmentEvent`, `apps/api/app/features/events/schemas.py`)
+is a flattened, file-event-only subset of the above, with two naming deviations approved
+for Sprint 1:
+
+- `schema_version` (not `version`) — every event carries `schema_version = 1`.
+- `project_root: str` (not a stable `project_id`) — a stable project identity is deferred
+  until multi-project support is needed.
+- `event_type` is one of the `EventType` enum values: `FILE_CREATED`, `FILE_MODIFIED`,
+  `FILE_DELETED` (Python `StrEnum` in the API, a `const`-object union type in the daemon).
 
 ---
 

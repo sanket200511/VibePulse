@@ -22,7 +22,8 @@ TypeScript strict mode. Python type annotations on all functions. Pydantic for a
 **Domain-Driven Design vocabulary**  
 Use the domain language in code. An `Event` is a `DomainEvent`, not an `EventDTO`. A `HealthScore` is a `HealthScore`, not a `MetricResult`. Code should read like the domain it models.
 
-**SOLID principles**  
+**SOLID principles**
+
 - Single responsibility: one reason to change.
 - Open/closed: extend behaviour without modifying existing code.
 - Liskov substitution: subtypes must be substitutable for their base types.
@@ -98,6 +99,7 @@ def ingest(data):
 **Types**: `feat`, `fix`, `chore`, `docs`, `test`, `refactor`, `perf`, `ci`, `build`
 
 **Examples**:
+
 ```
 feat(api): add health check endpoint
 fix(daemon): handle SIGTERM gracefully on Windows
@@ -152,6 +154,20 @@ apps/api/
 
 - Test files live adjacent to the code they test: `foo.ts` → `foo.test.ts`.
 - React component tests use Testing Library.
+- Mock external I/O at the boundary, not the logic under test: the daemon's
+  `http-publisher.test.ts` stubs global `fetch` (`vi.stubGlobal`) rather than mocking
+  the publisher itself; filesystem-dependent tests (`event-builder.test.ts`) use real
+  temp directories (`mkdtempSync`) instead of mocking `fs`.
+- `pnpm test` (root) runs every package's `test` script via Turborepo.
+
+### Daemon transport abstractions
+
+When the daemon needs to send data somewhere (the API, a future message broker), define
+an interface (e.g. `Publisher`) and inject an implementation, rather than having the
+watcher/observer call `fetch` or a client library directly. This keeps the detection
+logic (chokidar watching, event building) independent of the transport, so swapping
+HTTP for Redis Streams or another broker later is additive — see
+[ADR 0003](./docs/adr/0003-event-driven-core.md).
 
 ---
 
@@ -168,16 +184,19 @@ Every environment variable must:
 ## Error Handling
 
 **In the API**:
+
 - Domain errors (`NotFoundError`, `ConflictError`) are mapped to HTTP status codes by exception handlers.
 - Never return a raw Python exception to the client.
 - Always include a machine-readable `code` field alongside the human-readable `message`.
 
 **In the Daemon**:
+
 - Use the `logger` utility — never `console.log`.
 - Fatal errors on startup result in `process.exit(1)` with a clear error message.
 - Non-fatal errors are logged and the daemon continues.
 
 **In the Dashboard**:
+
 - Use TanStack Query error states for API failures — never `try/catch` inside components.
 - Display user-friendly error messages that explain the problem and suggest an action.
 - Log technical details to the browser console for debugging.
@@ -197,6 +216,7 @@ These are targets for Sprint 1+. Sprint 0 establishes the foundation.
 ## Security Baseline
 
 Even in development:
+
 - No secrets in source code or git history.
 - Dependencies are pinned (`pnpm-lock.yaml`, `uv.lock`).
 - CORS origins are explicitly configured — never `*` in production.
@@ -223,6 +243,7 @@ For Python: prefer packages with typed stubs (`py.typed` marker or `typeshed` co
 Significant architectural decisions are recorded as Architecture Decision Records in `docs/adr/`.
 
 Before making a decision that:
+
 - Introduces a new infrastructure component
 - Changes a cross-cutting concern (auth, logging, error handling)
 - Affects the public API contract

@@ -1,22 +1,27 @@
 /**
  * File system watcher.
  *
- * Wraps chokidar with project-specific ignore patterns.
- * Sprint 0: scaffolded but events are not yet processed.
- * Sprint 1: events will be classified and forwarded to the API.
+ * Wraps chokidar with project-specific ignore patterns. Classifies each
+ * raw fs event into a DevelopmentEvent and hands it to a Publisher — the
+ * watcher never talks to the API (or any transport) directly.
  */
 
 import chokidar, { type FSWatcher } from "chokidar";
 import { logger } from "./logger";
+import { buildEvent } from "./event-builder";
+import { EventType } from "./event-types";
+import type { Publisher } from "./publisher/publisher";
 
 const IGNORED_PATTERNS = [
   /node_modules/,
   /\.git/,
   /dist/,
   /build/,
+  /coverage/,
   /\.turbo/,
   /__pycache__/,
   /\.venv/,
+  /venv/,
   /\.uv/,
   /\.next/,
   /\.nuxt/,
@@ -27,8 +32,21 @@ export interface Watcher {
   stop: () => Promise<void>;
 }
 
-export function createWatcher(root: string): Watcher {
+export interface CreateWatcherOptions {
+  root: string;
+  publisher: Publisher;
+  sessionId: string;
+}
+
+export function createWatcher({ root, publisher, sessionId }: CreateWatcherOptions): Watcher {
   let fsWatcher: FSWatcher | null = null;
+
+  const publishFor = (eventType: EventType, filePath: string): void => {
+    const event = buildEvent({ eventType, filePath, projectRoot: root, sessionId });
+    void publisher.publish(event).catch((error: unknown) => {
+      logger.error(`Unexpected publisher failure for ${filePath}:`, error);
+    });
+  };
 
   return {
     async start(): Promise<void> {
@@ -45,16 +63,16 @@ export function createWatcher(root: string): Watcher {
 
         fsWatcher
           .on("add", (filePath) => {
-            logger.debug(`FILE_ADDED    ${filePath}`);
-            // TODO(sprint-1): emit FileAddedEvent to API
+            logger.debug(`FILE_CREATED  ${filePath}`);
+            publishFor(EventType.FILE_CREATED, filePath);
           })
           .on("change", (filePath) => {
-            logger.debug(`FILE_CHANGED  ${filePath}`);
-            // TODO(sprint-1): emit FileChangedEvent to API
+            logger.debug(`FILE_MODIFIED ${filePath}`);
+            publishFor(EventType.FILE_MODIFIED, filePath);
           })
           .on("unlink", (filePath) => {
-            logger.debug(`FILE_REMOVED  ${filePath}`);
-            // TODO(sprint-1): emit FileRemovedEvent to API
+            logger.debug(`FILE_DELETED  ${filePath}`);
+            publishFor(EventType.FILE_DELETED, filePath);
           })
           .on("error", (error) => {
             logger.error("Watcher error:", error);
