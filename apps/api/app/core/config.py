@@ -35,6 +35,15 @@ class Settings(BaseSettings):
     # ── CORS ─────────────────────────────────────────────────────────────────
     cors_origins: list[AnyHttpUrl] = ["http://localhost:5173"]
 
+    # ── Session Engine ───────────────────────────────────────────────────────
+    # A session moves ACTIVE -> IDLE after this many seconds without an event.
+    session_idle_timeout_seconds: int = Field(default=300, ge=1)
+    # An IDLE session moves IDLE -> COMPLETED after this many *additional*
+    # seconds without an event (i.e. total silence >= idle + completion).
+    session_completion_timeout_seconds: int = Field(default=900, ge=1)
+    # How often the in-process sweep loop checks for expired sessions.
+    session_sweep_interval_seconds: int = Field(default=30, ge=1)
+
     @property
     def is_development(self) -> bool:
         return self.environment == "development"

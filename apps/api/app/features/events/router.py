@@ -13,11 +13,16 @@ WebSocket and REST are intentionally under different path prefixes
 ambiguous at a glance.
 """
 
-from fastapi import APIRouter, Depends, Response, WebSocket, WebSocketDisconnect
+from datetime import UTC, datetime
+
+from fastapi import APIRouter, BackgroundTasks, Depends, Response, WebSocket, WebSocketDisconnect
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import AsyncSessionLocal, get_db
 from app.core.logging import get_logger
+
+# NOTE: intentional cross-feature import — the router is the integration seam.
+from app.features.analysis import service as analysis_service
 from app.features.events import service
 from app.features.events.connection_manager import connection_manager
 from app.features.events.schemas import (
@@ -25,6 +30,9 @@ from app.features.events.schemas import (
     DevelopmentEventList,
     DevelopmentEventRead,
 )
+from app.features.sessions import service as session_service
+from app.features.sessions.connection_manager import session_connection_manager
+from app.features.sessions.schemas import SessionRead
 
 router = APIRouter(tags=["events"])
 logger = get_logger(__name__)
@@ -39,12 +47,35 @@ logger = get_logger(__name__)
 async def ingest_event(
     payload: DevelopmentEventCreate,
     response: Response,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ) -> DevelopmentEventRead:
     event, was_created = await service.create_event(db, payload)
 
     if was_created:
         await connection_manager.broadcast(event.model_dump(mode="json"))
+        # Dispatch the analysis pipeline after the 201 response is sent.
+        # Uses a fresh DB session (AsyncSessionLocal) — not the request session —
+        # because the request session may be closed by the time the task runs.
+        analyzable = service.to_analyzable_event(event)
+        background_tasks.add_task(analysis_service.dispatch, analyzable, AsyncSessionLocal)
+
+        # Session Engine: attach this event to a session, deciding
+        # continuation vs. a new session (the API is the sole authority on
+        # this decision — see docs/adr/0005-session-engine.md). Kept
+        # synchronous (same request-scoped db session) since it is a cheap
+        # counter update, not heavy pipeline work.
+        session_row, session_was_created = await session_service.touch_session(db, analyzable)
+        now = datetime.now(tz=UTC)
+        session_read = SessionRead.from_session(
+            session_row, effective_status=session_service.compute_effective_status(session_row, now)
+        )
+        await session_connection_manager.broadcast(
+            {
+                "type": "session.started" if session_was_created else "session.updated",
+                "session": session_read.model_dump(mode="json"),
+            }
+        )
     else:
         # Duplicate observation (e.g. editor temp-file rename double-fire) —
         # not an error, so we hand back the existing row instead of 409/500.

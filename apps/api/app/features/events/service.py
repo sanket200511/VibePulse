@@ -9,6 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.domain.events import AnalyzableEvent
 from app.core.logging import get_logger
 from app.features.events.models import DevelopmentEvent
 from app.features.events.schemas import DevelopmentEventCreate, DevelopmentEventRead
@@ -85,3 +86,27 @@ async def list_recent_events(
     result = await db.execute(stmt)
     events = result.scalars().all()
     return [DevelopmentEventRead.from_orm_event(event) for event in events]
+
+
+def to_analyzable_event(event_read: DevelopmentEventRead) -> AnalyzableEvent:
+    """
+    Convert a ``DevelopmentEventRead`` schema into the cross-feature-safe
+    ``AnalyzableEvent`` domain object.
+
+    This is the only place that bridges the events feature and the analysis
+    pipeline.  By converting here (in the events service) and passing a plain
+    dataclass, the analysis feature never needs to import events types.
+    """
+    return AnalyzableEvent(
+        id=event_read.id,
+        event_type=event_read.event_type,
+        timestamp=event_read.timestamp,
+        session_id=event_read.session_id,
+        project_root=event_read.project_root,
+        file_path=event_read.file_path,
+        file_name=event_read.file_name,
+        file_extension=event_read.file_extension,
+        language=event_read.language,
+        git_branch=event_read.git_branch,
+        metadata=event_read.metadata,
+    )

@@ -1,1 +1,1 @@
-# Core infrastructure – config, database, exceptions
+# Core infrastructure - config, database, exceptions
