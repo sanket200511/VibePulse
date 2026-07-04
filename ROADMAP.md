@@ -133,3 +133,43 @@ Next Capability
 Each capability is scoped to a single sprint and lands as an independent, feature-first module. Once it lands, it goes through review — both a design review (recorded as an ADR when the decision is architecturally significant) and a practical review against the running system, not just its tests. Only after review does hardening happen: closing gaps found during review, paying down any debt intentionally taken on to ship the capability, and validating the module holds up under the project's existing lint/typecheck/test bar. Only once a capability is reviewed and hardened does the roadmap move to the next one.
 
 This is why the roadmap above is sequential rather than a wishlist of parallel workstreams: Session Timeline and Replay depend on Session Intelligence having already been hardened, Health Engine depends on Timeline and Replay existing to score against, and AI Intelligence depends on all of the above being stable enough to be worth explaining with AI in the first place. The Hardening Sprint that already sits between Sprint 2 and Sprint 3 in the project's history is not an exception to this strategy — it is the strategy, applied.
+
+---
+
+## Non-Goals
+
+VibePulse intentionally does **not** aim to:
+
+- **Generate code.** VibePulse is an observation platform, not a code generator. Blurring that line would compromise the trust required to point it at any codebase — a tool that both writes code and reports on how code was written has an inherent conflict of interest.
+- **Replace AI coding assistants.** Tools like Copilot or Cursor operate _during_ authorship, in the editor, assisting the act of writing code. VibePulse operates _around_ authorship, observing what already happened. These are complementary layers, not competing ones — VibePulse's roadmap (AI Fingerprint) is specifically about understanding the output of those tools, not substituting for them.
+- **Replace Git.** Git is the authoritative history of _what_ changed and _why_ (via commit messages). VibePulse observes the _process_ that led there — file-by-file, session-by-session activity that never becomes its own commit. Duplicating Git's role would be redundant; VibePulse is designed to sit alongside it, not inside it.
+- **Replace CI/CD.** CI/CD answers "does this change build, pass tests, and deploy correctly?" VibePulse never touches build, test, or deployment pipelines — it has nothing to say about correctness or release readiness, only about how the work leading up to a change was shaped.
+- **Replace IDEs.** VibePulse has no editing surface and no intention of building one. It is a passive observer of whatever IDE or editor a developer already uses, by design — requiring a specific editor would fragment adoption and contradict the "observe, don't intrude" principle.
+- **Become another chatbot.** VibePulse's dashboard is a data surface, not a conversational interface. Even the AI-augmented capabilities on the roadmap (AI Fingerprint, AI-generated summaries) are designed to produce structured, reviewable output — not a chat window standing between a developer and their own data.
+- **Perform production application monitoring.** VibePulse observes the development process, not a running production service. That is the job of APM tools (Datadog, Grafana, etc.), which already solve production observability well. Conflating the two would pull the platform's scope toward infrastructure concerns that have nothing to do with how code was written.
+
+Each of these boundaries exists to keep VibePulse's scope coherent: it is a single-purpose observability layer for the development process itself, not a general-purpose developer tool suite.
+
+---
+
+## Success Criteria
+
+**v0.5 — AI Intelligence**
+
+- AI Fingerprint produces a per-session or per-file classification (AI-assisted vs. human-authored likelihood) that is measurably better than chance on a labeled test set the team constructs internally.
+- Prompt Vault correlates at least one real prompt source with the resulting `DevelopmentEvent`s for a session, end to end, without manual data entry.
+- The existing `SessionSummaryGenerator` interface gains a second, AI-backed implementation that can be swapped in via configuration alone — zero changes required in `sessions/service.py` or any lifecycle code.
+- All new AI-dependent capabilities ship with a working non-AI fallback path, per the Design Philosophy above — none of them are allowed to make the platform non-functional if a model is unavailable.
+
+**v1.0 — Production-Ready Platform**
+
+- Authentication and authorization are enforced on every REST and WebSocket endpoint — zero unauthenticated write paths.
+- The platform runs correctly with more than one API replica behind a load balancer — meaning the session sweep loop's current single-instance assumption (documented as technical debt in `PROJECT_STATUS.md`) has been resolved, not just documented.
+- A documented, repeatable deployment path exists (container images + a deployment guide) that a team member other than the original author can follow to stand up a working instance from scratch.
+- The backend test suite passes fully (100%) in a clean CI environment with no live-database-dependent failures, closing the current gap where 35 of 113 tests require a running Postgres instance.
+
+**Long-term vision**
+
+- A development team can look at VibePulse's data for their own codebase and make a real engineering or process decision from it (e.g. adjusting review focus, identifying a session pattern worth discussing) — success is measured by actual usage changing behavior, not by feature count.
+- The AI Fingerprint and Prompt Vault capabilities are accurate and trusted enough that a team would cite VibePulse's output in a real retrospective or code review discussion, not treat it as a novelty.
+- VibePulse's own development continues to follow the Capability → Review → Hardening → Next Capability strategy described above, with every architecturally significant decision still recorded as an ADR — the engineering process that built the platform remains the process that evolves it.

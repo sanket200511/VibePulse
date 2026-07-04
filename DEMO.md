@@ -214,3 +214,20 @@ Recovery: The dashboard's WebSocket client reconnects automatically with exponen
 **10-minute demo** — Adds explanation. Cover everything in the 5-minute version, plus: point out the per-event analysis metadata (language, file category, git branch), explain briefly why VibePulse only observes and never generates code, and show the Sessions page with at least one previously-completed session and its generated summary (prepared in advance rather than waited for live).
 
 **20-minute technical walkthrough** — Full architecture discussion. Cover everything above, plus: walk through the Architecture Slide diagram, explain the three-state session lifecycle and why boundaries are decided by the API rather than the daemon, open the Analysis Pipeline code briefly to show the `Analyzer` protocol and registry pattern, and leave time for audience questions — this is the format where the "Questions Professors May Ask" section above is most likely to get used live.
+
+---
+
+## Demo Tips
+
+Practical recommendations for presenting VibePulse smoothly, regardless of audience:
+
+- **Use a prepared sample project.** Demonstrate against a small, purpose-built throwaway project rather than improvising — a known set of files makes the live edits predictable and the resulting events easy to narrate.
+- **Do not demonstrate using the VibePulse repository itself.** Watching VibePulse observe its own repository is confusing to an audience and risks surfacing noise from editor tooling, linters, or build artifacts unrelated to the demo narrative.
+- **Increase browser zoom.** Presentation displays and video calls compress detail — raise the browser zoom level before starting so event rows, badges, and session metrics are legible from the back of a room or in a recording.
+- **Keep dashboard and editor visible together.** Arrange windows so the audience can see a file change happen in the editor and its corresponding event appear in the dashboard in the same field of view — this side-by-side correlation is the core "aha" moment of the demo.
+- **Disable notifications.** Turn off OS and application notifications before presenting; an unrelated pop-up during a live demo undermines credibility and distracts from the flow.
+- **Keep one completed session prepared.** Waiting for a session to reach IDLE/COMPLETED live can take longer than a short demo slot allows — have a session that has already completed, with its summary generated, ready to show on the Sessions page.
+- **Have backup screenshots.** Prepare screenshots of each key screen (event feed, session banner, completed session with summary) in case of a live environment failure — a screenshot-driven fallback keeps the presentation moving instead of stalling on a technical issue.
+- **Keep Docker started before presentation.** Start `docker compose up -d` and confirm all containers are healthy well before the audience arrives, not as the first live step — container startup time is dead air an audience shouldn't have to sit through.
+- **Practice the demo timing.** Rehearse against the 5-minute, 10-minute, and 20-minute formats above at least once beforehand, with a timer, so the pacing is known rather than guessed in the moment.
+- **Keep API logs visible for technical demonstrations.** For a technical audience, keep a terminal showing the API's logs on screen (or ready to switch to) — seeing the request come in and the background analysis task run reinforces the architecture explanation with real evidence, not just a diagram.

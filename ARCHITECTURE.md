@@ -4,6 +4,28 @@ This document is the complete technical reference for VibePulse. It assumes no p
 
 ---
 
+# Architecture Principles
+
+**Passive observation.** VibePulse never writes, suggests, or modifies the code it watches — it only observes filesystem activity and reports on it. This is a hard boundary baked into every layer (the daemon has no write access to the project it watches), not just a product decision, because it's what makes the platform trustworthy to point at any codebase.
+
+**Business logic belongs in the backend.** Session boundaries, lifecycle transitions, analysis enrichment, and summary generation are all decided and computed server-side. The dashboard never re-derives a metric the API has already computed — it renders what it's given.
+
+**Thin frontend.** The React dashboard's job is fetch-once-then-subscribe: one REST call for initial state, one WebSocket subscription for live updates, and presentational components underneath. No page contains business rules about what a session is or when it ends.
+
+**Feature-first architecture.** Each domain capability (`events`, `analysis`, `sessions`) is a self-contained module owning its own router, schema, service, and models, with `app/core/` reserved strictly for horizontal concerns. This lets the platform add new capabilities as new folders rather than as edits scattered across shared files.
+
+**Pipelines over monoliths.** Both the Analysis Pipeline and the Session Engine are built as ordered sequences of small, independent, composable stages rather than single large functions. A new analyzer or a new session-derived insight is a registry addition, not a rewrite.
+
+**Provider-agnostic AI.** Anywhere AI is introduced — today's `SessionSummaryGenerator`, tomorrow's AI Fingerprint — it sits behind an explicit interface with a working non-AI fallback, so no capability is architecturally married to a specific model vendor or dependent on a model being available.
+
+**Explicit interfaces.** `Analyzer` and `SessionSummaryGenerator` are Python `Protocol`s, not base classes — conformance is structural, not inherited. New implementations are added by registration, keeping extension points visible and enumerable rather than hidden behind subclassing.
+
+**Incremental evolution.** Every capability is designed to build on data and structures that already exist rather than requiring new observation infrastructure per feature — Session Timeline, Replay, and Health Engine are all planned to read from data the platform already collects today.
+
+**ADR-driven engineering.** Every architecturally significant decision — from the monorepo strategy to the session lifecycle's three states — is recorded as an ADR before implementation, so the reasoning behind the codebase's structure is documented, not dependent on tribal memory.
+
+---
+
 # High-Level Architecture
 
 ```
@@ -259,3 +281,16 @@ None of these require new architectural primitives — each is designed to consu
 - **Reads are always correct, independent of background timing.** `compute_effective_status()` exists specifically so a client's read is never stale merely because a periodic sweep hasn't run yet.
 - **No infrastructure before it's earned.** Redis, Celery, and APScheduler are all deliberately absent — an in-process `asyncio` sweep loop and direct HTTP from the daemon are sufficient at current scale, and are documented as interim choices, not permanent ones.
 - **Decisions are written down.** Every architecturally significant choice becomes an ADR before implementation — the codebase's structure should always be explainable by pointing at a document, not by tribal memory.
+
+---
+
+# Architecture Constraints
+
+These are intentional, current-state limitations — not oversights — each scoped to be revisited by a specific future phase:
+
+- **Single-user focused for now.** The data model (one project, one developer's activity per session) has no multi-user or multi-tenant concept yet. This exists because Sprints 1–3 were focused on proving the observation and session model works at all; multi-user semantics are explicitly deferred to Phase 5 (Production Readiness) so they aren't designed on top of a still-evolving core.
+- **No authentication yet.** Every REST and WebSocket endpoint is open. This is a deliberate scoping decision, not an omission — adding auth is orthogonal to proving the observability model itself, and is planned as part of Production Readiness rather than being bolted on mid-way through feature development.
+- **No distributed infrastructure.** There is no Redis-backed queue, no Celery worker pool, and no distributed lock anywhere in the system. A single API process is sufficient at current scale, and introducing distributed infrastructure before it's needed would add operational complexity with no present benefit — this is the same "no infrastructure before it's earned" principle stated above.
+- **No message broker.** The daemon talks to the API over direct synchronous HTTP (ADR 0003), rather than through a broker like RabbitMQ or Kafka. This was a deliberate interim choice: direct HTTP is simple to reason about and sufficient for a single daemon instance, and the decision is documented as revisitable, not permanent.
+- **No Kubernetes dependency.** The entire stack runs via Docker Compose. Kubernetes-specific concerns (multi-replica scheduling, service meshes) aren't relevant until the platform actually needs to run more than one API instance — which it doesn't yet, per the single-instance sweep-loop design.
+- **No cloud dependency.** VibePulse runs entirely locally today — Postgres, Redis, and the API all run in local Docker containers, and the dashboard/daemon run directly on the developer's machine. No cloud provider SDK, managed database, or hosted queue is required, keeping the platform fully self-contained until Cloud Sync (explicitly a Post-v1 item in `ROADMAP.md`) is taken up.
