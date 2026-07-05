@@ -8,6 +8,94 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [v0.4.0-developer-intelligence]
+
+### Added
+
+- Insights feature module (`apps/api/app/features/insights/`): pure domain (`DeveloperInsight`, `SessionProfile`, `InsightCategory`, 8 rule-based `InsightGenerator` implementations), orchestration engine (`build_profile()`, mirroring the Analysis Pipeline's priority-ordered, per-generator error-isolated execution model), a registry (`INSIGHT_GENERATORS`), Pydantic schemas, and a REST router
+- 8 deterministic, rule-based insight categories, each with its own generator: Activity (event rate + busiest window), Files (most-edited files), Directories (most-active directories), Languages (breakdown + polyglot detection), Development Patterns (Iterative Refinement, Creation Burst, Cleanup Pass, Broad Sweep), Session Statistics, Context Switching (directory/language switch counts + longest streak), and Idle Behaviour (idle gap count/duration, derived from Timeline's `IDLE_GAP` markers)
+- `DeveloperInsight` uses a `headline` / `evidence` / `metrics` shape rather than a generic `title`/`detail` pair — narrative-first by construction, and structured so future AI-generated summaries can extend the same model without a schema change
+- `GET /sessions/{session_id}/profile` (full profile, grouped by category) and `GET /sessions/{session_id}/insights` (flattened list) — both computed fresh on every call, no persistence
+- Dashboard: `InsightsPanel` (narrative-first rendering — headline prominent, evidence as secondary supporting text, metrics de-emphasized as small badges), `useSessionInsights` hook, wired into `SessionDetailsPage` above the existing `SessionOutcomeCard`/`TimelineView` metrics
+- ADR 0007 (Developer Intelligence Engine)
+
+### Changed
+
+- `apps/api/app/main.py`: registers the new `insights` router
+- `apps/dashboard/src/pages/sessions/SessionDetailsPage.tsx`: Insights now render first, above the Session Outcome metrics card and the raw Timeline — narrative before detail, per the approved Sprint 5 design refinement
+
+### Fixed
+
+- N/A for this milestone
+
+### Documentation
+
+- Added ADR 0007 (Developer Intelligence Engine), documenting the no-persistence decision (profiles are computed on demand; introduce persistence later only if a real performance issue appears), the `headline`/`evidence`/`metrics` field split, and the 8-category rule-based scope
+
+### Testing
+
+- Added `test_insights_generation.py` (pure unit tests per generator plus engine orchestration — category grouping, empty-category omission, disabled-generator skip, and error isolation — no database dependency)
+- Added `test_insights_router.py` (integration tests for both endpoints, including 404-for-unknown-session and a query-count-does-not-grow-with-event-count guard; requires a live Postgres instance)
+- Added `useSessionInsights.test.tsx`, `InsightsPanel.test.tsx`
+
+### Architecture
+
+- Insights is a pure projection over Timeline's already-computed entries/outcome, with zero new persisted state — mirrors Timeline's own "no new table" precedent from Sprint 4
+- `InsightGenerator` is a `Protocol` mirroring `Analyzer` exactly (`generate() -> list[DeveloperInsight]`, no wrapper return type), and `build_profile()` mirrors `AnalysisPipeline.run()`'s per-generator try/except isolation — a failing generator never aborts the rest of the profile
+- `SessionProfile.categories` omits any category that produced zero insights rather than including it with an empty list, keeping the wire payload and the dashboard's rendering logic simple
+
+### Known Limitations
+
+- Sprint 5 intentionally excludes persistence of generated profiles — every request recomputes from Timeline + Session; if real performance issues appear at scale, persistence should be introduced as its own optimization sprint rather than folded into this one (see ADR 0007)
+- Insights recomputation duplicates one `get_session()` lookup already performed internally by `timeline_service.get_timeline()` — a small, fixed (not per-event) overhead accepted for now to keep the integration seam confined to `insights/service.py` without modifying the Timeline feature
+- The new `test_insights_router.py` integration tests require a live PostgreSQL instance and fail in environments without Docker running, consistent with the same pre-existing environmental limitation noted in earlier sprint entries
+
+---
+
+## [v0.3.0-session-timeline]
+
+### Added
+
+- Timeline feature module (`apps/api/app/features/timeline/`): pure projection service (`render()`), domain types, Pydantic schemas, REST router (`GET /sessions/{session_id}/timeline`)
+- `TimelineEntry` split into `metadata` (structural facts: timestamp, event type, file path, language, git branch, grouping fields, marker fields) and `insights` (analyzer findings) — keeps the entry shape extensible for future Health, AI Fingerprint, and Replay providers without growing one generic dictionary
+- Semantic grouping heuristics: repeated modifications to the same file may group into a single entry; create/delete/rename operations always remain distinct entries, never merged into a group
+- Session boundary and idle-gap markers (`SESSION_START`, `SESSION_END`, `IDLE_GAP`) rendered inline in entry order
+- Session Outcome summary: duration, event count, distinct file count, per-language counts, largest change (file + event count, when derivable), and session summary headline
+- Dashboard: `SessionDetailsPage` (route `/sessions/:sessionId`), `TimelineView`, `TimelineEntryRow`, `SessionOutcomeCard`, `useSessionTimeline` hook
+- ADR 0006 (Session Timeline)
+
+### Changed
+
+- `apps/dashboard/src/pages/sessions/SessionRow.tsx`: session start timestamp is now a link to `/sessions/:sessionId`
+- `apps/dashboard/src/App.tsx`: added the `/sessions/:sessionId` route
+- `apps/dashboard/src/test/setup.ts`: added an explicit `afterEach(cleanup)` — required because `vite.config.ts`'s `test.globals: false` prevents React Testing Library's automatic cleanup from self-registering; every test file using `render()` (not just `renderHook()`) depends on this
+
+### Fixed
+
+- Latent test-infrastructure gap where any test file calling `render()` would leak mounted components into subsequent tests within the same file, causing duplicate-element failures — fixed globally via the `setup.ts` change above, benefiting the whole frontend test suite, not just Timeline
+
+### Documentation
+
+- Added ADR 0006 (Session Timeline), including an explicit "Sprint 4 Scope Exclusions" section (Replay, Timeline expansion/pagination, playback controls, AI summaries, Health calculations — all deferred, not ruled out)
+
+### Testing
+
+- Added `test_timeline_generation.py` (pure unit tests for grouping, markers, and outcome computation — no database dependency)
+- Added `test_timeline_router.py` (integration tests, require a live Postgres instance)
+- Added `useSessionTimeline.test.tsx`, `TimelineView.test.tsx`, `SessionOutcomeCard.test.tsx`
+
+### Architecture
+
+- Timeline is a read-only projection with no persisted state of its own — it reads events and session data through the one documented, sanctioned cross-feature import seam and computes everything at request time
+- Established the metadata/insights split as the pattern future insight providers (Health, AI Fingerprint, Replay) should follow instead of adding fields to a generic dictionary
+
+### Known Limitations
+
+- Sprint 4 intentionally excludes Replay, Timeline expansion/pagination, playback controls, AI-generated summaries, and Health calculations — see ADR 0006's Scope Exclusions section
+- The 4 new `test_timeline_router.py` integration tests require a live PostgreSQL instance and fail in environments without Docker running, consistent with the same pre-existing environmental limitation noted in the Sprint 3 entry below
+
+---
+
 ## [v0.2.0-session-intelligence]
 
 ### Added
@@ -121,6 +209,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [Upcoming] — Sprint 4
+## [Upcoming] — Sprint 6
 
-Planned work, not yet implemented: a Session Timeline view in the dashboard, turning the event and session data already being collected into a chronological, per-session narrative — laying groundwork for the later Replay Engine and Health Engine milestones. See `ROADMAP.md` for the full sequencing.
+Planned work, not yet implemented: a Replay Engine for step-by-step playback of a session's recorded changes, followed by the Health Engine — both deliberately excluded from Sprint 4's scope (see ADR 0006) and from Sprint 5's scope (see ADR 0007). See `ROADMAP.md` for the full sequencing.

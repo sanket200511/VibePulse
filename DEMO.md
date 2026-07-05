@@ -21,6 +21,8 @@ This demo shows a live audience — professors, hackathon judges, or GitHub visi
 9. Watch the **Session Banner** appear at the top of the feed — status flips to ACTIVE, event count and duration climb live
 10. Stop editing and wait — after the idle timeout the banner transitions to IDLE, then COMPLETED once the completion window elapses (or narrate this if waiting live is too slow for the room)
 11. Navigate to the **Sessions** page (`/sessions`) and show the completed session in the list, with its generated summary headline
+12. Click into the session to open its **Session Timeline** (`/sessions/:sessionId`) — walk through the ordered, grouped entries (repeated edits to the same file collapse into one grouped entry, while creates/deletes stay distinct), point out the session start/idle/end markers, and finish on the **Session Outcome** card (duration, events, files, languages, largest change, summary)
+13. Point out the **Insights** panel at the top of the same page, above the Timeline and Session Outcome card — walk through a few narrative cards (Activity, Development Patterns, Context Switching, Idle Behaviour) before the more metric-heavy ones (Files, Directories, Languages, Session Statistics), highlighting the headline/evidence/metrics structure of each card
 
 ---
 
@@ -31,6 +33,9 @@ This demo shows a live audience — professors, hackathon judges, or GitHub visi
 - The Session Banner reflects the session's real state at all times: it is never stale, because the dashboard reads the same effective-status calculation the API computes on every request.
 - The session lifecycle visibly progresses ACTIVE → IDLE → COMPLETED without any manual action from the presenter — this is the API's Session Engine making the call, not a button click.
 - The Sessions page shows a human-readable one-line summary of what happened in the session (files touched, dominant language, duration) generated entirely server-side.
+- The Session Timeline preserves semantic meaning while grouping: several saves to the same file collapse into one grouped entry, but a create, a delete, or a rename never merges into that group — each stays its own distinct entry.
+- The Session Outcome card at the bottom of the timeline gives a complete-at-a-glance recap of the session (duration, events, files, languages, largest change, summary) without the presenter needing to scroll back through the whole timeline.
+- The Insights panel tells the story of the session before showing any raw numbers: each card leads with a plain-language headline, backs it with supporting evidence where relevant, and lists the underlying metrics last, as small badges — narrative first, detail second.
 
 ---
 
@@ -44,6 +49,12 @@ This demo shows a live audience — professors, hackathon judges, or GitHub visi
 
 **Sprint 3**
 ✓ Session Intelligence — API-owned session boundaries, a three-state lifecycle, live domain metrics, and pluggable summary generation
+
+**Sprint 4**
+✓ Session Timeline — a chronological, semantically-grouped per-session narrative with inline markers and a Session Outcome summary card
+
+**Sprint 5**
+✓ Developer Intelligence Engine — deterministic, rule-based insights across 8 categories (Activity, Files, Directories, Languages, Development Patterns, Session Statistics, Context Switching, Idle Behaviour), presented narrative-first with a headline/evidence/metrics structure, computed fresh on every request with no persisted state of its own
 
 ---
 
@@ -110,11 +121,32 @@ It's an explicit, scoped-out decision for the current phase — the project is f
 **17. How is correctness verified given there's no live AI model involved?**
 Through automated tests at each layer — analyzer unit tests, session-service tests for lifecycle transitions, router/integration tests, and frontend hook tests using a fake WebSocket double — plus architecture decisions recorded in ADRs so design intent doesn't rely on tribal memory.
 
+**18. What is the Session Timeline, and how is it different from the Sessions page?**
+The Sessions page lists sessions with one summary line each; the Timeline is what you get by clicking into a single session — a full chronological narrative of every event in it, grouped and marker-annotated, ending in a Session Outcome card. It's a pure read-only projection: no new events or state are created, it just renders the existing session's events in a more legible order.
+
+**19. How does the Timeline decide what to group together versus keep separate?**
+Repeated modifications to the same file are eligible to group, since they represent continued work on one thing. Create, delete, and rename operations never join a group, even if they touch the same file as a nearby edit — collapsing those would hide a semantically distinct action behind a generic "×N" count, which is exactly what ADR 0006 was written to avoid.
+
+**20. Why split `TimelineEntry` into `metadata` and `insights` instead of one flat object?**
+`metadata` holds structural facts every entry has regardless of what analyzes it (timestamp, event type, file path, grouping/marker fields); `insights` holds whatever an analyzer contributes. Keeping them separate means future insight providers — Health scores, an AI Fingerprint signal, Replay annotations — can each contribute to `insights` without the entry's core shape growing indefinitely or existing consumers needing to change.
+
+**21. What is the Developer Intelligence Engine, and how does it differ from the Timeline?**
+The Timeline is a chronological projection of raw events; the Developer Intelligence Engine (Sprint 5) is a second, independent projection of the same Timeline data into a `SessionProfile` — a set of `DeveloperInsight`s grouped into 8 categories (Activity, Files, Directories, Languages, Development Patterns, Session Statistics, Context Switching, Idle Behaviour). Where the Timeline answers "what happened, in order," Insights answers "what does that mean" — e.g. "you touched 12 files but returned to `auth.py` five times," a pattern that isn't obvious from scanning a chronological list.
+
+**22. Why `headline` / `evidence` / `metrics` instead of a generic `title` / `detail` pair?**
+The three-field shape is deliberately narrative-first: `headline` is the one-sentence takeaway a developer reads first, `evidence` is optional supporting detail in plain language, and `metrics` is the underlying structured numbers, always shown last and smallest. This was chosen specifically so a future AI-generated summary layer can slot into the same shape — an LLM naturally produces a headline and supporting evidence, with metrics as the object it reasoned over — without a schema change.
+
+**23. Why deterministic, rule-based generators instead of calling an LLM to produce insights?**
+Every insight needs to be explainable and reproducible for the same session — a rule-based generator producing "you touched 12 files, 5 of them Python" is auditable and free, whereas an LLM call would add latency, cost, and non-determinism for a category of insight that plain aggregation already answers well. The generator/pipeline design (mirroring the existing Analysis Pipeline) is intentionally left open for an AI-backed generator to be added later as one more entry in the registry, not a rewrite.
+
+**24. Why does Sprint 5 not persist insights in the database?**
+Because nothing has yet demonstrated that computing them on demand is too slow — insights are a pure function of Timeline data (itself a projection of already-persisted events), so recomputing them per request keeps the architecture simple and avoids a cache-invalidation problem that doesn't exist yet. If a real session's insight computation ever becomes a measured bottleneck, persistence would be introduced then, as its own scoped optimization, rather than speculatively now.
+
 ---
 
 ## Future Roadmap
 
-Future milestones will build directly on the event, analysis, and session data already being captured — starting with a Session Timeline that turns raw session data into a scrollable per-session narrative, followed by a Replay Engine to reconstruct how a codebase evolved step by step, a Health Engine to score sessions and projects on complexity and consistency, an AI Fingerprint capability to identify AI-authored patterns, and eventually a Prompt Vault, analytics/export tooling, and production-readiness hardening (auth, multi-tenancy, deployment). Each of these will be demoed as its own milestone once implemented, using this same live-editing demo flow as the base scenario.
+Future milestones will build directly on the event, analysis, session, timeline, and Developer Intelligence data already being captured — starting with a Replay Engine to reconstruct how a codebase evolved step by step, followed by a Health Engine to score sessions and projects on complexity and consistency, an AI Fingerprint capability to identify AI-authored patterns, and eventually a Prompt Vault, analytics/export tooling, and production-readiness hardening (auth, multi-tenancy, deployment). Each of these will be demoed as its own milestone once implemented, using this same live-editing demo flow as the base scenario.
 
 ---
 
@@ -129,6 +161,8 @@ Behind the scenes, analysis occurs automatically: the event is enriched with its
 As events keep arriving, the session evolves: the API's Session Engine recognizes this is a continuous burst of activity for the same project and groups the events together, keeping a running count of files touched, languages used, and elapsed time, visible live in the Session Banner.
 
 When the developer stops — takes a break, moves to another task — the session doesn't just vanish. It transitions through IDLE and, after enough silence, to COMPLETED. At that point, a summary is generated: a short, human-readable headline describing what the session actually contained. The developer (or an observer — a teammate, a reviewer, a professor) can then open the Sessions page and see that summary sitting alongside every other session ever observed, without having written a single line of documentation themselves.
+
+From there, clicking into the session opens its Timeline: the same raw events, now rendered as an ordered narrative — repeated saves to one file grouped together, creates and deletes kept distinct, session start/idle/end markers placed inline — ending on a Session Outcome card that recaps the whole session in one glance. Above that Timeline sits the Insights panel, telling the story of the session before any raw numbers appear: which files kept coming back, whether the pace was a steady rhythm or a scattered sweep, where the developer paused and for how long — each as a plain-language headline backed by evidence and metrics, not a dashboard of counters. Nothing here is generated by an AI model or hand-written by the developer; it's a direct, deterministic projection of the events and session data VibePulse already observed.
 
 ---
 
@@ -161,10 +195,23 @@ When the developer stops — takes a break, moves to another task — the sessio
         │    Session    │   groups events, tracks lifecycle,
         │    Engine     │   generates summary
         └──────┬───────┘
+               │
+               ▼
+        ┌──────────────┐
+        │   Timeline    │   orders + groups entries, markers,
+        │  Projection   │   Session Outcome summary
+        └──────┬───────┘
+               │
+               ▼
+        ┌──────────────┐
+        │   Insights    │   rule-based Developer Intelligence
+        │    Engine     │   Engine, 8 categories, computed fresh
+        └──────┬───────┘
                │ REST + WebSocket
                ▼
         ┌──────────────┐
-        │   Dashboard   │   live event feed + session view
+        │   Dashboard   │   live event feed + session + timeline
+        │               │   + insights view
         └──────────────┘
 ```
 
@@ -184,6 +231,7 @@ Before presenting, verify:
 - [ ] Network/Wi-Fi is stable if the demo is not fully local
 - [ ] A second sample file change is prepared in advance, in case the audience wants to see it happen twice
 - [ ] Browser zoom/window size is set so the event feed and session banner are both comfortably readable
+- [ ] At least one prior completed session has a rich enough history (multiple files, a repeated edit, at least one create and one delete) to make the Timeline's grouping behavior visible when clicked into
 
 ---
 
