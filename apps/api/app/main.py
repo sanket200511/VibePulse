@@ -17,6 +17,7 @@ from app.core.logging import get_logger
 from app.features.analysis.router import router as analysis_router
 from app.features.events.router import router as events_router
 from app.features.health.router import router as health_router
+from app.features.insights.router import router as insights_router
 from app.features.sessions.router import router as sessions_router
 from app.features.sessions.sweep import run_sweep_loop
 from app.features.timeline.router import router as timeline_router
@@ -85,6 +86,7 @@ def create_app() -> FastAPI:
     app.include_router(analysis_router)
     app.include_router(sessions_router)
     app.include_router(timeline_router)
+    app.include_router(insights_router)
 
     return app
 
