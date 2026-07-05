@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Badge } from "@vibepulse/ui";
 import type { Session } from "./types";
 
@@ -19,7 +20,9 @@ export function SessionRow({ session }: SessionRowProps) {
   return (
     <tr className="border-border border-b last:border-0">
       <td className="text-muted-foreground whitespace-nowrap px-4 py-2 font-mono text-xs">
-        {started}
+        <Link to={`/sessions/${session.id}`} className="hover:underline">
+          {started}
+        </Link>
       </td>
       <td className="px-4 py-2">
         <Badge variant={status.variant}>{status.label}</Badge>
