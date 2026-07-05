@@ -81,8 +81,8 @@ services:
   # ── API ─────────────────────────────────────────────────────────────────────
   api:
     build:
-      context: ./apps/api
-      dockerfile: ../../docker/api.Dockerfile
+      context: .
+      dockerfile: docker/api.Dockerfile
     container_name: vibepulse_api
     restart: unless-stopped
     environment:
@@ -93,8 +93,6 @@ services:
       CORS_ORIGINS: '["http://localhost:5173"]'
     ports:
       - "${API_PORT:-8000}:8000"
-    volumes:
-      - ./apps/api:/app
     depends_on:
       postgres:
         condition: service_healthy

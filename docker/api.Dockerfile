@@ -11,10 +11,13 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
 
 WORKDIR /app
 
-# Copy dependency manifests first (layer-cache friendly)
-COPY pyproject.toml ./
+# Copy dependency manifests first (layer-cache friendly) and install
+# third-party dependencies only, before the project source is available.
+COPY apps/api/pyproject.toml apps/api/uv.lock ./
+RUN uv sync --no-dev --frozen --no-install-project
 
-# Install dependencies into a virtual environment
+# Copy application source, then install the project itself.
+COPY apps/api/ .
 RUN uv sync --no-dev --frozen
 
 # ── Stage 2: runtime ─────────────────────────────────────────────────────────
@@ -33,7 +36,7 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
 COPY --from=builder /app/.venv /app/.venv
 
 # Copy application source
-COPY . .
+COPY apps/api/ .
 
 # Ensure the venv is on PATH
 ENV PATH="/app/.venv/bin:$PATH"

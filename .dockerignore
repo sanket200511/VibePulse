@@ -1,0 +1,66 @@
+# ─────────────────────────────────────────────
+# VibePulse – .dockerignore
+# Applies to every image built with root (".") as the build context
+# (api, daemon, dashboard). Keeps build context small and prevents
+# host-installed dependencies (node_modules, .venv) from being copied
+# into containers, where they'd shadow the Linux binaries installed
+# during the build.
+# ─────────────────────────────────────────────
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.nuxt/
+.output/
+
+# Turbo
+.turbo/
+
+# TypeScript
+*.tsbuildinfo
+
+# Environment files
+.env
+.env.local
+.env.*.local
+!.env.example
+!**/.env.example
+
+# Logs
+logs/
+*.log
+
+# Git
+.git/
+.gitignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+.vscode/
+*.swp
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+
+# Misc
+.cache/
+*.pen
