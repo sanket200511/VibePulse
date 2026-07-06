@@ -14,7 +14,11 @@ export function SessionDetailsPage() {
   const { profile, isLoading: isProfileLoading } = useSessionInsights(sessionId ?? "");
   const { session } = useSessionData(sessionId ?? "");
   const isCompleted = session?.status === "COMPLETED";
-  const { replay, isLoading: isReplayLoading } = useSessionReplay(sessionId ?? "", isCompleted);
+  const {
+    replay,
+    isLoading: isReplayLoading,
+    isError: isReplayError,
+  } = useSessionReplay(sessionId ?? "", isCompleted);
 
   return (
     <main className="bg-background flex min-h-screen flex-col gap-6 p-8">
@@ -60,7 +64,15 @@ export function SessionDetailsPage() {
             <section className="border-border bg-card rounded-[16px] border p-6">
               <h2 className="text-foreground mb-4 text-lg font-semibold">Replay</h2>
               {isReplayLoading && (
-                <p className="text-muted-foreground p-4 text-center text-sm">Loading replay…</p>
+                <div className="flex flex-col gap-2" aria-busy="true">
+                  <div className="bg-muted h-8 animate-pulse rounded-[8px]" />
+                  <div className="bg-muted h-24 animate-pulse rounded-[12px]" />
+                </div>
+              )}
+              {isReplayError && (
+                <p className="border-destructive/30 bg-destructive/5 text-destructive rounded-[12px] border p-4 text-center text-sm">
+                  Could not load this session&rsquo;s replay.
+                </p>
               )}
               {replay && <ReplayView replay={replay} />}
             </section>

@@ -179,4 +179,39 @@ describe("useReplayController", () => {
     expect(result.current.currentIndex).toBe(0);
     expect(result.current.isPlaying).toBe(false);
   });
+
+  it("sets didFinish only when autoplay reaches the end on its own", () => {
+    const { result } = renderHook(() => useReplayController(FRAMES, CHAPTERS));
+
+    expect(result.current.didFinish).toBe(false);
+
+    act(() => result.current.play());
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+
+    expect(result.current.didFinish).toBe(true);
+  });
+
+  it("does not set didFinish when manually stepping to the last frame", () => {
+    const { result } = renderHook(() => useReplayController(FRAMES, CHAPTERS));
+
+    act(() => result.current.jumpToFrame(2));
+
+    expect(result.current.currentIndex).toBe(2);
+    expect(result.current.didFinish).toBe(false);
+  });
+
+  it("clears didFinish when playing again, restarting, or jumping", () => {
+    const { result } = renderHook(() => useReplayController(FRAMES, CHAPTERS));
+
+    act(() => result.current.play());
+    act(() => {
+      vi.advanceTimersByTime(3000);
+    });
+    expect(result.current.didFinish).toBe(true);
+
+    act(() => result.current.restart());
+    expect(result.current.didFinish).toBe(false);
+  });
 });

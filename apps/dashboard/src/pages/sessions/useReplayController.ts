@@ -19,6 +19,8 @@ export interface UseReplayControllerResult {
   speed: ReplaySpeed;
   isAtStart: boolean;
   isAtEnd: boolean;
+  /** True once autoplay has run to the last frame on its own; reset on any navigation. */
+  didFinish: boolean;
   play: () => void;
   pause: () => void;
   restart: () => void;
@@ -36,12 +38,14 @@ export function useReplayController(
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState<ReplaySpeed>(1);
+  const [didFinish, setDidFinish] = useState(false);
 
   const lastIndex = frames.length - 1;
 
   useEffect(() => {
     setCurrentIndex(0);
     setIsPlaying(false);
+    setDidFinish(false);
   }, [frames]);
 
   useEffect(() => {
@@ -51,6 +55,7 @@ export function useReplayController(
       setCurrentIndex((index) => {
         if (index >= lastIndex) {
           setIsPlaying(false);
+          setDidFinish(true);
           return index;
         }
         return index + 1;
@@ -74,6 +79,7 @@ export function useReplayController(
     speed,
     isAtStart: currentIndex <= 0,
     isAtEnd: lastIndex < 0 || currentIndex >= lastIndex,
+    didFinish,
     play: () => {
       if (lastIndex < 0) return;
       setIsPlaying(true);
@@ -82,17 +88,20 @@ export function useReplayController(
     restart: () => {
       setCurrentIndex(0);
       setIsPlaying(false);
+      setDidFinish(false);
     },
     next: () => setCurrentIndex((index) => Math.min(index + 1, Math.max(lastIndex, 0))),
     prev: () => setCurrentIndex((index) => Math.max(index - 1, 0)),
     jumpToFrame: (index: number) => {
       setIsPlaying(false);
+      setDidFinish(false);
       setCurrentIndex(Math.min(Math.max(index, 0), Math.max(lastIndex, 0)));
     },
     jumpToChapter: (chapterId: number) => {
       const chapter = chapters.find((c) => c.id === chapterId);
       if (!chapter) return;
       setIsPlaying(false);
+      setDidFinish(false);
       setCurrentIndex(Math.min(chapter.start_frame_index, Math.max(lastIndex, 0)));
     },
     setSpeed,

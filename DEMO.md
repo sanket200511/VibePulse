@@ -23,6 +23,8 @@ This demo shows a live audience — professors, hackathon judges, or GitHub visi
 11. Navigate to the **Sessions** page (`/sessions`) and show the completed session in the list, with its generated summary headline
 12. Click into the session to open its **Session Timeline** (`/sessions/:sessionId`) — walk through the ordered, grouped entries (repeated edits to the same file collapse into one grouped entry, while creates/deletes stay distinct), point out the session start/idle/end markers, and finish on the **Session Outcome** card (duration, events, files, languages, largest change, summary)
 13. Point out the **Insights** panel at the top of the same page, above the Timeline and Session Outcome card — walk through a few narrative cards (Activity, Development Patterns, Context Switching, Idle Behaviour) before the more metric-heavy ones (Files, Directories, Languages, Session Statistics), highlighting the headline/evidence/metrics structure of each card
+14. Scroll down to the **Replay** section (visible only once the session is COMPLETED) — click a chapter button to jump straight to "Session Started" or "Session Completed," then hit **Play** and let it step through frames automatically, pointing out the speed selector (1×/2×/4×/8×) and the frame scrubber as alternate ways to move through the same recorded session; when playback finishes, a **Replay complete** banner appears with a "Watch again" shortcut — click it to restart from frame 1 instantly; power-users can also drive the player entirely from the keyboard (Space to play/pause, arrow keys to step, Home to restart, End to jump to the last frame)
+15. Scroll down once more to the **Session Health** section — point out the five metric cards (Focus, Momentum, Flow, Stability, Completion), each showing a plain-language label and headline with its raw numbers visible underneath as badges; read the narrative paragraph at the top aloud, then, if any guidance appears, point out the "Worth noting" list — emphasize that every label is backed by inspectable numbers and there is no overall score anywhere on the panel
 
 ---
 
@@ -36,6 +38,8 @@ This demo shows a live audience — professors, hackathon judges, or GitHub visi
 - The Session Timeline preserves semantic meaning while grouping: several saves to the same file collapse into one grouped entry, but a create, a delete, or a rename never merges into that group — each stays its own distinct entry.
 - The Session Outcome card at the bottom of the timeline gives a complete-at-a-glance recap of the session (duration, events, files, languages, largest change, summary) without the presenter needing to scroll back through the whole timeline.
 - The Insights panel tells the story of the session before showing any raw numbers: each card leads with a plain-language headline, backs it with supporting evidence where relevant, and lists the underlying metrics last, as small badges — narrative first, detail second.
+- The Replay section only appears once a session is COMPLETED, and lets the presenter step through the exact same recorded entries shown in the Timeline, one frame at a time or on autoplay, jumping instantly to any chapter boundary — with nothing new observed or generated, just a different lens on data already captured.
+- The Session Health section shows five independently-explainable metric verdicts (never a single score) plus a short narrative and, when applicable, a handful of low-stakes guidance notes — every label is backed by raw numbers visible right on the card, so nothing is asserted without evidence.
 
 ---
 
@@ -55,6 +59,20 @@ This demo shows a live audience — professors, hackathon judges, or GitHub visi
 
 **Sprint 5**
 ✓ Developer Intelligence Engine — deterministic, rule-based insights across 8 categories (Activity, Files, Directories, Languages, Development Patterns, Session Statistics, Context Switching, Idle Behaviour), presented narrative-first with a headline/evidence/metrics structure, computed fresh on every request with no persisted state of its own
+
+**Sprint 6**
+✓ Replay Engine — step-by-step playback of a COMPLETED session's recorded Timeline entries, with play/pause/speed controls, a frame scrubber, and deterministic (non-AI) chapter navigation — a pure projection, no new events observed and no new state persisted
+
+**Sprint 6.5 (Product Polish)**
+✓ Improved empty, loading, and error states throughout the Replay section
+✓ Replay completion experience — a "Replay complete" banner with a "Watch again" shortcut, shown only after autoplay naturally reaches the last frame
+✓ Richer chapter presentation — current chapter promoted as a heading above the controls, each chapter button now shows duration
+✓ Full keyboard navigation — Space/K play-pause, arrow keys step, Home restart, End jump to last frame
+✓ Accessibility — ARIA roles, live region for screen-reader announcements, aria-pressed on speed buttons, aria-current on the active chapter, aria-valuetext on the scrubber
+✓ Subtle frame transitions — 150 ms fade-and-lift animation when the current frame changes, skipped for reduced-motion users
+
+**Sprint 7**
+✓ Health Engine — five deterministic, rule-based metrics (Focus, Momentum, Flow, Stability, Completion) assessing a COMPLETED session's own shape, each an independently-explainable categorical verdict backed by raw numbers, plus a synthesized narrative and templated guidance — never a single score, never a comparison across sessions or developers
 
 ---
 
@@ -142,11 +160,29 @@ Every insight needs to be explainable and reproducible for the same session — 
 **24. Why does Sprint 5 not persist insights in the database?**
 Because nothing has yet demonstrated that computing them on demand is too slow — insights are a pure function of Timeline data (itself a projection of already-persisted events), so recomputing them per request keeps the architecture simple and avoids a cache-invalidation problem that doesn't exist yet. If a real session's insight computation ever becomes a measured bottleneck, persistence would be introduced then, as its own scoped optimization, rather than speculatively now.
 
+**25. What is the Replay Engine, and what does it add over the Timeline?**
+The Timeline already renders a session's events as an ordered, grouped list; Replay (Sprint 6) takes that same data and turns it into something playable — a `ReplayFrame` per Timeline entry, plus `ReplayChapter` boundaries layered on top for quick navigation (e.g. jump straight to "Session Started" or the point work resumed after an idle gap). It's a UX capability, not a new data source: no new event is observed, and no new fact about the session is computed that Timeline didn't already have.
+
+**26. How are chapters decided, and why not use Insights or an LLM to label them?**
+Chapters are fully deterministic: hard boundaries come from Timeline's own existing markers (session start/idle/end, language switch), and soft boundaries come from a simple, debounced heuristic — if the working directory shifts and stays shifted for at least 3 consecutive frames, that's a new chapter, to avoid flickering on stray one-off file touches. Labels come from an ordered keyword table (e.g. paths containing `auth` label as "Working on Authentication") with a directory-name fallback. This keeps chapters reproducible and free, consistent with the same reasoning behind Sprint 5's rule-based insights (see Q23) — an LLM-based labeler is a plausible future upgrade, not a blocker for shipping the navigation feature now.
+
+**27. Why gate Replay on the session being COMPLETED rather than showing it live?**
+Replaying a session implies there's a finished story to walk through — chapters like "Session Completed" don't exist yet for a session that's still ACTIVE or IDLE, and building a frame-by-frame player for a timeline that could still be actively growing would add real-time synchronization complexity for a feature whose value is retrospective review, not live monitoring (the Live Event Feed and Session Banner already cover that case).
+
+**28. Why no persistence or caching for Replay yet?**
+Same rationale as Insights (see Q24): Replay is a pure function of Timeline data, itself already a projection of persisted events, so nothing is lost by recomputing it per request, and no cache-invalidation problem is introduced. ADR 0008 explicitly designs a Redis-caching path for later, deferred rather than rejected, since no Redis client is wired into the FastAPI process yet — adding one purely for this would be premature infrastructure for a problem that hasn't been measured.
+
+**29. What is the Health Engine, and why doesn't it produce a single score?**
+Health (Sprint 7) answers "was this a healthy session?" — not in a productivity-scoring sense, but in terms of focus, coherence, and how naturally it wrapped up. It computes five independent metrics (Focus, Momentum, Flow, Stability, Completion) from Replay's chapters and Timeline's entries, each mapped to a fixed, named band (e.g. "Highly Focused," "Steady Pace") with its raw numbers always shown alongside. A single composite score was deliberately rejected: collapsing five different questions into one number would hide which dimension actually drove the number, and would edge toward ranking or judging a developer rather than describing a session's shape.
+
+**30. Why does Health depend on Replay's chapters instead of re-deriving its own segmentation?**
+Replay's `ReplayChapter` list already encodes the WORK/IDLE/RESUMED/structural segmentation Health needs — re-deriving that inside Health would duplicate Replay's own deterministic chapter-boundary logic. Depending on Replay's output (not its code) keeps Health a pure new consumer of already-derived structure, consistent with the same "don't redesign the upstream engine" discipline Replay itself followed with Timeline.
+
 ---
 
 ## Future Roadmap
 
-Future milestones will build directly on the event, analysis, session, timeline, and Developer Intelligence data already being captured — starting with a Replay Engine to reconstruct how a codebase evolved step by step, followed by a Health Engine to score sessions and projects on complexity and consistency, an AI Fingerprint capability to identify AI-authored patterns, and eventually a Prompt Vault, analytics/export tooling, and production-readiness hardening (auth, multi-tenancy, deployment). Each of these will be demoed as its own milestone once implemented, using this same live-editing demo flow as the base scenario.
+Future milestones will build directly on the event, analysis, session, timeline, Developer Intelligence, Replay, and Health data already being captured — starting with an AI Fingerprint capability to identify AI-authored patterns, and eventually a Prompt Vault, analytics/export tooling, and production-readiness hardening (auth, multi-tenancy, deployment). Each of these will be demoed as its own milestone once implemented, using this same live-editing demo flow as the base scenario.
 
 ---
 
@@ -163,6 +199,10 @@ As events keep arriving, the session evolves: the API's Session Engine recognize
 When the developer stops — takes a break, moves to another task — the session doesn't just vanish. It transitions through IDLE and, after enough silence, to COMPLETED. At that point, a summary is generated: a short, human-readable headline describing what the session actually contained. The developer (or an observer — a teammate, a reviewer, a professor) can then open the Sessions page and see that summary sitting alongside every other session ever observed, without having written a single line of documentation themselves.
 
 From there, clicking into the session opens its Timeline: the same raw events, now rendered as an ordered narrative — repeated saves to one file grouped together, creates and deletes kept distinct, session start/idle/end markers placed inline — ending on a Session Outcome card that recaps the whole session in one glance. Above that Timeline sits the Insights panel, telling the story of the session before any raw numbers appear: which files kept coming back, whether the pace was a steady rhythm or a scattered sweep, where the developer paused and for how long — each as a plain-language headline backed by evidence and metrics, not a dashboard of counters. Nothing here is generated by an AI model or hand-written by the developer; it's a direct, deterministic projection of the events and session data VibePulse already observed.
+
+Below the Timeline, once the session is COMPLETED, the Replay section lets that same recorded history be walked through again — one frame at a time, at 1×/2×/4×/8× speed, or by jumping straight to a chapter like "Session Started" or "Resumed After Idle." It's the same underlying data as the Timeline above it, just given a playback interface instead of a static list — useful for a reviewer who wants to watch how a burst of AI-assisted changes actually unfolded rather than read it as a flat log.
+
+Below Replay, the Session Health section asks a different question than any panel above it: not what happened, or how it looked played back, but whether the session itself had a healthy shape — was the work focused, did it flow without constant interruption, did it wind down naturally rather than stop abruptly. Five metrics answer that from Replay's own chapters, each landing on a plain-language label backed by its own numbers, with a short narrative tying them together and, where something stands out, a line or two of low-stakes guidance. There is no overall grade — just five honest, independently-checkable observations about one session's own shape.
 
 ---
 
@@ -207,11 +247,23 @@ From there, clicking into the session opens its Timeline: the same raw events, n
         │   Insights    │   rule-based Developer Intelligence
         │    Engine     │   Engine, 8 categories, computed fresh
         └──────┬───────┘
+               │
+               ▼
+        ┌──────────────┐
+        │    Replay     │   frames + deterministic chapters,
+        │    Engine     │   playable projection of Timeline
+        └──────┬───────┘
+               │
+               ▼
+        ┌──────────────┐
+        │    Health     │   five deterministic metrics over
+        │    Engine     │   Replay's chapters, no score, no AI
+        └──────┬───────┘
                │ REST + WebSocket
                ▼
         ┌──────────────┐
         │   Dashboard   │   live event feed + session + timeline
-        │               │   + insights view
+        │               │   + insights + replay + health view
         └──────────────┘
 ```
 
@@ -232,6 +284,8 @@ Before presenting, verify:
 - [ ] A second sample file change is prepared in advance, in case the audience wants to see it happen twice
 - [ ] Browser zoom/window size is set so the event feed and session banner are both comfortably readable
 - [ ] At least one prior completed session has a rich enough history (multiple files, a repeated edit, at least one create and one delete) to make the Timeline's grouping behavior visible when clicked into
+- [ ] That same completed session has enough distinct chapters (e.g. an idle gap or a directory shift) to make the Replay section's chapter-jump buttons worth clicking during the demo
+- [ ] That same completed session is long/varied enough that the Session Health section renders all five metric cards rather than the "not enough activity" empty state
 
 ---
 

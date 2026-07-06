@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ReplayView } from "./ReplayView";
 import type { Replay, ReplayFrame } from "./replay-types";
@@ -116,5 +116,57 @@ describe("ReplayView", () => {
     fireEvent.click(screen.getByRole("button", { name: /completed: session completed/i }));
 
     expect(screen.getByText("Frame 2 of 2")).toBeInTheDocument();
+  });
+
+  it("shows an empty state when there are no frames", () => {
+    render(<ReplayView replay={makeReplay({ frames: [], chapters: [] })} />);
+
+    expect(screen.getByText(/nothing to replay/i)).toBeInTheDocument();
+  });
+
+  it("marks the active chapter button with aria-current=step", () => {
+    render(<ReplayView replay={makeReplay()} />);
+
+    expect(screen.getByRole("button", { name: /started: session started/i })).toHaveAttribute(
+      "aria-current",
+      "step",
+    );
+    expect(
+      screen.getByRole("button", { name: /completed: session completed/i }),
+    ).not.toHaveAttribute("aria-current");
+  });
+
+  it("marks speed buttons with aria-pressed", () => {
+    render(<ReplayView replay={makeReplay()} />);
+
+    expect(screen.getByRole("button", { name: "1×" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "2×" })).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("shows a completion banner after autoplay finishes", () => {
+    render(<ReplayView replay={makeReplay()} />);
+
+    fireEvent.click(screen.getByRole("button", { name: /^play$/i }));
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+
+    expect(screen.getByText(/replay finished/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /watch again/i })).toBeInTheDocument();
+  });
+
+  it("responds to keyboard shortcuts for play/pause and navigation", () => {
+    render(<ReplayView replay={makeReplay()} />);
+
+    const player = screen.getByRole("group", { name: /session replay player/i });
+
+    fireEvent.keyDown(player, { key: "ArrowRight" });
+    expect(screen.getByText("Frame 2 of 2")).toBeInTheDocument();
+
+    fireEvent.keyDown(player, { key: "Home" });
+    expect(screen.getByText("Frame 1 of 2")).toBeInTheDocument();
+
+    fireEvent.keyDown(player, { key: " " });
+    expect(screen.getByRole("button", { name: /^pause$/i })).toBeInTheDocument();
   });
 });

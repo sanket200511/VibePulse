@@ -8,6 +8,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [v0.5.1-product-polish]
+
+### Added
+
+- `ReplayView` empty state for a session with zero replay frames
+- `ReplayView` completion banner ("Replay finished." + "Watch again") shown once autoplay reaches the last frame on its own — not shown for manual navigation to the last frame
+- Keyboard shortcuts on the replay player (Space to play/pause, ←/→ to step, Home to restart), scoped to a focusable `role="group"` wrapper so they don't leak to the rest of the page
+- Chapter-jump buttons now show each chapter's duration alongside its label
+- Subtle fade-in-up entrance transition (`prefers-reduced-motion`-aware) applied to the replay player and its completion banner
+
+### Changed
+
+- `useReplayController` adds a `didFinish` flag: set only when autoplay runs to the last frame unassisted, cleared on `play`, `restart`, `jumpToFrame`, or `jumpToChapter`
+- `SessionDetailsPage`'s Replay section now shows a skeleton pulse while loading and a dedicated destructive-styled error card on failure, matching the loading/error treatment used elsewhere on the page, instead of a single "Loading replay…" line
+- Replay's playback controls, speed selector, and chapter buttons gained `role`/`aria-label`/`aria-pressed`/`aria-current`/`aria-valuetext` so screen readers can announce control grouping, active speed, active chapter, and scrubber position without relying on visual state alone
+
+### Testing
+
+- Added tests for the empty state, the completion banner, `aria-current`/`aria-pressed` chapter and speed markers, and keyboard shortcut handling in `ReplayView.test.tsx`
+- Added tests for `didFinish`'s autoplay-only semantics and its reset on manual navigation in `useReplayController.test.tsx`
+
+---
+
 ## [v0.5.0-replay-engine]
 
 ### Added
