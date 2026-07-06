@@ -18,6 +18,7 @@ from app.features.analysis.router import router as analysis_router
 from app.features.events.router import router as events_router
 from app.features.health.router import router as health_router
 from app.features.insights.router import router as insights_router
+from app.features.replay.router import router as replay_router
 from app.features.sessions.router import router as sessions_router
 from app.features.sessions.sweep import run_sweep_loop
 from app.features.timeline.router import router as timeline_router
@@ -73,7 +74,10 @@ def create_app() -> FastAPI:
     # ── Middleware ────────────────────────────────────────────────────────────
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[str(o) for o in settings.cors_origins],
+        # AnyHttpUrl normalizes to a trailing slash; browser Origin headers
+        # never have one, so CORSMiddleware's exact-match check needs it
+        # stripped or every request gets silently rejected.
+        allow_origins=[str(o).rstrip("/") for o in settings.cors_origins],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -87,6 +91,7 @@ def create_app() -> FastAPI:
     app.include_router(sessions_router)
     app.include_router(timeline_router)
     app.include_router(insights_router)
+    app.include_router(replay_router)
 
     return app
 

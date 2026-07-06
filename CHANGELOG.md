@@ -8,6 +8,50 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [v0.5.0-replay-engine]
+
+### Added
+
+- Replay feature module (`apps/api/app/features/replay/`): pure domain (`render()`, mirroring Timeline's/Insights' synchronous, side-effect-free projection pattern), `ReplayFrame`/`ReplayChapter`/`Replay` dataclasses, deterministic marker + keyword-based `ChapterKind` derivation (`SESSION_STARTED`, `WORK`, `IDLE`, `RESUMED`, `SESSION_COMPLETED`), Pydantic schemas, and a REST router
+- `GET /sessions/{session_id}/replay` — chronological `ReplayFrame`s (1:1 lift of Timeline's existing entries, in order) plus derived `ReplayChapter` navigation boundaries; returns 404 for an unknown session and 409 for a session that is not yet `COMPLETED`
+- Chapter derivation is fully deterministic and non-AI: hard boundaries cut on Timeline's existing `SESSION_START`/`IDLE_GAP`/`SESSION_END`/`LANGUAGE_SWITCH` markers; soft boundaries cut on a 3-frame-debounced directory-shift heuristic within `WORK` stretches; labels come from an ordered keyword table (auth/config/backend) with a directory-name fallback
+- Dashboard: `ReplayView` (playback controls — Restart/Previous/Play-Pause/Next — a speed selector at 1×/2×/4×/8×, a frame scrubber, and chapter-jump buttons), `useReplayController` (frame-count-driven play/pause/speed/jump state machine), `useSessionReplay` (TanStack Query hook, gated on the session being `COMPLETED`), `useSessionData` (new hook for `GET /sessions/{id}`, used solely to read session status for the gate), wired into `SessionDetailsPage` as a third section below Timeline
+- `ReplayView` reuses `TimelineEntryRow` verbatim to render the current frame — zero duplicated presentation logic between Timeline and Replay, per ADR-0008 §10
+- ADR 0008 (Replay Engine)
+
+### Changed
+
+- `apps/api/app/main.py`: registers the new `replay` router; also fixes a pre-existing CORS bug (see Fixed) discovered while browser-verifying this feature
+- `apps/dashboard/src/pages/sessions/SessionDetailsPage.tsx`: adds a `Replay` section, conditionally rendered only when the session's status is `COMPLETED`
+
+### Fixed
+
+- **CORS: dashboard could not call the API from a real browser.** `core/config.py`'s `cors_origins: list[AnyHttpUrl]` normalizes each URL with a trailing slash on `str()` (e.g. `http://localhost:5173` → `http://localhost:5173/`), but browser `Origin` headers never carry one, and `CORSMiddleware` does an exact string match against `allow_origins`. The mismatch silently omitted `Access-Control-Allow-Origin` from every response, blocking all dashboard→API fetches in any real browser (curl was unaffected, which masked the bug from earlier `curl`-based verification). Fixed in `apps/api/app/main.py` by stripping the trailing slash: `allow_origins=[str(o).rstrip("/") for o in settings.cors_origins]`. Pre-existing, not introduced by Replay — found and fixed while performing the CLAUDE.md-mandated real-browser verification of this sprint's UI work, since it blocked verification of every dashboard page, not just Replay.
+
+### Documentation
+
+- Added ADR 0008 (Replay Engine), documenting the frame/chapter domain split, the deterministic non-AI chapter-derivation rules, the decision not to query Insights for chapter labeling (§4), the COMPLETED-only status gate (§5), and the deferred-caching rationale consistent with Timeline's and Insights' own precedent (§7)
+
+### Testing
+
+- Added `test_replay_generation.py` (pure unit tests for frame lifting and all chapter-derivation rules — hard/soft boundaries, labeling, debounce — no database dependency)
+- Added `test_replay_router.py` (integration tests: 404/409 status handling, frame/chapter shape, query-count-does-not-grow-with-event-count guard; requires a live Postgres instance)
+- Added `useSessionReplay.test.tsx`, `useReplayController.test.tsx`, `ReplayView.test.tsx`
+
+### Architecture
+
+- Replay is a pure projection over Timeline's already-computed entries, with zero new persisted state — mirrors Insights' "no new table" precedent from Sprint 5, and Timeline's from Sprint 4
+- `ReplayFrame` adds two Replay-only fields (`chapter_id`, `is_chapter_start`) on top of Timeline's `metadata`/`insights` reused verbatim — Replay adds new _shape_, never new _data_
+- `useReplayController` is frame-count-driven, not wall-clock-synced: each tick advances exactly one frame at an interval of `1000ms / speed`, keeping playback timing simple and testable with fake timers rather than reconstructing real inter-frame gaps
+
+### Known Limitations
+
+- Sprint 6 intentionally excludes Redis response caching (designed, deferred — see ADR 0008 §7), frame-level scrubbing beyond the existing scrubber input (chapter-jump is the primary navigation aid), and any Insights-informed chapter labeling — all additive future work, not ruled out
+- The new `test_replay_router.py` integration tests require a live PostgreSQL instance and fail in environments without Docker running, consistent with the same pre-existing environmental limitation noted in every prior sprint's changelog entry
+- The CORS trailing-slash bug fixed in this sprint was pre-existing since `core/config.py`'s `cors_origins` setting was introduced — it had gone unnoticed because prior verification relied on `curl` (unaffected by browser CORS enforcement) rather than a real browser
+
+---
+
 ## [v0.4.0-developer-intelligence]
 
 ### Added

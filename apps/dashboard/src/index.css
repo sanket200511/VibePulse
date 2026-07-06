@@ -31,21 +31,21 @@
 
   .dark {
     /* ── Dark theme (primary – matches DESIGN.md palette) ────────────────── */
-    --background: 240 6% 4%;       /* #09090B */
-    --foreground: 0 0% 98%;        /* #FAFAFA */
-    --card: 240 4% 7%;             /* #111114 */
+    --background: 240 6% 4%; /* #09090B */
+    --foreground: 0 0% 98%; /* #FAFAFA */
+    --card: 240 4% 7%; /* #111114 */
     --card-foreground: 0 0% 98%;
-    --primary: 262 83% 57%;        /* #7C3AED */
+    --primary: 262 83% 57%; /* #7C3AED */
     --primary-foreground: 0 0% 98%;
-    --secondary: 240 4% 11%;       /* #18181B */
+    --secondary: 240 4% 11%; /* #18181B */
     --secondary-foreground: 0 0% 98%;
-    --muted: 240 4% 16%;           /* #27272A */
+    --muted: 240 4% 16%; /* #27272A */
     --muted-foreground: 240 5% 65%; /* #A1A1AA */
-    --accent: 240 4% 25%;          /* #3F3F46 */
+    --accent: 240 4% 25%; /* #3F3F46 */
     --accent-foreground: 0 0% 98%;
-    --destructive: 0 63% 58%;      /* #EF4444 */
+    --destructive: 0 63% 58%; /* #EF4444 */
     --destructive-foreground: 0 0% 98%;
-    --border: 240 4% 16%;          /* #27272A */
+    --border: 240 4% 16%; /* #27272A */
     --input: 240 4% 16%;
     --ring: 262 83% 57%;
   }
@@ -78,7 +78,7 @@
     @apply bg-transparent;
   }
   ::-webkit-scrollbar-thumb {
-    @apply rounded-full bg-border;
+    @apply bg-border rounded-full;
   }
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-accent;
