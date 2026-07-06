@@ -8,6 +8,45 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [v0.6.0-health-engine]
+
+### Added
+
+- Health feature module (`apps/api/app/features/session_health/`): pure domain (`HealthInput`, `HealthMetric`, `HealthSummary`, `HealthReport`), five deterministic generators (Focus, Momentum, Flow, Stability, Completion), an orchestration engine with per-generator error isolation, Pydantic schemas, and a REST router
+- `GET /sessions/{session_id}/health` — five independently-explainable categorical verdicts (never a numeric score) plus a deterministic narrative and up to 4 rule-based guidance items; returns 404 for an unknown session and 409 for a session that is not yet `COMPLETED`
+- Every metric computes a raw number (always exposed in `metrics`), maps it to a fixed, named threshold band (`label`), and renders a templated headline — Focus (work-time ratio), Momentum (uninterrupted work streaks vs. idle time), Flow (topic-shift frequency), Stability (editing-cadence consistency), Completion (how the session wound down)
+- Dashboard: `HealthPanel` (narrative paragraph, five fixed-order metric cards, "Worth noting" guidance list — deliberately no color-coded bands, progress bars, or leaderboard styling), `useSessionHealth` (TanStack Query hook, gated on the session being `COMPLETED`, mirroring `useSessionReplay`), wired into `SessionDetailsPage` as a fourth section below Replay
+- ADR 0009 (Health Engine)
+
+### Changed
+
+- `apps/api/app/main.py`: registers the new `session_health` router alongside the pre-existing, unrelated infra-liveness `health` router (`GET /health`) — the two are distinct modules with distinct route prefixes, see ADR 0009 §2
+- `apps/dashboard/src/pages/sessions/SessionDetailsPage.tsx`: adds a `Session Health` section, conditionally rendered only when the session's status is `COMPLETED`, with the same skeleton-loading/destructive-error treatment established for Replay in Sprint 6.5
+
+### Documentation
+
+- Added ADR 0009 (Health Engine), documenting the domain model, the Replay-not-Insights dependency decision (§4), the five metrics' threshold bands (§5), the guidance rule table (§6), the `health` vs. `session_health` naming-collision refinement (§2), and the deferred-caching rationale consistent with every prior engine's precedent (§10)
+
+### Testing
+
+- Added `test_session_health_generation.py` (pure unit tests for all five generators' threshold bands and edge cases, the guidance rule table, per-generator error isolation, and a dedicated assertion that no `score` field exists anywhere on the report — no database dependency)
+- Added `test_session_health_router.py` (integration tests: 404/409 status handling, full report shape, query-count-does-not-grow-with-event-count guard; requires a live Postgres instance)
+- Added `useSessionHealth.test.tsx`, `HealthPanel.test.tsx`
+
+### Architecture
+
+- Health is a pure projection over Timeline's `TimelineOutcome`/`TimelineEntry` and, critically, Replay's already-derived `ReplayChapter` list — zero new persisted state, zero changes to Timeline's or Replay's domain code, mirroring Insights' and Replay's own "no new table" precedent
+- Health reuses Replay's own `COMPLETED`-only status gate transitively (via `replay_service.get_replay()`) rather than re-implementing it, since the Completion metric assumes a terminal `SESSION_COMPLETED` chapter always exists once past that gate
+- No single composite numeric score anywhere in the model — `HealthReport.metrics` is a sparse dict of up to five independently-explainable verdicts, by explicit design constraint, not as an interim step toward a future score
+
+### Known Limitations
+
+- Sprint 7 intentionally excludes Redis response caching (same deferred-until-measured-need rationale as Timeline/Insights/Replay), user-configurable or adaptive threshold bands, and any cross-session or cross-developer comparison — all explicitly out of scope, not ruled out
+- The new `test_session_health_router.py` integration tests require a live PostgreSQL instance and fail in environments without Docker running, consistent with the same pre-existing environmental limitation noted in every prior sprint's changelog entry
+- Some Health scenarios (e.g. "Natural Wind-down") are not reachable end-to-end through the current Timeline→Replay pipeline in every configuration, so unit tests hand-build `ReplayChapter`/`TimelineEntry` fixtures directly for full generator-logic coverage rather than relying solely on driving the full pipeline
+
+---
+
 ## [v0.5.1-product-polish]
 
 ### Added

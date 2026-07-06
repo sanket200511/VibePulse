@@ -1,9 +1,11 @@
 import { Link, useParams } from "react-router-dom";
+import { HealthPanel } from "./HealthPanel";
 import { InsightsPanel } from "./InsightsPanel";
 import { ReplayView } from "./ReplayView";
 import { SessionOutcomeCard } from "./SessionOutcomeCard";
 import { TimelineView } from "./TimelineView";
 import { useSessionData } from "./useSessionData";
+import { useSessionHealth } from "./useSessionHealth";
 import { useSessionInsights } from "./useSessionInsights";
 import { useSessionReplay } from "./useSessionReplay";
 import { useSessionTimeline } from "./useSessionTimeline";
@@ -19,6 +21,11 @@ export function SessionDetailsPage() {
     isLoading: isReplayLoading,
     isError: isReplayError,
   } = useSessionReplay(sessionId ?? "", isCompleted);
+  const {
+    health,
+    isLoading: isHealthLoading,
+    isError: isHealthError,
+  } = useSessionHealth(sessionId ?? "", isCompleted);
 
   return (
     <main className="bg-background flex min-h-screen flex-col gap-6 p-8">
@@ -75,6 +82,24 @@ export function SessionDetailsPage() {
                 </p>
               )}
               {replay && <ReplayView replay={replay} />}
+            </section>
+          )}
+
+          {isCompleted && (
+            <section className="border-border bg-card rounded-[16px] border p-6">
+              <h2 className="text-foreground mb-4 text-lg font-semibold">Session Health</h2>
+              {isHealthLoading && (
+                <div className="flex flex-col gap-2" aria-busy="true">
+                  <div className="bg-muted h-8 animate-pulse rounded-[8px]" />
+                  <div className="bg-muted h-24 animate-pulse rounded-[12px]" />
+                </div>
+              )}
+              {isHealthError && (
+                <p className="border-destructive/30 bg-destructive/5 text-destructive rounded-[12px] border p-4 text-center text-sm">
+                  Could not load this session&rsquo;s health report.
+                </p>
+              )}
+              {health && <HealthPanel health={health} />}
             </section>
           )}
         </>

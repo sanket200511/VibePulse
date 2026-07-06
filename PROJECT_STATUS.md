@@ -9,13 +9,13 @@ VibePulse is a Developer Observability Platform for the AI Coding Era — it pas
 ## Current Milestone
 
 Current Tag:
-v0.5.0-replay-engine
+v0.6.0-health-engine
 
 Current Phase:
 Product Development
 
 Current Sprint:
-Sprint 6 – Replay Engine
+Sprint 7 – Health Engine
 
 Repository Status:
 Stable
@@ -99,6 +99,17 @@ Stable
 - [x] Fixed a pre-existing CORS bug (`cors_origins` trailing-slash mismatch) discovered during real-browser verification of this sprint's UI
 - [x] ADR 0008 — Replay Engine
 
+### Sprint 7 — Health Engine
+
+- [x] `session_health` feature module — pure, deterministic projection over Replay's chapter output (no AI, no cross-session comparison, no new persisted state)
+- [x] `HealthCategory`/`HealthMetric`/`HealthReport` domain model — exactly one metric per category (FOCUS, MOMENTUM, FLOW, STABILITY, COMPLETION), deliberately with no overall numeric score anywhere
+- [x] Five fixed-threshold-band generators computed from Replay's chapters: Focus (work-time ratio), Momentum (streak-vs-idle shape), Flow (topic-shift rate), Stability (cadence coefficient of variation), Completion (categorical, from the chapter preceding `SESSION_COMPLETED`)
+- [x] Rule-based `derive_guidance()` synthesis step, capped at 4 items, phrased about the session's shape rather than the developer
+- [x] `GET /sessions/{id}/health` — 404 for an unknown session, 409 for a session that is not yet `COMPLETED` (mirrors Replay's own gate)
+- [x] Dashboard: `HealthPanel` (fixed-order metric cards, outline-only badges, no color-coded scoring) plus `useSessionHealth`, gated the same way as Replay
+- [x] `SessionDetailsPage` adds a fourth, `COMPLETED`-gated section for Session Health, after Replay
+- [x] ADR 0009 — Health Engine
+
 ---
 
 ## Current Architecture
@@ -118,7 +129,9 @@ Insights             — Rule-based Developer Intelligence Engine: 8 categories 
       ↓
 Replay               — Projects Timeline entries into playable frames + deterministic chapters, for step-by-step session playback
       ↓
-Dashboard            — React + Vite UI: Live Event Feed, Sessions, Session Timeline, Insights, and Replay views, fed via REST + WebSocket
+Health               — Aggregates Replay's chapters into five deterministic, threshold-banded health signals plus a synthesized narrative
+      ↓
+Dashboard            — React + Vite UI: Live Event Feed, Sessions, Session Timeline, Insights, Replay, and Session Health views, fed via REST + WebSocket
 ```
 
 Completed modules and responsibilities:
@@ -130,14 +143,14 @@ Completed modules and responsibilities:
 - **Timeline feature** (`apps/api/app/features/timeline`) — read-only projection of a session's events into ordered/grouped entries, markers, and a Session Outcome summary; no persisted state of its own.
 - **Insights feature** (`apps/api/app/features/insights`) — read-only, rule-based Developer Intelligence Engine; projects Timeline data into 8 categories of narrative insights, computed on demand with no persisted state of its own.
 - **Replay feature** (`apps/api/app/features/replay`) — read-only projection of a `COMPLETED` session's Timeline entries into playable frames plus deterministic, non-AI chapter boundaries; no persisted state of its own.
-- **Dashboard** (`apps/dashboard`) — Live Event Feed, Session Banner, Sessions page, Session Details/Timeline/Insights/Replay page, all driven by TanStack Query + reconnecting WebSocket client.
+- **Session Health feature** (`apps/api/app/features/session_health`) — read-only aggregation of a `COMPLETED` session's Replay chapters into five fixed-threshold-band health metrics plus a synthesized narrative and guidance list; no numeric score, no cross-session comparison, no persisted state of its own.
+- **Dashboard** (`apps/dashboard`) — Live Event Feed, Session Banner, Sessions page, Session Details/Timeline/Insights/Replay/Session Health page, all driven by TanStack Query + reconnecting WebSocket client.
 - **Shared packages** (`packages/ui`, `packages/config`) — UI primitives and cross-app config utilities.
 
 ---
 
 ## Remaining Roadmap
 
-- ⬜ Planned — Health Engine
 - ⬜ Planned — AI Fingerprint
 - ⬜ Planned — Prompt Vault
 - ⬜ Planned — Analytics
@@ -152,18 +165,19 @@ Completed modules and responsibilities:
 - Session sweep is an in-process `asyncio` loop rather than an externally scheduled job; acceptable at current scale but will need revisiting if the API runs as multiple replicas (no distributed lock exists yet).
 - Sessions have no foreign key to `development_events` (mirrors the existing deferred `project_id` relationship); joins between the two are done by `project_root` and time range, not a hard reference.
 - `SessionSummaryGenerator` currently has one heuristic implementation; no AI-generated summary implementation exists yet, though the interface is ready for one.
-- Timeline is intentionally scoped to a static, read-only projection for Sprint 4 — no Replay, playback controls, Timeline expansion/pagination, AI-generated summaries, or Health scoring; these are deferred, not ruled out (see ADR 0006).
+- Timeline is intentionally scoped to a static, read-only projection for Sprint 4 — no Replay, playback controls, or Timeline expansion/pagination; these were deferred, not ruled out (see ADR 0006). Health scoring, once one of the deferred items on this list, has since been delivered in Sprint 7 (see ADR 0009).
 - Insights are intentionally not persisted for Sprint 5 — every request recomputes the profile from Timeline + Session data; persistence is deferred to a future optimization sprint if real performance issues appear at scale (see ADR 0007).
 - Replay has no Redis response caching yet (designed, deferred per ADR 0008 §7 — no Redis client is wired into the FastAPI process yet); no frame-level drag-seek beyond the existing scrubber input; chapter labels are heuristic/keyword-based, not Insights-informed or AI-generated.
+- Health has no Redis response caching yet either (same rationale as Replay, see ADR 0009 §10); its five metrics are fixed-threshold bands, not weighted/learned models — a future AI Fingerprint feature may consume `HealthReport` as an input feature vector without requiring any redesign of Health itself.
 
 ---
 
 ## Current Metrics
 
-- ADRs: 8 (`docs/adr/0001`–`0008`)
-- Sprints completed: 6 (plus 1 Hardening Sprint)
-- Backend tests: 193 collected (143 passing without a live database in this environment; the remainder require Postgres)
-- Frontend tests: 62 passing across 12 test files
+- ADRs: 9 (`docs/adr/0001`–`0009`)
+- Sprints completed: 7 (plus 1 Hardening Sprint)
+- Backend tests: 231 collected (223 passing without a live database in this environment; the remainder require Postgres or hit a documented Windows asyncpg/BackgroundTasks teardown issue unrelated to correctness)
+- Frontend tests: 80 passing across 14 test files
 - Supported languages (analysis pipeline): 24 (including Python, TypeScript, JavaScript, Rust, Go, Java, Kotlin, Scala, C, C++, C#, Ruby, Swift, PHP, Shell, SQL, and others)
 - Apps: 3 (`api`, `dashboard`, `daemon`)
 - Shared packages: 2 (`ui`, `config`)
@@ -173,7 +187,7 @@ Completed modules and responsibilities:
 
 ## Next Milestone
 
-Sprint 7 will build on the Replay Engine to add Health scoring — a deterministic, rule-based assessment of session/developer health signals — which was deliberately excluded from Sprint 4's, 5's, and 6's scope.
+Sprint 8 will build on the Health Engine to add an AI Fingerprint — a provider-agnostic, opt-in synthesis layer over Timeline, Insights, and Health data — which was deliberately excluded from every prior sprint's scope.
 
 ---
 
@@ -188,7 +202,7 @@ Sprint 7 will build on the Replay Engine to add Health scoring — a determinist
   - Python (`apps/api`): ~4,755 lines
   - TypeScript/TSX (`apps/dashboard`, `apps/daemon`, `packages/*`): ~2,100 lines
 - Markdown documents: 12
-- ADRs: 8
+- ADRs: 9
 - Alembic migrations: 3
 
 **Technology summary**
@@ -199,9 +213,9 @@ Sprint 7 will build on the Replay Engine to add Health scoring — a determinist
 - Infrastructure: PostgreSQL 16, Redis 7, pgAdmin, Docker Compose, GitHub Actions CI
 - Monorepo tooling: pnpm workspaces, Turborepo
 
-**Current version:** v0.5.0-replay-engine
+**Current version:** v0.6.0-health-engine
 
-**Development phase:** Product Development — Sprint 6 (Replay Engine) complete, Sprint 7 (Health Engine) planned next
+**Development phase:** Product Development — Sprint 7 (Health Engine) complete, Sprint 8 (AI Fingerprint) planned next
 
 ---
 
@@ -233,9 +247,9 @@ Session Timeline
     ↓
 Developer Intelligence Engine
     ↓
-Replay Engine   ← current
+Replay Engine
     ↓
-Health
+Health Engine   ← current
     ↓
 AI Fingerprint
     ↓
@@ -248,14 +262,14 @@ Prompt Vault
 
 A living maturity dashboard. Ratings reflect the current state of the repository, not aspiration — they should be revised every sprint.
 
-| Category                 | Rating (1–5)                          | Reason                                                                                                                                                                                                                                                                                          | Next Improvement Needed                                                                                                                                |
-| ------------------------ | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Architecture**         | 4/5                                   | Feature-first structure is consistently applied across `events`, `analysis`, `sessions`, `timeline`, `insights`, and `replay`; cross-feature boundaries are respected via one documented, sanctioned integration seam per consumer; eight ADRs (0001–0008) back the major structural decisions. | Resolve the sweep loop's single-instance assumption before adding another feature module that would compound the same limitation.                      |
-| **Documentation**        | 5/5                                   | Eight ADRs, `README.md`, `CLAUDE.md`, `ENGINEERING.md`, `DESIGN.md`, `PROJECT_STATUS.md`, `DEMO.md`, `ROADMAP.md`, `ARCHITECTURE.md`, and `CHANGELOG.md` all exist and are kept current with implementation.                                                                                    | Keep every one of these documents updated in the same PR/session as the code change that motivates it, not after.                                      |
-| **Testing**              | 3/5                                   | 193 backend tests collected, 62 frontend tests passing across 12 files; coverage exists for every feature module (events, analysis, sessions, timeline, insights, replay) and both hook layers on the frontend.                                                                                 | Only 143 of 193 backend tests pass without a live Postgres instance — get the suite running fully in CI without requiring a manually-started database. |
-| **Developer Experience** | 4/5                                   | `pnpm dev` and `docker compose up -d` bring the whole stack up in two commands; `.claude/launch.json` documents local dev server config; feature-first layout makes it obvious where new code belongs.                                                                                          | Add a documented one-command bootstrap (install + migrate + seed) so a new contributor doesn't need to read multiple docs to get running.              |
-| **Performance**          | 2/5                                   | No load testing or profiling has been done yet; the analysis pipeline runs as a background task specifically to avoid blocking ingestion latency, which is the only performance-motivated design decision made so far.                                                                          | Establish a baseline: measure ingestion throughput and analysis pipeline latency under a realistic event rate before optimizing anything.              |
-| **Security**             | 1/5                                   | No authentication or authorization exists on any REST or WebSocket endpoint; this is a documented, intentional scoping decision (see Technical Debt), not an oversight, but it means the current state offers no real security posture.                                                         | Add authentication as the first Production Readiness (Phase 5) deliverable before any deployment beyond a local machine.                               |
-| **Deployment**           | 2/5                                   | Docker Compose covers local infrastructure only; Dockerfiles exist for all apps, but there is no deployment target (staging/production), no CI/CD deployment step, and no documented rollout process.                                                                                           | Write a deployment guide and stand up at least one non-local environment to validate the Docker images actually work outside development.              |
-| **Scalability**          | 2/5                                   | The session sweep loop is a single in-process `asyncio` loop with no distributed lock — documented as technical debt — and there is no load-balancing or multi-replica story for the API.                                                                                                       | Introduce a distributed lock (or move the sweep to an external scheduler) before running more than one API replica.                                    |
-| **Product Features**     | 4/5 (for the current milestone scope) | Event Pipeline, Analysis Pipeline, Session Intelligence, Session Timeline, the Developer Intelligence Engine, and the Replay Engine are all fully delivered and tested end to end, matching the "Completed Milestones" section above exactly.                                                   | Ship the Health Engine (Sprint 7) — the next planned capability — to keep the Remaining Roadmap moving.                                                |
+| Category                 | Rating (1–5)                          | Reason                                                                                                                                                                                                                                                                                                           | Next Improvement Needed                                                                                                                                |
+| ------------------------ | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Architecture**         | 4/5                                   | Feature-first structure is consistently applied across `events`, `analysis`, `sessions`, `timeline`, `insights`, `replay`, and `session_health`; cross-feature boundaries are respected via one documented, sanctioned integration seam per consumer; nine ADRs (0001–0009) back the major structural decisions. | Resolve the sweep loop's single-instance assumption before adding another feature module that would compound the same limitation.                      |
+| **Documentation**        | 5/5                                   | Nine ADRs, `README.md`, `CLAUDE.md`, `ENGINEERING.md`, `DESIGN.md`, `PROJECT_STATUS.md`, `DEMO.md`, `ROADMAP.md`, `ARCHITECTURE.md`, and `CHANGELOG.md` all exist and are kept current with implementation.                                                                                                      | Keep every one of these documents updated in the same PR/session as the code change that motivates it, not after.                                      |
+| **Testing**              | 3/5                                   | 231 backend tests collected, 80 frontend tests passing across 14 files; coverage exists for every feature module (events, analysis, sessions, timeline, insights, replay, session_health) and both hook layers on the frontend.                                                                                  | Only 223 of 231 backend tests pass without a live Postgres instance — get the suite running fully in CI without requiring a manually-started database. |
+| **Developer Experience** | 4/5                                   | `pnpm dev` and `docker compose up -d` bring the whole stack up in two commands; `.claude/launch.json` documents local dev server config; feature-first layout makes it obvious where new code belongs.                                                                                                           | Add a documented one-command bootstrap (install + migrate + seed) so a new contributor doesn't need to read multiple docs to get running.              |
+| **Performance**          | 2/5                                   | No load testing or profiling has been done yet; the analysis pipeline runs as a background task specifically to avoid blocking ingestion latency, which is the only performance-motivated design decision made so far.                                                                                           | Establish a baseline: measure ingestion throughput and analysis pipeline latency under a realistic event rate before optimizing anything.              |
+| **Security**             | 1/5                                   | No authentication or authorization exists on any REST or WebSocket endpoint; this is a documented, intentional scoping decision (see Technical Debt), not an oversight, but it means the current state offers no real security posture.                                                                          | Add authentication as the first Production Readiness (Phase 5) deliverable before any deployment beyond a local machine.                               |
+| **Deployment**           | 2/5                                   | Docker Compose covers local infrastructure only; Dockerfiles exist for all apps, but there is no deployment target (staging/production), no CI/CD deployment step, and no documented rollout process.                                                                                                            | Write a deployment guide and stand up at least one non-local environment to validate the Docker images actually work outside development.              |
+| **Scalability**          | 2/5                                   | The session sweep loop is a single in-process `asyncio` loop with no distributed lock — documented as technical debt — and there is no load-balancing or multi-replica story for the API.                                                                                                                        | Introduce a distributed lock (or move the sweep to an external scheduler) before running more than one API replica.                                    |
+| **Product Features**     | 4/5 (for the current milestone scope) | Event Pipeline, Analysis Pipeline, Session Intelligence, Session Timeline, the Developer Intelligence Engine, the Replay Engine, and the Health Engine are all fully delivered and tested end to end, matching the "Completed Milestones" section above exactly.                                                 | Ship the AI Fingerprint (Sprint 8) — the next planned capability — to keep the Remaining Roadmap moving.                                               |
