@@ -9,6 +9,8 @@ import { useSessionHealth } from "./useSessionHealth";
 import { useSessionInsights } from "./useSessionInsights";
 import { useSessionReplay } from "./useSessionReplay";
 import { useSessionTimeline } from "./useSessionTimeline";
+import { SectionContainer } from "../../components/layout/SectionContainer";
+import { EmptyState, ErrorState, LoadingState } from "../../components/states";
 
 export function SessionDetailsPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -28,10 +30,10 @@ export function SessionDetailsPage() {
   } = useSessionHealth(sessionId ?? "", isCompleted);
 
   return (
-    <main className="bg-background flex min-h-screen flex-col gap-6 p-8">
+    <div className="flex flex-1 flex-col gap-6 p-8">
       <header>
-        <Link to="/sessions" className="text-muted-foreground text-sm hover:underline">
-          ← Back to sessions
+        <Link to="/history" className="text-muted-foreground text-sm hover:underline">
+          ← Back to history
         </Link>
         <h1 className="text-foreground mt-2 text-2xl font-bold tracking-tight">Session Timeline</h1>
         <p className="text-muted-foreground text-sm">
@@ -39,27 +41,25 @@ export function SessionDetailsPage() {
         </p>
       </header>
 
-      {isLoading && (
-        <p className="text-muted-foreground p-8 text-center text-sm">Loading timeline…</p>
-      )}
+      {isLoading && <LoadingState label="Preparing this session's timeline…" />}
 
-      {isError && (
-        <p className="text-destructive p-8 text-center text-sm">
-          Could not load this session&rsquo;s timeline.
-        </p>
+      {isError && <ErrorState message="We couldn't load this session's timeline." />}
+
+      {!isLoading && !isError && !timeline && (
+        <EmptyState
+          title="No timeline for this session"
+          description="This session doesn't have any recorded activity yet."
+        />
       )}
 
       {timeline && (
         <>
           {profile && (
-            <section className="border-border bg-card rounded-[16px] border p-6">
-              <h2 className="text-foreground mb-4 text-lg font-semibold">Insights</h2>
+            <SectionContainer title="Insights">
               <InsightsPanel profile={profile} />
-            </section>
+            </SectionContainer>
           )}
-          {isProfileLoading && (
-            <p className="text-muted-foreground p-4 text-center text-sm">Generating insights…</p>
-          )}
+          {isProfileLoading && <LoadingState label="Generating insights…" />}
 
           <SessionOutcomeCard outcome={timeline.outcome} />
 
@@ -68,42 +68,24 @@ export function SessionDetailsPage() {
           </div>
 
           {isCompleted && (
-            <section className="border-border bg-card rounded-[16px] border p-6">
-              <h2 className="text-foreground mb-4 text-lg font-semibold">Replay</h2>
-              {isReplayLoading && (
-                <div className="flex flex-col gap-2" aria-busy="true">
-                  <div className="bg-muted h-8 animate-pulse rounded-[8px]" />
-                  <div className="bg-muted h-24 animate-pulse rounded-[12px]" />
-                </div>
-              )}
-              {isReplayError && (
-                <p className="border-destructive/30 bg-destructive/5 text-destructive rounded-[12px] border p-4 text-center text-sm">
-                  Could not load this session&rsquo;s replay.
-                </p>
-              )}
+            <SectionContainer title="Replay">
+              {isReplayLoading && <LoadingState label="Building Replay…" />}
+              {isReplayError && <ErrorState message="We couldn't load this session's replay." />}
               {replay && <ReplayView replay={replay} />}
-            </section>
+            </SectionContainer>
           )}
 
           {isCompleted && (
-            <section className="border-border bg-card rounded-[16px] border p-6">
-              <h2 className="text-foreground mb-4 text-lg font-semibold">Session Health</h2>
-              {isHealthLoading && (
-                <div className="flex flex-col gap-2" aria-busy="true">
-                  <div className="bg-muted h-8 animate-pulse rounded-[8px]" />
-                  <div className="bg-muted h-24 animate-pulse rounded-[12px]" />
-                </div>
-              )}
+            <SectionContainer title="Session Health">
+              {isHealthLoading && <LoadingState label="Analyzing today's session…" />}
               {isHealthError && (
-                <p className="border-destructive/30 bg-destructive/5 text-destructive rounded-[12px] border p-4 text-center text-sm">
-                  Could not load this session&rsquo;s health report.
-                </p>
+                <ErrorState message="We couldn't load this session's health report." />
               )}
               {health && <HealthPanel health={health} />}
-            </section>
+            </SectionContainer>
           )}
         </>
       )}
-    </main>
+    </div>
   );
 }

@@ -101,4 +101,13 @@
       animation: fade-in-up 150ms ease-out;
     }
   }
+
+  /* Loading skeletons communicate continuous progress (docs/design/MOTION.md,
+     "Progress"), but the pulse itself is decorative motion once a user has
+     asked to reduce it — accessibility overrides polish. */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-pulse {
+      animation: none;
+    }
+  }
 }
