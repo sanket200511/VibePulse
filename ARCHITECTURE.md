@@ -151,6 +151,24 @@ This split is intentional: analysis is comparatively expensive and independent o
 
 ---
 
+Product Layer
+
+↓
+
+Developer Workspace
+
+↓
+
+Timeline
+
+Replay
+
+Reflection
+
+Insights
+
+---
+
 # Session Lifecycle
 
 ```

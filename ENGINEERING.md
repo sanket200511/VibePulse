@@ -10,16 +10,16 @@ This document codifies the engineering principles, conventions, and standards fo
 
 ### Core Principles
 
-**Simplicity over cleverness**  
+**Simplicity over cleverness**
 Prefer the obvious solution. Clever code is hard to read, hard to debug, and hard to modify. If you find yourself writing something clever, ask whether a simpler approach exists.
 
-**Feature-first organisation**  
+**Feature-first organisation**
 Group code by what it does, not how it is implemented. A developer working on "events" should be able to navigate to one directory and find everything: router, schemas, service, models, tests.
 
-**Strong typing, everywhere**  
+**Strong typing, everywhere**
 TypeScript strict mode. Python type annotations on all functions. Pydantic for all API contracts. Types are documentation that the compiler enforces.
 
-**Domain-Driven Design vocabulary**  
+**Domain-Driven Design vocabulary**
 Use the domain language in code. An `Event` is a `DomainEvent`, not an `EventDTO`. A `HealthScore` is a `HealthScore`, not a `MetricResult`. Code should read like the domain it models.
 
 **SOLID principles**
@@ -81,6 +81,18 @@ def ingest(data):
 - Use `sqlalchemy.orm.DeclarativeBase` for ORM models.
 - Prefer `async def` for all FastAPI route handlers and service methods.
 - Use `ruff` for formatting and linting — never configure anything that conflicts with ruff.
+
+---
+
+## UI Engineering
+
+Before implementing any new screen:
+
+1. UX review
+2. Accessibility review
+3. Mobile responsiveness review
+4. Loading/error/empty states
+5. Documentation update
 
 ---
 

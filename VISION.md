@@ -71,6 +71,20 @@ None of this requires abandoning what VibePulse already is. Every one of these i
 
 ---
 
+## Product Experience
+
+VibePulse should feel:
+
+- Calm
+- Reflective
+- Developer-first
+- Timeless
+- Intelligent without being intrusive
+
+The product should guide developers through understanding their work rather than overwhelming them with metrics.
+
+---
+
 ## Closing Statement
 
 Code has always outlived the moment it was written; VibePulse exists so that the _process_ of writing it does too — not to slow anyone down, but so that five years from now, whoever opens this repository can see not just what was built, but how, and choose to keep building it with the same care.

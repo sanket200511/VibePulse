@@ -6,7 +6,7 @@ Instructions for AI coding assistants (Claude, Copilot, Cursor, etc.) working on
 
 ## Project Overview
 
-VibePulse is a Developer Observability Platform for the AI Coding Era.  
+VibePulse is a Developer Observability Platform for the AI Coding Era.
 It observes software evolution during AI-assisted development and provides actionable intelligence.
 
 **This is NOT a code generation tool. It is an observation and intelligence tool.**
@@ -72,6 +72,25 @@ docker/            Dockerfiles and infrastructure configs
 - No console.log in committed code (use the logger utility in the daemon).
 - No hardcoded credentials, ports, or URLs — always use environment variables.
 - All environment variables must be documented in the relevant `.env.example`.
+
+---
+
+# Product Experience Principles
+
+VibePulse is not an analytics dashboard.
+
+It is a Developer Workspace.
+
+When implementing UI:
+
+- Prioritize clarity over density.
+- Prioritize storytelling over statistics.
+- Prefer calm interfaces over flashy interfaces.
+- Every screen must have one primary purpose.
+- Motion must communicate state, not decorate.
+- AI enhances the product but never dominates it.
+- Avoid generic SaaS dashboard layouts.
+- Think like a product designer, not a frontend developer.
 
 ---
 
