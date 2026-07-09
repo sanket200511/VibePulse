@@ -24,10 +24,11 @@ export interface UseSessionInsightsResult {
   isError: boolean;
 }
 
-export function useSessionInsights(sessionId: string): UseSessionInsightsResult {
+export function useSessionInsights(sessionId: string, enabled = true): UseSessionInsightsResult {
   const query = useQuery({
     queryKey: ["sessions", sessionId, "profile"],
     queryFn: () => fetchProfile(sessionId),
+    enabled: enabled && sessionId.length > 0,
   });
 
   return {

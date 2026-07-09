@@ -26,6 +26,17 @@ afterEach(() => {
 });
 
 describe("useSessionInsights", () => {
+  it("does not fetch when enabled is false", () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { result } = renderHook(() => useSessionInsights("session-1", false), { wrapper });
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(result.current.profile).toBeUndefined();
+    expect(result.current.isLoading).toBe(false);
+  });
+
   it("loads the profile for the given session id", async () => {
     const profile = makeProfile({ session_id: "session-1" });
     vi.stubGlobal(
