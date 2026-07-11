@@ -1,7 +1,10 @@
 # Known Issue: Windows-specific backend test teardown failures (BackgroundTasks + asyncpg)
 
-**Status:** Open, deferred — not a regression from Sprint 6 (Replay) or Sprint 7 (Health)
-**Affects:** Local backend test runs on Windows only (unconfirmed on Linux/CI)
+**Status:** RESOLVED (see [Resolution](#resolution-eng-1) below) — 231/231 backend tests
+now pass deterministically, verified across 13 consecutive full-suite runs (5 in default
+file order, 8 with randomized file order) on this same Windows machine.
+**Affects (historical):** Local backend test runs on Windows only (unconfirmed on Linux/CI
+at the time this doc was first written).
 **Tracking:** No GitHub issue tracker configured for this repository at time of writing (`gh` CLI unavailable in this environment) — tracked here until one exists.
 
 ## Summary
@@ -112,3 +115,89 @@ One (or both) of the following, as a dedicated, independently-scoped piece of wo
   `WindowsSelectorEventLoopPolicy` in `conftest.py` produced an identical failure set
   and signatures; change was not kept (verified via `git diff` showing no residual
   change to `conftest.py`).
+
+## Resolution (ENG-1) {#resolution-eng-1}
+
+A dedicated engineering sprint (ENG-1: "Eliminate Windows Test Instability")
+re-investigated from first principles instead of assuming the hypothesis above. That
+hypothesis turned out to be **incomplete in every respect**:
+
+- FastAPI/Starlette source inspection (0.139.0) confirms dependency-with-yield cleanup
+  (the commit inside `get_db()`) runs via `AsyncExitStack.__aexit__` _before_
+  `Response.__call__` sends the body, and `BackgroundTasks` only runs _after_ the body is
+  sent. Production's commit → respond → background-task ordering was never racy. The
+  "un-awaited BackgroundTasks races test teardown" theory was never production's bug —
+  the actual bugs were in test infrastructure and one router.
+- The 8 original failures were in fact **two unrelated bugs bundled together** by
+  coincidence of which tests exercise which code paths, not one shared teardown race.
+
+### Root causes found
+
+**A — Test fixture never committed (5 of the original 8 failures).**
+The `client` fixture's `get_db` override did `yield db_session` with no commit, unlike
+production's `get_db()`. A background dispatch (or a second connection in the same test)
+could never see rows the test's own request had "written." Fixed in
+`apps/api/tests/conftest.py`: the override now commits after yield and rolls back on
+exception, mirroring production exactly.
+
+**B — Production code hardcoded a session factory it wasn't supposed to (1 of the 8,
+and a genuine architecture smell independent of testing).**
+`app/features/events/router.py` passed the production `AsyncSessionLocal` directly to
+`BackgroundTasks.add_task(analysis_service.dispatch, ...)`, even though
+`analysis_service.dispatch()` was explicitly written to take an injectable
+`session_factory` "independently testable" (per its own docstring) — the router just
+never used that seam. Fixed by adding `get_session_factory()` as a FastAPI dependency in
+`app/core/database.py`, having the router `Depends()` on it, and overriding it to the
+test session factory in the `client` fixture. This is a real production code
+improvement, not a test-only workaround.
+
+**C — Cross-event-loop connection pool reuse (the remaining websocket failures).**
+Each `with TestClient(app) as tc:` block runs its own `lifespan` on a fresh worker thread
+
+- event loop (confirmed via `starlette.testclient.TestClient.__enter__` source), but the
+  production `engine` singleton's asyncpg connections are bound to whichever loop first
+  touched the pool. Reusing or closing them from a different loop is illegal —
+  independent of BackgroundTasks entirely. Fixed with `engine.dispose(close=False)` at
+  lifespan _startup_ (de-references stale connections from a prior loop without touching
+  them — required because `test_health.py` intentionally exercises the real production
+  engine directly, so a prior loop's connections are routinely left behind) and
+  `engine.dispose()` (full close) at lifespan _shutdown_ (releases the current loop's
+  connections before that loop goes away).
+
+**D — Row leakage from the two websocket test files (found only under randomized
+file-order stress testing, not in the original bug report).**
+`test_websocket.py` and `test_websocket_sessions.py` depended only on schema creation,
+never on per-test cleanup — the only two files in the suite with this gap. Their rows
+persisted across the run and were picked up by later tests using unfiltered queries
+(e.g. `GET /sessions`), causing `test_session_router.py` to fail intermittently
+(~40% of randomized-order runs) depending on file order. Fixed by extracting a
+`_clean_rows` fixture in `conftest.py` and having both websocket test files depend on it.
+
+### Why this wasn't Windows-specific
+
+None of A–D reference any Windows-only API, event loop policy, or OS-specific timing.
+A and B are pure application/test logic bugs; C is a cross-loop connection-safety
+violation that would occur under any asyncio event loop implementation (Proactor or
+Selector, Windows or Linux) — the WindowsSelectorEventLoopPolicy experiment in the
+original report "producing identical failures" is exactly what you'd expect, since the
+loop policy was never the mechanism. D is pure Postgres row state, entirely OS-agnostic.
+No platform-specific code was added as part of this fix.
+
+### Verification
+
+- 231/231 tests passing across 5 consecutive full-suite runs in default file order.
+- 231/231 tests passing across 8 consecutive full-suite runs with randomized file
+  ordering (the randomized passes are what originally surfaced root cause D).
+- No `sleep()`, retry loop, ignored exception, or platform-specific branch was
+  introduced by any of the four fixes.
+
+### Files changed
+
+- `apps/api/app/main.py` — dispose engine pool at lifespan startup and shutdown.
+- `apps/api/app/core/database.py` — added `get_session_factory()` dependency.
+- `apps/api/app/features/events/router.py` — inject session factory instead of
+  importing the production one directly.
+- `apps/api/tests/conftest.py` — `client` fixture's `get_db` override now commits;
+  extracted `_clean_rows` fixture.
+- `apps/api/tests/test_websocket.py`, `apps/api/tests/test_websocket_sessions.py` —
+  depend on `_clean_rows`; unique `project_root` per test.

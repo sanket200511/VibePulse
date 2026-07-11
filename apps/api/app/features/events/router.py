@@ -16,9 +16,9 @@ ambiguous at a glance.
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Response, WebSocket, WebSocketDisconnect
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from app.core.database import AsyncSessionLocal, get_db
+from app.core.database import get_db, get_session_factory
 from app.core.logging import get_logger
 
 # NOTE: intentional cross-feature import — the router is the integration seam.
@@ -49,16 +49,20 @@ async def ingest_event(
     response: Response,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
+    session_factory: async_sessionmaker[AsyncSession] = Depends(get_session_factory),
 ) -> DevelopmentEventRead:
     event, was_created = await service.create_event(db, payload)
 
     if was_created:
         await connection_manager.broadcast(event.model_dump(mode="json"))
         # Dispatch the analysis pipeline after the 201 response is sent.
-        # Uses a fresh DB session (AsyncSessionLocal) — not the request session —
+        # Uses a fresh session from session_factory — not the request session —
         # because the request session may be closed by the time the task runs.
+        # session_factory is itself a dependency (not the module-level
+        # AsyncSessionLocal directly) so tests can override it to point at
+        # the same engine their own assertions read from.
         analyzable = service.to_analyzable_event(event)
-        background_tasks.add_task(analysis_service.dispatch, analyzable, AsyncSessionLocal)
+        background_tasks.add_task(analysis_service.dispatch, analyzable, session_factory)
 
         # Session Engine: attach this event to a session, deciding
         # continuation vs. a new session (the API is the sole authority on

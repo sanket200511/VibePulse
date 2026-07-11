@@ -13,6 +13,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
+from app.core.database import engine
 from app.core.logging import get_logger
 from app.features.analysis.router import router as analysis_router
 from app.features.events.router import router as events_router
@@ -42,6 +43,16 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     # No Redis client to initialise yet — the event-driven core still runs on
     # the direct-HTTP interim documented in docs/adr/0003-event-driven-core.md.
     # Wire client construction/teardown in here when that migration begins.
+
+    # De-reference (without closing) any connections a previous event loop
+    # left checked into the pool. `engine` is a module-level singleton, so if
+    # anything touched it before this lifespan started on *this* loop (e.g. a
+    # prior lifespan's loop, in a process that runs the app's lifespan more
+    # than once, as tests do), those connections are unusable here — asyncpg
+    # connections are bound to the loop that opened them. close=False avoids
+    # actually closing them from the wrong loop; the pool simply opens fresh
+    # connections against the current loop as needed.
+    await engine.dispose(close=False)
     logger.info("api_startup", extra={"environment": settings.environment})
 
     # Session Engine sweep loop — detects ACTIVE->IDLE->COMPLETED transitions
@@ -56,6 +67,12 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
         await sweep_task
     except asyncio.CancelledError:
         pass
+
+    # Release pooled connections before this event loop goes away. asyncpg
+    # connections are bound to the loop that opened them, so leaving them in
+    # the pool for a future lifespan (started on a different loop, e.g. a
+    # new TestClient block) to reuse is unsafe.
+    await engine.dispose()
     logger.info("api_shutdown")
 
 

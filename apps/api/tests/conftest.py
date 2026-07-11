@@ -12,7 +12,7 @@ from collections.abc import AsyncGenerator
 import pytest
 import pytest_asyncio
 from app.core.config import get_settings
-from app.core.database import Base, get_db
+from app.core.database import Base, get_db, get_session_factory
 from app.features.analysis.models import EventAnalysis  # noqa: F401 - registers on Base
 from app.features.events.models import DevelopmentEvent
 from app.features.sessions.models import Session
@@ -38,10 +38,18 @@ async def _schema() -> AsyncGenerator[None, None]:
 
 
 @pytest_asyncio.fixture
-async def db_session(_schema: None) -> AsyncGenerator[AsyncSession, None]:
-    async with TestSessionLocal() as session:
-        yield session
-        await session.rollback()
+async def _clean_rows(_schema: None) -> AsyncGenerator[None, None]:
+    """
+    Deletes every row written by the test that requests it (directly or
+    transitively). Every test in the suite must go through this, including
+    the synchronous-TestClient websocket tests -- otherwise their rows
+    (written via the real, uncommitted-free get_db) persist in Postgres for
+    the rest of the run and are picked up by later tests that list rows
+    without a project_root filter (e.g. GET /sessions), or whose own
+    project_root-scoped lookup (ADR 0005) finds a leftover session it
+    shouldn't.
+    """
+    yield
     async with test_engine.begin() as conn:
         # event_analyses has ON DELETE CASCADE from event_id, so deleting
         # development_events automatically removes all child analyses.
@@ -49,6 +57,13 @@ async def db_session(_schema: None) -> AsyncGenerator[AsyncSession, None]:
         # sessions has no FK relationship to development_events (ADR 0005),
         # so it needs its own explicit cleanup between tests.
         await conn.execute(Session.__table__.delete())
+
+
+@pytest_asyncio.fixture
+async def db_session(_clean_rows: None) -> AsyncGenerator[AsyncSession, None]:
+    async with TestSessionLocal() as session:
+        yield session
+        await session.rollback()
 
 
 @pytest.fixture
@@ -60,9 +75,30 @@ def test_session_factory() -> async_sessionmaker[AsyncSession]:
 @pytest_asyncio.fixture
 async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     async def _override_get_db() -> AsyncGenerator[AsyncSession, None]:
-        yield db_session
+        # Mirrors production get_db(): commit after yield. Without this,
+        # rows inserted via a request are only flushed, not committed, so
+        # any other connection opened during the same test (e.g. a session
+        # factory passed to analysis_service.dispatch(), or db_session used
+        # directly in the test body) cannot see them -- the isolation level
+        # a *different* Postgres connection sees is a real thing to test
+        # against, not an artifact to paper over.
+        try:
+            yield db_session
+            await db_session.commit()
+        except Exception:
+            await db_session.rollback()
+            raise
 
     app.dependency_overrides[get_db] = _override_get_db
+    # The events router's BackgroundTasks call opens its own session via this
+    # factory (get_db's session may already be closed by the time the task
+    # runs). Overriding it here keeps that background session on test_engine
+    # instead of the production engine -- otherwise the production engine's
+    # connection pool gets touched by the pytest-asyncio session loop as a
+    # side effect of a request, and disposed of at a *different* lifespan's
+    # shutdown (e.g. a sync TestClient block in the websocket tests), which
+    # is unsafe: asyncpg connections aren't transferable across event loops.
+    app.dependency_overrides[get_session_factory] = lambda: TestSessionLocal
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac

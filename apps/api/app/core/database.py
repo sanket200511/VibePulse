@@ -58,3 +58,14 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         except Exception:
             await session.rollback()
             raise
+
+
+def get_session_factory() -> async_sessionmaker[AsyncSession]:
+    """
+    FastAPI dependency exposing the session *factory* itself, for callers
+    (e.g. BackgroundTasks) that need to open their own session after the
+    request-scoped one from get_db() has already closed. Overridable in
+    tests so a background task opens sessions against the same engine the
+    test's own assertions read from, rather than the production engine.
+    """
+    return AsyncSessionLocal

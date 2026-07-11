@@ -183,6 +183,39 @@ HTTP for Redis Streams or another broker later is additive — see
 
 ---
 
+## Testing Principles
+
+- **Production behaviour and test behaviour should match whenever possible.** A test
+  double for a dependency (e.g. a `get_db` override) must behave the same as the real
+  thing for anything the test relies on — including things that are easy to forget,
+  like committing after yield. A fixture that skips a step production always performs
+  is a latent bug generator, not a simplification.
+- **Dependency overrides must preserve lifecycle semantics.** If the production
+  dependency commits, rolls back on error, or cleans up a resource, the test override
+  must do the same. Overriding a dependency to skip its lifecycle steps changes what is
+  actually under test.
+- **Avoid hardcoding a production dependency when dependency injection is already
+  available.** If a service is designed to accept an injectable collaborator (a session
+  factory, a client, a clock), callers — including background tasks — should go through
+  that seam rather than reaching for the concrete production instance directly. A
+  hardcoded reference bypasses every test override built for that seam.
+- **Test isolation is mandatory.** Every test that writes state must also be responsible
+  for cleaning it up, regardless of which client or transport it uses to write it. A
+  test that skips cleanup because it takes an unusual path (e.g. a synchronous test
+  client for WebSocket support) is still obligated to leave the database as it found it.
+- **Randomized execution order is a cheap way to detect hidden coupling.** Running the
+  same suite in a different file order — occasionally, not necessarily on every CI run —
+  surfaces state leakage and ordering assumptions that a fixed order will never expose,
+  no matter how many times it's repeated.
+- **Cross-event-loop resource ownership matters for async test suites.** A connection
+  pool, socket, or other loop-bound resource opened on one event loop must not be
+  reused or closed from a different one. Any test setup that spins up its own event
+  loop (a fresh `TestClient` context, a background thread) needs an explicit story for
+  which loop owns shared resources like a database engine's pool, and when that
+  ownership is released.
+
+---
+
 ## Environment Variables
 
 Every environment variable must:
