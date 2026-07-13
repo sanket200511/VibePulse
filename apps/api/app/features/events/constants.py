@@ -13,6 +13,8 @@ class EventType(StrEnum):
     FILE_CREATED = "FILE_CREATED"
     FILE_MODIFIED = "FILE_MODIFIED"
     FILE_DELETED = "FILE_DELETED"
+    OBSERVATION_STARTED = "OBSERVATION_STARTED"
+    OBSERVATION_STOPPED = "OBSERVATION_STOPPED"
 
 
 # Bumped whenever the DevelopmentEvent wire contract changes in a breaking way.

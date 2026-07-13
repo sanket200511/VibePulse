@@ -8,6 +8,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [v0.7.0-observation-domain] - Sprint PX-5.1
+
+### Added
+
+- Defined the Observation Domain as a projection over the `development_events` stream, ensuring timeline and replay consistency.
+- Introduced `OBSERVATION_STARTED` and `OBSERVATION_STOPPED` to `EventType`.
+- Explicit `/projects/{project_root}/observation/start` and `/stop` API endpoints.
+- `server_received_at` timestamp recorded for accurate timeline synchronization.
+
+### Documentation
+
+- Expanded ADR-0011 (Observation Domain Projection).
+
+---
+
 ## [v0.6.0-health-engine]
 
 ### Added

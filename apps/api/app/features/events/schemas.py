@@ -18,6 +18,13 @@ if TYPE_CHECKING:
     from app.features.events.models import DevelopmentEvent
 
 
+class ObservationCommandRequest(BaseModel):
+    """Payload to start or stop observation."""
+
+    session_id: uuid.UUID
+    timestamp: datetime
+
+
 class DevelopmentEventCreate(BaseModel):
     """Payload accepted by POST /events."""
 
@@ -26,8 +33,8 @@ class DevelopmentEventCreate(BaseModel):
     timestamp: datetime
     session_id: uuid.UUID
     project_root: str = Field(min_length=1, max_length=1024)
-    file_path: str = Field(min_length=1, max_length=2048)
-    file_name: str = Field(min_length=1, max_length=255)
+    file_path: str | None = Field(default=None, min_length=1, max_length=2048)
+    file_name: str | None = Field(default=None, min_length=1, max_length=255)
     file_extension: str | None = None
     language: str | None = None
     git_branch: str | None = None
@@ -51,10 +58,11 @@ class DevelopmentEventRead(BaseModel):
     schema_version: int
     event_type: EventType
     timestamp: datetime
+    server_received_at: datetime
     session_id: uuid.UUID
     project_root: str
-    file_path: str
-    file_name: str
+    file_path: str | None
+    file_name: str | None
     file_extension: str | None
     language: str | None
     git_branch: str | None
@@ -68,6 +76,7 @@ class DevelopmentEventRead(BaseModel):
             schema_version=event.schema_version,
             event_type=EventType(event.event_type),
             timestamp=event.timestamp,
+            server_received_at=event.server_received_at,
             session_id=event.session_id,
             project_root=event.project_root,
             file_path=event.file_path,

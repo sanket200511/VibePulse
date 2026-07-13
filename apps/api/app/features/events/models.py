@@ -39,12 +39,15 @@ class DevelopmentEvent(Base):
 
     event_type: Mapped[str] = mapped_column(String(20), nullable=False)
     timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    server_received_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default="now()", nullable=False
+    )
 
     session_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
     project_root: Mapped[str] = mapped_column(String(1024), nullable=False)
 
-    file_path: Mapped[str] = mapped_column(String(2048), nullable=False)
-    file_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    file_path: Mapped[str | None] = mapped_column(String(2048), nullable=True)
+    file_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     file_extension: Mapped[str | None] = mapped_column(String(20), nullable=True)
     language: Mapped[str | None] = mapped_column(String(50), nullable=True)
     git_branch: Mapped[str | None] = mapped_column(String(255), nullable=True)

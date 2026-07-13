@@ -110,6 +110,14 @@ Stable
 - [x] `SessionDetailsPage` adds a fourth, `COMPLETED`-gated section for Session Health, after Replay
 - [x] ADR 0009 — Health Engine
 
+### Sprint PX-5.1 — Observation Domain
+
+- [x] Defined Observation as a projection over the `development_events` stream, avoiding speculative persistence.
+- [x] Introduced `OBSERVATION_STARTED` and `OBSERVATION_STOPPED` system event types.
+- [x] Implemented `/projects/{project_root}/observation/start` and `/stop` command endpoints.
+- [x] Added `server_received_at` timestamping to protect against client clock drift.
+- [x] ADR 0011 — Observation Domain Projection
+
 ---
 
 ## Current Architecture
@@ -174,8 +182,8 @@ Completed modules and responsibilities:
 
 ## Current Metrics
 
-- ADRs: 9 (`docs/adr/0001`–`0009`)
-- Sprints completed: 7 (plus 1 Hardening Sprint)
+- ADRs: 10 (`docs/adr/0001`–`0009`, `0011`)
+- Sprints completed: 8 (plus 1 Hardening Sprint)
 - Backend tests: 231 collected (223 passing without a live database in this environment; the remainder require Postgres or hit a documented Windows asyncpg/BackgroundTasks teardown issue unrelated to correctness)
 - Frontend tests: 80 passing across 14 test files
 - Supported languages (analysis pipeline): 24 (including Python, TypeScript, JavaScript, Rust, Go, Java, Kotlin, Scala, C, C++, C#, Ruby, Swift, PHP, Shell, SQL, and others)
@@ -249,7 +257,9 @@ Developer Intelligence Engine
     ↓
 Replay Engine
     ↓
-Health Engine   ← current
+Health Engine
+    ↓
+Observation Domain (PX-5.1)   ← current
     ↓
 AI Fingerprint
     ↓

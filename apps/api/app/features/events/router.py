@@ -20,15 +20,15 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.core.database import get_db, get_session_factory
 from app.core.logging import get_logger
-
-# NOTE: intentional cross-feature import — the router is the integration seam.
 from app.features.analysis import service as analysis_service
 from app.features.events import service
 from app.features.events.connection_manager import connection_manager
+from app.features.events.constants import EventType
 from app.features.events.schemas import (
     DevelopmentEventCreate,
     DevelopmentEventList,
     DevelopmentEventRead,
+    ObservationCommandRequest,
 )
 from app.features.sessions import service as session_service
 from app.features.sessions.connection_manager import session_connection_manager
@@ -86,6 +86,60 @@ async def ingest_event(
         response.status_code = 200
 
     return event
+
+
+@router.post(
+    "/projects/{project_root}/observation/start",
+    response_model=DevelopmentEventRead,
+    status_code=201,
+    summary="Start observation for a project",
+)
+async def start_observation(
+    project_root: str,
+    payload: ObservationCommandRequest,
+    response: Response,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+    session_factory: async_sessionmaker[AsyncSession] = Depends(get_session_factory),
+) -> DevelopmentEventRead:
+    event_create = DevelopmentEventCreate(
+        schema_version=1,
+        event_type=EventType.OBSERVATION_STARTED,
+        timestamp=payload.timestamp,
+        session_id=payload.session_id,
+        project_root=project_root,
+        file_path=None,
+        file_name=None,
+    )
+
+    return await ingest_event(event_create, response, background_tasks, db, session_factory)
+
+
+@router.post(
+    "/projects/{project_root}/observation/stop",
+    response_model=DevelopmentEventRead,
+    status_code=201,
+    summary="Stop observation for a project",
+)
+async def stop_observation(
+    project_root: str,
+    payload: ObservationCommandRequest,
+    response: Response,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+    session_factory: async_sessionmaker[AsyncSession] = Depends(get_session_factory),
+) -> DevelopmentEventRead:
+    event_create = DevelopmentEventCreate(
+        schema_version=1,
+        event_type=EventType.OBSERVATION_STOPPED,
+        timestamp=payload.timestamp,
+        session_id=payload.session_id,
+        project_root=project_root,
+        file_path=None,
+        file_name=None,
+    )
+
+    return await ingest_event(event_create, response, background_tasks, db, session_factory)
 
 
 @router.get(

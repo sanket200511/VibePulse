@@ -99,3 +99,34 @@ async def test_list_events_empty_when_no_events(client: AsyncClient) -> None:
 
     assert response.status_code == 200
     assert response.json()["events"] == []
+
+
+@pytest.mark.asyncio
+async def test_start_observation(client: AsyncClient) -> None:
+    session_id = str(uuid.uuid4())
+    payload = {"session_id": session_id, "timestamp": datetime.now(UTC).isoformat()}
+
+    response = await client.post("/projects/my_project_root/observation/start", json=payload)
+
+    assert response.status_code == 201
+    body = response.json()
+    assert body["event_type"] == "OBSERVATION_STARTED"
+    assert body["project_root"] == "my_project_root"
+    assert body["file_path"] is None
+    assert body["file_name"] is None
+    assert "server_received_at" in body
+
+
+@pytest.mark.asyncio
+async def test_stop_observation(client: AsyncClient) -> None:
+    session_id = str(uuid.uuid4())
+    payload = {"session_id": session_id, "timestamp": datetime.now(UTC).isoformat()}
+
+    response = await client.post("/projects/my_project_root/observation/stop", json=payload)
+
+    assert response.status_code == 201
+    body = response.json()
+    assert body["event_type"] == "OBSERVATION_STOPPED"
+    assert body["project_root"] == "my_project_root"
+    assert body["file_path"] is None
+    assert body["file_name"] is None
