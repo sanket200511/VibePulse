@@ -36,6 +36,7 @@ class DevelopmentEvent(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
     schema_version: Mapped[int] = mapped_column(default=1, nullable=False)
+    daemon_seq: Mapped[int] = mapped_column(default=0, nullable=False)
 
     event_type: Mapped[str] = mapped_column(String(20), nullable=False)
     timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

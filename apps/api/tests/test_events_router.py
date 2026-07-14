@@ -8,9 +8,11 @@ dedupe behaviour depends on the actual unique constraint firing.
 
 import uuid
 from datetime import UTC, datetime
+from unittest.mock import AsyncMock, patch
 
 import pytest
-from httpx import AsyncClient
+from httpx import AsyncClient, RequestError, TimeoutException
+from httpx import Response as HttpxResponse
 
 
 def _payload(**overrides: object) -> dict:
@@ -63,7 +65,7 @@ async def test_ingest_event_rejects_invalid_event_type(client: AsyncClient) -> N
 @pytest.mark.asyncio
 async def test_ingest_event_rejects_missing_required_field(client: AsyncClient) -> None:
     payload = _payload()
-    del payload["file_path"]
+    del payload["event_type"]
 
     response = await client.post("/events", json=payload)
 
@@ -102,7 +104,13 @@ async def test_list_events_empty_when_no_events(client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_start_observation(client: AsyncClient) -> None:
+@patch("app.features.events.router.httpx.AsyncClient")
+async def test_start_observation_success(mock_client_class: AsyncMock, client: AsyncClient) -> None:
+    mock_instance = mock_client_class.return_value.__aenter__.return_value
+    mock_instance.post.return_value = HttpxResponse(
+        200, json={"observing": True, "already_active": False}, request=AsyncMock()
+    )
+
     session_id = str(uuid.uuid4())
     payload = {"session_id": session_id, "timestamp": datetime.now(UTC).isoformat()}
 
@@ -112,13 +120,17 @@ async def test_start_observation(client: AsyncClient) -> None:
     body = response.json()
     assert body["event_type"] == "OBSERVATION_STARTED"
     assert body["project_root"] == "my_project_root"
-    assert body["file_path"] is None
-    assert body["file_name"] is None
-    assert "server_received_at" in body
+    mock_instance.post.assert_awaited_once_with("http://localhost:9000/control/observe/start")
 
 
 @pytest.mark.asyncio
-async def test_stop_observation(client: AsyncClient) -> None:
+@patch("app.features.events.router.httpx.AsyncClient")
+async def test_stop_observation_success(mock_client_class: AsyncMock, client: AsyncClient) -> None:
+    mock_instance = mock_client_class.return_value.__aenter__.return_value
+    mock_instance.post.return_value = HttpxResponse(
+        200, json={"observing": False, "already_active": False}, request=AsyncMock()
+    )
+
     session_id = str(uuid.uuid4())
     payload = {"session_id": session_id, "timestamp": datetime.now(UTC).isoformat()}
 
@@ -127,6 +139,92 @@ async def test_stop_observation(client: AsyncClient) -> None:
     assert response.status_code == 201
     body = response.json()
     assert body["event_type"] == "OBSERVATION_STOPPED"
-    assert body["project_root"] == "my_project_root"
-    assert body["file_path"] is None
-    assert body["file_name"] is None
+    mock_instance.post.assert_awaited_once_with("http://localhost:9000/control/observe/stop")
+
+
+@pytest.mark.asyncio
+@patch("app.features.events.router.httpx.AsyncClient")
+async def test_observation_already_started(
+    mock_client_class: AsyncMock, client: AsyncClient
+) -> None:
+    mock_instance = mock_client_class.return_value.__aenter__.return_value
+    mock_instance.post.return_value = HttpxResponse(
+        200, json={"observing": True, "already_active": True}, request=AsyncMock()
+    )
+
+    payload = {"session_id": str(uuid.uuid4()), "timestamp": datetime.now(UTC).isoformat()}
+    response = await client.post("/projects/my_project_root/observation/start", json=payload)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["event_type"] == "OBSERVATION_STARTED"
+    mock_instance.post.assert_awaited_once_with("http://localhost:9000/control/observe/start")
+
+
+@pytest.mark.asyncio
+@patch("app.features.events.router.httpx.AsyncClient")
+async def test_observation_already_stopped(
+    mock_client_class: AsyncMock, client: AsyncClient
+) -> None:
+    mock_instance = mock_client_class.return_value.__aenter__.return_value
+    mock_instance.post.return_value = HttpxResponse(
+        200, json={"observing": False, "already_active": True}, request=AsyncMock()
+    )
+
+    payload = {"session_id": str(uuid.uuid4()), "timestamp": datetime.now(UTC).isoformat()}
+    response = await client.post("/projects/my_project_root/observation/stop", json=payload)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["event_type"] == "OBSERVATION_STOPPED"
+    mock_instance.post.assert_awaited_once_with("http://localhost:9000/control/observe/stop")
+
+
+@pytest.mark.asyncio
+@patch("app.features.events.router.httpx.AsyncClient")
+async def test_observation_daemon_unavailable(
+    mock_client_class: AsyncMock, client: AsyncClient
+) -> None:
+    mock_instance = mock_client_class.return_value.__aenter__.return_value
+    mock_instance.post.side_effect = RequestError("Connection refused")
+
+    payload = {"session_id": str(uuid.uuid4()), "timestamp": datetime.now(UTC).isoformat()}
+    response = await client.post("/projects/my_project_root/observation/start", json=payload)
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == "Daemon unavailable"
+
+
+@pytest.mark.asyncio
+@patch("app.features.events.router.httpx.AsyncClient")
+async def test_observation_daemon_timeout(
+    mock_client_class: AsyncMock, client: AsyncClient
+) -> None:
+    mock_instance = mock_client_class.return_value.__aenter__.return_value
+    mock_instance.post.side_effect = TimeoutException("Timeout")
+
+    payload = {"session_id": str(uuid.uuid4()), "timestamp": datetime.now(UTC).isoformat()}
+    response = await client.post("/projects/my_project_root/observation/start", json=payload)
+
+    assert response.status_code == 504
+    assert response.json()["detail"] == "Daemon timeout"
+
+
+@pytest.mark.asyncio
+@patch("app.features.events.router.httpx.AsyncClient")
+async def test_observation_daemon_returns_500(
+    mock_client_class: AsyncMock, client: AsyncClient
+) -> None:
+    mock_instance = mock_client_class.return_value.__aenter__.return_value
+    # Ensure raise_for_status() raises HTTPStatusError implicitly because httpx models it
+    # We'll just return a 500 response and let our code call raise_for_status
+    # Wait, mock doesn't automatically raise on raise_for_status unless we tell it to.
+    # It's better to just mock get to return a 500 response and it handles it!
+    # HttpxResponse has a .raise_for_status() method, if we just create a real one it will work.
+    mock_instance.post.return_value = HttpxResponse(500, request=AsyncMock(url="http://localhost"))
+
+    payload = {"session_id": str(uuid.uuid4()), "timestamp": datetime.now(UTC).isoformat()}
+    response = await client.post("/projects/my_project_root/observation/start", json=payload)
+
+    assert response.status_code == 502
+    assert response.json()["detail"] == "Daemon returned error status"

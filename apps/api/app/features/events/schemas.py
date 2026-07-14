@@ -29,6 +29,7 @@ class DevelopmentEventCreate(BaseModel):
     """Payload accepted by POST /events."""
 
     schema_version: int = Field(default=CURRENT_SCHEMA_VERSION)
+    daemon_seq: int = 0
     event_type: EventType
     timestamp: datetime
     session_id: uuid.UUID
@@ -56,6 +57,7 @@ class DevelopmentEventRead(BaseModel):
 
     id: uuid.UUID
     schema_version: int
+    daemon_seq: int
     event_type: EventType
     timestamp: datetime
     server_received_at: datetime
@@ -74,6 +76,7 @@ class DevelopmentEventRead(BaseModel):
         return cls(
             id=event.id,
             schema_version=event.schema_version,
+            daemon_seq=event.daemon_seq,
             event_type=EventType(event.event_type),
             timestamp=event.timestamp,
             server_received_at=event.server_received_at,

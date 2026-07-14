@@ -114,6 +114,9 @@ class FileMetadataAnalyzer:
         event: AnalyzableEvent,
         context: AnalysisContext,
     ) -> AnalysisFinding | None:
+        if not event.file_path or not event.file_name:
+            return None
+
         # Normalise to forward slashes for cross-platform consistency.
         norm_path = event.file_path.replace("\\", "/")
         parts = [p for p in norm_path.split("/") if p]

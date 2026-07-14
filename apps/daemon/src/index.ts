@@ -1,21 +1,29 @@
 /**
- * VibePulse Daemon – Entry point
+ * VibePulse Daemon – Composition root.
  *
- * The daemon is a long-running Node.js process that:
- *  1. Watches the developer's project directory for file system changes
- *  2. Classifies and enriches change events
- *  3. Streams events to the VibePulse API
+ * This file's only job is dependency wiring. It constructs each component
+ * of the observation pipeline in order and hands each one exactly the
+ * collaborators it needs. No business logic lives here.
  *
- * Sprint 0: Process boots, logs health, and exits cleanly on signals.
- * Sprint 1: File watching and event emission will be wired up.
+ * Pipeline:
+ *   Watcher → Normaliser → Gate → Debouncer → Queue → Publisher → API
+ *
+ * Control:
+ *   HealthServer owns the gate control endpoints (POST /control/observe/start|stop).
  */
 
 import { randomUUID } from "crypto";
 import { parsePort, getEnv } from "@vibepulse/config";
+import { loadConfig } from "./config";
+import { createNormaliser } from "./normaliser";
+import { createObservationGate } from "./observation-gate";
+import { createDebouncer } from "./debouncer";
+import { createEventQueue } from "./event-queue";
+import { createHttpPublisher } from "./publisher/http-publisher";
 import { createWatcher } from "./watcher";
 import { createHealthServer } from "./health-server";
-import { createHttpPublisher } from "./publisher/http-publisher";
 import { logger } from "./logger";
+import type { DevelopmentEvent } from "./event-types";
 
 const PORT = parsePort("DAEMON_PORT", 9000);
 
@@ -25,16 +33,63 @@ async function main(): Promise<void> {
   logger.info(`   Node     : ${process.version}`);
   logger.info(`   PID      : ${process.pid}`);
 
-  // ── Health server (lightweight HTTP) ─────────────────────────────────────
-  const healthServer = createHealthServer(PORT);
-  healthServer.listen();
-
-  // ── File watcher ──────────────────────────────────────────────────────────
+  // ── Configuration ─────────────────────────────────────────────────────────
+  const config = loadConfig();
   const watchRoot = process.env["WATCH_ROOT"] ?? process.cwd();
   const apiUrl = getEnv("API_URL") ?? "http://localhost:8000";
   const sessionId = randomUUID();
-  const publisher = createHttpPublisher(apiUrl);
-  const watcher = createWatcher({ root: watchRoot, publisher, sessionId });
+
+  // ── Pipeline construction (in pipeline order) ─────────────────────────────
+
+  const normaliser = createNormaliser({ projectRoot: watchRoot, sessionId });
+
+  const gate = createObservationGate();
+
+  const publisher = createHttpPublisher(apiUrl, config);
+
+  const queue = createEventQueue({
+    maxSize: config.queueMaxSize,
+    onOverflow: (rejected: DevelopmentEvent) => {
+      logger.warn(
+        "Queue overflow — incoming event rejected (start of observation window preserved)",
+        {
+          dropped_event_type: rejected.event_type,
+          dropped_file_path: rejected.file_path ?? null,
+          dropped_daemon_seq: rejected.daemon_seq,
+          queue_capacity: config.queueMaxSize,
+        },
+      );
+    },
+  });
+
+  // drainQueue() is fire-and-forget: called each time a debounced event is
+  // enqueued. If the API is unavailable, the publisher retries internally;
+  // after exhausting retries the event is logged and dropped (not re-queued).
+  async function drainQueue(): Promise<void> {
+    while (!queue.isEmpty()) {
+      const event = queue.dequeue();
+      if (!event) break;
+      await publisher.publish(event);
+    }
+  }
+
+  const debouncer = createDebouncer({
+    debounceMs: config.debounceMs,
+    onFlush: (event: DevelopmentEvent): void => {
+      queue.enqueue(event);
+      void drainQueue().catch((err: unknown) => {
+        logger.error("Unexpected queue drain error:", err);
+      });
+    },
+  });
+
+  const watcher = createWatcher({ root: watchRoot, normaliser, gate, debouncer });
+
+  // ── Health / control server ────────────────────────────────────────────────
+  const healthServer = createHealthServer(PORT, gate);
+  healthServer.listen();
+
+  // ── Start watcher ─────────────────────────────────────────────────────────
   await watcher.start();
 
   logger.info(`✅  VibePulse Daemon running on port ${PORT}`);
@@ -45,7 +100,7 @@ async function main(): Promise<void> {
   // ── Graceful shutdown ─────────────────────────────────────────────────────
   const shutdown = async (signal: string): Promise<void> => {
     logger.info(`\n🛑  Received ${signal}. Shutting down gracefully…`);
-    await watcher.stop();
+    await watcher.stop(); // flushes debouncer before closing Chokidar
     healthServer.close();
     logger.info("   Done. Goodbye.");
     process.exit(0);

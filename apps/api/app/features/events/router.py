@@ -15,9 +15,19 @@ ambiguous at a glance.
 
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Response, WebSocket, WebSocketDisconnect
+import httpx
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    HTTPException,
+    Response,
+    WebSocket,
+    WebSocketDisconnect,
+)
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from app.core.config import get_settings
 from app.core.database import get_db, get_session_factory
 from app.core.logging import get_logger
 from app.features.analysis import service as analysis_service
@@ -36,6 +46,29 @@ from app.features.sessions.schemas import SessionRead
 
 router = APIRouter(tags=["events"])
 logger = get_logger(__name__)
+
+
+async def _set_daemon_observation_state(target_state: bool) -> bool:
+    """Proxy observation commands to the daemon and return True if already in that state."""
+    settings = get_settings()
+    daemon_url = settings.daemon_url.rstrip("/")
+
+    async with httpx.AsyncClient(timeout=3.0) as client:
+        try:
+            endpoint = "/control/observe/start" if target_state else "/control/observe/stop"
+            control_response = await client.post(f"{daemon_url}{endpoint}")
+            control_response.raise_for_status()
+
+            data = control_response.json()
+            return bool(data.get("already_active", False))
+
+        except httpx.TimeoutException as err:
+            raise HTTPException(status_code=504, detail="Daemon timeout") from err
+        except httpx.RequestError as err:
+            raise HTTPException(status_code=503, detail="Daemon unavailable") from err
+        except httpx.HTTPStatusError as e:
+            logger.error(f"Daemon returned error: {e}")
+            raise HTTPException(status_code=502, detail="Daemon returned error status") from e
 
 
 @router.post(
@@ -102,6 +135,8 @@ async def start_observation(
     db: AsyncSession = Depends(get_db),
     session_factory: async_sessionmaker[AsyncSession] = Depends(get_session_factory),
 ) -> DevelopmentEventRead:
+    is_already_active = await _set_daemon_observation_state(True)
+
     event_create = DevelopmentEventCreate(
         schema_version=1,
         event_type=EventType.OBSERVATION_STARTED,
@@ -112,7 +147,10 @@ async def start_observation(
         file_name=None,
     )
 
-    return await ingest_event(event_create, response, background_tasks, db, session_factory)
+    result = await ingest_event(event_create, response, background_tasks, db, session_factory)
+    if is_already_active:
+        response.status_code = 200
+    return result
 
 
 @router.post(
@@ -129,6 +167,8 @@ async def stop_observation(
     db: AsyncSession = Depends(get_db),
     session_factory: async_sessionmaker[AsyncSession] = Depends(get_session_factory),
 ) -> DevelopmentEventRead:
+    is_already_active = await _set_daemon_observation_state(False)
+
     event_create = DevelopmentEventCreate(
         schema_version=1,
         event_type=EventType.OBSERVATION_STOPPED,
@@ -139,7 +179,10 @@ async def stop_observation(
         file_name=None,
     )
 
-    return await ingest_event(event_create, response, background_tasks, db, session_factory)
+    result = await ingest_event(event_create, response, background_tasks, db, session_factory)
+    if is_already_active:
+        response.status_code = 200
+    return result
 
 
 @router.get(

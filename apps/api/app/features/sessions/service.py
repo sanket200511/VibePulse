@@ -115,7 +115,11 @@ def _apply_event(session: Session, event: AnalyzableEvent) -> None:
             **session.languages,
             event.language: session.languages.get(event.language, 0) + 1,
         }
-    session.files = {**session.files, event.file_path: session.files.get(event.file_path, 0) + 1}
+    if event.file_path:
+        session.files = {
+            **session.files,
+            event.file_path: session.files.get(event.file_path, 0) + 1,
+        }
     if event.git_branch:
         session.git_branch = event.git_branch
     if session.status != SessionStatus.ACTIVE.value:
@@ -134,7 +138,7 @@ def _new_session(event: AnalyzableEvent) -> Session:
         event_count=1,
         events_by_type={event.event_type: 1},
         languages={event.language: 1} if event.language else {},
-        files={event.file_path: 1},
+        files={event.file_path: 1} if event.file_path else {},
         git_branch=event.git_branch,
     )
     return session

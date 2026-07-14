@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     log_level: str = "info"
     api_port: int = Field(default=8000, ge=1, le=65535)
 
+    # ── Daemon ───────────────────────────────────────────────────────────────
+    daemon_url: str = "http://localhost:9000"
+
     # ── Database ─────────────────────────────────────────────────────────────
     database_url: str = "postgresql+asyncpg://vibepulse:vibepulse_dev@localhost:5432/vibepulse"
 
@@ -33,7 +36,7 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
 
     # ── CORS ─────────────────────────────────────────────────────────────────
-    cors_origins: list[AnyHttpUrl] = ["http://localhost:5173"]
+    cors_origins: list[AnyHttpUrl] = [AnyHttpUrl("http://localhost:5173")]
 
     # ── Session Engine ───────────────────────────────────────────────────────
     # A session moves ACTIVE -> IDLE after this many seconds without an event.

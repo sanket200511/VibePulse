@@ -9,13 +9,13 @@ VibePulse is a Developer Observability Platform for the AI Coding Era — it pas
 ## Current Milestone
 
 Current Tag:
-v0.6.0-health-engine
+v0.8.0-observation-pipeline
 
 Current Phase:
 Product Development
 
 Current Sprint:
-Sprint 7 – Health Engine
+Sprint PX-5.2 – Filesystem Observation Architecture (Complete)
 
 Repository Status:
 Stable
@@ -118,6 +118,16 @@ Stable
 - [x] Added `server_received_at` timestamping to protect against client clock drift.
 - [x] ADR 0011 — Observation Domain Projection
 
+### Sprint PX-5.2 — Filesystem Observation Architecture
+
+- [x] Phase A — Watcher Domain
+- [x] Phase B — Event Processing
+- [x] Phase C — Daemon Integration
+- [x] Phase D — API Integration
+- [x] Phase E — Sprint Closure
+- [x] ADR 0012 — Real Filesystem Observation
+- [x] PIPELINE.md — Final Observation Pipeline Documentation
+
 ---
 
 ## Current Architecture
@@ -182,10 +192,11 @@ Completed modules and responsibilities:
 
 ## Current Metrics
 
-- ADRs: 10 (`docs/adr/0001`–`0009`, `0011`)
-- Sprints completed: 8 (plus 1 Hardening Sprint)
-- Backend tests: 231 collected (223 passing without a live database in this environment; the remainder require Postgres or hit a documented Windows asyncpg/BackgroundTasks teardown issue unrelated to correctness)
-- Frontend tests: 80 passing across 14 test files
+- ADRs: 11 (`docs/adr/0001`–`0009`, `0011`-`0012`)
+- Sprints completed: 11 (plus 1 Hardening Sprint)
+- Backend tests: 238 collected (all passing with a live database)
+- Frontend tests: 134 passing across 29 test files
+- Daemon tests: 102 passing across 9 test files
 - Supported languages (analysis pipeline): 24 (including Python, TypeScript, JavaScript, Rust, Go, Java, Kotlin, Scala, C, C++, C#, Ruby, Swift, PHP, Shell, SQL, and others)
 - Apps: 3 (`api`, `dashboard`, `daemon`)
 - Shared packages: 2 (`ui`, `config`)
@@ -221,9 +232,9 @@ Sprint 8 will build on the Health Engine to add an AI Fingerprint — a provider
 - Infrastructure: PostgreSQL 16, Redis 7, pgAdmin, Docker Compose, GitHub Actions CI
 - Monorepo tooling: pnpm workspaces, Turborepo
 
-**Current version:** v0.6.0-health-engine
+**Current version:** v0.8.0-observation-pipeline
 
-**Development phase:** Product Development — Sprint 7 (Health Engine) complete, Sprint 8 (AI Fingerprint) planned next
+**Development phase:** Product Development — Sprint PX-5.2 (Filesystem Observation Architecture) complete, Sprint 8 (AI Fingerprint) planned next
 
 ---
 
@@ -259,7 +270,9 @@ Replay Engine
     ↓
 Health Engine
     ↓
-Observation Domain (PX-5.1)   ← current
+Observation Domain (PX-5.1)
+    ↓
+Filesystem Observation (PX-5.2)
     ↓
 AI Fingerprint
     ↓

@@ -29,8 +29,8 @@ class AnalyzableEvent:
     timestamp: datetime
     session_id: uuid.UUID
     project_root: str
-    file_path: str
-    file_name: str
+    file_path: str | None
+    file_name: str | None
     file_extension: str | None
     language: str | None
     git_branch: str | None

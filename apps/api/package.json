@@ -9,7 +9,7 @@
     "lint": "uv run ruff check app/",
     "lint:fix": "uv run ruff check app/ --fix",
     "format": "uv run ruff format app/",
-    "typecheck": "uv run pyright app/ || true",
+    "typecheck": "uv run pyright app/",
     "test": "uv run pytest",
     "migrate": "uv run alembic upgrade head",
     "migrate:new": "uv run alembic revision --autogenerate"

@@ -8,6 +8,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [v0.8.0-observation-pipeline] - Sprint PX-5.2
+
+### Added
+
+- **Daemon/API Integration**: The API now securely proxies `start` and `stop` observation commands to the daemon's control endpoint.
+- **Idempotent Observation Control**: The observation proxy uses an idempotent design; repeated requests to start an already running observation (or stop a stopped one) return 200 OK cleanly instead of generating 409 errors.
+- **`daemon_seq` Support**: Event schemas and database models now include a `daemon_seq` property to maintain parity with the daemon's internal event debouncing sequence.
+- **Architectural Refinements**: Removed TOCTOU (Time-Of-Check to Time-Of-Use) pattern by removing the `GET /health` pre-check from observation commands. The daemon intrinsically decides and reports its prior state.
+- **Alembic Migration**: Added migration `0004` introducing `daemon_seq` and `server_received_at` to the database while relaxing non-null constraints on `file_path` and `file_name` for boundary events.
+- **Debouncer Delete Safety**: Resolved the delete edge case by ensuring `FILE_DELETED` events cancel any pending debounce timers for the same file path before being emitted.
+
+---
+
 ## [v0.7.0-observation-domain] - Sprint PX-5.1
 
 ### Added

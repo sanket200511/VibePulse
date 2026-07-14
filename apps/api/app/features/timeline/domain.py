@@ -287,7 +287,8 @@ def _compute_outcome(
     for event in events:
         if event.language:
             languages[event.language] = languages.get(event.language, 0) + 1
-        files[event.file_path] = files.get(event.file_path, 0) + 1
+        if event.file_path:
+            files[event.file_path] = files.get(event.file_path, 0) + 1
 
     largest_change: TimelineLargestChange | None = None
     if files:
