@@ -2,16 +2,11 @@ import type { Config } from "tailwindcss";
 
 const config: Config = {
   darkMode: ["class"],
-  content: [
-    "./index.html",
-    "./src/**/*.{ts,tsx}",
-    // Include shared UI package so Tailwind can scan its classes
-    "../../packages/ui/src/**/*.{ts,tsx}",
-  ],
+  content: ["./index.html", "./src/**/*.{ts,tsx}", "../../packages/ui/src/**/*.{ts,tsx}"],
   theme: {
     extend: {
-      // ── Design tokens (from DESIGN.md) ──────────────────────────────────
       colors: {
+        // ── Standard Tailwind mappings ──────────────────────────────────────
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
@@ -41,6 +36,22 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+
+        // ── Semantic Theme Tokens (docs/design/COLOR_SYSTEM.md) ─────────────
+        surface: "hsl(var(--card))",
+        "elevated-surface": "hsl(var(--elevated))",
+        "primary-text": "hsl(var(--foreground))",
+        "secondary-text": "hsl(var(--muted-foreground))",
+        "border-color": "hsl(var(--border))",
+        "accent-color": "hsl(var(--primary))",
+        "success-color": "hsl(var(--success))",
+        "warning-color": "hsl(var(--warning))",
+        "critical-color": "hsl(var(--destructive))",
+        "observation-color": "hsl(var(--observation))",
+        "focus-color": "hsl(var(--ring))",
+        "muted-color": "hsl(var(--muted))",
+        "hover-color": "hsl(var(--hover))",
+        "selection-color": "hsl(var(--selection))",
       },
       borderRadius: {
         lg: "var(--radius-lg)",

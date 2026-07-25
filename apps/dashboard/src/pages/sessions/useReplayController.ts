@@ -51,19 +51,38 @@ export function useReplayController(
   useEffect(() => {
     if (!isPlaying || lastIndex < 0) return;
 
-    const timer = window.setInterval(() => {
-      setCurrentIndex((index) => {
-        if (index >= lastIndex) {
-          setIsPlaying(false);
-          setDidFinish(true);
-          return index;
-        }
-        return index + 1;
-      });
-    }, BASE_INTERVAL_MS / speed);
+    if (currentIndex >= lastIndex) {
+      setIsPlaying(false);
+      setDidFinish(true);
+      return;
+    }
 
-    return () => window.clearInterval(timer);
-  }, [isPlaying, speed, lastIndex]);
+    const currentFrame = frames[currentIndex];
+    const nextFrame = frames[currentIndex + 1];
+
+    let intervalMs = BASE_INTERVAL_MS;
+    if (currentFrame && nextFrame) {
+      const timeDiff =
+        new Date(nextFrame.timestamp).getTime() - new Date(currentFrame.timestamp).getTime();
+      const diffSeconds = Math.max(0, timeDiff / 1000);
+
+      if (diffSeconds < 2) intervalMs = BASE_INTERVAL_MS * 0.5;
+      else if (diffSeconds < 10) intervalMs = BASE_INTERVAL_MS * 1.0;
+      else if (diffSeconds < 60) intervalMs = BASE_INTERVAL_MS * 1.5;
+      else if (diffSeconds < 300) intervalMs = BASE_INTERVAL_MS * 2.0;
+      else intervalMs = BASE_INTERVAL_MS * 3.0; // Clamp maximum delay
+
+      if (currentFrame.chapter_id !== nextFrame.chapter_id) {
+        intervalMs += 1000;
+      }
+    }
+
+    const timer = window.setTimeout(() => {
+      setCurrentIndex((prev) => prev + 1);
+    }, intervalMs / speed);
+
+    return () => window.clearTimeout(timer);
+  }, [isPlaying, speed, lastIndex, currentIndex, frames]);
 
   const currentFrame = frames[currentIndex];
   const currentChapter = useMemo(

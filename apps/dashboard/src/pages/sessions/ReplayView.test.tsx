@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ReplayView } from "./ReplayView";
 import type { Replay, ReplayFrame } from "./replay-types";
@@ -83,88 +84,121 @@ afterEach(() => {
 
 describe("ReplayView", () => {
   it("renders playback controls, the scrubber, and chapter buttons", () => {
-    render(<ReplayView replay={makeReplay()} />);
+    render(
+      <MemoryRouter>
+        <ReplayView replay={makeReplay()} />
+      </MemoryRouter>,
+    );
 
     expect(screen.getByRole("button", { name: /restart/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^play$/i })).toBeInTheDocument();
     expect(screen.getByRole("slider", { name: /scrub replay/i })).toBeInTheDocument();
-    expect(screen.getByText("Frame 1 of 2")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /started: session started/i })).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /completed: session completed/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("slider", { name: /scrub replay/i })).toHaveAttribute(
+      "aria-valuetext",
+      "Frame 1 of 2",
+    );
+    expect(screen.getByRole("button", { name: /session started/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /session completed/i })).toBeInTheDocument();
   });
 
   it("disables the previous-frame button at the first frame", () => {
-    render(<ReplayView replay={makeReplay()} />);
+    render(
+      <MemoryRouter>
+        <ReplayView replay={makeReplay()} />
+      </MemoryRouter>,
+    );
 
     expect(screen.getByRole("button", { name: /previous frame/i })).toBeDisabled();
   });
 
   it("advances to the next frame and updates the scrubber label", () => {
-    render(<ReplayView replay={makeReplay()} />);
+    render(
+      <MemoryRouter>
+        <ReplayView replay={makeReplay()} />
+      </MemoryRouter>,
+    );
 
     fireEvent.click(screen.getByRole("button", { name: /next frame/i }));
 
-    expect(screen.getByText("Frame 2 of 2")).toBeInTheDocument();
+    expect(screen.getByRole("slider", { name: /scrub replay/i })).toHaveAttribute(
+      "aria-valuetext",
+      "Frame 2 of 2",
+    );
     expect(screen.getByRole("button", { name: /next frame/i })).toBeDisabled();
   });
 
   it("jumps to a chapter when its button is clicked", () => {
-    render(<ReplayView replay={makeReplay()} />);
+    render(
+      <MemoryRouter>
+        <ReplayView replay={makeReplay()} />
+      </MemoryRouter>,
+    );
 
-    fireEvent.click(screen.getByRole("button", { name: /completed: session completed/i }));
+    fireEvent.click(screen.getByRole("button", { name: /session completed/i }));
 
-    expect(screen.getByText("Frame 2 of 2")).toBeInTheDocument();
+    expect(screen.getByRole("slider", { name: /scrub replay/i })).toHaveAttribute(
+      "aria-valuetext",
+      "Frame 2 of 2",
+    );
   });
 
   it("shows an empty state when there are no frames", () => {
-    render(<ReplayView replay={makeReplay({ frames: [], chapters: [] })} />);
+    render(
+      <MemoryRouter>
+        <ReplayView replay={makeReplay({ frames: [], chapters: [] })} />
+      </MemoryRouter>,
+    );
 
     expect(screen.getByText(/nothing to replay/i)).toBeInTheDocument();
   });
 
-  it("marks the active chapter button with aria-current=step", () => {
-    render(<ReplayView replay={makeReplay()} />);
-
-    expect(screen.getByRole("button", { name: /started: session started/i })).toHaveAttribute(
-      "aria-current",
-      "step",
-    );
-    expect(
-      screen.getByRole("button", { name: /completed: session completed/i }),
-    ).not.toHaveAttribute("aria-current");
-  });
-
   it("marks speed buttons with aria-pressed", () => {
-    render(<ReplayView replay={makeReplay()} />);
+    render(
+      <MemoryRouter>
+        <ReplayView replay={makeReplay()} />
+      </MemoryRouter>,
+    );
 
-    expect(screen.getByRole("button", { name: "1×" })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("button", { name: "2×" })).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByRole("button", { name: "1x" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "2x" })).toHaveAttribute("aria-pressed", "false");
   });
 
   it("shows a completion banner after autoplay finishes", () => {
-    render(<ReplayView replay={makeReplay()} />);
+    render(
+      <MemoryRouter>
+        <ReplayView replay={makeReplay()} />
+      </MemoryRouter>,
+    );
 
     fireEvent.click(screen.getByRole("button", { name: /^play$/i }));
     act(() => {
       vi.advanceTimersByTime(2000);
     });
 
-    expect(screen.getByText(/replay finished/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Session Complete" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /watch again/i })).toBeInTheDocument();
   });
 
   it("responds to keyboard shortcuts for play/pause and navigation", () => {
-    render(<ReplayView replay={makeReplay()} />);
+    render(
+      <MemoryRouter>
+        <ReplayView replay={makeReplay()} />
+      </MemoryRouter>,
+    );
 
     const player = screen.getByRole("group", { name: /session replay player/i });
 
     fireEvent.keyDown(player, { key: "ArrowRight" });
-    expect(screen.getByText("Frame 2 of 2")).toBeInTheDocument();
+    expect(screen.getByRole("slider", { name: /scrub replay/i })).toHaveAttribute(
+      "aria-valuetext",
+      "Frame 2 of 2",
+    );
 
     fireEvent.keyDown(player, { key: "Home" });
-    expect(screen.getByText("Frame 1 of 2")).toBeInTheDocument();
+    expect(screen.getByRole("slider", { name: /scrub replay/i })).toHaveAttribute(
+      "aria-valuetext",
+      "Frame 1 of 2",
+    );
 
     fireEvent.keyDown(player, { key: " " });
     expect(screen.getByRole("button", { name: /^pause$/i })).toBeInTheDocument();

@@ -5,6 +5,7 @@ import { ProjectsPage } from "./pages/projects/ProjectsPage";
 import { EventsPage } from "./pages/events/EventsPage";
 import { SessionsPage } from "./pages/sessions/SessionsPage";
 import { SessionDetailsPage } from "./pages/sessions/SessionDetailsPage";
+import { ReplayPage } from "./pages/sessions/ReplayPage";
 import { NotFoundPage } from "./pages/not-found/NotFoundPage";
 
 /**
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="/history" element={<SessionsPage />} />
         <Route path="/events" element={<EventsPage />} />
         <Route path="/sessions/:sessionId" element={<SessionDetailsPage />} />
+        <Route path="/sessions/:sessionId/replay" element={<ReplayPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

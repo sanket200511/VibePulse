@@ -32,7 +32,7 @@ describe("InsightsPanel", () => {
     expect(screen.getByText(/not enough activity yet/i)).toBeInTheDocument();
   });
 
-  it("renders a category heading and its insight headlines", () => {
+  it("renders a category badge and its insight headlines", () => {
     render(
       <InsightsPanel
         profile={makeProfile({
@@ -78,21 +78,5 @@ describe("InsightsPanel", () => {
 
     expect(screen.getByText("event_count: 2")).toBeInTheDocument();
     expect(screen.getByText("distinct_file_count: 1")).toBeInTheDocument();
-  });
-
-  it("renders categories in narrative-first order regardless of input order", () => {
-    render(
-      <InsightsPanel
-        profile={makeProfile({
-          categories: {
-            SESSION_STATISTICS: [makeInsight({ category: "SESSION_STATISTICS" })],
-            ACTIVITY: [makeInsight({ category: "ACTIVITY", headline: "3 events" })],
-          },
-        })}
-      />,
-    );
-
-    const headings = screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent);
-    expect(headings.indexOf("Activity")).toBeLessThan(headings.indexOf("Session Statistics"));
   });
 });

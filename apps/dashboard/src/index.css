@@ -9,11 +9,12 @@
     --radius-md: 12px;
     --radius-sm: 8px;
 
-    /* ── Light theme (fallback – we are dark-first) ───────────────────────── */
-    --background: 0 0% 100%;
+    /* ── Light theme (intentional clean colors, not plain inversion) ───────── */
+    --background: 240 10% 98%;
     --foreground: 240 10% 4%;
     --card: 0 0% 100%;
     --card-foreground: 240 10% 4%;
+    --elevated: 240 5% 94%;
     --primary: 262 83% 57%;
     --primary-foreground: 0 0% 98%;
     --secondary: 240 5% 96%;
@@ -24,17 +25,23 @@
     --accent-foreground: 240 6% 10%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
+    --success: 142 76% 36%;
+    --warning: 38 92% 50%;
+    --observation: 199 89% 48%;
     --border: 240 6% 90%;
     --input: 240 6% 90%;
     --ring: 262 83% 57%;
+    --hover: 240 5% 92%;
+    --selection: 262 83% 90%;
   }
 
   .dark {
-    /* ── Dark theme (primary – matches DESIGN.md palette) ────────────────── */
+    /* ── Dark theme (default canvas) ──────────────────────────────────────── */
     --background: 240 6% 4%; /* #09090B */
     --foreground: 0 0% 98%; /* #FAFAFA */
     --card: 240 4% 7%; /* #111114 */
     --card-foreground: 0 0% 98%;
+    --elevated: 240 4% 12%; /* #1c1c1f */
     --primary: 262 83% 57%; /* #7C3AED */
     --primary-foreground: 0 0% 98%;
     --secondary: 240 4% 11%; /* #18181B */
@@ -45,9 +52,14 @@
     --accent-foreground: 0 0% 98%;
     --destructive: 0 63% 58%; /* #EF4444 */
     --destructive-foreground: 0 0% 98%;
+    --success: 142 70% 45%;
+    --warning: 38 92% 50%;
+    --observation: 199 89% 48%;
     --border: 240 4% 16%; /* #27272A */
     --input: 240 4% 16%;
     --ring: 262 83% 57%;
+    --hover: 240 4% 14%;
+    --selection: 262 83% 30%;
   }
 }
 

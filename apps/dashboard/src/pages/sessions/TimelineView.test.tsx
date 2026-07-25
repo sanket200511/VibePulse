@@ -74,7 +74,7 @@ describe("TimelineView", () => {
       />,
     );
 
-    expect(screen.getByText(/idle/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/idle/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/180s idle/)).toBeInTheDocument();
   });
 
@@ -95,7 +95,7 @@ describe("TimelineView", () => {
       />,
     );
 
-    expect(screen.getByText("×3")).toBeInTheDocument();
+    expect(screen.getByText("3 modifications")).toBeInTheDocument();
     expect(screen.getByText("app.py")).toBeInTheDocument();
   });
 

@@ -9,6 +9,8 @@
 
 import { Outlet } from "react-router-dom";
 import { Navigation } from "./Navigation";
+import { ThemeToggle } from "../theme/ThemeToggle";
+import { PresentationToggle } from "./PresentationToggle";
 
 export function AppLayout() {
   return (
@@ -25,7 +27,11 @@ export function AppLayout() {
       <header className="border-border bg-background/95 sticky top-0 z-40 border-b backdrop-blur">
         <div className="flex h-14 items-center justify-between gap-4 px-4 sm:px-8">
           <span className="text-foreground text-sm font-semibold tracking-tight">VibePulse</span>
-          <Navigation />
+          <div className="flex items-center gap-4">
+            <Navigation />
+            <PresentationToggle />
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 

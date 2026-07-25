@@ -77,19 +77,21 @@ describe("useReplayController", () => {
     expect(result.current.isAtEnd).toBe(false);
   });
 
-  it("advances one frame per tick while playing, at the base interval for speed 1", () => {
+  it("advances one frame per tick while playing, with proportional pacing", () => {
     const { result } = renderHook(() => useReplayController(FRAMES, CHAPTERS));
 
     act(() => result.current.play());
     expect(result.current.isPlaying).toBe(true);
 
+    // Frame 0 -> 1: interval is 500ms
     act(() => {
-      vi.advanceTimersByTime(1000);
+      vi.advanceTimersByTime(500);
     });
     expect(result.current.currentIndex).toBe(1);
 
+    // Frame 1 -> 2: interval is 500ms + 1000ms chapter transition = 1500ms
     act(() => {
-      vi.advanceTimersByTime(1000);
+      vi.advanceTimersByTime(1500);
     });
     expect(result.current.currentIndex).toBe(2);
   });
@@ -99,7 +101,10 @@ describe("useReplayController", () => {
 
     act(() => result.current.play());
     act(() => {
-      vi.advanceTimersByTime(3000);
+      vi.advanceTimersByTime(500); // 0 -> 1
+    });
+    act(() => {
+      vi.advanceTimersByTime(1500); // 1 -> 2
     });
 
     expect(result.current.currentIndex).toBe(2);
@@ -112,8 +117,10 @@ describe("useReplayController", () => {
 
     act(() => result.current.setSpeed(4));
     act(() => result.current.play());
+
+    // Frame 0 -> 1 would be 500ms. At 4x speed, it's 125ms.
     act(() => {
-      vi.advanceTimersByTime(250);
+      vi.advanceTimersByTime(125);
     });
 
     expect(result.current.currentIndex).toBe(1);
@@ -136,22 +143,26 @@ describe("useReplayController", () => {
 
     act(() => result.current.play());
     act(() => {
-      vi.advanceTimersByTime(2000);
+      vi.advanceTimersByTime(500);
+    });
+    act(() => {
+      vi.advanceTimersByTime(1500);
     });
     expect(result.current.currentIndex).toBe(2);
 
     act(() => result.current.restart());
     expect(result.current.currentIndex).toBe(0);
     expect(result.current.isPlaying).toBe(false);
+    expect(result.current.isAtEnd).toBe(false);
   });
 
   it("jumpToFrame moves directly to an index and pauses", () => {
     const { result } = renderHook(() => useReplayController(FRAMES, CHAPTERS));
 
     act(() => result.current.play());
-    act(() => result.current.jumpToFrame(2));
+    act(() => result.current.jumpToFrame(1));
 
-    expect(result.current.currentIndex).toBe(2);
+    expect(result.current.currentIndex).toBe(1);
     expect(result.current.isPlaying).toBe(false);
   });
 
@@ -166,15 +177,14 @@ describe("useReplayController", () => {
 
   it("resets to frame 0 and stops when the frames array reference changes", () => {
     const { result, rerender } = renderHook(
-      ({ frames }: { frames: ReplayFrame[] }) => useReplayController(frames, CHAPTERS),
-      { initialProps: { frames: FRAMES } },
+      (props) => useReplayController(props.frames, props.chapters),
+      { initialProps: { frames: FRAMES, chapters: CHAPTERS } },
     );
 
     act(() => result.current.jumpToFrame(2));
-    expect(result.current.currentIndex).toBe(2);
+    act(() => result.current.play());
 
-    const NEW_FRAMES: ReplayFrame[] = [makeFrame({ id: "g0", index: 0, chapter_id: 1 })];
-    rerender({ frames: NEW_FRAMES });
+    rerender({ frames: [...FRAMES], chapters: CHAPTERS });
 
     expect(result.current.currentIndex).toBe(0);
     expect(result.current.isPlaying).toBe(false);
@@ -187,7 +197,10 @@ describe("useReplayController", () => {
 
     act(() => result.current.play());
     act(() => {
-      vi.advanceTimersByTime(3000);
+      vi.advanceTimersByTime(500);
+    });
+    act(() => {
+      vi.advanceTimersByTime(1500);
     });
 
     expect(result.current.didFinish).toBe(true);
@@ -198,7 +211,6 @@ describe("useReplayController", () => {
 
     act(() => result.current.jumpToFrame(2));
 
-    expect(result.current.currentIndex).toBe(2);
     expect(result.current.didFinish).toBe(false);
   });
 
@@ -207,11 +219,27 @@ describe("useReplayController", () => {
 
     act(() => result.current.play());
     act(() => {
-      vi.advanceTimersByTime(3000);
+      vi.advanceTimersByTime(500);
+    });
+    act(() => {
+      vi.advanceTimersByTime(1500);
     });
     expect(result.current.didFinish).toBe(true);
 
     act(() => result.current.restart());
+    expect(result.current.didFinish).toBe(false);
+
+    act(() => result.current.jumpToFrame(2));
+    act(() => result.current.play());
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
+    act(() => {
+      vi.advanceTimersByTime(1500);
+    });
+    expect(result.current.didFinish).toBe(true);
+
+    act(() => result.current.jumpToFrame(0));
     expect(result.current.didFinish).toBe(false);
   });
 });

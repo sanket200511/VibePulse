@@ -1,12 +1,14 @@
 /**
  * Loads a single session (GET /sessions/{id}) — used by the Session Details
  * page to know the session's status, which gates Replay visibility to
- * COMPLETED sessions only (docs/adr/0008-replay-engine.md §5).
+ * COMPLETED sessions only.
  */
 
 import { useQuery } from "@tanstack/react-query";
 import { getApiBaseUrl } from "../../lib/api-config";
 import type { Session } from "./types";
+import { useDemoMode } from "../../demo/config";
+import { demoActiveSession, demoCompletedSession } from "../../demo/data";
 
 async function fetchSession(sessionId: string): Promise<Session> {
   const response = await fetch(new URL(`/sessions/${sessionId}`, getApiBaseUrl()).toString());
@@ -23,11 +25,27 @@ export interface UseSessionDataResult {
 }
 
 export function useSessionData(sessionId: string): UseSessionDataResult {
+  const { isDemo } = useDemoMode();
+
   const query = useQuery({
     queryKey: ["sessions", sessionId],
     queryFn: () => fetchSession(sessionId),
-    enabled: sessionId.length > 0,
+    enabled: !isDemo && sessionId.length > 0,
   });
+
+  if (isDemo) {
+    let session = undefined;
+    if (sessionId === "session_vibesync_002") {
+      session = demoActiveSession;
+    } else if (sessionId === "session_vibesync_001") {
+      session = demoCompletedSession;
+    }
+    return {
+      session,
+      isLoading: false,
+      isError: false,
+    };
+  }
 
   return {
     session: query.data,

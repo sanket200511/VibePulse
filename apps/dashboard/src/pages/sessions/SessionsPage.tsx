@@ -1,5 +1,5 @@
 import { Badge } from "@vibepulse/ui";
-import { SessionRow } from "./SessionRow";
+import { SessionCard } from "./SessionRow";
 import { useSessionsData } from "./useSessionsData";
 import { PageHeader } from "../../components/layout/PageHeader";
 import { EmptyState, ErrorState, LoadingState } from "../../components/states";
@@ -20,47 +20,33 @@ export function SessionsPage() {
   const status = STATUS_BADGE[connectionStatus];
 
   return (
-    <div className="flex flex-1 flex-col p-8">
+    <div className="animate-fade-in-up flex flex-1 flex-col p-8">
       <PageHeader
         title="History"
         description="Development sessions observed across your projects."
         meta={<Badge variant={status.variant}>{status.label}</Badge>}
       />
 
-      <div className="border-border bg-card overflow-hidden rounded-[16px] border">
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-left">
-            <thead>
-              <tr className="border-border text-muted-foreground border-b text-xs uppercase">
-                <th className="px-4 py-3 font-medium">Started</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Project</th>
-                <th className="px-4 py-3 font-medium">Language</th>
-                <th className="px-4 py-3 font-medium">Events</th>
-                <th className="px-4 py-3 font-medium">Files</th>
-                <th className="px-4 py-3 font-medium">Duration</th>
-                <th className="px-4 py-3 font-medium">Summary</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sessions.map((session) => (
-                <SessionRow key={session.id} session={session} />
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {isLoading && <LoadingState label="Preparing your session history…" />}
 
-        {isLoading && <LoadingState label="Preparing your session history…" />}
+      {isError && <ErrorState message="We couldn't reach the API. Retrying in the background…" />}
 
-        {isError && <ErrorState message="We couldn't reach the API. Retrying in the background…" />}
-
-        {!isLoading && !isError && sessions.length === 0 && (
+      {!isLoading && !isError && sessions.length === 0 && (
+        <div className="border-border bg-card flex items-center justify-center overflow-hidden rounded-[16px] border p-8">
           <EmptyState
-            title="No sessions yet"
-            description="Start coding in an observed project and your first session will appear here."
+            title="No engineering sessions observed yet"
+            description="VibePulse registers sessions automatically once you begin writing code in a project folder. To get started, verify the VibePulse daemon is running in your terminal, open an observed workspace, and make edits to a file."
           />
-        )}
-      </div>
+        </div>
+      )}
+
+      {!isLoading && !isError && sessions.length > 0 && (
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {sessions.map((session) => (
+            <SessionCard key={session.id} session={session} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

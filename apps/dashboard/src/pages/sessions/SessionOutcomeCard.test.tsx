@@ -17,43 +17,37 @@ function makeOutcome(overrides: Partial<SessionOutcome> = {}): SessionOutcome {
 }
 
 describe("SessionOutcomeCard", () => {
-  it("renders the session summary headline", () => {
+  it("renders the session footprint text", () => {
     render(<SessionOutcomeCard outcome={makeOutcome()} />);
 
-    expect(screen.getByText("3 events over 2 min")).toBeInTheDocument();
+    expect(screen.getByText("Session Footprint")).toBeInTheDocument();
   });
 
-  it("falls back to a generic heading when there is no session summary", () => {
-    render(<SessionOutcomeCard outcome={makeOutcome({ session_summary: null })} />);
-
-    expect(screen.getByText("Session outcome")).toBeInTheDocument();
-  });
-
-  it("renders duration, event, and file counts", () => {
+  it("renders duration, event, and file counts in the new fingerprint layout", () => {
     render(<SessionOutcomeCard outcome={makeOutcome()} />);
 
-    expect(screen.getByText("2 min")).toBeInTheDocument();
+    expect(screen.getByText("2m")).toBeInTheDocument();
     expect(screen.getByText("4")).toBeInTheDocument();
     expect(screen.getByText("2")).toBeInTheDocument();
   });
 
-  it("renders the largest change file and count when derivable", () => {
+  it("renders the largest change file and count", () => {
     render(<SessionOutcomeCard outcome={makeOutcome()} />);
 
-    expect(screen.getByText("/repo/a.py (3×)")).toBeInTheDocument();
+    expect(screen.getByText("/repo/a.py")).toBeInTheDocument();
+    expect(screen.getByText("(3×)")).toBeInTheDocument();
   });
 
-  it("shows a dash for largest change when it cannot be derived", () => {
+  it("does not render largest change if it cannot be derived", () => {
     render(<SessionOutcomeCard outcome={makeOutcome({ largest_change: null })} />);
 
-    const dashes = screen.getAllByText("—");
-    expect(dashes.length).toBeGreaterThan(0);
+    expect(screen.queryByText("Largest Change")).not.toBeInTheDocument();
   });
 
-  it("renders a badge per language with its event count", () => {
+  it("renders languages", () => {
     render(<SessionOutcomeCard outcome={makeOutcome()} />);
 
-    expect(screen.getByText("python (3)")).toBeInTheDocument();
-    expect(screen.getByText("typescript (1)")).toBeInTheDocument();
+    expect(screen.getByText("python")).toBeInTheDocument();
+    expect(screen.getByText("typescript")).toBeInTheDocument();
   });
 });

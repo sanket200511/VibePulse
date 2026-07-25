@@ -1,16 +1,13 @@
 /**
  * Loads the Session Replay (GET /sessions/{id}/replay) for the Session
- * Details page. Read-only, historical data — no WebSocket subscription;
- * mirrors useSessionTimeline.ts's fetch pattern.
- *
- * Only fetches once `enabled` is true — the API returns 409 for sessions
- * that aren't COMPLETED yet (docs/adr/0008-replay-engine.md §5), so callers
- * gate this on session status.
+ * Details page. Read-only, historical data — no WebSocket subscription.
  */
 
 import { useQuery } from "@tanstack/react-query";
 import { getApiBaseUrl } from "../../lib/api-config";
 import type { Replay } from "./replay-types";
+import { useDemoMode } from "../../demo/config";
+import { demoReplayData } from "../../demo/data";
 
 async function fetchReplay(sessionId: string): Promise<Replay> {
   const response = await fetch(
@@ -29,11 +26,28 @@ export interface UseSessionReplayResult {
 }
 
 export function useSessionReplay(sessionId: string, enabled: boolean): UseSessionReplayResult {
+  const { isDemo } = useDemoMode();
+
   const query = useQuery({
     queryKey: ["sessions", sessionId, "replay"],
     queryFn: () => fetchReplay(sessionId),
-    enabled: enabled && sessionId.length > 0,
+    enabled: !isDemo && enabled && sessionId.length > 0,
   });
+
+  if (isDemo) {
+    if (sessionId === "session_vibesync_001") {
+      return {
+        replay: demoReplayData,
+        isLoading: false,
+        isError: false,
+      };
+    }
+    return {
+      replay: undefined,
+      isLoading: false,
+      isError: false,
+    };
+  }
 
   return {
     replay: query.data,

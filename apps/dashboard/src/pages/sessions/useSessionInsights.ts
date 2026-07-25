@@ -1,12 +1,13 @@
 /**
  * Loads the Session Profile (GET /sessions/{id}/profile) for the Session
- * Details page. Computed on demand, no persistence on the API side — mirrors
- * useSessionTimeline.ts's fetch pattern.
+ * Details page. Computed on demand, no persistence on the API side.
  */
 
 import { useQuery } from "@tanstack/react-query";
 import { getApiBaseUrl } from "../../lib/api-config";
 import type { SessionProfile } from "./insights-types";
+import { useDemoMode } from "../../demo/config";
+import { demoInsightsData } from "../../demo/data";
 
 async function fetchProfile(sessionId: string): Promise<SessionProfile> {
   const response = await fetch(
@@ -25,11 +26,28 @@ export interface UseSessionInsightsResult {
 }
 
 export function useSessionInsights(sessionId: string, enabled = true): UseSessionInsightsResult {
+  const { isDemo } = useDemoMode();
+
   const query = useQuery({
     queryKey: ["sessions", sessionId, "profile"],
     queryFn: () => fetchProfile(sessionId),
-    enabled: enabled && sessionId.length > 0,
+    enabled: !isDemo && enabled && sessionId.length > 0,
   });
+
+  if (isDemo) {
+    if (sessionId === "session_vibesync_001") {
+      return {
+        profile: demoInsightsData,
+        isLoading: false,
+        isError: false,
+      };
+    }
+    return {
+      profile: undefined,
+      isLoading: false,
+      isError: false,
+    };
+  }
 
   return {
     profile: query.data,

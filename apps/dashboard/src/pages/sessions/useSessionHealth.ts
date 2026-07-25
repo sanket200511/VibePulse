@@ -1,16 +1,14 @@
 /**
  * Loads the Session Health Report (GET /sessions/{id}/health) for the
  * Session Details page. Read-only, historical data — no WebSocket
- * subscription; mirrors useSessionReplay.ts's fetch pattern.
- *
- * Only fetches once `enabled` is true — the API returns 409 for sessions
- * that aren't COMPLETED yet (docs/adr/0009-health-engine.md §6), so callers
- * gate this on session status.
+ * subscription.
  */
 
 import { useQuery } from "@tanstack/react-query";
 import { getApiBaseUrl } from "../../lib/api-config";
 import type { HealthReport } from "./health-types";
+import { useDemoMode } from "../../demo/config";
+import { demoHealthData } from "../../demo/data";
 
 async function fetchHealth(sessionId: string): Promise<HealthReport> {
   const response = await fetch(
@@ -29,12 +27,29 @@ export interface UseSessionHealthResult {
 }
 
 export function useSessionHealth(sessionId: string, enabled: boolean): UseSessionHealthResult {
+  const { isDemo } = useDemoMode();
+
   const query = useQuery({
     queryKey: ["sessions", sessionId, "health"],
     queryFn: () => fetchHealth(sessionId),
-    enabled: enabled && sessionId.length > 0,
+    enabled: !isDemo && enabled && sessionId.length > 0,
     staleTime: Infinity,
   });
+
+  if (isDemo) {
+    if (sessionId === "session_vibesync_001") {
+      return {
+        health: demoHealthData,
+        isLoading: false,
+        isError: false,
+      };
+    }
+    return {
+      health: undefined,
+      isLoading: false,
+      isError: false,
+    };
+  }
 
   return {
     health: query.data,

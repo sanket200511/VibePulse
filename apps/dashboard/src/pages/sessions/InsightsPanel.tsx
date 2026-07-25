@@ -1,10 +1,4 @@
-/**
- * Narrative-first rendering of a Session Profile: each insight leads with
- * its headline, evidence is secondary supporting detail, and metrics are
- * de-emphasized as small badges at the bottom of the card.
- */
-
-import { Badge } from "@vibepulse/ui";
+import { Brain, FileSearch, LineChart } from "lucide-react";
 import type { DeveloperInsight, InsightCategory, SessionProfile } from "./insights-types";
 
 const CATEGORY_LABEL: Record<InsightCategory, string> = {
@@ -29,37 +23,65 @@ const CATEGORY_ORDER: InsightCategory[] = [
   "SESSION_STATISTICS",
 ];
 
-function formatMetricValue(value: unknown): string {
-  if (typeof value === "number") {
-    return Number.isInteger(value) ? String(value) : value.toFixed(1);
-  }
-  if (typeof value === "string" || typeof value === "boolean") {
-    return String(value);
-  }
-  return JSON.stringify(value);
-}
-
 function InsightCard({ insight }: { insight: DeveloperInsight }) {
-  const metricEntries = Object.entries(insight.metrics).filter(
-    ([, value]) => typeof value !== "object" || value === null,
-  );
+  const isObservation =
+    insight.category === "FILES" ||
+    insight.category === "LANGUAGES" ||
+    insight.category === "SESSION_STATISTICS";
+  const isPattern = insight.category === "DEVELOPMENT_PATTERNS" || insight.category === "ACTIVITY";
+
+  let label = "REFLECTION";
+  let Icon = Brain;
+  let colorClass = "text-secondary-text";
+  let bgClass = "bg-muted-color/10";
+
+  if (isObservation) {
+    label = "OBSERVATION";
+    Icon = FileSearch;
+    colorClass = "text-accent-color";
+    bgClass = "bg-accent-color/5";
+  } else if (isPattern) {
+    label = "PATTERN";
+    Icon = LineChart;
+    colorClass = "text-warning-color";
+    bgClass = "bg-warning-color/5";
+  }
 
   return (
-    <li className="border-border bg-background rounded-[12px] border p-4">
-      <p className="text-foreground text-sm font-medium">{insight.headline}</p>
-
-      {insight.evidence && <p className="text-muted-foreground mt-1 text-sm">{insight.evidence}</p>}
-
-      {metricEntries.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1">
-          {metricEntries.map(([key, value]) => (
-            <Badge key={key} variant="outline">
-              {key}: {formatMetricValue(value)}
-            </Badge>
-          ))}
+    <div
+      className={`border-border rounded-xl border p-5 ${bgClass} flex flex-col items-start gap-5 md:flex-row`}
+    >
+      <div className={`mt-0.5 shrink-0 ${colorClass}`}>
+        <Icon className="h-5 w-5" />
+      </div>
+      <div className="flex flex-1 flex-col gap-2">
+        <div className="flex items-center gap-2">
+          <span className={`text-[10px] font-bold uppercase tracking-widest ${colorClass}`}>
+            {label}
+          </span>
+          <span className="text-secondary-text border-border border-l pl-2 text-xs uppercase tracking-wide">
+            {CATEGORY_LABEL[insight.category]}
+          </span>
         </div>
-      )}
-    </li>
+        <h4 className="text-primary-text text-base font-bold">{insight.headline}</h4>
+        {insight.evidence && (
+          <p className="text-secondary-text mt-1 text-sm leading-relaxed">{insight.evidence}</p>
+        )}
+
+        {Object.keys(insight.metrics).length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {Object.entries(insight.metrics).map(([key, value]) => (
+              <span
+                key={key}
+                className="bg-background border-border text-muted-foreground rounded-md border px-2.5 py-1 font-mono text-xs"
+              >
+                {key}: {typeof value === "object" ? JSON.stringify(value) : String(value)}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -68,32 +90,21 @@ export interface InsightsPanelProps {
 }
 
 export function InsightsPanel({ profile }: InsightsPanelProps) {
-  const populatedCategories = CATEGORY_ORDER.filter(
-    (category) => (profile.categories[category]?.length ?? 0) > 0,
-  );
+  const allInsights = CATEGORY_ORDER.flatMap((category) => profile.categories[category] || []);
 
-  if (populatedCategories.length === 0) {
+  if (allInsights.length === 0) {
     return (
-      <p className="text-muted-foreground p-8 text-center text-sm">
-        Not enough activity yet to generate insights for this session.
+      <p className="text-muted-foreground border-border rounded-xl border border-dashed p-8 text-center text-sm">
+        Not enough activity yet to generate reliable patterns for this session.
       </p>
     );
   }
 
   return (
-    <section className="flex flex-col gap-6">
-      {populatedCategories.map((category) => (
-        <div key={category}>
-          <h3 className="text-foreground mb-3 text-sm font-semibold uppercase tracking-wide">
-            {CATEGORY_LABEL[category]}
-          </h3>
-          <ul className="flex flex-col gap-2">
-            {profile.categories[category]?.map((insight) => (
-              <InsightCard key={insight.id} insight={insight} />
-            ))}
-          </ul>
-        </div>
+    <div className="flex flex-col gap-4">
+      {allInsights.map((insight) => (
+        <InsightCard key={insight.id} insight={insight} />
       ))}
-    </section>
+    </div>
   );
 }

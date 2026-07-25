@@ -1,20 +1,12 @@
-/**
- * Reflective, non-evaluative rendering of a Session Health Report: a
- * narrative paragraph, five fixed-order metric cards (never sorted by
- * "best"/"worst"), and a low-stakes guidance list. Labels are rendered as
- * uniformly-styled outline badges — never color-coded by band — so they
- * read as descriptive, not evaluative. See docs/adr/0009-health-engine.md.
- */
-
-import { Badge } from "@vibepulse/ui";
+import { Activity, ShieldCheck, Zap } from "lucide-react";
 import type { HealthCategory, HealthMetric, HealthReport } from "./health-types";
 
 const CATEGORY_LABEL: Record<HealthCategory, string> = {
-  FOCUS: "Focus",
-  MOMENTUM: "Momentum",
-  FLOW: "Flow",
-  STABILITY: "Stability",
-  COMPLETION: "Completion",
+  FOCUS: "Activity Density",
+  MOMENTUM: "Event Velocity",
+  FLOW: "Continuous Work",
+  STABILITY: "Test Verification",
+  COMPLETION: "Finalization",
 };
 
 const CATEGORY_ORDER: HealthCategory[] = ["FOCUS", "MOMENTUM", "FLOW", "STABILITY", "COMPLETION"];
@@ -29,37 +21,43 @@ function formatMetricValue(value: unknown): string {
   return JSON.stringify(value);
 }
 
-function MetricCard({ category, metric }: { category: HealthCategory; metric: HealthMetric }) {
+function SignalCard({ category, metric }: { category: HealthCategory; metric: HealthMetric }) {
+  let Icon = Activity;
+  if (category === "STABILITY") Icon = ShieldCheck;
+  if (category === "FOCUS" || category === "MOMENTUM") Icon = Zap;
+
   const metricEntries = Object.entries(metric.metrics).filter(
     ([, value]) => typeof value !== "object" || value === null,
   );
 
   return (
-    <div
-      role="group"
-      aria-label={`${CATEGORY_LABEL[category]}: ${metric.label}`}
-      className="border-border bg-background rounded-[12px] border p-4"
-    >
-      <div className="flex items-center justify-between gap-2">
-        <h4 className="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
-          {CATEGORY_LABEL[category]}
-        </h4>
-        <Badge variant="outline">{metric.label}</Badge>
-      </div>
-
-      <p className="text-foreground mt-2 text-sm font-medium">{metric.headline}</p>
-
-      {metric.evidence && <p className="text-muted-foreground mt-1 text-sm">{metric.evidence}</p>}
-
-      {metricEntries.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1">
-          {metricEntries.map(([key, value]) => (
-            <Badge key={key} variant="outline">
-              {key}: {formatMetricValue(value)}
-            </Badge>
-          ))}
+    <div className="bg-card border-border hover:border-accent-color/30 rounded-xl border p-5 transition-colors">
+      <div className="flex items-start gap-4">
+        <div className="bg-muted-color/20 text-accent-color shrink-0 rounded-lg p-2">
+          <Icon className="h-5 w-5" />
         </div>
-      )}
+        <div className="flex flex-1 flex-col gap-1.5">
+          <h4 className="text-secondary-text text-[10px] font-bold uppercase tracking-widest">
+            {CATEGORY_LABEL[category] || metric.label}
+          </h4>
+          <p className="text-primary-text text-sm font-bold">{metric.headline}</p>
+          {metric.evidence && (
+            <p className="text-secondary-text mt-1 text-xs leading-relaxed">{metric.evidence}</p>
+          )}
+          {metricEntries.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {metricEntries.map(([key, value]) => (
+                <span
+                  key={key}
+                  className="bg-muted-color/10 border-border text-muted-foreground rounded border px-2 py-1 font-mono text-[10px]"
+                >
+                  {key}: {formatMetricValue(value)}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -73,35 +71,41 @@ export function HealthPanel({ health }: HealthPanelProps) {
 
   if (populatedCategories.length === 0) {
     return (
-      <p className="text-muted-foreground p-8 text-center text-sm">
-        Not enough activity in this session to assess its health.
+      <p className="text-muted-foreground border-border rounded-xl border border-dashed p-8 text-center text-sm">
+        Not enough activity in this session to extract deterministic signals.
       </p>
     );
   }
 
   return (
     <section className="flex flex-col gap-6">
-      <p className="text-foreground text-sm">{health.summary.narrative}</p>
+      <div className="bg-muted-color/10 border-accent-color rounded-r-xl border-l-2 p-4">
+        <p className="text-primary-text text-sm font-medium leading-relaxed">
+          {health.summary.narrative}
+        </p>
+      </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {populatedCategories.map((category) => {
           const metric = health.metrics[category];
-          if (!metric) {
-            return null;
-          }
-          return <MetricCard key={category} category={category} metric={metric} />;
+          if (!metric) return null;
+          return <SignalCard key={category} category={category} metric={metric} />;
         })}
       </div>
 
       {health.summary.guidance.length > 0 && (
-        <div>
-          <h3 className="text-foreground mb-2 text-sm font-semibold uppercase tracking-wide">
-            Worth noting
+        <div className="mt-2">
+          <h3 className="text-secondary-text mb-3 text-xs font-bold uppercase tracking-widest">
+            Observed Guidance
           </h3>
-          <ul className="text-muted-foreground flex flex-col gap-1 text-sm">
+          <ul className="flex flex-col gap-2">
             {health.summary.guidance.map((item) => (
-              <li key={item} className="list-disc pl-4">
-                {item}
+              <li
+                key={item}
+                className="bg-background border-border flex items-start gap-3 rounded-lg border p-3"
+              >
+                <div className="bg-accent-color mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" />
+                <span className="text-secondary-text text-sm">{item}</span>
               </li>
             ))}
           </ul>
