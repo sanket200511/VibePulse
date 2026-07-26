@@ -386,7 +386,7 @@ export function PrimaryCanvas({ isDemo }: { isDemo: boolean }) {
                   <div>
                     <div className="flex items-center justify-between">
                       <h4 className="text-primary-text group-hover:text-accent-color text-sm font-semibold transition-colors">
-                        {project.name}
+                        {project.display_name}
                       </h4>
                       <span
                         className={`py-0.2 shrink-0 rounded-full border px-1.5 text-[8px] font-bold uppercase tracking-wide ${statusColors[project.status]}`}
@@ -395,7 +395,7 @@ export function PrimaryCanvas({ isDemo }: { isDemo: boolean }) {
                       </span>
                     </div>
                     <p className="text-secondary-text selection:bg-selection-color mt-1.5 truncate font-mono text-[10px]">
-                      {project.path}
+                      {project.root_path}
                     </p>
                   </div>
 

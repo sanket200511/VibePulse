@@ -9,6 +9,7 @@ import type { Session } from "./types";
 function makeSession(id: string, overrides: Partial<Session> = {}): Session {
   return {
     id,
+    project_id: "test_project_id",
     project_root: "/repo",
     status: "ACTIVE",
     started_at: "2026-07-04T00:00:00Z",

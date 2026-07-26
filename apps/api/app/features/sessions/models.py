@@ -32,6 +32,7 @@ class Session(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
+    project_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
     project_root: Mapped[str] = mapped_column(String(1024), nullable=False)
 
     # Informational only — see module docstring. Nullable because a future

@@ -19,6 +19,7 @@ from app.features.analysis.router import router as analysis_router
 from app.features.events.router import router as events_router
 from app.features.health.router import router as health_router
 from app.features.insights.router import router as insights_router
+from app.features.projects.router import router as projects_router
 from app.features.replay.router import router as replay_router
 from app.features.session_health.router import router as session_health_router
 from app.features.sessions.router import router as sessions_router
@@ -103,6 +104,7 @@ def create_app() -> FastAPI:
 
     # ── Routers ───────────────────────────────────────────────────────────────
     # Each feature registers its own router with an appropriate prefix.
+    app.include_router(projects_router)
     app.include_router(health_router)
     app.include_router(events_router)
     app.include_router(analysis_router)

@@ -10,6 +10,7 @@ import type { SessionProfile } from "../sessions/insights-types";
 function makeSession(overrides: Partial<Session> = {}): Session {
   return {
     id: "session-1",
+    project_id: "test_project_id",
     project_root: "/home/dev/code/vibepulse/apps/api",
     status: "IDLE",
     started_at: "2026-07-07T08:05:00Z",

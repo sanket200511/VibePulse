@@ -16,6 +16,7 @@ export interface SessionSummary {
 
 export interface Session {
   id: string;
+  project_id: string | null;
   project_root: string;
   status: SessionStatus;
   started_at: string;

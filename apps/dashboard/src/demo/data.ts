@@ -11,6 +11,7 @@ import type { SessionProfile } from "../pages/sessions/insights-types";
 
 export const demoActiveSession: Session = {
   id: "session_vibesync_002",
+  project_id: "project_vibesync_001",
   project_root: "d:/VibeSync",
   status: "ACTIVE",
   started_at: "2026-07-15T09:00:00Z",
@@ -35,6 +36,7 @@ export const demoActiveSession: Session = {
 
 export const demoCompletedSession: Session = {
   id: "session_vibesync_001",
+  project_id: "project_vibesync_001",
   project_root: "d:/VibeSync",
   status: "COMPLETED",
   started_at: "2026-07-14T10:00:00Z",

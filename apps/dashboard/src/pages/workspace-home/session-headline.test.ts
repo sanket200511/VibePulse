@@ -5,6 +5,7 @@ import type { Session } from "../sessions/types";
 function makeSession(overrides: Partial<Session> = {}): Session {
   return {
     id: "session-1",
+    project_id: "test_project_id",
     project_root: "/repo",
     status: "ACTIVE",
     started_at: "2026-07-04T00:00:00Z",

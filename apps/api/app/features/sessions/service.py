@@ -30,6 +30,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import get_settings
 from app.core.domain.events import AnalyzableEvent
 from app.core.logging import get_logger
+from app.features.projects.service import get_or_create_project
 from app.features.sessions.constants import SessionStatus
 from app.features.sessions.models import Session
 from app.features.sessions.summary import DEFAULT_SUMMARY_GENERATOR, SessionSnapshot
@@ -127,9 +128,10 @@ def _apply_event(session: Session, event: AnalyzableEvent) -> None:
     session.updated_at = event.timestamp
 
 
-def _new_session(event: AnalyzableEvent) -> Session:
+def _new_session(event: AnalyzableEvent, project_id: uuid.UUID) -> Session:
     session = Session(
         id=uuid.uuid4(),
+        project_id=project_id,
         project_root=event.project_root,
         daemon_session_id=event.session_id,
         status=SessionStatus.ACTIVE.value,
@@ -179,7 +181,8 @@ async def touch_session(db: AsyncSession, event: AnalyzableEvent) -> tuple[Sessi
             extra={"session_id": str(candidate.id), "project_root": candidate.project_root},
         )
 
-    new_session = _new_session(event)
+    project = await get_or_create_project(db, event.project_root)
+    new_session = _new_session(event, project.id)
     db.add(new_session)
     await db.flush()
     logger.info(

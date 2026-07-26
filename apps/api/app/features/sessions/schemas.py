@@ -57,6 +57,7 @@ class SessionRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
+    project_id: uuid.UUID | None
     project_root: str
     status: SessionStatus
     started_at: datetime
@@ -82,6 +83,7 @@ class SessionRead(BaseModel):
         duration_seconds = max((end_reference - session.started_at).total_seconds(), 0.0)
         return cls(
             id=session.id,
+            project_id=session.project_id,
             project_root=session.project_root,
             status=effective_status,
             started_at=session.started_at,

@@ -1,64 +1,46 @@
+import type { Project } from "../pages/projects/types";
+
 export interface DemoProjectLanguage {
   name: string;
   percentage: number;
   color: string;
 }
 
-export interface DemoProject {
-  id: string;
-  name: string;
-  path: string;
-  watchedFiles: number;
-  lastActive: string;
+export interface DemoProject extends Project {
+  // Demo-specific mock properties for presentation until backend supports them
   status: "active" | "observing" | "idle";
   languages: DemoProjectLanguage[];
-  startedObserving: string;
-  lastAnalyzed: string;
-  projectHealth: string;
-  workspaceSize: string;
+  watchedFiles: number;
+  lastActive: string;
 }
 
-export const demoProjects: DemoProject[] = [
-  {
-    id: "p1",
-    name: "VibePulse",
-    path: "d:/VibeSync",
-    watchedFiles: 142,
-    lastActive: "Just now",
-    status: "active",
-    languages: [
-      { name: "TypeScript", percentage: 92, color: "bg-blue-500" },
-      { name: "CSS", percentage: 8, color: "bg-pink-500" },
-    ],
-    startedObserving: "Jul 10, 2026",
-    lastAnalyzed: "5 mins ago",
-    projectHealth: "98%",
-    workspaceSize: "1.2 MB",
-  },
-  {
-    id: "p2",
-    name: "AquaPulse",
-    path: "d:/AquaPulse",
-    watchedFiles: 89,
-    lastActive: "2 hours ago",
-    status: "observing",
-    languages: [{ name: "TypeScript", percentage: 100, color: "bg-blue-500" }],
-    startedObserving: "Jul 12, 2026",
-    lastAnalyzed: "2 hours ago",
-    projectHealth: "96%",
-    workspaceSize: "840 KB",
-  },
-  {
-    id: "p3",
-    name: "HackNagpur",
-    path: "d:/HackNagpur",
-    watchedFiles: 56,
-    lastActive: "Yesterday",
-    status: "idle",
-    languages: [{ name: "JavaScript", percentage: 100, color: "bg-amber-500" }],
-    startedObserving: "Jun 24, 2026",
-    lastAnalyzed: "Yesterday",
-    projectHealth: "90%",
-    workspaceSize: "450 KB",
-  },
-];
+export const demoProjectVibePulse: DemoProject = {
+  id: "project_vibesync_001",
+  display_name: "VibePulse",
+  root_path: "d:/VibeSync",
+  created_at: "2026-07-10T09:00:00Z",
+  updated_at: "2026-07-25T09:00:00Z",
+  // Mock extensions
+  watchedFiles: 142,
+  lastActive: "Just now",
+  status: "active",
+  languages: [
+    { name: "TypeScript", percentage: 92, color: "bg-blue-500" },
+    { name: "CSS", percentage: 8, color: "bg-pink-500" },
+  ],
+};
+
+export const demoProjectAquaPulse: DemoProject = {
+  id: "project_aquapulse_002",
+  display_name: "AquaPulse",
+  root_path: "d:/AquaPulse",
+  created_at: "2026-07-12T09:00:00Z",
+  updated_at: "2026-07-20T09:00:00Z",
+  // Mock extensions
+  watchedFiles: 89,
+  lastActive: "2 hours ago",
+  status: "observing",
+  languages: [{ name: "TypeScript", percentage: 100, color: "bg-blue-500" }],
+};
+
+export const demoProjects: DemoProject[] = [demoProjectVibePulse, demoProjectAquaPulse];

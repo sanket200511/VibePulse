@@ -2,7 +2,7 @@ import { PageHeader } from "../../components/layout/PageHeader";
 import { EmptyState } from "../../components/states";
 import { useDemoMode } from "../../demo/config";
 import { demoProjects } from "../../demo/projects";
-import { Clock, Folder, Activity, Terminal } from "lucide-react";
+import { Clock, Folder } from "lucide-react";
 
 export function ProjectsPage() {
   const { isDemo } = useDemoMode();
@@ -45,10 +45,10 @@ export function ProjectsPage() {
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <h3 className="text-primary-text group-hover:text-accent-color text-base font-bold tracking-tight transition-colors">
-                    {project.name}
+                    {project.display_name}
                   </h3>
                   <p className="text-secondary-text selection:bg-selection-color mt-1.5 truncate font-mono text-[11px]">
-                    {project.path}
+                    {project.root_path}
                   </p>
                 </div>
                 <span
@@ -93,38 +93,20 @@ export function ProjectsPage() {
               <div className="border-border mt-6 grid grid-cols-2 gap-x-6 gap-y-3.5 border-t pt-4 text-[11px]">
                 <div>
                   <span className="text-muted-foreground block text-[9px] font-semibold uppercase tracking-wider">
-                    Started Observing
-                  </span>
-                  <span className="text-primary-text mt-1 flex items-center gap-1 font-semibold">
-                    <Clock className="text-accent-color/70 h-3.5 w-3.5" />
-                    {project.startedObserving}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground block text-[9px] font-semibold uppercase tracking-wider">
-                    Project Health
-                  </span>
-                  <span className="text-success-color mt-1 flex items-center gap-1 font-semibold">
-                    <Activity className="text-success-color h-3.5 w-3.5" />
-                    {project.projectHealth} Optimal
-                  </span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground block text-[9px] font-semibold uppercase tracking-wider">
-                    Last Analyzed
-                  </span>
-                  <span className="text-primary-text mt-1 flex items-center gap-1 font-semibold">
-                    <Terminal className="text-accent-color/70 h-3.5 w-3.5" />
-                    {project.lastAnalyzed}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground block text-[9px] font-semibold uppercase tracking-wider">
-                    Workspace Size
+                    Files Touched
                   </span>
                   <span className="text-primary-text mt-1 flex items-center gap-1 font-semibold">
                     <Folder className="text-accent-color/70 h-3.5 w-3.5" />
-                    {project.workspaceSize} ({project.watchedFiles} files)
+                    {project.watchedFiles} files
+                  </span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block text-[9px] font-semibold uppercase tracking-wider">
+                    Last Activity
+                  </span>
+                  <span className="text-primary-text mt-1 flex items-center gap-1 font-semibold">
+                    <Clock className="text-accent-color/70 h-3.5 w-3.5" />
+                    {project.lastActive}
                   </span>
                 </div>
               </div>

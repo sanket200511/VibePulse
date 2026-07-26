@@ -32,7 +32,6 @@ describe("WorkspaceHomePage with Demo Mode Enabled", () => {
     expect(screen.getByText("Started Observation")).toBeInTheDocument();
     expect(screen.getByText("VibePulse daemon attached to workspace root")).toBeInTheDocument();
     expect(screen.getByText("AquaPulse")).toBeInTheDocument();
-    expect(screen.getByText("HackNagpur")).toBeInTheDocument();
   });
 
   it("renders the secondary rail with demo content", () => {

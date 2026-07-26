@@ -16,6 +16,8 @@ from app.core.database import Base
 # Import feature models so they register on Base.metadata for autogenerate.
 from app.features.analysis.models import EventAnalysis  # noqa: F401
 from app.features.events.models import DevelopmentEvent  # noqa: F401
+from app.features.projects.models import Project  # noqa: F401
+from app.features.sessions.models import Session  # noqa: F401
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
 
