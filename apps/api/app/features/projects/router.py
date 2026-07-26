@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 
 from app.core.database import get_db
 from app.features.projects.models import Project
-from app.features.projects.schemas import ProjectListRead, ProjectRead
+from app.features.projects.schemas import ProjectIntelligenceRead, ProjectListRead, ProjectRead
 from app.features.sessions.models import Session
 from app.features.sessions.schemas import SessionListRead, SessionRead
 from app.features.sessions.service import compute_effective_status
@@ -69,3 +69,19 @@ async def get_project_sessions(
     return SessionListRead(
         sessions=out_sessions, total=total, limit=limit, offset=offset, has_more=has_more
     )
+
+
+@router.get("/{project_id}/intelligence", response_model=ProjectIntelligenceRead)
+async def get_project_intelligence_endpoint(
+    project_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+) -> ProjectIntelligenceRead:
+    """Get longitudinal intelligence for a specific project."""
+    from app.features.projects.service import get_project_intelligence
+
+    project = await db.get(Project, project_id)
+    if not project:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+
+    result_dict = await get_project_intelligence(db, project_id)
+    return ProjectIntelligenceRead(**result_dict)

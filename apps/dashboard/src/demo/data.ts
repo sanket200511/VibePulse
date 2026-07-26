@@ -61,6 +61,73 @@ export const demoCompletedSession: Session = {
 
 export const demoSessionsList: Session[] = [demoActiveSession, demoCompletedSession];
 
+export function computeDemoProjectIntelligence(projectId: string) {
+  const sessions = demoSessionsList.filter((s) => s.project_id === projectId);
+  if (sessions.length === 0) return null;
+
+  sessions.sort((a, b) => new Date(b.started_at).getTime() - new Date(a.started_at).getTime());
+  const first = sessions[sessions.length - 1]?.started_at ?? null;
+  const latest = sessions[0]?.last_event_at ?? null;
+
+  const totalSessions = sessions.length;
+  let totalEvents = 0;
+  const eventComposition: Record<string, number> = {};
+  const languageActivity: Record<string, number> = {};
+  const filesMap: Record<string, number> = {};
+
+  const activitySeries = sessions.map((s) => {
+    totalEvents += s.event_count;
+
+    // Merge events by type
+    for (const [k, v] of Object.entries(s.events_by_type)) {
+      eventComposition[k] = (eventComposition[k] || 0) + (v as number);
+    }
+    // Merge languages
+    for (const [k, v] of Object.entries(s.languages)) {
+      languageActivity[k] = (languageActivity[k] || 0) + (v as number);
+    }
+
+    // Simulate some file counts since demo sessions don't have explicit file aggregates
+    // Wait, demoSessions don't have .files in typescript, let's mock some based on the distinct_file_count
+    if (s.id === "session_vibesync_001") {
+      filesMap["src/observation/watcher.ts"] = 20;
+      filesMap["src/daemon/index.ts"] = 10;
+      filesMap["src/core/utils.ts"] = 15;
+    } else {
+      filesMap["src/observation/watcher.ts"] = (filesMap["src/observation/watcher.ts"] || 0) + 15;
+      filesMap["src/api/client.ts"] = 12;
+    }
+
+    return {
+      session_id: s.id,
+      started_at: s.started_at,
+      event_count: s.event_count,
+      status: s.status,
+    };
+  });
+
+  const frequentlyObservedFiles = Object.entries(filesMap)
+    .sort((a, b) => b[1] - a[1])
+    .map(([path, count]) => ({ path, event_count: count }))
+    .slice(0, 50);
+
+  return {
+    project_id: projectId,
+    observation_window: {
+      first_observed_at: first,
+      latest_observed_at: latest,
+    },
+    metrics: {
+      total_sessions: totalSessions,
+      total_events: totalEvents,
+    },
+    activity_series: activitySeries,
+    event_composition: eventComposition,
+    language_activity: languageActivity,
+    frequently_observed_files: frequentlyObservedFiles,
+  };
+}
+
 export const demoTimelineData: Timeline = {
   session_id: "session_vibesync_001",
   generated_at: "2026-07-14T13:05:00Z",

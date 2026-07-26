@@ -182,3 +182,63 @@ async def test_get_project_sessions_pagination_matrix(client: AsyncClient, db_se
 
     r = await client.get(f"/api/projects/{p1.id}/sessions?offset=-1")
     assert r.status_code == 422
+
+
+@pytest.fixture
+async def project_intelligence_data(db_session, projects_test_data):
+    p1, p2, s1 = projects_test_data
+
+    # Update s1 with mock data
+    s1.event_count = 50
+    s1.events_by_type = {"FILE_MODIFIED": 40, "FILE_CREATED": 10}
+    s1.languages = {"Python": 30, "TypeScript": 20}
+    s1.files = {"src/main.py": 25, "src/index.ts": 15, "docs/README.md": 10}
+
+    s2 = Session(
+        id=uuid.uuid4(),
+        project_id=p1.id,
+        project_root=p1.root_path,
+        status="COMPLETED",
+        started_at=datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=1),
+        last_event_at=datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=2),
+        event_count=20,
+        events_by_type={"FILE_MODIFIED": 20},
+        languages={"Python": 20},
+        files={"src/main.py": 20},
+    )
+    db_session.add(s2)
+    await db_session.commit()
+    return p1, p2, s1, s2
+
+
+@pytest.mark.asyncio
+async def test_get_project_intelligence(client: AsyncClient, project_intelligence_data):
+    p1, _p2, s1, s2 = project_intelligence_data
+
+    response = await client.get(f"/api/projects/{p1.id}/intelligence")
+    assert response.status_code == 200
+    data = response.json()
+
+    assert data["project_id"] == str(p1.id)
+    assert data["metrics"]["total_sessions"] == 2
+    assert data["metrics"]["total_events"] == 70
+
+    assert data["event_composition"]["FILE_MODIFIED"] == 60
+    assert data["event_composition"]["FILE_CREATED"] == 10
+
+    assert data["language_activity"]["Python"] == 50
+    assert data["language_activity"]["TypeScript"] == 20
+
+    assert len(data["frequently_observed_files"]) == 3
+    assert data["frequently_observed_files"][0]["path"] == "src/main.py"
+    assert data["frequently_observed_files"][0]["event_count"] == 45
+
+    assert len(data["activity_series"]) == 2
+    assert data["activity_series"][0]["session_id"] == str(s2.id)
+    assert data["activity_series"][1]["session_id"] == str(s1.id)
+
+
+@pytest.mark.asyncio
+async def test_get_project_intelligence_404(client: AsyncClient):
+    response = await client.get(f"/api/projects/{uuid.uuid4()}/intelligence")
+    assert response.status_code == 404

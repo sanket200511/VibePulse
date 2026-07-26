@@ -11,6 +11,7 @@ import { SessionCard } from "../sessions/SessionRow";
 import { ArrowLeft, Clock } from "lucide-react";
 import { formatRelativeTime } from "../../lib/relative-time";
 import { useState } from "react";
+import { ProjectIntelligencePanel } from "./ProjectIntelligencePanel";
 
 interface PaginatedSessions {
   sessions: Session[];
@@ -186,6 +187,11 @@ export function ProjectDetailsPage() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Project Intelligence */}
+      <div className="mb-12">
+        <ProjectIntelligencePanel projectId={project.id} />
       </div>
 
       {/* Region C: Session History */}
