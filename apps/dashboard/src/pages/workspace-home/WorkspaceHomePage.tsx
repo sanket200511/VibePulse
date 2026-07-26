@@ -373,12 +373,6 @@ export function PrimaryCanvas({ isDemo }: { isDemo: boolean }) {
         <div className="bg-card border-border hover:border-accent-color/20 rounded-xl border p-6 shadow-sm transition-all duration-200">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {demoProjects.map((project) => {
-              const statusColors = {
-                active: "bg-accent-color/15 border-accent-color/25 text-accent-color",
-                observing: "bg-success-color/15 border-success-color/25 text-success-color",
-                idle: "bg-muted-color/15 border-border text-secondary-text",
-              };
-
               return (
                 <Link
                   key={project.id}
@@ -386,45 +380,27 @@ export function PrimaryCanvas({ isDemo }: { isDemo: boolean }) {
                   className="bg-muted-color/30 border-border hover:border-accent-color/30 group block flex cursor-pointer flex-col justify-between rounded-xl border p-4 transition-all duration-200 hover:shadow-sm"
                 >
                   <div>
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-primary-text group-hover:text-accent-color text-sm font-semibold transition-colors">
-                        {project.display_name}
-                      </h4>
-                      <span
-                        className={`py-0.2 shrink-0 rounded-full border px-1.5 text-[8px] font-bold uppercase tracking-wide ${statusColors[project.status]}`}
-                      >
-                        {project.status}
-                      </span>
-                    </div>
-                    <p className="text-secondary-text selection:bg-selection-color mt-1.5 truncate font-mono text-[10px]">
+                    <h4 className="text-primary-text group-hover:text-accent-color text-sm font-semibold transition-colors">
+                      {project.display_name}
+                    </h4>
+                    <p
+                      className="text-secondary-text selection:bg-selection-color mt-1.5 truncate font-mono text-[10px]"
+                      title={project.root_path}
+                    >
                       {project.root_path}
                     </p>
                   </div>
 
-                  <div className="mt-6">
-                    <div className="bg-muted-color/45 flex h-1 w-full overflow-hidden rounded-full">
-                      {project.languages.map((lang, idx) => (
-                        <div
-                          key={idx}
-                          className={lang.color}
-                          style={{ width: `${lang.percentage}%` }}
-                        />
-                      ))}
-                    </div>
-                    <div className="text-secondary-text mt-2 flex items-center justify-between text-[11px]">
-                      <div className="flex items-center gap-1.5">
-                        <span
-                          className={`h-1.5 w-1.5 rounded-full ${project.languages[0]?.color ?? "bg-blue-500"}`}
-                        />
-                        <span>{project.languages[0]?.name ?? "TypeScript"}</span>
-                      </div>
-                      <span>{project.watchedFiles} files</span>
-                    </div>
-
-                    <div className="border-border text-secondary-text mt-3 flex items-center justify-between border-t pt-3 text-[10px]">
-                      <span>Last active</span>
-                      <span className="text-primary-text font-medium">{project.lastActive}</span>
-                    </div>
+                  <div className="border-border text-secondary-text mt-6 flex items-center justify-between border-t pt-3 text-[10px]">
+                    <span>Last active</span>
+                    <span className="text-primary-text font-medium">
+                      {new Date(project.updated_at).toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
                   </div>
                 </Link>
               );
