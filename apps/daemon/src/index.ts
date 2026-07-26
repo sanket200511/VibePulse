@@ -24,6 +24,7 @@ import { createWatcher } from "./watcher";
 import { createHealthServer } from "./health-server";
 import { logger } from "./logger";
 import type { DevelopmentEvent } from "./event-types";
+import { createShutdownHandler } from "./shutdown";
 
 const PORT = parsePort("DAEMON_PORT", 9000);
 
@@ -98,13 +99,16 @@ async function main(): Promise<void> {
   logger.info(`   Session  : ${sessionId}`);
 
   // ── Graceful shutdown ─────────────────────────────────────────────────────
-  const shutdown = async (signal: string): Promise<void> => {
-    logger.info(`\n🛑  Received ${signal}. Shutting down gracefully…`);
-    await watcher.stop(); // flushes debouncer before closing Chokidar
-    healthServer.close();
-    logger.info("   Done. Goodbye.");
-    process.exit(0);
-  };
+  const shutdown = createShutdownHandler({
+    gate,
+    watcher,
+    publisher,
+    healthServer,
+    drainQueue,
+    sessionId,
+    watchRoot,
+    exitProcess: (code) => process.exit(code),
+  });
 
   process.on("SIGINT", () => void shutdown("SIGINT"));
   process.on("SIGTERM", () => void shutdown("SIGTERM"));
