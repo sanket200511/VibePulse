@@ -168,7 +168,15 @@ async def touch_session(db: AsyncSession, event: AnalyzableEvent) -> tuple[Sessi
     if candidate is not None:
         gap = event.timestamp - candidate.last_event_at
         if gap <= _idle_timeout() + _completion_timeout():
-            _apply_event(candidate, event)
+            if event.event_type == "OBSERVATION_STOPPED":
+                _apply_event(candidate, event)
+                _finalize(candidate, event.timestamp)
+                logger.info(
+                    "session_explicitly_completed",
+                    extra={"session_id": str(candidate.id), "project_root": candidate.project_root},
+                )
+            else:
+                _apply_event(candidate, event)
             return candidate, False
 
         # The candidate has been silent long enough that it should already be
@@ -183,12 +191,20 @@ async def touch_session(db: AsyncSession, event: AnalyzableEvent) -> tuple[Sessi
 
     project = await get_or_create_project(db, event.project_root)
     new_session = _new_session(event, project.id)
+    if event.event_type == "OBSERVATION_STOPPED":
+        _finalize(new_session, event.timestamp)
+        logger.info(
+            "session_started_and_immediately_completed",
+            extra={"session_id": str(new_session.id), "project_root": new_session.project_root},
+        )
+
     db.add(new_session)
     await db.flush()
-    logger.info(
-        "session_started",
-        extra={"session_id": str(new_session.id), "project_root": new_session.project_root},
-    )
+    if event.event_type != "OBSERVATION_STOPPED":
+        logger.info(
+            "session_started",
+            extra={"session_id": str(new_session.id), "project_root": new_session.project_root},
+        )
     return new_session, True
 
 
