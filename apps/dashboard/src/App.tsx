@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import { AppLayout } from "./components/layout/AppLayout";
 import { WorkspaceHomePage } from "./pages/workspace-home/WorkspaceHomePage";
 import { ProjectsPage } from "./pages/projects/ProjectsPage";
+import { ProjectDetailsPage } from "./pages/projects/ProjectDetailsPage";
 import { EventsPage } from "./pages/events/EventsPage";
 import { SessionsPage } from "./pages/sessions/SessionsPage";
 import { SessionDetailsPage } from "./pages/sessions/SessionDetailsPage";
@@ -34,6 +35,7 @@ export default function App() {
         <Route path="/events" element={<EventsPage />} />
         <Route path="/sessions/:sessionId" element={<SessionDetailsPage />} />
         <Route path="/sessions/:sessionId/replay" element={<ReplayPage />} />
+        <Route path="/projects/:projectId" element={<ProjectDetailsPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

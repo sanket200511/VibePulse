@@ -55,10 +55,10 @@ export function SessionDetailsPage() {
       <header className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
         <div>
           <Link
-            to="/history"
+            to={session.project_id ? `/projects/${session.project_id}` : "/history"}
             className="text-secondary-text hover:text-primary-text flex items-center gap-1 text-sm transition-colors"
           >
-            ← Back to History
+            ← {session.project_id ? "Back to Project" : "Back to History"}
           </Link>
           <div className="mt-4 flex flex-col gap-1">
             <div className="flex items-center gap-3">

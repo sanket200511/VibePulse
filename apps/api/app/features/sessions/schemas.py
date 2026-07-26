@@ -105,6 +105,10 @@ class SessionRead(BaseModel):
 
 
 class SessionListRead(BaseModel):
-    """Response shape for GET /sessions."""
+    """Response shape for GET /sessions and /projects/{id}/sessions."""
 
     sessions: list[SessionRead]
+    total: int | None = None
+    limit: int | None = None
+    offset: int | None = None
+    has_more: bool | None = None

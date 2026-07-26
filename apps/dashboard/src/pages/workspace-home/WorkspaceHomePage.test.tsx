@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, beforeEach } from "vitest";
 import { WorkspaceHomePage } from "./WorkspaceHomePage";
 import { setDemoMode } from "../../demo/config";
@@ -9,7 +10,11 @@ describe("WorkspaceHomePage with Demo Mode Enabled", () => {
   });
 
   it("renders the demo mode banner and workspace header", () => {
-    render(<WorkspaceHomePage />);
+    render(
+      <MemoryRouter>
+        <WorkspaceHomePage />
+      </MemoryRouter>,
+    );
 
     expect(screen.getByText(/Presentation Mode active/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Workspace: VibeSync/i })).toBeInTheDocument();
@@ -17,7 +22,11 @@ describe("WorkspaceHomePage with Demo Mode Enabled", () => {
   });
 
   it("renders the primary canvas with demo content", () => {
-    render(<WorkspaceHomePage />);
+    render(
+      <MemoryRouter>
+        <WorkspaceHomePage />
+      </MemoryRouter>,
+    );
 
     // Section headings
     expect(screen.getByRole("heading", { name: "Today's Story" })).toBeInTheDocument();
@@ -35,7 +44,11 @@ describe("WorkspaceHomePage with Demo Mode Enabled", () => {
   });
 
   it("renders the secondary rail with demo content", () => {
-    render(<WorkspaceHomePage />);
+    render(
+      <MemoryRouter>
+        <WorkspaceHomePage />
+      </MemoryRouter>,
+    );
 
     // Section headings
     expect(screen.getByRole("heading", { name: "Observation Status" })).toBeInTheDocument();
@@ -56,7 +69,11 @@ describe("WorkspaceHomePage with Demo Mode Disabled", () => {
   });
 
   it("renders the empty placeholders", () => {
-    render(<WorkspaceHomePage />);
+    render(
+      <MemoryRouter>
+        <WorkspaceHomePage />
+      </MemoryRouter>,
+    );
 
     expect(screen.queryByText(/Presentation Mode active/i)).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Workspace: Unselected/i })).toBeInTheDocument();

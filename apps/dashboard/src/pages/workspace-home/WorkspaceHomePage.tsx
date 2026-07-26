@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { useDemoMode } from "../../demo/config";
 import { demoStory } from "../../demo/story";
 import { demoTimeline } from "../../demo/timeline";
@@ -379,9 +380,10 @@ export function PrimaryCanvas({ isDemo }: { isDemo: boolean }) {
               };
 
               return (
-                <div
+                <Link
                   key={project.id}
-                  className="bg-muted-color/30 border-border hover:border-accent-color/30 group flex cursor-pointer flex-col justify-between rounded-xl border p-4 transition-all duration-200 hover:shadow-sm"
+                  to={`/projects/${project.id}`}
+                  className="bg-muted-color/30 border-border hover:border-accent-color/30 group block flex cursor-pointer flex-col justify-between rounded-xl border p-4 transition-all duration-200 hover:shadow-sm"
                 >
                   <div>
                     <div className="flex items-center justify-between">
@@ -424,7 +426,7 @@ export function PrimaryCanvas({ isDemo }: { isDemo: boolean }) {
                       <span className="text-primary-text font-medium">{project.lastActive}</span>
                     </div>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>

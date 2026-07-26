@@ -10,7 +10,6 @@ export interface DemoProject extends Project {
   // Demo-specific mock properties for presentation until backend supports them
   status: "active" | "observing" | "idle";
   languages: DemoProjectLanguage[];
-  watchedFiles: number;
   lastActive: string;
 }
 
@@ -21,7 +20,6 @@ export const demoProjectVibePulse: DemoProject = {
   created_at: "2026-07-10T09:00:00Z",
   updated_at: "2026-07-25T09:00:00Z",
   // Mock extensions
-  watchedFiles: 142,
   lastActive: "Just now",
   status: "active",
   languages: [
@@ -37,7 +35,6 @@ export const demoProjectAquaPulse: DemoProject = {
   created_at: "2026-07-12T09:00:00Z",
   updated_at: "2026-07-20T09:00:00Z",
   // Mock extensions
-  watchedFiles: 89,
   lastActive: "2 hours ago",
   status: "observing",
   languages: [{ name: "TypeScript", percentage: 100, color: "bg-blue-500" }],
