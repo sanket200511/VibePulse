@@ -191,7 +191,7 @@ This design means the dashboard never has to reason about "is the sweep loop run
 
 # Analysis Pipeline
 
-**Analyzer** (`app/features/analysis/base.py`) — A `Protocol` (not a base class) that any plugin satisfies by exposing `name`, `version`, `description`, `priority`, `enabled`, and a synchronous, side-effect-free `analyze(event, context) -> AnalysisFinding | None` method. Returning `None` means "this analyzer opts out for this event." Four implementations exist today: `LanguageAnalyzer`, `FileMetadataAnalyzer`, `GitContextAnalyzer`, `ActivityRateAnalyzer`.
+**Analyzer** (`app/features/analysis/base.py`) — A `Protocol` (not a base class) that any plugin satisfies by exposing `name`, `version`, `description`, `priority`, `enabled`, and a synchronous, side-effect-free `analyze(event, context) -> AnalysisFinding | None` method. Returning `None` means "this analyzer opts out for this event." Implementations include: `LanguageAnalyzer`, `FileMetadataAnalyzer`, `GitContextAnalyzer`, `ActivityRateAnalyzer`, `StaticAnalysisAnalyzer` (which performs language-agnostic AST parsing via `tree-sitter`), `SecurityAnalyzer` (which performs deterministic rule-based security pattern matching), and `CodeEvolutionAnalyzer` (which deterministically reconstructs codebase evolution).
 
 **Registry** (`app/features/analysis/registry.py`) — The single canonical list (`ANALYZERS`) of active analyzer instances. Adding a new analyzer means instantiating it here; the pipeline sorts by `priority` automatically, so list order doesn't matter.
 

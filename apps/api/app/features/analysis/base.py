@@ -36,6 +36,8 @@ class AnalysisContext:
     """
 
     session_activity: SessionActivityContext
+    previous_findings: dict[str, dict[str, Any]] = field(default_factory=dict)
+    current_findings: dict[str, dict[str, Any]] = field(default_factory=dict)
 
 
 # ---------------------------------------------------------------------------

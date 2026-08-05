@@ -1,8 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { AppLayout } from "./AppLayout";
 import { ThemeProvider } from "../theme/ThemeProvider";
+
+vi.mock("../../lib/useLiveObservability", () => ({
+  useLiveObservability: vi.fn(),
+}));
 
 function renderShell() {
   return render(

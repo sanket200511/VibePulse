@@ -7,6 +7,60 @@ import { useDemoMode } from "../../demo/config";
 import { demoProjects } from "../../demo/projects";
 import type { Project } from "./types";
 import { Clock } from "lucide-react";
+import { useEffect, useState } from "react";
+
+export function ProjectCard({ project }: { project: Project }) {
+  const [pulse, setPulse] = useState(false);
+
+  useEffect(() => {
+    // When updated_at changes (i.e. new telemetry), pulse
+    setPulse(true);
+    const t = setTimeout(() => setPulse(false), 1000);
+    return () => clearTimeout(t);
+  }, [project.updated_at]);
+
+  return (
+    <Link
+      to={`/projects/${project.id}`}
+      className={`bg-card border-border hover:border-accent-color/30 group relative flex cursor-pointer flex-col overflow-hidden rounded-xl border p-6 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md ${
+        pulse
+          ? "ring-accent-color scale-[1.02] shadow-[0_0_15px_rgba(var(--accent-color-rgb),0.2)] ring-2"
+          : ""
+      }`}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h3 className="text-primary-text group-hover:text-accent-color text-base font-bold tracking-tight transition-colors">
+            {project.display_name}
+          </h3>
+          <p
+            className="text-secondary-text selection:bg-selection-color mt-1.5 truncate font-mono text-[11px]"
+            title={project.root_path}
+          >
+            {project.root_path}
+          </p>
+        </div>
+      </div>
+
+      <div className="border-border mt-6 mt-auto flex flex-col gap-y-3.5 border-t pt-4 text-[11px]">
+        <div>
+          <span className="text-muted-foreground block text-[9px] font-semibold uppercase tracking-wider">
+            Last Activity
+          </span>
+          <span className="text-primary-text mt-1 flex items-center gap-1 font-semibold">
+            <Clock className="text-accent-color/70 h-3.5 w-3.5" />
+            {new Date(project.updated_at).toLocaleDateString(undefined, {
+              month: "short",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+}
 
 export function ProjectsPage() {
   const { isDemo } = useDemoMode();
@@ -52,47 +106,9 @@ export function ProjectsPage() {
         />
       ) : (
         <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project) => {
-            return (
-              <Link
-                key={project.id}
-                to={`/projects/${project.id}`}
-                className="bg-card border-border hover:border-accent-color/30 group relative flex cursor-pointer flex-col overflow-hidden rounded-xl border p-6 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <h3 className="text-primary-text group-hover:text-accent-color text-base font-bold tracking-tight transition-colors">
-                      {project.display_name}
-                    </h3>
-                    <p
-                      className="text-secondary-text selection:bg-selection-color mt-1.5 truncate font-mono text-[11px]"
-                      title={project.root_path}
-                    >
-                      {project.root_path}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Project metrics */}
-                <div className="border-border mt-6 mt-auto flex flex-col gap-y-3.5 border-t pt-4 text-[11px]">
-                  <div>
-                    <span className="text-muted-foreground block text-[9px] font-semibold uppercase tracking-wider">
-                      Last Activity
-                    </span>
-                    <span className="text-primary-text mt-1 flex items-center gap-1 font-semibold">
-                      <Clock className="text-accent-color/70 h-3.5 w-3.5" />
-                      {new Date(project.updated_at).toLocaleDateString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
+          {projects.map((project) => (
+            <ProjectCard key={project.id} project={project} />
+          ))}
         </div>
       )}
     </div>

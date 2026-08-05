@@ -2,6 +2,7 @@ import uuid
 from datetime import UTC, datetime
 
 from app.core.database import get_db
+from app.features.architecture_timeline.schemas import ProjectArchitectureTimelineRead
 from app.features.projects.models import Project
 from app.features.projects.schemas import ProjectIntelligenceRead, ProjectListRead, ProjectRead
 from app.features.sessions.models import Session
@@ -19,7 +20,7 @@ async def list_projects(db: AsyncSession = Depends(get_db)) -> ProjectListRead:
     """List all projects."""
     result = await db.execute(select(Project).order_by(Project.updated_at.desc()))
     projects = result.scalars().all()
-    return ProjectListRead(projects=list(projects))
+    return ProjectListRead(projects=[ProjectRead.model_validate(p) for p in projects])
 
 
 @router.get("/{project_id}", response_model=ProjectRead)
@@ -28,7 +29,7 @@ async def get_project(project_id: uuid.UUID, db: AsyncSession = Depends(get_db))
     project = await db.get(Project, project_id)
     if not project:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
-    return project
+    return ProjectRead.model_validate(project)
 
 
 @router.get("/{project_id}/sessions", response_model=SessionListRead)
@@ -85,3 +86,18 @@ async def get_project_intelligence_endpoint(
 
     result_dict = await get_project_intelligence(db, project_id)
     return ProjectIntelligenceRead(**result_dict)
+
+
+@router.get("/{project_id}/architecture", response_model=ProjectArchitectureTimelineRead)
+async def get_project_architecture_endpoint(
+    project_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+) -> ProjectArchitectureTimelineRead:
+    """Get the architecture timeline for a specific project."""
+    from app.features.architecture_timeline.service import get_project_architecture_timeline
+
+    timeline = await get_project_architecture_timeline(db, project_id)
+    if timeline is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+
+    return ProjectArchitectureTimelineRead.from_timeline(project_id, datetime.now(tz=UTC), timeline)

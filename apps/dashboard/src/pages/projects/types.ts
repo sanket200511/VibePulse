@@ -29,3 +29,35 @@ export interface ProjectIntelligence {
     event_count: number;
   }>;
 }
+
+export interface BiographyEntry {
+  timestamp: string;
+  event_id: string;
+  session_id: string;
+  finding: string;
+}
+
+export interface EngineeringDNARead {
+  identity: string;
+  path: string;
+  created_at: string | null;
+  last_seen: string | null;
+  observed_sessions: number;
+  observed_events: number;
+  functions_created: number;
+  functions_removed: number;
+  classes_created: number;
+  classes_removed: number;
+  imports_added: number;
+  imports_removed: number;
+  security_findings: number;
+  todos_created: number;
+  todos_resolved: number;
+  major_refactors: number;
+  rename_events: number;
+  largest_session: string | null;
+  first_authoring_session: string | null;
+  latest_authoring_session: string | null;
+  age: string;
+  biography: BiographyEntry[];
+}

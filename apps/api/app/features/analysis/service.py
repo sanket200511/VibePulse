@@ -24,6 +24,9 @@ from app.features.analysis.context import build_context
 from app.features.analysis.pipeline import AnalysisPipeline
 from app.features.analysis.registry import ANALYZERS
 from app.features.analysis.repository import AnalysisRepository
+from app.features.architecture_timeline.domain import build_architecture_timeline
+from app.features.architecture_timeline.schemas import ArchitectureTimelineEntryRead
+from app.features.events.connection_manager import connection_manager
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +64,39 @@ async def dispatch(
                         "analyzers_run": len(result.executions),
                     },
                 )
+
+                # Build architectural timeline entries for this single event
+                analyses_dict = {
+                    event.id: {
+                        ex.analyzer_name: ex.finding.findings
+                        for ex in result.executions
+                        if ex.finding
+                    }
+                }
+                timeline = build_architecture_timeline(
+                    [event],
+                    analyses_dict,
+                    session_started_at=event.timestamp,  # dummy for session start/end
+                    session_ended_at=None,
+                )
+                # Filter out SESSION_START / SESSION_END which are artifacts of building
+                real_entries = [
+                    e for e in timeline.entries if e.kind not in ("SESSION_START", "SESSION_END")
+                ]
+                entry_reads = [
+                    ArchitectureTimelineEntryRead.from_entry(e).model_dump(mode="json")
+                    for e in real_entries
+                ]
+
+                await connection_manager.broadcast(
+                    {
+                        "type": "ANALYSIS_COMPLETE",
+                        "event_id": str(event.id),
+                        "session_id": str(event.session_id) if event.session_id else None,
+                        "entries": entry_reads,
+                    }
+                )
+
             except Exception:
                 await db.rollback()
                 raise

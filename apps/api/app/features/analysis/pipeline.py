@@ -60,6 +60,8 @@ class AnalysisPipeline:
         executions: list[AnalyzerExecution] = []
         for analyzer in self._analyzers:
             execution = await self._run_one(analyzer, event, context)
+            if execution.finding:
+                context.current_findings[analyzer.name] = execution.finding.findings
             executions.append(execution)
         return AnalysisResult(event_id=event.id, executions=executions)
 

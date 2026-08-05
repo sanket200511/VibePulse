@@ -71,7 +71,10 @@ export function ReplayView({ replay }: ReplayViewProps) {
         </div>
       </div>
 
-      <div className="bg-card border-border z-10 border-t p-5 pb-6 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] md:p-6">
+      <div
+        data-tour="replay-scrubber"
+        className="bg-card border-border z-10 border-t p-5 pb-6 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] md:p-6"
+      >
         <ReplayControls controller={controller} replay={replay} />
       </div>
     </div>

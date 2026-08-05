@@ -11,8 +11,12 @@ import { Outlet } from "react-router-dom";
 import { Navigation } from "./Navigation";
 import { ThemeToggle } from "../theme/ThemeToggle";
 import { PresentationToggle } from "./PresentationToggle";
+import { useLiveObservability } from "../../lib/useLiveObservability";
+import { ToastProvider } from "../ui/ToastProvider";
 
 export function AppLayout() {
+  useLiveObservability();
+
   return (
     <div className="bg-background text-foreground flex min-h-screen flex-col">
       {/* Visible only on keyboard focus — lets keyboard/screen-reader users
@@ -38,6 +42,7 @@ export function AppLayout() {
       <main id="main-content" className="flex flex-1 flex-col">
         <Outlet />
       </main>
+      <ToastProvider />
     </div>
   );
 }

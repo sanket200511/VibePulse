@@ -110,11 +110,17 @@ function ProjectPulse({ series }: { series: ProjectIntelligence["activity_series
   );
 }
 
-export function ProjectIntelligencePanel({ projectId }: { projectId: string }) {
+export function ProjectIntelligencePanel({
+  projectId,
+  intelligence: providedIntelligence,
+}: {
+  projectId: string;
+  intelligence?: ProjectIntelligence;
+}) {
   const { isDemo } = useDemoMode();
 
   const {
-    data: intelligence,
+    data: queriedIntelligence,
     isLoading,
     isError,
   } = useQuery({
@@ -134,16 +140,18 @@ export function ProjectIntelligencePanel({ projectId }: { projectId: string }) {
       }
       return response.json();
     },
-    enabled: !!projectId,
+    enabled: !!projectId && !providedIntelligence,
   });
 
-  if (isLoading) {
+  if (!providedIntelligence && isLoading) {
     return (
       <div className="border-border bg-card flex h-64 w-full items-center justify-center rounded-xl border p-8 shadow-sm">
         <div className="border-accent-color/30 h-8 w-8 animate-spin rounded-full border-2 border-t-transparent" />
       </div>
     );
   }
+
+  const intelligence = providedIntelligence || queriedIntelligence;
 
   if (isError || !intelligence) {
     return null;
@@ -159,7 +167,10 @@ export function ProjectIntelligencePanel({ projectId }: { projectId: string }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="bg-card border-border overflow-hidden rounded-xl border shadow-sm">
+      <div
+        data-tour="project-pulse"
+        className="bg-card border-border overflow-hidden rounded-xl border shadow-sm"
+      >
         {/* Header Region */}
         <div className="border-border bg-muted-color/20 flex items-center justify-between border-b p-5">
           <div className="flex items-center gap-3">
@@ -195,7 +206,7 @@ export function ProjectIntelligencePanel({ projectId }: { projectId: string }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+      <div data-tour="project-intelligence" className="grid grid-cols-1 gap-6 md:grid-cols-3">
         {/* Language Activity */}
         <div className="bg-card border-border rounded-xl border p-5 shadow-sm">
           <div className="mb-4 flex items-center gap-2">

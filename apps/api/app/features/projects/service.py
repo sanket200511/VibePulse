@@ -48,10 +48,16 @@ async def get_project_intelligence(db: AsyncSession, project_id: uuid.UUID) -> d
 
     metrics_result = (await db.execute(metrics_stmt)).first()
 
-    total_sessions = metrics_result.total_sessions or 0
-    total_events = int(metrics_result.total_events)
-    first_observed = metrics_result.first_observed_at
-    latest_observed = metrics_result.latest_observed_at
+    if metrics_result:
+        total_sessions = metrics_result.total_sessions or 0
+        total_events = int(metrics_result.total_events)
+        first_observed = metrics_result.first_observed_at
+        latest_observed = metrics_result.latest_observed_at
+    else:
+        total_sessions = 0
+        total_events = 0
+        first_observed = None
+        latest_observed = None
 
     # Helper function to aggregate jsonb columns
     async def aggregate_jsonb(column_name: str, limit: int | None = None) -> dict[str, int]:
@@ -66,7 +72,7 @@ async def get_project_intelligence(db: AsyncSession, project_id: uuid.UUID) -> d
             {f"LIMIT {limit}" if limit else ""}
         """)  # noqa: S608
         res = await db.execute(stmt, {"pid": project_id})
-        return {row.key: row.count for row in res}
+        return {row.key: row._mapping["count"] for row in res}
 
     language_activity = await aggregate_jsonb("languages")
     event_composition = await aggregate_jsonb("events_by_type")

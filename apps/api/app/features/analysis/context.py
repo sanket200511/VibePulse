@@ -9,6 +9,7 @@ the events feature (ADR 0002).
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -49,9 +50,36 @@ async def build_context(
     )
     row = result.one()
 
+    previous_findings: dict[str, dict[str, Any]] = {}
+    if event.file_path:
+        prev_analysis_result = await db.execute(
+            text(
+                """
+                SELECT a.analyzer_name, a.findings
+                FROM event_analyses a
+                JOIN development_events e ON a.event_id = e.id
+                WHERE e.project_root = :project_root
+                  AND e.file_path = :file_path
+                  AND e.timestamp < :timestamp
+                ORDER BY e.timestamp DESC
+                """
+            ),
+            {
+                "project_root": event.project_root,
+                "file_path": event.file_path,
+                "timestamp": event.timestamp,
+            },
+        )
+        # Only take the most recent finding for each analyzer
+        for a_row in prev_analysis_result.all():
+            name = a_row.analyzer_name
+            if name not in previous_findings:
+                previous_findings[name] = a_row.findings
+
     return AnalysisContext(
         session_activity=SessionActivityContext(
             events_last_5min=int(row.events_last_5min),
             events_last_hour=int(row.events_last_hour),
         ),
+        previous_findings=previous_findings,
     )

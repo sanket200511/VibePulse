@@ -3,6 +3,13 @@ import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, beforeEach } from "vitest";
 import { WorkspaceHomePage } from "./WorkspaceHomePage";
 import { setDemoMode } from "../../demo/config";
+import { vi } from "vitest";
+
+vi.mock("../../components/presentation", () => ({
+  usePresentation: () => ({
+    start: vi.fn(),
+  }),
+}));
 
 describe("WorkspaceHomePage with Demo Mode Enabled", () => {
   beforeEach(() => {
@@ -16,7 +23,7 @@ describe("WorkspaceHomePage with Demo Mode Enabled", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText(/Presentation Mode active/i)).toBeInTheDocument();
+    expect(screen.getByText(/VibePulse Engineering Observability Platform/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Workspace: VibeSync/i })).toBeInTheDocument();
     expect(screen.getByText(/Path: d:\/VibeSync/i)).toBeInTheDocument();
   });
@@ -75,7 +82,9 @@ describe("WorkspaceHomePage with Demo Mode Disabled", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.queryByText(/Presentation Mode active/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/VibePulse Engineering Observability Platform/i),
+    ).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Workspace: Unselected/i })).toBeInTheDocument();
 
     // Empty state placeholders

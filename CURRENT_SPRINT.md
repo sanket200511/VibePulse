@@ -1,23 +1,24 @@
-# Sprint PX-5.2: Filesystem Observation Architecture
+# Current Sprint
 
-## Status: COMPLETED
+**Sprint PX-10.0: Engineering Story Dashboard (COMPLETE)**
 
-### Completed Phases
+The Engineering Story dashboard has been successfully implemented, transforming VibePulse into a true software engineering narrative platform.
 
-- **Phase A**: Watcher Domain (Complete)
-- **Phase B**: Event Processing (Complete)
-- **Phase C**: Daemon Integration (Complete)
-- **Phase D**: API Integration (Complete)
-  - Implemented daemon/API integration.
-  - Implemented idempotent observation control.
-  - Removed TOCTOU pattern from observation endpoints.
-  - Added `daemon_seq` support to event schemas and models.
-- **Phase E**: Sprint Closure (Complete)
-  - Full regression verification across the entire monorepo (238 backend tests, 134 frontend tests, 102 daemon tests).
-  - Verified repository health (zero TODOs, zero debug logging, zero commented-out code).
-  - Documented complete architecture (ADR-0012, PIPELINE.md).
-  - Synchronized and updated all project status and changelog entries.
+### Completed Capabilities
 
-### Next Steps
+1. **Aggregated Architecture Timeline Engine (`GET /projects/{project_id}/architecture`)**:
+   - A new backend service that aggregates ALL sessions and events for a project.
+   - Deterministically stitches together a complete, project-wide history of code evolution and security findings.
+2. **Project Story Page (`ProjectStoryPage.tsx`)**:
+   - Built the flagship dashboard page under `/projects/:projectId`.
+   - **Hero Section**: Displays high-level aggregated metrics for the project (Total Architecture Changes, Security Issues).
+   - **Project Pulse**: Reused the temporal constellation map to visualize session density.
+   - **Session Journey**: Added a horizontal visualization of session states across the project's history.
+   - **Engineering Journey**: Created a premium vertical timeline that flattens all events across all sessions into a single continuous story.
+   - **Architecture & Security Evolution**: Elegant cards grouping deterministic findings by session.
+3. **Replay Shortcuts**:
+   - Every node on the Engineering Journey links directly to the specific session replay, seeking exactly to the frame where the event occurred.
+4. **Truth Boundary Maintained**:
+   - No AI-generated summaries, productivity scores, or hallucinated metrics were added. Every visual is driven directly by captured `AnalyzableEvents`.
 
-- Proceed to Sprint 8: AI Fingerprint.
+The system is now ready for final presentation. No further features are required for the MVP demonstration.
