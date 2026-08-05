@@ -110,9 +110,15 @@ def create_app() -> FastAPI:
     app.include_router(analysis_router)
     app.include_router(sessions_router)
     app.include_router(timeline_router)
+    from app.features.architecture_timeline.router import router as architecture_timeline_router
+
+    app.include_router(architecture_timeline_router)
     app.include_router(insights_router)
     app.include_router(replay_router)
     app.include_router(session_health_router)
+    from app.features.engineering_dna.router import router as engineering_dna_router
+
+    app.include_router(engineering_dna_router)
 
     return app
 

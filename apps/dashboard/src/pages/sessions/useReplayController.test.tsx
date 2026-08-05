@@ -175,19 +175,21 @@ describe("useReplayController", () => {
     expect(result.current.currentChapter?.id).toBe(2);
   });
 
-  it("resets to frame 0 and stops when the frames array reference changes", () => {
+  it("maintains current frame and playback state when frames array grows (live append)", () => {
     const { result, rerender } = renderHook(
       (props) => useReplayController(props.frames, props.chapters),
       { initialProps: { frames: FRAMES, chapters: CHAPTERS } },
     );
 
-    act(() => result.current.jumpToFrame(2));
+    act(() => result.current.jumpToFrame(1));
     act(() => result.current.play());
 
-    rerender({ frames: [...FRAMES], chapters: CHAPTERS });
+    const newFrames = [...FRAMES, makeFrame({ id: "f3", index: 3, chapter_id: 2 })];
+    rerender({ frames: newFrames, chapters: CHAPTERS });
 
-    expect(result.current.currentIndex).toBe(0);
-    expect(result.current.isPlaying).toBe(false);
+    // It should not reset!
+    expect(result.current.currentIndex).toBe(1);
+    expect(result.current.isPlaying).toBe(true);
   });
 
   it("sets didFinish only when autoplay reaches the end on its own", () => {

@@ -43,10 +43,16 @@ export function useReplayController(
   const lastIndex = frames.length - 1;
 
   useEffect(() => {
-    setCurrentIndex(0);
-    setIsPlaying(false);
-    setDidFinish(false);
-  }, [frames]);
+    // If frames array shrinks (e.g. changing session), reset completely
+    if (frames.length < currentIndex) {
+      setCurrentIndex(0);
+      setIsPlaying(false);
+      setDidFinish(false);
+    } else if (didFinish && lastIndex > currentIndex) {
+      // If we finished, but new frames arrived, we are no longer finished
+      setDidFinish(false);
+    }
+  }, [frames.length, currentIndex, didFinish, lastIndex]);
 
   useEffect(() => {
     if (!isPlaying || lastIndex < 0) return;

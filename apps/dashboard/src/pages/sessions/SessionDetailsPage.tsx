@@ -8,6 +8,8 @@ import { useSessionData } from "./useSessionData";
 import { useSessionHealth } from "./useSessionHealth";
 import { useSessionInsights } from "./useSessionInsights";
 import { useSessionTimeline } from "./useSessionTimeline";
+import { useSessionArchitectureTimeline } from "./useSessionArchitectureTimeline";
+import { ArchitectureTimelinePanel } from "./ArchitectureTimelinePanel";
 import { EmptyState, ErrorState, LoadingState } from "../../components/states";
 
 export function SessionDetailsPage() {
@@ -22,6 +24,9 @@ export function SessionDetailsPage() {
     isLoading: isTimelineLoading,
     isError: isTimelineError,
   } = useSessionTimeline(sessionId ?? "");
+  const { timeline: archTimeline, isLoading: isArchLoading } = useSessionArchitectureTimeline(
+    sessionId ?? "",
+  );
   const { profile, isLoading: isProfileLoading } = useSessionInsights(sessionId ?? "");
 
   const isCompleted = session?.status === "COMPLETED";
@@ -124,6 +129,19 @@ export function SessionDetailsPage() {
             </section>
           )}
           {isProfileLoading && <LoadingState label="Analyzing behavior…" />}
+
+          <section className="flex flex-col gap-4">
+            <h2 className="text-primary-text text-lg font-bold tracking-tight">
+              Architecture Time Machine
+            </h2>
+            {isArchLoading && <LoadingState label="Reconstructing engineering story..." />}
+            {!isArchLoading && archTimeline && (
+              <ArchitectureTimelinePanel
+                timeline={archTimeline}
+                projectId={session?.project_id || undefined}
+              />
+            )}
+          </section>
 
           {isCompleted && (
             <section className="flex flex-col gap-4">

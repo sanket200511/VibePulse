@@ -19,7 +19,9 @@ import {
   Activity,
   Layers,
   CheckCircle,
+  Play,
 } from "lucide-react";
+import { usePresentation } from "../../components/presentation";
 
 /**
  * WorkspaceHomePage
@@ -30,37 +32,55 @@ import {
 export function WorkspaceHomePage() {
   const { isDemo } = useDemoMode();
   const [bannerDismissed, setBannerDismissed] = useState(false);
+  const presentation = usePresentation();
 
   return (
     <div className="bg-background text-foreground animate-fade-in-up flex flex-1 justify-center px-4 py-8 sm:px-6 md:py-12 lg:px-8">
       <div className="flex w-full max-w-5xl flex-col gap-6 md:gap-8">
         {/* Presentation Banner */}
         {isDemo && !bannerDismissed && (
-          <div className="bg-accent-color/[0.08] border-accent-color/20 text-primary-text flex items-center justify-between gap-4 rounded-xl border p-4 shadow-sm backdrop-blur-sm transition-all duration-200">
+          <div
+            data-tour="presentation-welcome"
+            className="bg-accent-color/[0.08] border-accent-color/20 text-primary-text flex items-center justify-between gap-4 rounded-xl border p-4 shadow-sm backdrop-blur-sm transition-all duration-200"
+          >
             <div className="flex items-center gap-3">
               <div className="bg-accent-color/10 flex h-7 w-7 items-center justify-center rounded-lg">
                 <Sparkles className="text-accent-color h-4 w-4 shrink-0" />
               </div>
               <div>
-                <p className="text-sm font-semibold">Presentation Mode Active</p>
+                <p className="text-sm font-semibold">
+                  VibePulse Engineering Observability Platform
+                </p>
                 <p className="text-secondary-text mt-0.5 text-xs">
                   Using local mock telemetry to demonstrate VibePulse.
                 </p>
               </div>
             </div>
-            <button
-              onClick={() => setBannerDismissed(true)}
-              className="text-secondary-text hover:text-primary-text rounded-md p-1 transition-colors"
-              aria-label="Dismiss banner"
-            >
-              <X className="h-4 w-4" />
-            </button>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => presentation.start()}
+                className="bg-accent-color text-background hover:bg-accent-color/90 flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wider shadow-sm transition-colors"
+              >
+                <Play className="h-3.5 w-3.5" /> Start Guided Demo
+              </button>
+              <button
+                onClick={() => setBannerDismissed(true)}
+                className="text-secondary-text hover:text-primary-text rounded-md p-1 transition-colors"
+                aria-label="Dismiss banner"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         )}
 
         <WorkspaceHeader isDemo={isDemo} />
 
-        <main className="grid grid-cols-1 gap-6 lg:grid-cols-[7fr_3fr] lg:gap-8">
+        <main
+          data-tour="presentation-summary"
+          className="grid grid-cols-1 gap-6 lg:grid-cols-[7fr_3fr] lg:gap-8"
+        >
           <PrimaryCanvas isDemo={isDemo} />
           <SecondaryRail isDemo={isDemo} />
         </main>
@@ -370,7 +390,10 @@ export function PrimaryCanvas({ isDemo }: { isDemo: boolean }) {
 
       {/* Projects */}
       <DashboardSection title="Projects">
-        <div className="bg-card border-border hover:border-accent-color/20 rounded-xl border p-6 shadow-sm transition-all duration-200">
+        <div
+          data-tour="workspace-projects"
+          className="bg-card border-border hover:border-accent-color/20 rounded-xl border p-6 shadow-sm transition-all duration-200"
+        >
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {demoProjects.map((project) => {
               return (

@@ -15,6 +15,9 @@ dependencies = [
   "redis>=5.2.1",
   "python-dotenv>=1.0.1",
   "httpx>=0.28.1",
+  "tree-sitter>=0.26.0",
+  "tree-sitter-python>=0.25.0",
+  "tree-sitter-typescript>=0.23.2",
 ]
 
 [dependency-groups]

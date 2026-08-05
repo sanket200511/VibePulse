@@ -89,3 +89,4 @@ coverage/
 # Misc
 *.pem
 .cache/
+TeMpPy/

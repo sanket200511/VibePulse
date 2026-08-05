@@ -30,6 +30,7 @@ export function EventsPage() {
           <table className="w-full border-collapse text-left">
             <thead>
               <tr className="border-border text-muted-foreground border-b text-xs uppercase">
+                <th className="w-8 px-4 py-3 font-medium"></th>
                 <th className="px-4 py-3 font-medium">Time</th>
                 <th className="px-4 py-3 font-medium">Event</th>
                 <th className="px-4 py-3 font-medium">File</th>
