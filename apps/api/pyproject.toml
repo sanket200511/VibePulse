@@ -48,8 +48,6 @@ select = [
   "RUF", # ruff-specific
 ]
 ignore = [
-  "ANN101", # missing type annotation for self
-  "ANN102", # missing type annotation for cls
   "S101",   # use of assert (fine in tests)
   "B008",   # FastAPI's Depends() in defaults is the idiomatic DI pattern
 ]

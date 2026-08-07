@@ -10,7 +10,7 @@ name: vibepulse
 #   postgres   – Primary database          → localhost:5432
 #   redis      – Cache / pub-sub           → localhost:6379
 #   pgadmin    – Database GUI              → http://localhost:5050
-#   api        – FastAPI backend           → http://localhost:8000
+#   api        – FastAPI backend           → http://localhost:8080
 #
 # Dashboard and Daemon are intentionally run via `pnpm dev` (outside Docker)
 # during local development for a faster hot-reload experience.
@@ -90,16 +90,16 @@ services:
       DEBUG: "true"
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-vibepulse}:${POSTGRES_PASSWORD:-vibepulse_dev}@postgres:5432/${POSTGRES_DB:-vibepulse}
       REDIS_URL: redis://redis:6379/0
-      CORS_ORIGINS: '["http://localhost:5173"]'
+      CORS_ORIGINS: '["http://localhost:3000","http://localhost:5173","http://127.0.0.1:3000","http://127.0.0.1:5173"]'
     ports:
-      - "${API_PORT:-8000}:8000"
+      - "${API_PORT:-8080}:8080"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 15s
       timeout: 5s
       retries: 5

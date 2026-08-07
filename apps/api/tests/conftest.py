@@ -2,11 +2,14 @@
 Shared test fixtures.
 
 Tests run against a real Postgres instance (DATABASE_URL from the
-environment, defaulting to the local docker-compose database) — the
+environment, defaulting to the local Postgres database on port 5432) — the
 events feature relies on Postgres-only column types (JSONB, native UUID)
 so an in-memory SQLite substitute would not exercise the real schema.
 """
 
+import asyncio
+import functools
+import time
 from collections.abc import AsyncGenerator
 
 import pytest
@@ -17,6 +20,41 @@ from app.features.analysis.models import EventAnalysis  # noqa: F401 - registers
 from app.features.events.models import DevelopmentEvent
 from app.features.sessions.models import Session
 from app.main import app
+from fastapi import BackgroundTasks
+
+# --- MODULE LEVEL PATCH FOR BACKGROUND TASKS ---
+if not hasattr(BackgroundTasks, "_patched_for_tests"):
+    BackgroundTasks._patched_for_tests = True
+    BackgroundTasks._pending_tasks = 0
+
+    orig_add_task = BackgroundTasks.add_task
+
+    def patched_add_task(self, func, *args, **kwargs):
+        BackgroundTasks._pending_tasks += 1
+
+        # Wrap the actual function to decrement
+        if asyncio.iscoroutinefunction(func):
+
+            @functools.wraps(func)
+            async def wrapper(*a, **kw):
+                try:
+                    return await func(*a, **kw)
+                finally:
+                    BackgroundTasks._pending_tasks -= 1
+        else:
+
+            @functools.wraps(func)
+            def wrapper(*a, **kw):
+                try:
+                    return func(*a, **kw)
+                finally:
+                    BackgroundTasks._pending_tasks -= 1
+
+        return orig_add_task(self, wrapper, *args, **kwargs)
+
+    BackgroundTasks.add_task = patched_add_task
+# -----------------------------------------------
+
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
@@ -50,6 +88,19 @@ async def _clean_rows(_schema: None) -> AsyncGenerator[None, None]:
     shouldn't.
     """
     yield
+
+    # Wait briefly to ensure background tasks are scheduled
+    await asyncio.sleep(0.05)
+
+    # Wait for all running background tasks to finish so we don't delete rows out from under them
+    start_wait = time.time()
+    while hasattr(BackgroundTasks, "_pending_tasks") and BackgroundTasks._pending_tasks > 0:
+        if time.time() - start_wait > 5.0:
+            print("WARNING: Timed out waiting for background tasks to finish in test teardown")
+            BackgroundTasks._pending_tasks = 0
+            break
+        await asyncio.sleep(0.01)
+
     async with test_engine.begin() as conn:
         # event_analyses has ON DELETE CASCADE from event_id, so deleting
         # development_events automatically removes all child analyses.
@@ -90,6 +141,7 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
             raise
 
     app.dependency_overrides[get_db] = _override_get_db
+
     # The events router's BackgroundTasks call opens its own session via this
     # factory (get_db's session may already be closed by the time the task
     # runs). Overriding it here keeps that background session on test_engine
