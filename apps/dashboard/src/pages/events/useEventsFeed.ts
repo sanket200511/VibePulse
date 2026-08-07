@@ -3,8 +3,8 @@
  * the /ws/events broadcast — no polling.
  */
 
-import { useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getApiBaseUrl, getWsUrl } from "../../lib/api-config";
 import { connectWs, type WsStatus } from "../../lib/ws-client";
 import type { DevelopmentEvent } from "./types";
@@ -34,20 +34,17 @@ export interface UseEventsFeedResult {
 }
 
 export function useEventsFeed(): UseEventsFeedResult {
-  const initialQuery = useQuery({
+  const queryClient = useQueryClient();
+  const [connectionStatus, setConnectionStatus] = useState<WsStatus>("connecting");
+
+  const {
+    data: events = [],
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["events"],
     queryFn: fetchRecentEvents,
   });
-
-  const [events, setEvents] = useState<DevelopmentEvent[]>([]);
-  const [connectionStatus, setConnectionStatus] = useState<WsStatus>("connecting");
-  const seenIds = useRef<Set<string>>(new Set());
-
-  useEffect(() => {
-    if (!initialQuery.data) return;
-    setEvents(initialQuery.data);
-    seenIds.current = new Set(initialQuery.data.map((event) => event.id));
-  }, [initialQuery.data]);
 
   useEffect(() => {
     const client = connectWs({
@@ -55,19 +52,21 @@ export function useEventsFeed(): UseEventsFeedResult {
       onStatusChange: setConnectionStatus,
       onMessage: (data) => {
         const event = data as DevelopmentEvent;
-        if (seenIds.current.has(event.id)) return;
-        seenIds.current.add(event.id);
-        setEvents((prev) => [event, ...prev].slice(0, MAX_EVENTS));
+        queryClient.setQueryData<DevelopmentEvent[]>(["events"], (oldEvents) => {
+          if (!oldEvents) return [event];
+          if (oldEvents.some((e) => e.id === event.id)) return oldEvents;
+          return [event, ...oldEvents].slice(0, MAX_EVENTS);
+        });
       },
     });
 
     return () => client.close();
-  }, []);
+  }, [queryClient]);
 
   return {
     events,
     connectionStatus,
-    isLoading: initialQuery.isLoading,
-    isError: initialQuery.isError,
+    isLoading,
+    isError,
   };
 }

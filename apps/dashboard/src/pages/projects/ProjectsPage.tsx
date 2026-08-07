@@ -42,7 +42,7 @@ export function ProjectCard({ project }: { project: Project }) {
         </div>
       </div>
 
-      <div className="border-border mt-6 mt-auto flex flex-col gap-y-3.5 border-t pt-4 text-[11px]">
+      <div className="border-border mt-auto flex flex-col gap-y-3.5 border-t pt-4 text-[11px]">
         <div>
           <span className="text-muted-foreground block text-[9px] font-semibold uppercase tracking-wider">
             Last Activity
@@ -68,7 +68,7 @@ export function ProjectsPage() {
   const projectsQuery = useQuery({
     queryKey: ["projects"],
     queryFn: async (): Promise<Project[]> => {
-      const response = await fetch(new URL("/projects", getApiBaseUrl()).toString());
+      const response = await fetch(new URL("/api/projects", getApiBaseUrl()).toString());
       if (!response.ok) {
         throw new Error(`Failed to load projects (${response.status})`);
       }

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useDemoMode } from "../../demo/config";
 import { demoStory } from "../../demo/story";
 import { demoTimeline } from "../../demo/timeline";
@@ -20,8 +21,18 @@ import {
   Layers,
   CheckCircle,
   Play,
+  FolderKanban,
+  Wifi,
+  WifiOff,
+  History,
+  ArrowRight,
 } from "lucide-react";
 import { usePresentation } from "../../components/presentation";
+import { useCurrentSession } from "../sessions/useCurrentSession";
+import { useSessionsData } from "../sessions/useSessionsData";
+import { getApiBaseUrl } from "../../lib/api-config";
+import { formatRelativeTime } from "../../lib/relative-time";
+import type { Project } from "../projects/types";
 
 /**
  * WorkspaceHomePage
@@ -90,23 +101,69 @@ export function WorkspaceHomePage() {
 }
 
 /**
+ * LiveWorkspaceHeader — real daemon-connected header for non-demo mode
+ */
+function LiveWorkspaceHeader() {
+  const { session, connectionStatus } = useCurrentSession();
+  const wsConnected = connectionStatus === "open";
+
+  return (
+    <header className="border-border bg-card rounded-xl border p-6 shadow-sm transition-all duration-200">
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <span className="text-secondary-text text-[10px] font-bold uppercase tracking-wider">
+              Workspace
+            </span>
+            {wsConnected ? (
+              <span className="bg-success-color/10 border-success-color/20 text-success-color flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider">
+                <span className="bg-success-color h-1.5 w-1.5 animate-pulse rounded-full" />
+                Live
+              </span>
+            ) : (
+              <span className="bg-muted/30 text-muted-foreground rounded-full border border-transparent px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider">
+                Connecting…
+              </span>
+            )}
+          </div>
+          <h1 className="text-primary-text text-xl font-bold tracking-tight">
+            {session ? (session.project_root.split(/[/\\]/).pop() ?? "Workspace") : "VibePulse"}
+          </h1>
+          {session && (
+            <p className="text-secondary-text mt-0.5 font-mono text-xs">{session.project_root}</p>
+          )}
+        </div>
+        {session && (
+          <div className="flex gap-3">
+            <div className="bg-muted-color/40 border-border min-w-[90px] rounded-lg border px-4 py-2">
+              <span className="text-secondary-text block text-[9px] font-bold uppercase tracking-wider">
+                Events
+              </span>
+              <span className="text-primary-text mt-0.5 text-sm font-semibold">
+                {session.event_count}
+              </span>
+            </div>
+            <div className="bg-muted-color/40 border-border min-w-[90px] rounded-lg border px-4 py-2">
+              <span className="text-secondary-text block text-[9px] font-bold uppercase tracking-wider">
+                Language
+              </span>
+              <span className="text-primary-text mt-0.5 text-sm font-semibold">
+                {session.primary_language ?? "—"}
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+    </header>
+  );
+}
+
+/**
  * WorkspaceHeader
  */
 export function WorkspaceHeader({ isDemo }: { isDemo: boolean }) {
   if (!isDemo) {
-    return (
-      <header className="border-border bg-card rounded-xl border p-6 shadow-sm transition-all duration-200">
-        <div className="flex flex-col gap-2">
-          <span className="text-secondary-text text-[10px] font-bold uppercase tracking-wider">
-            Workspace
-          </span>
-          <h1 className="text-primary-text text-xl font-bold tracking-tight">
-            Workspace: Unselected
-          </h1>
-          <p className="text-secondary-text mt-1 text-sm">No active workspace path</p>
-        </div>
-      </header>
-    );
+    return <LiveWorkspaceHeader />;
   }
 
   return (
@@ -186,37 +243,233 @@ export function WorkspaceHeader({ isDemo }: { isDemo: boolean }) {
 }
 
 /**
+ * LivePrimaryCanvas — real workspace data for non-demo mode
+ */
+function LivePrimaryCanvas() {
+  const { session, connectionStatus, isLoading: sessionLoading } = useCurrentSession();
+  const { sessions, isLoading: sessionsLoading } = useSessionsData();
+
+  const projectsQuery = useQuery({
+    queryKey: ["projects"],
+    queryFn: async (): Promise<Project[]> => {
+      const res = await fetch(new URL("/api/projects", getApiBaseUrl()).toString());
+      if (!res.ok) throw new Error("Failed to load projects");
+      const data = await res.json();
+      return data.projects;
+    },
+  });
+
+  const wsConnected = connectionStatus === "open";
+  const recentSessions = sessions.slice(0, 5);
+
+  return (
+    <div className="flex flex-col gap-6 lg:gap-8">
+      {/* Connection Status Hero */}
+      <DashboardSection title="Observation Status">
+        <div className="bg-card border-border rounded-xl border p-6 shadow-sm">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div
+                className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+                  wsConnected
+                    ? "bg-success-color/10 text-success-color"
+                    : "bg-muted-foreground/10 text-muted-foreground"
+                }`}
+              >
+                {wsConnected ? <Wifi className="h-5 w-5" /> : <WifiOff className="h-5 w-5" />}
+              </div>
+              <div>
+                <p className="text-primary-text text-sm font-semibold">
+                  {wsConnected ? "Daemon Connected" : "Awaiting Daemon"}
+                </p>
+                <p className="text-secondary-text text-xs">
+                  {wsConnected
+                    ? "Real-time telemetry stream active"
+                    : "Start the VibePulse daemon to begin observing"}
+                </p>
+              </div>
+            </div>
+            {wsConnected && (
+              <span className="bg-success-color/10 border-success-color/20 text-success-color flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-wider">
+                <span className="bg-success-color h-1.5 w-1.5 animate-pulse rounded-full" />
+                Live
+              </span>
+            )}
+          </div>
+
+          {/* Active session banner */}
+          {!sessionLoading && session && (
+            <div className="bg-accent-color/5 border-accent-color/20 mt-4 rounded-lg border p-4">
+              <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-accent-color text-[10px] font-bold uppercase tracking-wider">
+                    Active Session
+                  </p>
+                  <p className="text-primary-text mt-0.5 truncate text-sm font-semibold">
+                    {session.summary?.headline || session.project_root.split(/[\\/]/).pop()}
+                  </p>
+                  <p className="text-secondary-text mt-0.5 font-mono text-[10px]">
+                    {session.event_count} events · {session.primary_language ?? "Unknown"}
+                  </p>
+                </div>
+                <Link
+                  to={`/sessions/${session.id}`}
+                  className="bg-accent-color hover:bg-accent-color/90 shrink-0 rounded-lg px-4 py-2 text-xs font-bold text-white transition-colors"
+                >
+                  View
+                </Link>
+              </div>
+            </div>
+          )}
+          {!sessionLoading && !session && wsConnected && (
+            <p className="text-secondary-text mt-4 text-xs">
+              No active session — start coding in an observed project to begin.
+            </p>
+          )}
+        </div>
+      </DashboardSection>
+
+      {/* Projects */}
+      <DashboardSection title="Projects">
+        {projectsQuery.isLoading ? (
+          <div className="border-border bg-card rounded-xl border p-6">
+            <div className="flex items-center gap-3">
+              <div className="border-accent-color/30 h-5 w-5 animate-spin rounded-full border-2 border-t-transparent" />
+              <span className="text-secondary-text text-sm">Loading projects…</span>
+            </div>
+          </div>
+        ) : (projectsQuery.data ?? []).length === 0 ? (
+          <div className="border-border bg-card rounded-xl border p-6">
+            <div className="flex items-center gap-3">
+              <FolderKanban className="text-muted-foreground h-5 w-5" />
+              <div>
+                <p className="text-primary-text text-sm font-semibold">No projects observed yet</p>
+                <p className="text-secondary-text text-xs">
+                  Start the daemon in a project directory to begin observing.
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div
+            data-tour="workspace-projects"
+            className="bg-card border-border rounded-xl border p-6 shadow-sm"
+          >
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {(projectsQuery.data ?? []).slice(0, 6).map((project) => (
+                <Link
+                  key={project.id}
+                  to={`/projects/${project.id}`}
+                  className="bg-muted-color/30 border-border hover:border-accent-color/30 group block rounded-xl border p-4 transition-all duration-200 hover:shadow-sm"
+                >
+                  <h4 className="text-primary-text group-hover:text-accent-color text-sm font-semibold transition-colors">
+                    {project.display_name}
+                  </h4>
+                  <p
+                    className="text-secondary-text mt-1.5 truncate font-mono text-[10px]"
+                    title={project.root_path}
+                  >
+                    {project.root_path}
+                  </p>
+                  <div className="border-border mt-4 flex items-center justify-between border-t pt-3 text-[10px]">
+                    <span className="text-secondary-text">Last active</span>
+                    <span className="text-primary-text font-medium">
+                      {new Date(project.updated_at).toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+            {(projectsQuery.data ?? []).length > 6 && (
+              <div className="mt-4 text-center">
+                <Link
+                  to="/projects"
+                  className="text-accent-color hover:text-accent-color/80 text-sm font-medium transition-colors"
+                >
+                  View all {projectsQuery.data!.length} projects →
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
+      </DashboardSection>
+
+      {/* Recent Sessions */}
+      <DashboardSection title="Recent Sessions">
+        {sessionsLoading ? (
+          <div className="border-border bg-card rounded-xl border p-6">
+            <div className="flex items-center gap-3">
+              <div className="border-accent-color/30 h-5 w-5 animate-spin rounded-full border-2 border-t-transparent" />
+              <span className="text-secondary-text text-sm">Loading sessions…</span>
+            </div>
+          </div>
+        ) : recentSessions.length === 0 ? (
+          <div className="border-border bg-card rounded-xl border p-6">
+            <div className="flex items-center gap-3">
+              <History className="text-muted-foreground h-5 w-5" />
+              <div>
+                <p className="text-primary-text text-sm font-semibold">No sessions recorded yet</p>
+                <p className="text-secondary-text text-xs">
+                  Sessions appear automatically when coding activity is detected.
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-card border-border divide-border divide-y rounded-xl border shadow-sm">
+            {recentSessions.map((s) => (
+              <Link
+                key={s.id}
+                to={`/sessions/${s.id}`}
+                className="hover:bg-muted/30 flex items-center justify-between gap-4 p-4 transition-colors first:rounded-t-xl last:rounded-b-xl"
+              >
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${
+                        s.status === "ACTIVE"
+                          ? "bg-success-color animate-pulse"
+                          : s.status === "IDLE"
+                            ? "bg-warning-color"
+                            : "bg-muted-foreground"
+                      }`}
+                    />
+                    <p className="text-primary-text truncate text-sm font-semibold">
+                      {s.summary?.headline ?? s.project_root.split(/[\\/]/).pop()}
+                    </p>
+                  </div>
+                  <p className="text-secondary-text mt-0.5 font-mono text-[10px]">
+                    {s.event_count} events · {s.primary_language ?? "Unknown"} ·{" "}
+                    {formatRelativeTime(s.last_event_at)}
+                  </p>
+                </div>
+                <ArrowRight className="text-muted-foreground h-4 w-4 shrink-0" />
+              </Link>
+            ))}
+            <div className="p-4 text-center">
+              <Link
+                to="/history"
+                className="text-accent-color hover:text-accent-color/80 text-sm font-medium transition-colors"
+              >
+                View all sessions →
+              </Link>
+            </div>
+          </div>
+        )}
+      </DashboardSection>
+    </div>
+  );
+}
+
+/**
  * PrimaryCanvas
  */
 export function PrimaryCanvas({ isDemo }: { isDemo: boolean }) {
   if (!isDemo) {
-    return (
-      <div className="flex flex-col gap-6 lg:gap-8">
-        <DashboardSection title="Today's Story">
-          <div className="border-border bg-card rounded-lg border p-6">
-            <p className="text-secondary-text text-sm font-medium">Story Card</p>
-          </div>
-        </DashboardSection>
-
-        <DashboardSection title="Current Session">
-          <div className="border-border bg-card rounded-lg border p-6">
-            <p className="text-secondary-text text-sm font-medium">Current Session</p>
-          </div>
-        </DashboardSection>
-
-        <DashboardSection title="Timeline Preview">
-          <div className="border-border bg-card rounded-lg border p-6">
-            <p className="text-secondary-text text-sm font-medium">Timeline Preview</p>
-          </div>
-        </DashboardSection>
-
-        <DashboardSection title="Projects">
-          <div className="border-border bg-card rounded-lg border p-6">
-            <p className="text-secondary-text text-sm font-medium">Projects</p>
-          </div>
-        </DashboardSection>
-      </div>
-    );
+    return <LivePrimaryCanvas />;
   }
 
   return (
@@ -400,7 +653,7 @@ export function PrimaryCanvas({ isDemo }: { isDemo: boolean }) {
                 <Link
                   key={project.id}
                   to={`/projects/${project.id}`}
-                  className="bg-muted-color/30 border-border hover:border-accent-color/30 group block flex cursor-pointer flex-col justify-between rounded-xl border p-4 transition-all duration-200 hover:shadow-sm"
+                  className="bg-muted-color/30 border-border hover:border-accent-color/30 group flex cursor-pointer flex-col justify-between rounded-xl border p-4 transition-all duration-200 hover:shadow-sm"
                 >
                   <div>
                     <h4 className="text-primary-text group-hover:text-accent-color text-sm font-semibold transition-colors">
@@ -492,31 +745,96 @@ function TimelineItem({ item }: { item: (typeof demoTimeline)[0] }) {
 }
 
 /**
+ * LiveSecondaryRail — live daemon status for non-demo mode
+ */
+function LiveSecondaryRail() {
+  const { session, connectionStatus } = useCurrentSession();
+  const wsConnected = connectionStatus === "open";
+
+  return (
+    <aside className="flex flex-col gap-6 lg:gap-8">
+      <DashboardSection title="Daemon Status">
+        <div className="bg-card border-border rounded-xl border p-5 shadow-sm">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-3">
+              <div
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+                  wsConnected
+                    ? "bg-success-color/10 border-success-color/20 text-success-color animate-pulse border"
+                    : "bg-muted/30 text-muted-foreground border border-transparent"
+                }`}
+              >
+                <Activity className="h-4 w-4" />
+              </div>
+              <div>
+                <h4 className="text-primary-text text-sm font-semibold">
+                  {wsConnected ? "Observing" : "Disconnected"}
+                </h4>
+                <p className="text-secondary-text text-[10px]">
+                  {wsConnected ? "Passive telemetry active" : "Run `pnpm dev` to connect"}
+                </p>
+              </div>
+            </div>
+
+            {session && (
+              <div className="bg-muted-color/30 border-border flex flex-col gap-2 rounded-lg border p-3 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-secondary-text">Events captured</span>
+                  <span className="text-primary-text font-semibold">{session.event_count}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-secondary-text">Language</span>
+                  <span className="text-primary-text font-semibold">
+                    {session.primary_language ?? "—"}
+                  </span>
+                </div>
+                <div className="border-border border-t pt-2">
+                  <span className="text-secondary-text block text-[9px] font-semibold uppercase tracking-wider">
+                    Observed Path
+                  </span>
+                  <span className="text-primary-text mt-1 block truncate font-mono text-[10px]">
+                    {session.project_root}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </DashboardSection>
+
+      <DashboardSection title="Quick Links">
+        <div className="bg-card border-border flex flex-col divide-y rounded-xl border shadow-sm">
+          {(
+            [
+              { label: "View All Projects", to: "/projects", icon: FolderKanban },
+              { label: "Session History", to: "/history", icon: History },
+              { label: "Investigation Engine", to: "/investigation", icon: Activity },
+            ] as const
+          ).map(({ label, to, icon: Icon }) => (
+            <Link
+              key={to}
+              to={to}
+              className="hover:bg-muted/30 flex items-center justify-between gap-3 px-4 py-3 text-sm transition-colors first:rounded-t-xl last:rounded-b-xl"
+            >
+              <div className="flex items-center gap-3">
+                <Icon className="text-muted-foreground h-4 w-4" />
+                <span className="text-primary-text font-medium">{label}</span>
+              </div>
+              <ArrowRight className="text-muted-foreground h-3.5 w-3.5" />
+            </Link>
+          ))}
+        </div>
+      </DashboardSection>
+    </aside>
+  );
+}
+
+/**
  * SecondaryRail
  */
 export function SecondaryRail({ isDemo }: { isDemo: boolean }) {
   if (!isDemo) {
-    return (
-      <aside className="flex flex-col gap-6 lg:gap-8">
-        <DashboardSection title="Observation Status">
-          <div className="border-border bg-card rounded-lg border p-6">
-            <p className="text-secondary-text text-sm font-medium">Observation Status</p>
-          </div>
-        </DashboardSection>
-
-        <DashboardSection title="Focus">
-          <div className="border-border bg-card rounded-lg border p-6">
-            <p className="text-secondary-text text-sm font-medium">Focus</p>
-          </div>
-        </DashboardSection>
-
-        <DashboardSection title="AI Reflection">
-          <div className="border-border bg-card rounded-lg border p-6">
-            <p className="text-secondary-text text-sm font-medium">AI Reflection</p>
-          </div>
-        </DashboardSection>
-      </aside>
-    );
+    return <LiveSecondaryRail />;
   }
 
   return (

@@ -266,7 +266,7 @@ export function EngineeringDNAPage() {
       {/* LEFT SIDEBAR: IDENTITY & SCORECARD                        */}
       {/* ───────────────────────────────────────────────────────── */}
       <aside className="z-10 hidden w-[340px] flex-shrink-0 flex-col overflow-y-auto border-r border-zinc-800/60 bg-zinc-900/20 shadow-2xl backdrop-blur-xl lg:flex">
-        <div className="sticky top-0 z-20 border-b border-zinc-800/60 bg-zinc-950/80 p-6 pb-0 pb-6 backdrop-blur">
+        <div className="sticky top-0 z-20 border-b border-zinc-800/60 bg-zinc-950/80 p-6 backdrop-blur">
           <Link
             to={`/projects/${projectId}`}
             className="group mb-6 flex w-fit items-center gap-2 rounded-md text-sm font-medium text-zinc-500 transition-all hover:text-zinc-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
