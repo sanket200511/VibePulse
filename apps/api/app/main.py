@@ -119,6 +119,12 @@ def create_app() -> FastAPI:
     from app.features.engineering_dna.router import router as engineering_dna_router
 
     app.include_router(engineering_dna_router)
+    from app.features.ai_provenance.router import router as ai_provenance_router
+
+    app.include_router(ai_provenance_router)
+    from app.features.investigation.router import router as investigation_router
+
+    app.include_router(investigation_router)
 
     return app
 

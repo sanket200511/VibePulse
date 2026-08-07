@@ -66,11 +66,18 @@ async function main(): Promise<void> {
   // drainQueue() is fire-and-forget: called each time a debounced event is
   // enqueued. If the API is unavailable, the publisher retries internally;
   // after exhausting retries the event is logged and dropped (not re-queued).
+  let isDraining = false;
   async function drainQueue(): Promise<void> {
-    while (!queue.isEmpty()) {
-      const event = queue.dequeue();
-      if (!event) break;
-      await publisher.publish(event);
+    if (isDraining) return;
+    isDraining = true;
+    try {
+      while (!queue.isEmpty()) {
+        const event = queue.dequeue();
+        if (!event) break;
+        await publisher.publish(event);
+      }
+    } finally {
+      isDraining = false;
     }
   }
 

@@ -39,17 +39,6 @@ async def dispatch(
     event: AnalyzableEvent,
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
-    """
-    Run the analysis pipeline for ``event`` in a dedicated DB session.
-
-    Parameters
-    ----------
-    event:
-        The immutable domain snapshot built from the just-stored event.
-    session_factory:
-        ``AsyncSessionLocal`` from ``app.core.database`` — injected so that
-        this function is independently testable without the application context.
-    """
     try:
         async with session_factory() as db:
             try:
@@ -99,7 +88,7 @@ async def dispatch(
 
             except Exception:
                 await db.rollback()
-                raise
+                logger.exception("Analysis pipeline failed")
     except Exception:
         logger.error(
             "analysis_dispatch_error",

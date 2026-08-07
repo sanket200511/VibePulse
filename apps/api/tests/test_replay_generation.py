@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from app.core.domain.events import AnalyzableEvent
 from app.features.replay.domain import (
@@ -32,7 +33,7 @@ BASE_TIME = datetime(2026, 7, 1, 12, 0, 0, tzinfo=UTC)
 SESSION_ID = uuid.uuid4()
 
 
-def _event(offset_seconds: float, **kwargs: object) -> AnalyzableEvent:
+def _event(offset_seconds: float, **kwargs: Any) -> AnalyzableEvent:
     defaults: dict = {
         "id": uuid.uuid4(),
         "event_type": "FILE_MODIFIED",
@@ -50,7 +51,7 @@ def _event(offset_seconds: float, **kwargs: object) -> AnalyzableEvent:
     return AnalyzableEvent(**defaults)
 
 
-def _timeline(events: list[AnalyzableEvent], **kwargs: object):
+def _timeline(events: list[AnalyzableEvent], **kwargs: Any):
     default_start = events[0].timestamp if events else BASE_TIME
     return render_timeline(
         events,
@@ -61,7 +62,7 @@ def _timeline(events: list[AnalyzableEvent], **kwargs: object):
     )
 
 
-def _replay(events: list[AnalyzableEvent], **kwargs: object):
+def _replay(events: list[AnalyzableEvent], **kwargs: Any):
     timeline = _timeline(events, **kwargs)
     return render(timeline.entries, session_id=SESSION_ID, generated_at=BASE_TIME)
 

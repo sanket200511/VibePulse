@@ -21,6 +21,7 @@ from datetime import UTC, datetime
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.logging import get_logger
 from app.features.sessions import service
@@ -79,11 +80,18 @@ async def get_session(
 
 @router.websocket("/ws/sessions")
 async def sessions_websocket(websocket: WebSocket) -> None:
+    settings = get_settings()
+    origin = websocket.headers.get("origin")
+    allowed_origins = [str(o).rstrip("/") for o in settings.cors_origins]
+
+    if origin and origin not in allowed_origins:
+        await websocket.close(code=1008, reason="Origin not allowed")
+        return
+
     await session_connection_manager.connect(websocket)
     try:
         while True:
-            # Broadcast-only; still need to await something so the server
-            # notices a client disconnect.
+            # Broadcast-only endpoint; wait for client disconnect
             await websocket.receive_text()
     except WebSocketDisconnect:
         session_connection_manager.disconnect(websocket)
