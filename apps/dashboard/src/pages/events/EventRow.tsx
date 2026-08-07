@@ -37,8 +37,13 @@ export function EventRow({ event }: EventRowProps) {
           {time}
         </td>
         <td className="px-4 py-2">
-          <Badge variant={EVENT_BADGE_VARIANT[event.event_type]}>
-            {EVENT_LABEL[event.event_type]}
+          <Badge
+            variant={
+              EVENT_BADGE_VARIANT[event.event_type as keyof typeof EVENT_BADGE_VARIANT] || "default"
+            }
+          >
+            {EVENT_LABEL[event.event_type as keyof typeof EVENT_LABEL] ||
+              event.event_type.replace(/_/g, " ")}
           </Badge>
         </td>
         <td className="text-foreground px-4 py-2 font-mono text-sm">{event.file_path}</td>

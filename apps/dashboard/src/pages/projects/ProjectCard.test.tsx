@@ -24,13 +24,15 @@ describe("ProjectCard", () => {
     );
 
     const card = screen.getByRole("link");
-    expect(card.className).toContain("ring-2 ring-accent-color");
+    expect(card.className).toContain("ring-2");
+    expect(card.className).toContain("ring-accent-color");
 
     // After 1 second, pulse should clear
     act(() => {
       vi.advanceTimersByTime(1100);
     });
-    expect(card.className).not.toContain("ring-2 ring-accent-color");
+    expect(card.className).not.toContain("ring-2");
+    expect(card.className).not.toContain("ring-accent-color");
 
     // New telemetry arrives (updated_at changes)
     rerender(
@@ -40,6 +42,7 @@ describe("ProjectCard", () => {
     );
 
     // Pulse should trigger again
-    expect(card.className).toContain("ring-2 ring-accent-color");
+    expect(card.className).toContain("ring-2");
+    expect(card.className).toContain("ring-accent-color");
   });
 });

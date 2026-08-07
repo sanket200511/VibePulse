@@ -50,10 +50,13 @@ export function EventsPage() {
         {isError && <ErrorState message="We couldn't reach the API. Retrying in the background…" />}
 
         {!isLoading && !isError && events.length === 0 && (
-          <EmptyState
-            title="No events yet"
-            description="Save a file in an observed project and it will appear here."
-          />
+          <div className="p-8">
+            <EmptyState
+              title="No events yet"
+              description="Save a file in an observed project and it will appear here instantly."
+              footer={<span>Tip: Ensure the VibePulse Daemon is running in your terminal.</span>}
+            />
+          </div>
         )}
       </div>
     </div>

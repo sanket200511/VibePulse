@@ -12,7 +12,18 @@ export interface TourStep {
   afterLeave?: () => Promise<void> | void;
 }
 
+export type EngineState =
+  | "IDLE"
+  | "STARTING"
+  | "WAITING_FOR_TARGET"
+  | "SHOWING_TOOLTIP"
+  | "TRANSITIONING"
+  | "COMPLETED"
+  | "CANCELLED"
+  | "ERROR";
+
 export interface PresentationState {
+  state: EngineState;
   running: boolean;
   stepIndex: number;
   currentStep: TourStep | null;
@@ -24,4 +35,6 @@ export interface PresentationState {
   start: (options?: { projectId?: string; sessionId?: string }) => void;
   stop: () => void;
   goTo: (step: number) => void;
+  reportError: (error: Error) => void;
+  targetFound: () => void;
 }

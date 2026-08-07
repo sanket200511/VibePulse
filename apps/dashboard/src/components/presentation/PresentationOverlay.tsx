@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import type { TourStep } from "./types";
 import { PresentationTooltip } from "./PresentationTooltip";
+import { usePresentation } from "./PresentationContext";
 
 interface Rect {
   top: number;
@@ -13,9 +14,13 @@ export function PresentationOverlay({ step }: { step: TourStep }) {
   const [targetRect, setTargetRect] = useState<Rect | null>(null);
   const [isReady, setIsReady] = useState(false);
   const observerRef = useRef<ResizeObserver | null>(null);
+  const { state, targetFound, reportError, stop } = usePresentation();
 
   useEffect(() => {
     let rafId: number;
+    const startTime = Date.now();
+    const MAX_WAIT_MS = 3000;
+
     const checkElement = () => {
       const el = document.querySelector(`[data-tour="${step.target}"]`);
       if (el) {
@@ -47,13 +52,15 @@ export function PresentationOverlay({ step }: { step: TourStep }) {
         updateRect();
 
         // Only scroll into view if it's very out of bounds
-        // (but usually we trust the page layout)
         el.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
 
         window.addEventListener("scroll", updateRect, { passive: true });
 
         // Wait a tiny bit for scrolling to settle before showing tooltip
-        setTimeout(() => setIsReady(true), 300);
+        setTimeout(() => {
+          setIsReady(true);
+          targetFound();
+        }, 300);
 
         return () => {
           window.removeEventListener("scroll", updateRect);
@@ -63,7 +70,12 @@ export function PresentationOverlay({ step }: { step: TourStep }) {
           }
         };
       } else {
-        // Keep polling until the route mounts the component
+        if (Date.now() - startTime > MAX_WAIT_MS) {
+          reportError(new Error(`Timeout waiting for target element: ${step.target}`));
+          stop(); // gracefully exit
+          return undefined;
+        }
+        // Keep polling until the route mounts the component or we timeout
         rafId = requestAnimationFrame(checkElement);
       }
       return undefined;
@@ -79,7 +91,7 @@ export function PresentationOverlay({ step }: { step: TourStep }) {
         observerRef.current = null;
       }
     };
-  }, [step.target]);
+  }, [step.target, targetFound, reportError, stop]);
 
   // If we haven't found the target yet, we just show a dark screen
   if (!targetRect) {
@@ -95,8 +107,6 @@ export function PresentationOverlay({ step }: { step: TourStep }) {
   const holeWidth = targetRect.width + p * 2;
   const holeHeight = targetRect.height + p * 2;
 
-  // We use CSS box-shadow for the spotlight to avoid complex SVG paths and allow rounded corners
-  // Very large box shadow covers the rest of the screen
   return (
     <div className="pointer-events-none fixed inset-0 z-[9999] overflow-hidden">
       {/* Spotlight Window */}
@@ -107,7 +117,7 @@ export function PresentationOverlay({ step }: { step: TourStep }) {
           left: `${holeLeft}px`,
           width: `${holeWidth}px`,
           height: `${holeHeight}px`,
-          pointerEvents: "none", // lets clicks pass through to the element if we want, but tour blocks it
+          pointerEvents: "none",
         }}
       />
 
@@ -115,7 +125,7 @@ export function PresentationOverlay({ step }: { step: TourStep }) {
       <div className="pointer-events-auto absolute inset-0 cursor-default" />
 
       {/* Tooltip positioned relative to target */}
-      {isReady && (
+      {isReady && state === "SHOWING_TOOLTIP" && (
         <PresentationTooltip
           step={step}
           targetRect={{ top: holeTop, left: holeLeft, width: holeWidth, height: holeHeight }}
