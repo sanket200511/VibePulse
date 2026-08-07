@@ -10,11 +10,71 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5173,
+    port: 3000,
     proxy: {
       "/api": {
-        target: "http://localhost:8000",
+        target: "http://localhost:8080",
         changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on("error", () => {
+            /* API offline — swallow ECONNREFUSED */
+          });
+        },
+      },
+      "/sessions": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on("error", () => {
+            /* API offline — swallow ECONNREFUSED */
+          });
+        },
+      },
+      "/events": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on("error", () => {
+            /* API offline — swallow ECONNREFUSED */
+          });
+        },
+      },
+      "/projects": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on("error", () => {
+            /* API offline — swallow ECONNREFUSED */
+          });
+        },
+      },
+      "/investigation": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on("error", () => {
+            /* API offline — swallow ECONNREFUSED */
+          });
+        },
+      },
+      "/health": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on("error", () => {
+            /* API offline — swallow ECONNREFUSED */
+          });
+        },
+      },
+      "/ws": {
+        target: "ws://localhost:8080",
+        ws: true,
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on("error", () => {
+            /* API offline — swallow ECONNREFUSED */
+          });
+        },
       },
     },
   },

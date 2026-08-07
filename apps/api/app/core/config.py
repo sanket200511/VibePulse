@@ -33,6 +33,8 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://vibepulse:vibepulse_dev@localhost:5432/vibepulse"
 
     # ── Redis ─────────────────────────────────────────────────────────────────
+    # Redis will use a managed Redis Cloud instance.
+    # Provide REDIS_URL via environment variables.
     redis_url: str = "redis://localhost:6379/0"
 
     # ── CORS ─────────────────────────────────────────────────────────────────
