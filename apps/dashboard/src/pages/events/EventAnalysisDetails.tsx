@@ -10,6 +10,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Badge } from "@vibepulse/ui";
+import { getApiBaseUrl } from "../../lib/api-config";
 
 interface EvolutionObservation {
   kind: string;
@@ -130,7 +131,7 @@ export function EventAnalysisDetails({ eventId }: { eventId: string }) {
   const { data, isLoading, error } = useQuery<AnalysisResponse>({
     queryKey: ["event_analysis", eventId],
     queryFn: async () => {
-      const res = await fetch(`http://localhost:8000/events/${eventId}/analysis`);
+      const res = await fetch(new URL(`/events/${eventId}/analysis`, getApiBaseUrl()).toString());
       if (!res.ok) throw new Error("Failed to fetch analysis");
       return res.json();
     },

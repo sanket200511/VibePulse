@@ -3,7 +3,16 @@
  * app.features.events.schemas.DevelopmentEventRead on the API exactly.
  */
 
-export type EventType = "FILE_CREATED" | "FILE_MODIFIED" | "FILE_DELETED";
+export type EventType =
+  | "FILE_CREATED"
+  | "FILE_MODIFIED"
+  | "FILE_DELETED"
+  | "OBSERVATION_STARTED"
+  | "OBSERVATION_STOPPED"
+  | "AI_REQUEST_STARTED"
+  | "AI_RESPONSE_RECEIVED"
+  | "AI_TOOL_EXECUTED"
+  | "AI_COMPLETION_ACCEPTED";
 
 export interface DevelopmentEvent {
   id: string;

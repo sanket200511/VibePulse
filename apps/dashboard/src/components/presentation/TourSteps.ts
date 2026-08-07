@@ -56,6 +56,15 @@ export const TOUR_STEPS: TourStep[] = [
     placement: "left",
   },
   {
+    id: "ai-provenance",
+    title: "AI Provenance Engine",
+    description:
+      "VibePulse observes AI interactions—prompts, responses, and tool executions—and deterministically correlates them to the exact architectural shifts and security events that followed, without relying on AI to guess intent.",
+    routeResolver: (ctx) => `/projects/${ctx.projectId || "demo-project"}/ai-provenance`,
+    target: "ai-provenance", // Can point to a header element
+    placement: "bottom",
+  },
+  {
     id: "security-guardian",
     title: "Security Guardian",
     description:
@@ -80,6 +89,15 @@ export const TOUR_STEPS: TourStep[] = [
       "The Time Machine reconstructs the codebase history. Slide back in time to deterministically filter future observations.",
     routeResolver: (ctx) => `/projects/${ctx.projectId || "demo-project"}/story`,
     target: "time-machine-scrubber",
+    placement: "bottom",
+  },
+  {
+    id: "engineering-investigation",
+    title: "Investigation Engine",
+    description:
+      "A powerful command palette to search, filter, and discover engineering context across Time, Files, Security, AI, and Architecture—all deterministically.",
+    routeResolver: (ctx) => `/projects/${ctx.projectId || "demo-project"}/investigation`,
+    target: "investigation",
     placement: "bottom",
   },
   {

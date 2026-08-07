@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { getApiBaseUrl } from "../../lib/api-config";
 
 export interface ArchitectureTimelineEntry {
   id: string;
@@ -22,7 +23,9 @@ export function useSessionArchitectureTimeline(sessionId: string) {
   const { data, isLoading, isError, error } = useQuery<ArchitectureTimeline>({
     queryKey: ["session_architecture", sessionId],
     queryFn: async () => {
-      const res = await fetch(`http://localhost:8000/sessions/${sessionId}/architecture`);
+      const res = await fetch(
+        new URL(`/sessions/${sessionId}/architecture`, getApiBaseUrl()).toString(),
+      );
       if (!res.ok) {
         if (res.status === 404) return null;
         throw new Error("Failed to fetch architecture timeline");

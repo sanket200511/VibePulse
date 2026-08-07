@@ -32,12 +32,23 @@ export function SessionsPage() {
       {isError && <ErrorState message="We couldn't reach the API. Retrying in the background…" />}
 
       {!isLoading && !isError && sessions.length === 0 && (
-        <div className="border-border bg-card flex items-center justify-center overflow-hidden rounded-[16px] border p-8">
-          <EmptyState
-            title="No engineering sessions observed yet"
-            description="VibePulse registers sessions automatically once you begin writing code in a project folder. To get started, verify the VibePulse daemon is running in your terminal, open an observed workspace, and make edits to a file."
-          />
-        </div>
+        <EmptyState
+          title="No engineering sessions observed yet"
+          description="VibePulse registers sessions automatically once you begin writing code in a project folder. To get started, verify the VibePulse daemon is running in your terminal, open an observed workspace, and make edits to a file."
+          action={
+            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <a
+                href="https://github.com/sanket200511/VibePulse"
+                target="_blank"
+                rel="noreferrer"
+                className="text-primary text-sm font-medium hover:underline"
+              >
+                Read the Docs
+              </a>
+            </div>
+          }
+          footer="Keyboard shortcut: Ctrl + K to open command menu"
+        />
       )}
 
       {!isLoading && !isError && sessions.length > 0 && (
