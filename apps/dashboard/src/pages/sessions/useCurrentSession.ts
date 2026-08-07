@@ -6,8 +6,8 @@
  * adopting a new one on session.started) and clearing on session.completed.
  */
 
-import { useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getApiBaseUrl, getWsUrl } from "../../lib/api-config";
 import { connectWs, type WsStatus } from "../../lib/ws-client";
 import type { Session } from "./types";
@@ -36,22 +36,14 @@ export interface UseCurrentSessionResult {
 export function useCurrentSession(): UseCurrentSessionResult {
   const { isDemo } = useDemoMode();
 
-  const initialQuery = useQuery({
+  const queryClient = useQueryClient();
+  const [connectionStatus, setConnectionStatus] = useState<WsStatus>("connecting");
+
+  const { data: session = null, isLoading } = useQuery({
     queryKey: ["sessions", "current"],
     queryFn: fetchCurrentSession,
     enabled: !isDemo,
   });
-
-  const [session, setSession] = useState<Session | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState<WsStatus>("connecting");
-  const currentId = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (isDemo) return;
-    if (initialQuery.data === undefined) return;
-    setSession(initialQuery.data);
-    currentId.current = initialQuery.data?.id ?? null;
-  }, [initialQuery.data, isDemo]);
 
   useEffect(() => {
     if (isDemo) return;
@@ -62,26 +54,23 @@ export function useCurrentSession(): UseCurrentSessionResult {
         const broadcast = data as SessionBroadcast;
         if (!broadcast?.session?.id) return;
 
-        if (broadcast.type === "session.started") {
-          currentId.current = broadcast.session.id;
-          setSession(broadcast.session);
-          return;
-        }
-
-        if (broadcast.session.id !== currentId.current) return;
-
-        if (broadcast.type === "session.completed") {
-          currentId.current = null;
-          setSession(null);
-          return;
-        }
-
-        setSession(broadcast.session);
+        queryClient.setQueryData<Session | null>(["sessions", "current"], (oldSession) => {
+          if (broadcast.type === "session.started") {
+            return broadcast.session;
+          }
+          if (oldSession && broadcast.session.id !== oldSession.id) {
+            return oldSession;
+          }
+          if (broadcast.type === "session.completed") {
+            return null;
+          }
+          return broadcast.session;
+        });
       },
     });
 
     return () => client.close();
-  }, [isDemo]);
+  }, [isDemo, queryClient]);
 
   if (isDemo) {
     return {
@@ -94,6 +83,6 @@ export function useCurrentSession(): UseCurrentSessionResult {
   return {
     session,
     connectionStatus,
-    isLoading: initialQuery.isLoading,
+    isLoading,
   };
 }

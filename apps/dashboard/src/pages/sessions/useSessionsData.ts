@@ -3,8 +3,8 @@
  * the /ws/sessions broadcast — no polling. Mirrors useEventsFeed.ts.
  */
 
-import { useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getApiBaseUrl, getWsUrl } from "../../lib/api-config";
 import { connectWs, type WsStatus } from "../../lib/ws-client";
 import type { Session } from "./types";
@@ -39,22 +39,18 @@ export interface UseSessionsDataResult {
 export function useSessionsData(): UseSessionsDataResult {
   const { isDemo } = useDemoMode();
 
-  const initialQuery = useQuery({
+  const queryClient = useQueryClient();
+  const [connectionStatus, setConnectionStatus] = useState<WsStatus>("connecting");
+
+  const {
+    data: sessions = [],
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["sessions"],
     queryFn: fetchRecentSessions,
     enabled: !isDemo,
   });
-
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [connectionStatus, setConnectionStatus] = useState<WsStatus>("connecting");
-  const sessionsById = useRef<Map<string, Session>>(new Map());
-
-  useEffect(() => {
-    if (isDemo) return;
-    if (!initialQuery.data) return;
-    setSessions(initialQuery.data);
-    sessionsById.current = new Map(initialQuery.data.map((session) => [session.id, session]));
-  }, [initialQuery.data, isDemo]);
 
   useEffect(() => {
     if (isDemo) return;
@@ -64,9 +60,11 @@ export function useSessionsData(): UseSessionsDataResult {
       onMessage: (data) => {
         const broadcast = data as SessionBroadcast;
         if (!broadcast?.session?.id) return;
-        sessionsById.current.set(broadcast.session.id, broadcast.session);
-        setSessions((prev) => {
-          const withoutUpdated = prev.filter((s) => s.id !== broadcast.session.id);
+
+        queryClient.setQueryData<Session[]>(["sessions"], (oldSessions) => {
+          if (!oldSessions) return [broadcast.session];
+
+          const withoutUpdated = oldSessions.filter((s) => s.id !== broadcast.session.id);
           return [broadcast.session, ...withoutUpdated].sort(
             (a, b) => new Date(b.last_event_at).getTime() - new Date(a.last_event_at).getTime(),
           );
@@ -75,7 +73,7 @@ export function useSessionsData(): UseSessionsDataResult {
     });
 
     return () => client.close();
-  }, [isDemo]);
+  }, [isDemo, queryClient]);
 
   if (isDemo) {
     return {
@@ -89,7 +87,7 @@ export function useSessionsData(): UseSessionsDataResult {
   return {
     sessions,
     connectionStatus,
-    isLoading: initialQuery.isLoading,
-    isError: initialQuery.isError,
+    isLoading,
+    isError,
   };
 }

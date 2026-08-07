@@ -1,11 +1,13 @@
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getApiBaseUrl } from "../../lib/api-config";
 import { useDemoMode } from "../../demo/config";
 import { ErrorState } from "../../components/states";
 import { ProjectIntelligencePanel } from "./ProjectIntelligencePanel";
 import { useProjectArchitectureTimeline } from "./useProjectArchitectureTimeline";
-import { ArrowLeft, Clock, ShieldAlert, Zap, Layers, Play, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, ShieldAlert, Layers, CheckCircle2 } from "lucide-react";
+import { TimelineCard } from "../../components/timeline";
+import { mapArchitectureTimelineToViewModel } from "../../lib/events/mappers";
 import { formatRelativeTime } from "../../lib/relative-time";
 import type { Project } from "./types";
 import type { Session } from "../sessions/types";
@@ -21,12 +23,6 @@ function getSeverityColor(severity: string | undefined) {
   if (severity === "MEDIUM") return "text-orange-500 border-orange-500/20 bg-orange-500/10";
   if (severity === "LOW") return "text-yellow-500 border-yellow-500/20 bg-yellow-500/10";
   return "text-accent-color border-accent-color/20 bg-accent-color/10";
-}
-
-function getIcon(kind: string) {
-  if (kind === "SESSION_START" || kind === "SESSION_END") return <Clock className="h-4 w-4" />;
-  if (kind === "SECURITY_FINDING") return <ShieldAlert className="h-4 w-4 text-red-500" />;
-  return <Zap className="text-accent-color h-4 w-4" />;
 }
 
 // Group entries into sessions
@@ -78,7 +74,6 @@ function ProjectStoryContent({
   rawEntries: ArchitectureTimelineEntry[];
   rawIntelligence: ProjectIntelligence;
 }) {
-  const navigate = useNavigate();
   const { mode, setMode, visibleSessions, visibleEntries, visibleIntelligence } = useTimeMachine();
 
   const sessionChunks = chunkTimelineBySessions(visibleEntries);
@@ -125,18 +120,34 @@ function ProjectStoryContent({
             </button>
           </div>
 
-          <div className="flex gap-4">
-            <div className="bg-card border-border rounded-xl border p-4 text-center shadow-sm">
-              <div className="text-primary-text text-2xl font-bold">{totalFindings}</div>
-              <div className="text-secondary-text text-[10px] font-semibold uppercase tracking-wider">
-                Security Issues
+          <div className="flex flex-col gap-4">
+            <div className="flex gap-4">
+              <div className="bg-card border-border rounded-xl border p-4 text-center shadow-sm">
+                <div className="text-primary-text text-2xl font-bold">{totalFindings}</div>
+                <div className="text-secondary-text text-[10px] font-semibold uppercase tracking-wider">
+                  Security Issues
+                </div>
+              </div>
+              <div className="bg-card border-border rounded-xl border p-4 text-center shadow-sm">
+                <div className="text-primary-text text-2xl font-bold">{totalArchitecture}</div>
+                <div className="text-secondary-text text-[10px] font-semibold uppercase tracking-wider">
+                  Arch Changes
+                </div>
               </div>
             </div>
-            <div className="bg-card border-border rounded-xl border p-4 text-center shadow-sm">
-              <div className="text-primary-text text-2xl font-bold">{totalArchitecture}</div>
-              <div className="text-secondary-text text-[10px] font-semibold uppercase tracking-wider">
-                Arch Changes
-              </div>
+            <div className="flex items-center justify-end gap-3">
+              <Link
+                to={`/projects/${project.id}/ai-provenance`}
+                className="rounded-lg border border-indigo-500/20 bg-indigo-500/10 px-3 py-1.5 text-xs font-medium text-indigo-400 transition-colors hover:text-indigo-300"
+              >
+                AI Provenance
+              </Link>
+              <Link
+                to={`/projects/${project.id}/investigation`}
+                className="text-accent-color hover:text-accent-color/80 bg-accent-color/10 border-accent-color/20 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors"
+              >
+                Search Events
+              </Link>
             </div>
           </div>
         </div>
@@ -202,70 +213,30 @@ function ProjectStoryContent({
             {visibleEntries.length === 0 ? (
               <p className="text-secondary-text pl-6 text-sm">No timeline events recorded.</p>
             ) : (
-              visibleEntries.map((entry) => (
-                <div key={entry.id} className="group relative pl-8">
-                  <div className="bg-background border-border group-hover:border-accent-color absolute -left-[9px] top-1 flex h-4 w-4 items-center justify-center rounded-full border-2 transition-colors">
-                    <div
-                      className={`h-2 w-2 rounded-full ${entry.kind === "SECURITY_FINDING" ? "bg-red-500" : "bg-accent-color"}`}
-                    />
-                  </div>
-                  <div className="bg-card border-border rounded-lg border p-4 shadow-sm transition-all group-hover:shadow-md">
-                    <div className="mb-2 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {getIcon(entry.kind)}
-                        <span className="text-primary-text text-sm font-bold">{entry.title}</span>
-                        {entry.severity && (
-                          <span
-                            className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase ${getSeverityColor(entry.severity)}`}
-                          >
-                            {entry.severity}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-muted-foreground text-xs">
-                          {new Date(entry.timestamp).toLocaleTimeString()}
-                        </span>
-                        {entry.related_event_id && (
-                          <button
-                            onClick={() => {
-                              // Find the session that contains this event
-                              const sessionChunk = sessionChunks.find((c) =>
-                                c.entries.some((e) => e.id === entry.id),
-                              );
-                              if (sessionChunk && sessionChunk.entries.length > 0) {
-                                const sessionStart = sessionChunk.entries[0];
-                                // Find session with this start time
-                                const s = rawSessions.find(
-                                  (sess) =>
-                                    new Date(sess.started_at).getTime() ===
-                                    new Date(sessionStart?.timestamp || 0).getTime(),
-                                );
-                                if (s) {
-                                  void navigate(
-                                    `/sessions/${s.id}/replay?event=${entry.related_event_id}`,
-                                  );
-                                }
-                              }
-                            }}
-                            className="text-accent-color hover:bg-accent-color/10 flex items-center gap-1 rounded px-2 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors"
-                          >
-                            <Play className="h-3 w-3" /> Replay
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                    {entry.description && (
-                      <p className="text-secondary-text text-sm">{entry.description}</p>
-                    )}
-                    {entry.related_file && (
-                      <p className="text-muted-foreground bg-muted-color/20 mt-2 truncate rounded p-1.5 font-mono text-xs">
-                        {entry.related_file}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))
+              visibleEntries.map((entry) => {
+                // Find the session that contains this event for replay link mapping
+                let eventSessionId = undefined;
+                if (entry.related_event_id) {
+                  const sessionChunk = sessionChunks.find((c) =>
+                    c.entries.some((e) => e.id === entry.id),
+                  );
+                  if (sessionChunk && sessionChunk.entries.length > 0) {
+                    const sessionStart = sessionChunk.entries[0];
+                    const s = rawSessions.find(
+                      (session) =>
+                        new Date(session.started_at).getTime() ===
+                        new Date(sessionStart?.timestamp || 0).getTime(),
+                    );
+                    if (s) eventSessionId = s.id;
+                  }
+                }
+                return (
+                  <TimelineCard
+                    key={entry.id}
+                    event={mapArchitectureTimelineToViewModel(entry, project.id, eventSessionId)}
+                  />
+                );
+              })
             )}
           </div>
         </div>

@@ -10,6 +10,8 @@ import { ReplayPage } from "./pages/sessions/ReplayPage";
 import { NotFoundPage } from "./pages/not-found/NotFoundPage";
 import { PresentationEngine } from "./components/presentation";
 import { EngineeringDNAPage } from "./pages/projects/EngineeringDNAPage";
+import { AIProvenancePage } from "./pages/projects/AIProvenancePage";
+import { InvestigationPage } from "./pages/investigation/InvestigationPage";
 
 /**
  * Application router.
@@ -36,11 +38,14 @@ export default function App() {
           <Route path="/projects" element={<ProjectsPage />} />
           <Route path="/history" element={<SessionsPage />} />
           <Route path="/events" element={<EventsPage />} />
+          <Route path="/investigation" element={<InvestigationPage />} />
           <Route path="/sessions/:sessionId" element={<SessionDetailsPage />} />
           <Route path="/sessions/:sessionId/replay" element={<ReplayPage />} />
           <Route path="/projects/:projectId" element={<ProjectStoryPage />} />
           <Route path="/projects/:projectId/story" element={<ProjectStoryPage />} />
-          <Route path="/projects/:projectId/files/:fileId" element={<EngineeringDNAPage />} />
+          <Route path="/projects/:projectId/ai-provenance" element={<AIProvenancePage />} />
+          <Route path="/projects/:projectId/investigation" element={<InvestigationPage />} />
+          <Route path="/projects/:projectId/files/*" element={<EngineeringDNAPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>

@@ -28,7 +28,9 @@ export function ProjectDetailsPage() {
   const projectQuery = useQuery({
     queryKey: ["project", projectId],
     queryFn: async (): Promise<Project> => {
-      const response = await fetch(new URL(`/projects/${projectId}`, getApiBaseUrl()).toString());
+      const response = await fetch(
+        new URL(`/api/projects/${projectId}`, getApiBaseUrl()).toString(),
+      );
       if (!response.ok) {
         if (response.status === 404) throw new Error("Project not found");
         throw new Error(`Failed to load project (${response.status})`);
@@ -46,7 +48,7 @@ export function ProjectDetailsPage() {
     queryFn: async (): Promise<PaginatedSessions> => {
       const response = await fetch(
         new URL(
-          `/projects/${projectId}/sessions?limit=${LIMIT}&offset=${page * LIMIT}`,
+          `/api/projects/${projectId}/sessions?limit=${LIMIT}&offset=${page * LIMIT}`,
           getApiBaseUrl(),
         ).toString(),
       );
