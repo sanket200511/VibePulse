@@ -10,9 +10,9 @@ This demo shows a live audience — professors, hackathon judges, or GitHub visi
 
 ## Demo Flow
 
-1. Start Docker infrastructure: `docker compose up -d` (Postgres, Redis, pgAdmin, API container)
-2. Confirm the API is healthy: open `http://localhost:8000/health`
-3. Start the dashboard: `pnpm --filter @vibepulse/dashboard dev` → open `http://localhost:5173`
+1. Start the backend: `cd apps/api && uv run uvicorn app.main:app --reload --port 8080`
+2. Confirm the API is healthy: open `http://localhost:8080/health`
+3. Start the dashboard: `pnpm --filter @vibepulse/dashboard dev` → open `http://localhost:3000`
 4. Start the daemon against a sample project: `pnpm --filter @vibepulse/daemon dev` (point it at a throwaway repo, not VibePulse itself)
 5. Open the sample project in an editor alongside the dashboard
 6. Modify a few files — create one, edit one, delete one — across at least two languages (e.g. a `.py` and a `.ts` file)
@@ -273,10 +273,10 @@ Below Replay, the Session Health section asks a different question than any pane
 
 Before presenting, verify:
 
-- [ ] Docker Desktop (or engine) is running
-- [ ] `docker compose up -d` has been run and all containers are healthy (`docker compose ps`)
-- [ ] `GET http://localhost:8000/health` returns a healthy response
-- [ ] Dashboard is running and reachable at `http://localhost:5173`
+- [ ] Local PostgreSQL is running on port 5432 and REDIS_URL is configured
+- [ ] API backend has been started (`uv run uvicorn app.main:app --reload --port 8080`)
+- [ ] `GET http://localhost:8080/health` returns a healthy response
+- [ ] Dashboard is running and reachable at `http://localhost:3000`
 - [ ] Daemon is running and pointed at a throwaway sample project — **not** the VibePulse repository itself
 - [ ] The sample project is open in an editor, visible on screen alongside the dashboard
 - [ ] The sample project has no uncommitted changes from a previous rehearsal (clean starting state)
@@ -291,13 +291,9 @@ Before presenting, verify:
 
 ## Common Failure Scenarios
 
-**Docker not running**
-Symptom: `docker compose up -d` fails, or containers exit immediately.
-Recovery: Start Docker Desktop (or the Docker daemon), then re-run `docker compose up -d`. Confirm with `docker compose ps` that Postgres, Redis, pgAdmin, and the API container all show `healthy`/`running` before continuing.
-
 **Database unavailable**
 Symptom: API `/health` reports a degraded status, or requests fail with a connection error to Postgres.
-Recovery: Check `docker compose ps` for the Postgres container's state; if it's still starting, wait a few seconds and retry — the API's `pool_pre_ping` will recover automatically once Postgres is reachable. If the container isn't running, restart it with `docker compose up -d postgres`.
+Recovery: Verify that your local PostgreSQL instance is running on port 5432 and the credentials in `apps/api/.env` are correct. Start the PostgreSQL service if it is stopped.
 
 **Daemon disconnected**
 Symptom: file edits in the sample project stop appearing in the event feed.
@@ -311,7 +307,7 @@ Recovery: The dashboard's WebSocket client reconnects automatically with exponen
 
 ## Demo Timing
 
-**5-minute demo** — Fast, impression-focused. Cover: start Docker + dashboard (pre-started before the audience arrives if possible), make 2–3 file changes in the sample project, point out the live event feed and the Session Banner turning ACTIVE. Skip waiting for IDLE/COMPLETED — narrate that transition instead of showing it live.
+**5-minute demo** — Fast, impression-focused. Cover: start the 3 terminal commands (dashboard, api, daemon), make 2–3 file changes in the sample project, point out the live event feed and the Session Banner turning ACTIVE. Skip waiting for IDLE/COMPLETED — narrate that transition instead of showing it live.
 
 **10-minute demo** — Adds explanation. Cover everything in the 5-minute version, plus: point out the per-event analysis metadata (language, file category, git branch), explain briefly why VibePulse only observes and never generates code, and show the Sessions page with at least one previously-completed session and its generated summary (prepared in advance rather than waited for live).
 
@@ -330,6 +326,6 @@ Practical recommendations for presenting VibePulse smoothly, regardless of audie
 - **Disable notifications.** Turn off OS and application notifications before presenting; an unrelated pop-up during a live demo undermines credibility and distracts from the flow.
 - **Keep one completed session prepared.** Waiting for a session to reach IDLE/COMPLETED live can take longer than a short demo slot allows — have a session that has already completed, with its summary generated, ready to show on the Sessions page.
 - **Have backup screenshots.** Prepare screenshots of each key screen (event feed, session banner, completed session with summary) in case of a live environment failure — a screenshot-driven fallback keeps the presentation moving instead of stalling on a technical issue.
-- **Keep Docker started before presentation.** Start `docker compose up -d` and confirm all containers are healthy well before the audience arrives, not as the first live step — container startup time is dead air an audience shouldn't have to sit through.
+- **Keep services started before presentation.** Start the API, Dashboard, and Daemon well before the audience arrives, not as the first live step — startup time is dead air an audience shouldn't have to sit through.
 - **Practice the demo timing.** Rehearse against the 5-minute, 10-minute, and 20-minute formats above at least once beforehand, with a timer, so the pacing is known rather than guessed in the moment.
 - **Keep API logs visible for technical demonstrations.** For a technical audience, keep a terminal showing the API's logs on screen (or ready to switch to) — seeing the request come in and the background analysis task run reinforces the architecture explanation with real evidence, not just a diagram.

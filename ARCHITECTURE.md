@@ -80,7 +80,7 @@ docker/             Dockerfiles and infrastructure configs
 
 **`docs/adr`** — Every architecturally significant decision, in order, as immutable historical record (see ADR Summary below).
 
-**`docker/`** — Dockerfiles and `docker-compose.yml` for local infrastructure: Postgres, Redis, pgAdmin, and the API container. The dashboard and daemon deliberately run outside Docker via `pnpm dev` for fast hot-reload during local development.
+**`docker/`** — Dockerfiles and `docker-compose.yml` for production and CI infrastructure (Postgres, Redis, pgAdmin, API). Local development uses native instances (e.g., local PostgreSQL and Redis Cloud) without requiring Docker containers.
 
 ---
 
@@ -306,9 +306,9 @@ None of these require new architectural primitives — each is designed to consu
 
 These are intentional, current-state limitations — not oversights — each scoped to be revisited by a specific future phase:
 
-- **Single-user focused for now.** The data model (one project, one developer's activity per session) has no multi-user or multi-tenant concept yet. This exists because Sprints 1–3 were focused on proving the observation and session model works at all; multi-user semantics are explicitly deferred to Phase 5 (Production Readiness) so they aren't designed on top of a still-evolving core.
-- **No authentication yet.** Every REST and WebSocket endpoint is open. This is a deliberate scoping decision, not an omission — adding auth is orthogonal to proving the observability model itself, and is planned as part of Production Readiness rather than being bolted on mid-way through feature development.
-- **No distributed infrastructure.** There is no Redis-backed queue, no Celery worker pool, and no distributed lock anywhere in the system. A single API process is sufficient at current scale, and introducing distributed infrastructure before it's needed would add operational complexity with no present benefit — this is the same "no infrastructure before it's earned" principle stated above.
-- **No message broker.** The daemon talks to the API over direct synchronous HTTP (ADR 0003), rather than through a broker like RabbitMQ or Kafka. This was a deliberate interim choice: direct HTTP is simple to reason about and sufficient for a single daemon instance, and the decision is documented as revisitable, not permanent.
-- **No Kubernetes dependency.** The entire stack runs via Docker Compose. Kubernetes-specific concerns (multi-replica scheduling, service meshes) aren't relevant until the platform actually needs to run more than one API instance — which it doesn't yet, per the single-instance sweep-loop design.
-- **No cloud dependency.** VibePulse runs entirely locally today — Postgres, Redis, and the API all run in local Docker containers, and the dashboard/daemon run directly on the developer's machine. No cloud provider SDK, managed database, or hosted queue is required, keeping the platform fully self-contained until Cloud Sync (explicitly a Post-v1 item in `ROADMAP.md`) is taken up.
+- **Single-user focused for now.** The data model (one project, one developer's activity per session) has no multi-user or multi-tenant concept yet. This exists because Sprints 1–12 were focused on proving the observation and session model works at all; multi-user semantics are explicitly deferred to post-v1.0 so they aren't designed on top of a still-evolving core.
+- **No authentication yet.** Every REST and WebSocket endpoint is open. This is a deliberate scoping decision, not an omission — adding auth is orthogonal to proving the observability model itself, and is scheduled for `v1.1.0`.
+- **No distributed infrastructure.** There is no Redis-backed queue, no Celery worker pool, and no distributed lock anywhere in the system. A single API process is sufficient at current scale (v1.0.0). A Redis distributed lock is targeted for `v1.1.0`.
+- **No message broker.** The daemon talks to the API over direct synchronous HTTP (ADR 0003), rather than through a broker like RabbitMQ or Kafka. This was a deliberate interim choice: direct HTTP is simple to reason about and sufficient for a single daemon instance.
+- **No Kubernetes dependency.** The entire stack runs via Docker Compose. Kubernetes-specific concerns (multi-replica scheduling, service meshes) aren't relevant until the platform actually needs to run more than one API instance.
+- **No cloud dependency.** VibePulse runs entirely locally today — Postgres, Redis, and the API all run in local Docker containers, and the dashboard/daemon run directly on the developer's machine. No cloud provider SDK, managed database, or hosted queue is required, keeping the platform fully self-contained until Cloud Sync is taken up.

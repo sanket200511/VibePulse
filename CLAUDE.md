@@ -96,19 +96,18 @@ When implementing UI:
 
 ## Running the Project
 
-```bash
+````bash
 # Install JS/TS dependencies
 pnpm install
 
-# Install Python dependencies
-cd apps/api && uv sync && cd ../..
+# Setup backend and DB
+cd apps/api && uv sync && uv run alembic upgrade head
+cd ../..
 
-# Start infrastructure (Postgres, Redis, pgAdmin, API in Docker)
-docker compose up -d
-
-# Start all apps locally (dashboard + daemon, or all three)
-pnpm dev
-```
+# Start in 3 terminals:
+# Terminal 1 (Dashboard): pnpm --filter @vibepulse/dashboard dev
+# Terminal 2 (API): cd apps/api && uv run uvicorn app.main:app --reload --port 8080
+# Terminal 3 (Daemon): pnpm --filter @vibepulse/daemon dev```
 
 ---
 
@@ -116,21 +115,23 @@ pnpm dev
 
 ### API (Python)
 
-```
+````
+
 apps/api/app/features/<name>/
-  __init__.py
-  router.py    ← FastAPI APIRouter
-  schemas.py   ← Pydantic request/response models
-  service.py   ← Business logic (when needed)
-  models.py    ← SQLAlchemy ORM models (when needed)
-```
+**init**.py
+router.py ← FastAPI APIRouter
+schemas.py ← Pydantic request/response models
+service.py ← Business logic (when needed)
+models.py ← SQLAlchemy ORM models (when needed)
+
+````
 
 Register the router in `app/main.py`:
 
 ```python
 from app.features.<name>.router import router as <name>_router
 app.include_router(<name>_router, prefix="/api/v1")
-```
+````
 
 ### Dashboard (React)
 

@@ -18,5 +18,4 @@ uv run uvicorn app.main:app --reload
 uv run pytest
 ```
 
-Tests require a reachable Postgres instance (`DATABASE_URL`), matching the one started by
-`docker compose up -d` at the repository root.
+Tests require a reachable local Postgres instance (`DATABASE_URL`) on port 5432, as configured in the `.env` file.
