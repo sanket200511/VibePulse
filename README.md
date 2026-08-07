@@ -1,244 +1,110 @@
-# ⚡ VibePulse
+<div align="center">
+  <!-- HERO BANNER PLACEHOLDER (Replace with docs/assets/hero-banner.svg) -->
+  <img src="https://raw.githubusercontent.com/sanket200511/VibePulse/main/docs/assets/logo-placeholder.png" alt="VibePulse Logo" width="120" />
 
-> Developer Observability Platform for the AI Coding Era
+  <br />
 
-VibePulse continuously observes software evolution during AI-assisted development and provides actionable intelligence — surfacing architecture drift, technical debt, and project health before they become problems.
+  <h1>VibePulse</h1>
+  <p><strong>The Engineering Search & Investigation Engine</strong></p>
+  <p>Observe First. Derive Carefully. Never Invent.</p>
 
----
+  <div>
+    <a href="https://github.com/sanket200511/VibePulse/releases"><img src="https://img.shields.io/github/v/release/sanket200511/VibePulse?color=10b981&label=Version" alt="Version" /></a>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-6366f1.svg" alt="License" /></a>
+    <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome" /></a>
+  </div>
+  <br />
 
-## What VibePulse Does
+  <!-- HERO SCREENSHOT PLACEHOLDER -->
+  <!-- Recommendation: Insert `docs/assets/hero-replay-engine.png` here (1440x900) -->
+  <img src="https://raw.githubusercontent.com/sanket200511/VibePulse/main/docs/assets/hero-replay-engine-placeholder.png" alt="VibePulse Replay Engine" width="100%" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);" />
+</div>
 
-| Capability             | Description                                                                       |
-| ---------------------- | --------------------------------------------------------------------------------- |
-| **Event Collection**   | Real-time ingestion of file changes, git operations, and AI tool interactions     |
-| **Session Replay**     | Reconstruct coding sessions to understand how a codebase evolved                  |
-| **AI Fingerprinting**  | Identify AI-generated patterns and their downstream effects                       |
-| **Architecture Drift** | Detect when the codebase deviates from intended structure                         |
-| **Project Health**     | Continuous health scoring across complexity, coverage, and consistency dimensions |
-| **Recommendations**    | Actionable, context-aware suggestions from the platform                           |
+<br />
 
----
+**VibePulse** is a deterministic, event-driven observation platform for software engineering. It acts as an investigation engine, allowing you to discover, filter, correlate, and navigate your engineering activity natively.
 
-## Repository Structure
-
-```
-vibepulse/
-├── apps/
-│   ├── api/          # FastAPI backend (Python 3.12)
-│   ├── dashboard/    # React + Vite dashboard
-│   └── daemon/       # Node.js file-system observer
-├── packages/
-│   ├── ui/           # Shared React component primitives
-│   └── config/       # Shared configuration utilities
-├── docs/
-│   ├── adr/          # Architecture Decision Records
-│   ├── architecture/ # System design diagrams
-│   └── research/     # Research notes
-├── docker/           # Dockerfiles and infrastructure config
-├── scripts/          # Developer tooling scripts
-└── .github/          # CI/CD workflows
-```
+It does **not** generate code, nor does it replace Git or CI/CD. Instead, it provides a high-fidelity "Time Machine" and "Engineering DNA" to understand the _process_ of how your code evolves.
 
 ---
 
-## Tech Stack
+## ⚡ Key Capabilities
 
-| Layer              | Technology                                                                   |
-| ------------------ | ---------------------------------------------------------------------------- |
-| **Dashboard**      | React 18, Vite, TypeScript, Tailwind CSS, shadcn/ui, TanStack Query, Zustand |
-| **API**            | FastAPI, Python 3.12, SQLAlchemy 2.x, Pydantic v2, Alembic                   |
-| **Daemon**         | Node.js, TypeScript, Chokidar                                                |
-| **Database**       | PostgreSQL 16                                                                |
-| **Cache / Events** | Redis 7                                                                      |
-| **Monorepo**       | pnpm workspaces, Turborepo                                                   |
-| **Containers**     | Docker, Docker Compose                                                       |
+### 🎥 The Replay Engine
 
----
+Play back coding sessions exactly as they happened. VibePulse automatically segments long sessions into semantic chapters (`WORK`, `IDLE_GAP`, `LANGUAGE_SWITCH`).
 
-## Prerequisites
+<!-- GIF PLACEHOLDER -->
+<!-- Recommendation: Insert `docs/assets/demo-replay-engine.gif` here -->
 
-| Tool                              | Version | Purpose                    |
-| --------------------------------- | ------- | -------------------------- |
-| [Node.js](https://nodejs.org/)    | ≥ 20    | Dashboard + Daemon runtime |
-| [pnpm](https://pnpm.io/)          | ≥ 9     | Package manager            |
-| [Python](https://python.org/)     | 3.12    | API runtime                |
-| [uv](https://docs.astral.sh/uv/)  | latest  | Python package manager     |
-| [Docker](https://www.docker.com/) | latest  | Infrastructure services    |
+### 🧬 Engineering DNA (Static Analysis)
 
----
+Extracts structural architecture (functions, classes, dependencies, security TODOs) without ever executing the code or sending it to the cloud.
 
-## Quick Start
+<!-- SCREENSHOT PLACEHOLDER -->
+<!-- Recommendation: Insert `docs/assets/engineering-dna.png` here -->
 
-### 1. Clone and install
+### 🕵️ Investigation Engine
 
-```bash
-git clone https://github.com/sanket200511/VibePulse.git
-cd VibePulse
-pnpm install
-```
+A powerful, Kibana-style search interface to query your engineering history deterministically across all sessions.
 
-### 2. Configure environment
+### 🤖 AI Provenance
 
-```bash
-cp .env.example .env
-cp apps/api/.env.example apps/api/.env
-cp apps/dashboard/.env.example apps/dashboard/.env
-cp apps/daemon/.env.example apps/daemon/.env
-```
-
-### 3. Install Python dependencies
-
-```bash
-cd apps/api
-uv sync
-cd ../..
-```
-
-### 4. Start infrastructure
-
-```bash
-docker compose up -d
-```
-
-This starts:
-
-- **PostgreSQL** on `localhost:5432`
-- **Redis** on `localhost:6379`
-- **pgAdmin** on `http://localhost:5050` (email: `admin@vibepulse.dev`, password: `admin`)
-- **API** on `http://localhost:8000`
-
-### 5. Start all apps
-
-```bash
-pnpm dev
-```
-
-This starts:
-
-- ✅ **Dashboard** → `http://localhost:5173`
-- ✅ **API** → `http://localhost:8000` (also available in Docker)
-- ✅ **Daemon** → health on `http://localhost:9000/health`
+Statistically detect the likelihood of AI-assisted authorship based on typing velocity and AST complexity deltas.
 
 ---
 
-## Services at a Glance
+## 🏗️ Architecture
 
-| Service       | URL                          | Description           |
-| ------------- | ---------------------------- | --------------------- |
-| Dashboard     | http://localhost:5173        | React web application |
-| API           | http://localhost:8000        | FastAPI backend       |
-| API Docs      | http://localhost:8000/docs   | Swagger UI (dev only) |
-| Daemon Health | http://localhost:9000/health | Daemon liveness probe |
-| pgAdmin       | http://localhost:5050        | Database GUI          |
+VibePulse follows a decoupled, feature-first monorepo architecture:
 
----
+1. **Daemon (Node.js)**: Runs locally. Detects filesystem events and streams them safely to the API.
+2. **API (FastAPI + Python 3.12)**: The brain. Persists events, runs AST/Security Analyzers, and manages session lifecycle.
+3. **Dashboard (React + Vite)**: A premium, dark-mode first UI that connects via WebSockets for real-time telemetry.
 
-## Development Commands
+<!-- ARCHITECTURE DIAGRAM PLACEHOLDER -->
+<!-- Recommendation: Render the Mermaid diagram from `docs/diagrams/system-architecture.md` here -->
 
-```bash
-# Run all apps in development mode
-pnpm dev
+```mermaid
+architecture-beta
+    group observer(cloud)[Developer Laptop]
+    service ide(server)[IDE / Filesystem] in observer
+    service daemon(server)[Node.js Daemon] in observer
 
-# Build all apps
-pnpm build
+    group backend(cloud)[VibePulse API Server]
+    service api(server)[FastAPI Backend] in backend
+    service db(database)[PostgreSQL] in backend
 
-# Lint all packages
-pnpm lint
+    group client(cloud)[Browser]
+    service ui(server)[React Dashboard] in client
 
-# Auto-fix lint issues
-pnpm lint:fix
-
-# TypeScript type-check all packages
-pnpm typecheck
-
-# Format all files
-pnpm format
-
-# Check formatting without writing
-pnpm format:check
+    ide:R --> L:daemon
+    daemon:R --> L:api
+    api:R --> L:db
+    api:B --> T:ui
 ```
 
-### Package-specific commands
+---
 
-```bash
-# Run only the dashboard
-pnpm --filter @vibepulse/dashboard dev
+## 🚀 Getting Started
 
-# Run only the daemon
-pnpm --filter @vibepulse/daemon dev
+Ready to install VibePulse? Check out our comprehensive guides:
 
-# Run all TS/JS tests (daemon; dashboard has none yet)
-pnpm test
-
-# Run API tests (requires a running Postgres — see below)
-cd apps/api && uv run pytest
-
-# Lint Python code
-cd apps/api && uv run ruff check app/
-```
-
-> **API tests require PostgreSQL.** They connect using `DATABASE_URL` from
-> `apps/api/.env` and exercise the real `development_events` table (create → insert →
-> drop per session). CI provisions a `postgres:16-alpine` service for this; locally,
-> run `docker compose up -d postgres` first.
+- 📖 [**Installation Guide**](INSTALLATION.md) — Local development and quick start.
+- 🚢 [**Deployment Guide**](DEPLOYMENT.md) — How to run VibePulse in production via Docker Compose.
+- 🏛️ [**Architecture Reference**](ARCHITECTURE.md) — Deep dive into the monorepo design and decisions.
+- 📡 [**API Reference**](API_REFERENCE.md) — Full REST and WebSocket endpoint documentation.
 
 ---
 
-## Architecture
+## 🤝 Contributing
 
-VibePulse follows an **event-driven architecture**. Sprint 1 ships the first complete
-vertical slice with a direct-write interim transport (see [ADR 0003](./docs/adr/0003-event-driven-core.md)
-for why, and the planned migration to Redis Streams):
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on our conventional commits, monorepo setup, and feature-first architecture rules.
 
-```
-Developer Machine
-      │  file saved
-      ▼
-  ┌─────────┐   POST /events (via Publisher)   ┌─────────┐
-  │  Daemon  │ ────────────────────────────────► │   API   │
-  │(observer)│                                   │(FastAPI)│──► PostgreSQL
-  └─────────┘                                   └────┬────┘
-                                                       │ WebSocket
-                                                  ┌────▼────┐
-                                                  │Dashboard│
-                                                  │ (React) │
-                                                  └─────────┘
-```
+## 🛡️ Security
 
-### Events API (Sprint 1)
+If you discover a security vulnerability within VibePulse, please review our [Security Policy](SECURITY.md).
 
-| Endpoint        | Description                                                                                                                                 |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `POST /events`  | Daemon publishes a `DevelopmentEvent` (idempotent — duplicate `(session_id, file_path, event_type, timestamp)` returns the existing record) |
-| `GET /events`   | Recent events, newest first — used for the dashboard's initial load                                                                         |
-| `WS /ws/events` | Live broadcast of newly stored events, consumed by the dashboard                                                                            |
+## 📄 License
 
-Every event carries `schema_version` and an `event_type` of `FILE_CREATED`,
-`FILE_MODIFIED`, or `FILE_DELETED`. Events are stored in a single `development_events`
-table.
-
-See [`docs/adr/`](./docs/adr/) for Architecture Decision Records explaining key decisions.
-
----
-
-## Project Standards
-
-- **Commit style**: [Conventional Commits](https://www.conventionalcommits.org/)
-- **Branch naming**: `feat/`, `fix/`, `chore/`, `docs/`
-- **Pre-commit hooks**: husky + lint-staged (runs ESLint + Prettier on staged files)
-- **Python code style**: ruff (formatting + linting)
-
----
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feat/your-feature`
-3. Make changes — the pre-commit hook will lint and format your code automatically
-4. Push and open a Pull Request
-
----
-
-## License
-
-MIT © VibePulse Contributors
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

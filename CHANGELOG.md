@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 > **Note on versioning:** The `v0.2.0-session-intelligence` git tag currently points at the events-pipeline commit (`4cf448e`) rather than the commit that actually contains the Analysis Pipeline and Session Engine (`26cf63d`, currently `HEAD`, untagged). The entries below are grouped by what each milestone actually delivered — consistent with `PROJECT_STATUS.md` and `ROADMAP.md` — not by the tag's current git placement. The tag should be moved to `26cf63d` (or a new tag cut) to match this changelog.
 
+## [v1.0.0] - Production Ready Release Candidate (RC2)
+
+### Added
+
+- **Final Production Hardening**: Platform declared ready for internal production deployment.
+- **Test Suite Determinism**: Introduced a thread-safe `BackgroundTasks` proxy tracker in `conftest.py`, eradicating `IntegrityError` and `MissingGreenlet` race conditions across all 261 backend tests.
+- **Enterprise Documentation**: Generated comprehensive documentation including System Design, Deployment Guides, Security Policies, and Architecture schemas.
+
+### Changed
+
+- **Type Safety**: Strictly typed FastAPI routing layer and `dispatch` module, removing dead monkeypatching code (`_running_tasks`).
+- **Linter Enforcements**: Stripped deprecated Ruff rules (`ANN101`, `ANN102`) and tightened React ESLint rules to strictly handle Promise resolutions for React Router DOM `navigate()` functions.
+- **Test Isolations**: Test teardown now correctly respects nested SQLAlchemy SAVEPOINTS while enforcing clean lifecycle drains.
+
+### Fixed
+
+- Fixed `@typescript-eslint/no-misused-promises` errors in `TimelineCard.tsx`.
+- Fixed DOM attribute assertion brittleness in `ProjectCard.test.tsx` by separating concatenated CSS class checks (`ring-2 ring-accent-color`).
+
 ---
 
 ## [v0.8.0-observation-pipeline] - Sprint PX-5.2
@@ -341,8 +360,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - No analysis or session logic yet — events are ingested and streamed raw, with no enrichment
 - `apps/daemon`'s file watcher was a stub at this stage, not yet wired to a real publisher
 
----
+## [Upcoming] — Post-v1.0
 
-## [Upcoming] — Sprint 6
-
-Planned work, not yet implemented: a Replay Engine for step-by-step playback of a session's recorded changes, followed by the Health Engine — both deliberately excluded from Sprint 4's scope (see ADR 0006) and from Sprint 5's scope (see ADR 0007). See `ROADMAP.md` for the full sequencing.
+Planned work, not yet implemented: Authentication, Redis-backed Session Sweep locking for horizontal scaling, and Team Collaboration features. See `ROADMAP.md` for the full sequencing.

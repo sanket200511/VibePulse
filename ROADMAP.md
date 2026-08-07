@@ -99,7 +99,8 @@ The long-term vision is a Developer Observability Platform that sits alongside v
 - **v0.3** — Developer Insights: Session Timeline and Replay Engine ship, turning stored data into a narrative a human can review.
 - **v0.4** — Health & Analytics: the Health Engine and cross-session analytics ship, moving the platform from descriptive to evaluative.
 - **v0.5** — AI Intelligence: AI Fingerprint and Prompt Vault ship behind the existing provider-agnostic interface, plus data export.
-- **v1.0** — Production-ready platform: authentication, multi-project operation, deployment tooling, and the stability guarantees needed for a public release.
+- **v1.0** — Production-ready platform: Final production stabilization, zero live-database dependency failures in testing, deterministic UI components, and test-suite thread safety. Current release.
+- **v1.1** — Team Workspaces & Auth: authentication, multi-project operation, deployment tooling, and the stability guarantees needed for team-wide deployments.
 
 ---
 
@@ -161,12 +162,16 @@ Each of these boundaries exists to keep VibePulse's scope coherent: it is a sing
 - The existing `SessionSummaryGenerator` interface gains a second, AI-backed implementation that can be swapped in via configuration alone — zero changes required in `sessions/service.py` or any lifecycle code.
 - All new AI-dependent capabilities ship with a working non-AI fallback path, per the Design Philosophy above — none of them are allowed to make the platform non-functional if a model is unavailable.
 
-**v1.0 — Production-Ready Platform**
+**v1.0 — Production-Ready Platform (ACHIEVED)**
+
+- The platform is visually cohesive and functionally robust.
+- The backend test suite passes fully (100%) in a clean CI environment with no live-database-dependent failures, closing the previous gaps with `BackgroundTasks` synchronization.
+- A documented, repeatable deployment path exists (container images + a deployment guide) that a team member other than the original author can follow to stand up a working instance from scratch.
+
+**v1.1 — Team & Cloud (PLANNED)**
 
 - Authentication and authorization are enforced on every REST and WebSocket endpoint — zero unauthenticated write paths.
-- The platform runs correctly with more than one API replica behind a load balancer — meaning the session sweep loop's current single-instance assumption (documented as technical debt in `PROJECT_STATUS.md`) has been resolved, not just documented.
-- A documented, repeatable deployment path exists (container images + a deployment guide) that a team member other than the original author can follow to stand up a working instance from scratch.
-- The backend test suite passes fully (100%) in a clean CI environment with no live-database-dependent failures, closing the current gap where 35 of 113 tests require a running Postgres instance.
+- The platform runs correctly with more than one API replica behind a load balancer — requiring a Redis-backed distributed lock for the session sweep loop.
 
 **Long-term vision**
 
