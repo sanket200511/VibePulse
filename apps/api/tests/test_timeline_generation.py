@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from app.core.domain.events import AnalyzableEvent
 from app.features.timeline.domain import (
@@ -25,7 +26,7 @@ from app.features.timeline.domain import (
 BASE_TIME = datetime(2026, 7, 1, 12, 0, 0, tzinfo=UTC)
 
 
-def _event(offset_seconds: float, **kwargs: object) -> AnalyzableEvent:
+def _event(offset_seconds: float, **kwargs: Any) -> AnalyzableEvent:
     defaults: dict = {
         "id": uuid.uuid4(),
         "event_type": "FILE_MODIFIED",
@@ -43,7 +44,7 @@ def _event(offset_seconds: float, **kwargs: object) -> AnalyzableEvent:
     return AnalyzableEvent(**defaults)
 
 
-def _render(events: list[AnalyzableEvent], **kwargs: object):
+def _render(events: list[AnalyzableEvent], **kwargs: Any):
     default_start = events[0].timestamp if events else BASE_TIME
     return render(
         events,

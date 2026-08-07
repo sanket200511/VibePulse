@@ -56,6 +56,37 @@ def build_architecture_timeline(
     )
 
     for event in events:
+        # Include AI Observations directly in the timeline
+        if event.event_type in (
+            "AI_REQUEST_STARTED",
+            "AI_RESPONSE_RECEIVED",
+            "AI_TOOL_EXECUTED",
+            "AI_COMPLETION_ACCEPTED",
+        ):
+            provider = event.metadata.get("provider", "AI")
+            model = event.metadata.get("model", "")
+            desc = f"Provider: {provider} {model}".strip()
+
+            # Use interaction type or event type as title
+            interaction = event.metadata.get("interaction_type")
+            if interaction:
+                title = f"AI Observation: {interaction}"
+            else:
+                title = f"AI Observation: {event.event_type.replace('_', ' ').title()}"
+
+            entries.append(
+                ArchitectureTimelineEntry(
+                    id=uuid.uuid4(),
+                    timestamp=event.timestamp,
+                    kind="AI_OBSERVATION",
+                    title=title,
+                    description=desc,
+                    related_file=event.file_path,
+                    related_event_id=event.id,
+                    analysis_reference="ai_provenance",
+                )
+            )
+
         event_analyses = analyses.get(event.id, {})
 
         # Look for code evolution

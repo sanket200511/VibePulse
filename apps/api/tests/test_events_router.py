@@ -6,6 +6,7 @@ tests/conftest.py) rather than mocking the service layer, since the
 dedupe behaviour depends on the actual unique constraint firing.
 """
 
+import asyncio
 import uuid
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, patch
@@ -39,8 +40,11 @@ async def test_ingest_event_returns_201(client: AsyncClient) -> None:
     assert response.status_code == 201
     body = response.json()
     assert body["event_type"] == "FILE_MODIFIED"
-    assert body["schema_version"] == 1
+    assert body["schema_version"] == 2
     assert "id" in body
+
+    # Wait for the background analysis task to complete before teardown deletes rows
+    await asyncio.sleep(0.1)
 
 
 @pytest.mark.asyncio
@@ -53,6 +57,8 @@ async def test_ingest_duplicate_event_returns_200_with_same_id(client: AsyncClie
     assert first.status_code == 201
     assert second.status_code == 200
     assert first.json()["id"] == second.json()["id"]
+
+    await asyncio.sleep(0.1)
 
 
 @pytest.mark.asyncio
@@ -122,6 +128,8 @@ async def test_start_observation_success(mock_client_class: AsyncMock, client: A
     assert body["project_root"] == "my_project_root"
     mock_instance.post.assert_awaited_once_with("http://localhost:9000/control/observe/start")
 
+    await asyncio.sleep(0.1)
+
 
 @pytest.mark.asyncio
 @patch("app.features.events.router.httpx.AsyncClient")
@@ -140,6 +148,8 @@ async def test_stop_observation_success(mock_client_class: AsyncMock, client: As
     body = response.json()
     assert body["event_type"] == "OBSERVATION_STOPPED"
     mock_instance.post.assert_awaited_once_with("http://localhost:9000/control/observe/stop")
+
+    await asyncio.sleep(0.1)
 
 
 @pytest.mark.asyncio
@@ -160,6 +170,8 @@ async def test_observation_already_started(
     assert body["event_type"] == "OBSERVATION_STARTED"
     mock_instance.post.assert_awaited_once_with("http://localhost:9000/control/observe/start")
 
+    await asyncio.sleep(0.1)
+
 
 @pytest.mark.asyncio
 @patch("app.features.events.router.httpx.AsyncClient")
@@ -178,6 +190,8 @@ async def test_observation_already_stopped(
     body = response.json()
     assert body["event_type"] == "OBSERVATION_STOPPED"
     mock_instance.post.assert_awaited_once_with("http://localhost:9000/control/observe/stop")
+
+    await asyncio.sleep(0.1)
 
 
 @pytest.mark.asyncio
