@@ -21,6 +21,13 @@ import { Badge } from "@vibepulse/ui";
 import { useInvestigation, type InvestigationResult, type EvidenceNode } from "./useInvestigation";
 import { LoadingState } from "../../components/states";
 
+const SEVERITY_RANK: Record<string, number> = {
+  CRITICAL: 0,
+  HIGH: 1,
+  MEDIUM: 2,
+  LOW: 3,
+};
+
 export function InvestigationPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const [query, setQuery] = useState("");
@@ -32,29 +39,52 @@ export function InvestigationPage() {
 
   const rawResults = useMemo(() => data?.results || [], [data?.results]);
 
-  // Filtered by query
+  // Filtered by query and sorted by severity (CRITICAL -> HIGH -> MEDIUM -> LOW), then newest first
   const filteredResults = useMemo(() => {
-    if (!query) return rawResults;
-    const q = query.toLowerCase();
-    return rawResults.filter(
-      (r) =>
-        r.summary.toLowerCase().includes(q) ||
-        (r.file_path || "").toLowerCase().includes(q) ||
-        (r.project_name || "").toLowerCase().includes(q) ||
-        (r.risk_level || "").toLowerCase().includes(q) ||
-        r.security_findings?.some((f) => f.message.toLowerCase().includes(q) || f.rule_id.toLowerCase().includes(q)),
-    );
+    let list = rawResults;
+    if (query) {
+      const q = query.toLowerCase();
+      list = list.filter(
+        (r) =>
+          r.summary.toLowerCase().includes(q) ||
+          (r.file_path || "").toLowerCase().includes(q) ||
+          (r.project_name || "").toLowerCase().includes(q) ||
+          (r.risk_level || "").toLowerCase().includes(q) ||
+          r.security_findings?.some(
+            (f) => f.message.toLowerCase().includes(q) || f.rule_id.toLowerCase().includes(q),
+          ),
+      );
+    }
+    return [...list].sort((a, b) => {
+      const rankA = SEVERITY_RANK[(a.risk_level || "LOW").toUpperCase()] ?? 4;
+      const rankB = SEVERITY_RANK[(b.risk_level || "LOW").toUpperCase()] ?? 4;
+      if (rankA !== rankB) return rankA - rankB;
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+    });
   }, [rawResults, query]);
 
-  // Derived real intelligence counts
+  // Derived real intelligence counts from PostgreSQL
   const stats = useMemo(() => {
     const total = data?.total_count ?? rawResults.length;
-    const suspicious = data?.suspicious_count ?? rawResults.filter((r) => r.risk_score >= 30 || r.security_findings?.length > 0).length;
-    const highRisk = data?.high_risk_count ?? rawResults.filter((r) => r.risk_score >= 60 || r.risk_level === "HIGH" || r.risk_level === "CRITICAL").length;
+    const securityFindings =
+      data?.security_findings_count ??
+      rawResults.filter((r) => r.security_findings && r.security_findings.length > 0).length;
+    const critical =
+      data?.critical_count ??
+      rawResults.filter(
+        (r) => r.risk_score >= 80 || (r.risk_level || "").toUpperCase() === "CRITICAL",
+      ).length;
     const sessions = data?.sessions_count ?? new Set(rawResults.map((r) => r.session_id)).size;
     const projects = data?.projects_count ?? new Set(rawResults.map((r) => r.project_root)).size;
-    return { total, suspicious, highRisk, sessions, projects };
-  }, [data?.total_count, data?.suspicious_count, data?.high_risk_count, data?.sessions_count, data?.projects_count, rawResults]);
+    return { total, securityFindings, critical, sessions, projects };
+  }, [
+    data?.total_count,
+    data?.security_findings_count,
+    data?.critical_count,
+    data?.sessions_count,
+    data?.projects_count,
+    rawResults,
+  ]);
 
   const activeResult = activeFinding || (filteredResults.length > 0 ? filteredResults[0] : null);
   const isReviewed = activeResult ? reviewedIncidents.has(activeResult.id) : false;
@@ -80,14 +110,19 @@ export function InvestigationPage() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-lg font-bold tracking-tight text-white">Investigation Command Center</h1>
+                  <h1 className="text-lg font-bold tracking-tight text-white">
+                    Investigation Command Center
+                  </h1>
                   <span className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-400">
                     <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
                     Live Observation
                   </span>
                 </div>
                 <p className="text-xs text-zinc-400">
-                  <span className="font-semibold text-zinc-300">Detect</span> → <span className="font-semibold text-zinc-300">Correlate</span> → <span className="font-semibold text-zinc-300">Explain</span> → <span className="font-semibold text-zinc-300">Resolve</span>
+                  <span className="font-semibold text-zinc-300">Detect</span> →{" "}
+                  <span className="font-semibold text-zinc-300">Correlate</span> →{" "}
+                  <span className="font-semibold text-zinc-300">Explain</span> →{" "}
+                  <span className="font-semibold text-zinc-300">Resolve</span>
                 </p>
               </div>
             </div>
@@ -118,7 +153,9 @@ export function InvestigationPage() {
             <div className="flex items-center gap-2.5 rounded-lg border border-zinc-800/80 bg-zinc-900/50 px-3.5 py-2">
               <Activity className="h-4 w-4 text-indigo-400" />
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Observed Events</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                  Observed Events
+                </p>
                 <p className="font-mono text-sm font-bold text-white">{stats.total}</p>
               </div>
             </div>
@@ -126,23 +163,31 @@ export function InvestigationPage() {
             <div className="flex items-center gap-2.5 rounded-lg border border-zinc-800/80 bg-zinc-900/50 px-3.5 py-2">
               <AlertCircle className="h-4 w-4 text-amber-400" />
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Suspicious Activity</p>
-                <p className="font-mono text-sm font-bold text-amber-300">{stats.suspicious}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                  Security Findings
+                </p>
+                <p className="font-mono text-sm font-bold text-amber-300">
+                  {stats.securityFindings}
+                </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2.5 rounded-lg border border-zinc-800/80 bg-zinc-900/50 px-3.5 py-2">
               <Flame className="h-4 w-4 text-rose-400" />
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">High Risk Findings</p>
-                <p className="font-mono text-sm font-bold text-rose-400">{stats.highRisk}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                  Critical Incidents
+                </p>
+                <p className="font-mono text-sm font-bold text-rose-400">{stats.critical}</p>
               </div>
             </div>
 
             <div className="flex items-center gap-2.5 rounded-lg border border-zinc-800/80 bg-zinc-900/50 px-3.5 py-2">
               <Layers className="h-4 w-4 text-emerald-400" />
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Sessions</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                  Sessions
+                </p>
                 <p className="font-mono text-sm font-bold text-white">{stats.sessions}</p>
               </div>
             </div>
@@ -150,7 +195,9 @@ export function InvestigationPage() {
             <div className="flex items-center gap-2.5 rounded-lg border border-zinc-800/80 bg-zinc-900/50 px-3.5 py-2">
               <FolderGit2 className="h-4 w-4 text-purple-400" />
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Observed Projects</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                  Observed Projects
+                </p>
                 <p className="font-mono text-sm font-bold text-white">{stats.projects}</p>
               </div>
             </div>
@@ -487,6 +534,74 @@ export function InvestigationPage() {
                     <span className="font-mono text-rose-400 uppercase">{activeResult.risk_level}</span>
                   </div>
                 </div>
+              </div>
+
+              {/* SECTION: DETECTION METHOD & ANALYSIS PROVENANCE */}
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-lg">
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4 text-indigo-400" />
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-300">
+                      Detection Method & Analysis Provenance
+                    </h3>
+                  </div>
+                  <span className="rounded border border-indigo-500/30 bg-indigo-500/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-indigo-300">
+                    Deterministic Engine
+                  </span>
+                </div>
+
+                {(() => {
+                  const firstSec = activeResult.security_findings?.[0];
+                  return (
+                    <>
+                      <div className="grid grid-cols-2 gap-3 text-xs">
+                        <div className="rounded-lg border border-zinc-800/80 bg-zinc-950/60 p-3">
+                          <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                            Primary Detection Rule
+                          </span>
+                          <p className="mt-1 font-mono font-semibold text-zinc-200">
+                            {firstSec
+                              ? `${firstSec.rule_id} — Credential & API Key Exposure`
+                              : "AST001 — Structural Baseline Monitoring"}
+                          </p>
+                          <p className="mt-0.5 text-[11px] text-zinc-400">
+                            {firstSec
+                              ? firstSec.message
+                              : "Continuous observation across project files and sessions."}
+                          </p>
+                        </div>
+
+                        <div className="rounded-lg border border-zinc-800/80 bg-zinc-950/60 p-3">
+                          <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                            Analyzer Pipeline
+                          </span>
+                          <p className="mt-1 font-semibold text-emerald-400">
+                            Security Guardian (Tree-Sitter AST & Regex)
+                          </p>
+                          <p className="mt-0.5 text-[11px] text-zinc-400">
+                            Machine Learning: Standby (Zero synthetic confidence; rule-based ground truth)
+                          </p>
+                        </div>
+                      </div>
+
+                      {firstSec?.redacted_evidence && (
+                        <div className="mt-3 rounded-lg border border-rose-500/30 bg-rose-950/20 p-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-semibold uppercase tracking-wider text-rose-400">
+                              Verified Redacted Evidence
+                            </span>
+                            <span className="text-[10px] text-zinc-500">
+                              Line {firstSec.line_number || 1}
+                            </span>
+                          </div>
+                          <pre className="mt-1.5 overflow-x-auto rounded bg-black/60 p-2 font-mono text-[11px] text-rose-200">
+                            {firstSec.redacted_evidence}
+                          </pre>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
 
               {/* SECTION 5 & 6: INCIDENT TIMELINE & AFFECTED SURFACE */}

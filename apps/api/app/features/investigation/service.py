@@ -334,6 +334,8 @@ async def search_investigation(
     distinct_projects: set[str] = set()
     suspicious_count = 0
     high_risk_count = 0
+    critical_count = 0
+    security_findings_count = 0
 
     for i, event in enumerate(events):
         distinct_sessions.add(event.session_id)
@@ -407,12 +409,14 @@ async def search_investigation(
             architecture_changes,
         )
 
+        if security_findings:
+            security_findings_count += 1
+        if risk_score >= 80 or risk_level == "CRITICAL":
+            critical_count += 1
+        if risk_score >= 60 or risk_level in ("HIGH", "CRITICAL"):
+            high_risk_count += 1
         if risk_score >= 30 or security_findings:
             suspicious_count += 1
-        if risk_score >= 60 or any(
-            f.severity.upper() == "HIGH" for f in security_findings
-        ):
-            high_risk_count += 1
 
         project_name = (
             os.path.basename(event.project_root)
@@ -453,11 +457,23 @@ async def search_investigation(
             )
         )
 
+    # Sort investigations: CRITICAL -> HIGH -> MEDIUM -> LOW,
+    # and within the same severity level by newest timestamp first.
+    severity_order = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
+    results.sort(
+        key=lambda r: (
+            severity_order.get(r.risk_level.upper(), 4),
+            -r.timestamp.timestamp(),
+        )
+    )
+
     has_more = (offset + limit) < total_count
 
     return InvestigationResponse(
         results=results,
         total_count=total_count,
+        security_findings_count=security_findings_count,
+        critical_count=critical_count,
         suspicious_count=suspicious_count,
         high_risk_count=high_risk_count,
         sessions_count=len(distinct_sessions),
