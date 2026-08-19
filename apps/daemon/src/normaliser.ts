@@ -63,7 +63,11 @@ export function createNormaliser({ projectRoot, sessionId }: NormaliserOptions):
       // Ensure the file is a strict descendant of the project root.
       // Append sep so that a root of /proj does not match /project-other.
       const normalisedPath = normalize(filePath);
-      if (!normalisedPath.startsWith(normalisedRoot + sep)) {
+      const isDescendant =
+        process.platform === "win32"
+          ? normalisedPath.toLowerCase().startsWith((normalisedRoot + sep).toLowerCase())
+          : normalisedPath.startsWith(normalisedRoot + sep);
+      if (!isDescendant) {
         return null;
       }
 

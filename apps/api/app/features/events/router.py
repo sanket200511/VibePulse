@@ -103,6 +103,7 @@ async def ingest_event(
         # synchronous (same request-scoped db session) since it is a cheap
         # counter update, not heavy pipeline work.
         session_row, session_was_created = await session_service.touch_session(db, analyzable)
+        await db.commit()
         now = datetime.now(tz=UTC)
         session_read = SessionRead.from_session(
             session_row, effective_status=session_service.compute_effective_status(session_row, now)
