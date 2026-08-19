@@ -24,13 +24,13 @@ import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
 from app.core.domain.events import AnalyzableEvent
 from app.core.logging import get_logger
-from app.features.projects.service import get_or_create_project
+from app.features.projects.service import get_or_create_project, normalize_root_path
 from app.features.sessions.constants import SessionStatus
 from app.features.sessions.models import Session
 from app.features.sessions.summary import DEFAULT_SUMMARY_GENERATOR, SessionSnapshot
@@ -153,10 +153,16 @@ async def touch_session(db: AsyncSession, event: AnalyzableEvent) -> tuple[Sessi
     Returns ``(session, was_created)`` so the caller (events router) can
     broadcast ``session.started`` vs. ``session.updated`` accordingly.
     """
+    normalized_root = normalize_root_path(event.project_root)
     stmt = (
         select(Session)
         .where(
-            Session.project_root == event.project_root,
+            or_(
+                Session.project_root == event.project_root,
+                Session.project_root == normalized_root,
+                func.lower(func.replace(Session.project_root, "\\", "/"))
+                == func.lower(func.replace(normalized_root, "\\", "/")),
+            ),
             Session.status != SessionStatus.COMPLETED.value,
         )
         .order_by(Session.last_event_at.desc())

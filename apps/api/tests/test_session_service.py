@@ -235,3 +235,28 @@ async def test_sweep_once_leaves_recent_active_session_untouched(
     assert result.idled == []
     assert result.completed == []
     assert fresh.status == SessionStatus.ACTIVE.value
+
+
+@pytest.mark.asyncio
+async def test_touch_session_multi_project_isolation(
+    db_session: AsyncSession,
+) -> None:
+    now = datetime.now(tz=UTC)
+    event_proj_a = _event(
+        project_root="D:/Projects/ProjectAlpha",
+        timestamp=now,
+    )
+    event_proj_b = _event(
+        project_root="D:/Projects/ProjectBeta",
+        timestamp=now + timedelta(seconds=1),
+    )
+
+    session_a, was_created_a = await service.touch_session(db_session, event_proj_a)
+    session_b, was_created_b = await service.touch_session(db_session, event_proj_b)
+
+    assert was_created_a is True
+    assert was_created_b is True
+    assert session_a.id != session_b.id
+    assert session_a.project_id != session_b.project_id
+    assert session_a.project_root == "D:/Projects/ProjectAlpha"
+    assert session_b.project_root == "D:/Projects/ProjectBeta"
