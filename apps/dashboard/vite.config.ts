@@ -13,66 +13,60 @@ export default defineConfig({
     port: 3000,
     proxy: {
       "/api": {
-        target: "http://localhost:8080",
+        target: "http://localhost:8000",
         changeOrigin: true,
         configure: (proxy) => {
-          proxy.on("error", () => {
-            /* API offline — swallow ECONNREFUSED */
+          proxy.on("error", (_err, _req, res) => {
+            if (res && "writeHead" in res && !res.headersSent) {
+              res.writeHead(503, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ error: "Backend API offline" }));
+            }
           });
         },
       },
       "/sessions": {
-        target: "http://localhost:8080",
+        target: "http://localhost:8000",
         changeOrigin: true,
         configure: (proxy) => {
-          proxy.on("error", () => {
-            /* API offline — swallow ECONNREFUSED */
+          proxy.on("error", (_err, _req, res) => {
+            if (res && "writeHead" in res && !res.headersSent) {
+              res.writeHead(503, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ error: "Backend API offline" }));
+            }
           });
         },
       },
       "/events": {
-        target: "http://localhost:8080",
+        target: "http://localhost:8000",
         changeOrigin: true,
         configure: (proxy) => {
-          proxy.on("error", () => {
-            /* API offline — swallow ECONNREFUSED */
-          });
-        },
-      },
-      "/projects": {
-        target: "http://localhost:8080",
-        changeOrigin: true,
-        configure: (proxy) => {
-          proxy.on("error", () => {
-            /* API offline — swallow ECONNREFUSED */
-          });
-        },
-      },
-      "/investigation": {
-        target: "http://localhost:8080",
-        changeOrigin: true,
-        configure: (proxy) => {
-          proxy.on("error", () => {
-            /* API offline — swallow ECONNREFUSED */
+          proxy.on("error", (_err, _req, res) => {
+            if (res && "writeHead" in res && !res.headersSent) {
+              res.writeHead(503, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ error: "Backend API offline" }));
+            }
           });
         },
       },
       "/health": {
-        target: "http://localhost:8080",
+        target: "http://localhost:8000",
         changeOrigin: true,
         configure: (proxy) => {
-          proxy.on("error", () => {
-            /* API offline — swallow ECONNREFUSED */
+          proxy.on("error", (_err, _req, res) => {
+            if (res && "writeHead" in res && !res.headersSent) {
+              res.writeHead(503, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ error: "Backend API offline" }));
+            }
           });
         },
       },
       "/ws": {
-        target: "ws://localhost:8080",
+        target: "ws://localhost:8000",
         ws: true,
         changeOrigin: true,
         configure: (proxy) => {
           proxy.on("error", () => {
-            /* API offline — swallow ECONNREFUSED */
+            /* WS API offline — swallow connection reset */
           });
         },
       },

@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, beforeEach } from "vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WorkspaceHomePage } from "./WorkspaceHomePage";
 import { setDemoMode } from "../../demo/config";
 import { vi } from "vitest";
@@ -11,17 +12,29 @@ vi.mock("../../components/presentation", () => ({
   }),
 }));
 
+function renderHomePage() {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+    },
+  });
+
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>
+        <WorkspaceHomePage />
+      </MemoryRouter>
+    </QueryClientProvider>,
+  );
+}
+
 describe("WorkspaceHomePage with Demo Mode Enabled", () => {
   beforeEach(() => {
     setDemoMode(true);
   });
 
   it("renders the demo mode banner and workspace header", () => {
-    render(
-      <MemoryRouter>
-        <WorkspaceHomePage />
-      </MemoryRouter>,
-    );
+    renderHomePage();
 
     expect(screen.getByText(/VibePulse Engineering Observability Platform/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Workspace: VibeSync/i })).toBeInTheDocument();
@@ -29,11 +42,7 @@ describe("WorkspaceHomePage with Demo Mode Enabled", () => {
   });
 
   it("renders the primary canvas with demo content", () => {
-    render(
-      <MemoryRouter>
-        <WorkspaceHomePage />
-      </MemoryRouter>,
-    );
+    renderHomePage();
 
     // Section headings
     expect(screen.getByRole("heading", { name: "Today's Story" })).toBeInTheDocument();
@@ -51,11 +60,7 @@ describe("WorkspaceHomePage with Demo Mode Enabled", () => {
   });
 
   it("renders the secondary rail with demo content", () => {
-    render(
-      <MemoryRouter>
-        <WorkspaceHomePage />
-      </MemoryRouter>,
-    );
+    renderHomePage();
 
     // Section headings
     expect(screen.getByRole("heading", { name: "Observation Status" })).toBeInTheDocument();
@@ -75,22 +80,17 @@ describe("WorkspaceHomePage with Demo Mode Disabled", () => {
     setDemoMode(false);
   });
 
-  it("renders the empty placeholders", () => {
-    render(
-      <MemoryRouter>
-        <WorkspaceHomePage />
-      </MemoryRouter>,
-    );
+  it("renders the live workspace view when not in demo mode", () => {
+    renderHomePage();
 
     expect(
       screen.queryByText(/VibePulse Engineering Observability Platform/i),
     ).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /Workspace: Unselected/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "VibePulse" })).toBeInTheDocument();
 
-    // Empty state placeholders
-    expect(screen.getByText("Story Card")).toBeInTheDocument();
-    expect(screen.getAllByText("Current Session").length).toBe(2);
-    expect(screen.getAllByText("Timeline Preview").length).toBe(2);
-    expect(screen.getAllByText("Projects").length).toBe(2);
+    // Live state sections
+    expect(screen.getAllByText("Observation Status").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText("Awaiting Daemon")).toBeInTheDocument();
+    expect(screen.getByText("Quick Links")).toBeInTheDocument();
   });
 });

@@ -64,11 +64,12 @@ async def search_investigation(
         security_findings = []
         sec = event_analyses.get("security_guardian", {})
         for finding in sec.get("findings", []):
+            msg = finding.get("title") or finding.get("message") or finding.get("description") or ""
             security_findings.append(
                 InvestigationSecurityFinding(
                     rule_id=finding.get("rule_id", ""),
                     severity=finding.get("severity", ""),
-                    message=finding.get("message", ""),
+                    message=msg,
                 )
             )
 

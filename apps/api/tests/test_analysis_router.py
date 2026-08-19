@@ -92,18 +92,34 @@ async def test_get_analysis_404_for_malformed_uuid(client: AsyncClient) -> None:
 
 @pytest.mark.asyncio
 async def test_get_analysis_200_empty_list_when_no_analyses(
+    db_session: AsyncSession,
     client: AsyncClient,
 ) -> None:
     """Event exists but analysis has not run yet — should return empty list."""
-    ingest = await client.post("/events", json=_event_payload())
-    assert ingest.status_code == 201
-    event_id = ingest.json()["id"]
+    from app.features.events.models import DevelopmentEvent
 
-    response = await client.get(f"/events/{event_id}/analysis")
+    event = DevelopmentEvent(
+        id=uuid.uuid4(),
+        schema_version=1,
+        event_type="FILE_MODIFIED",
+        timestamp=datetime.now(UTC),
+        session_id=uuid.uuid4(),
+        project_root="/repo",
+        file_path="/repo/src/app.py",
+        file_name="app.py",
+        file_extension=".py",
+        language="python",
+        git_branch="feat/analysis",
+        event_metadata={},
+    )
+    db_session.add(event)
+    await db_session.commit()
+
+    response = await client.get(f"/events/{event.id}/analysis")
 
     assert response.status_code == 200
     body = response.json()
-    assert body["event_id"] == event_id
+    assert body["event_id"] == str(event.id)
     assert body["analyses"] == []
 
 

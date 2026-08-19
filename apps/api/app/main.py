@@ -56,6 +56,58 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     await engine.dispose(close=False)
     logger.info("api_startup", extra={"environment": settings.environment})
 
+    # Verify database connectivity and schema before starting background tasks
+    from sqlalchemy import text
+    from sqlalchemy.engine.url import make_url
+
+    parsed_url = make_url(settings.database_url)
+    db_host = parsed_url.host or "localhost"
+    db_port = parsed_url.port or 5432
+    db_name = parsed_url.database or "vibepulse"
+
+    try:
+        async with engine.begin() as conn:
+            await conn.execute(text("SELECT 1 FROM sessions LIMIT 1"))
+    except Exception as e:
+        err_msg = str(e).lower()
+        if "refused" in err_msg or "connect" in err_msg or "10061" in err_msg:
+            msg = (
+                f"PostgreSQL is not reachable at {db_host}:{db_port}. "
+                "Start the local PostgreSQL service and run `pnpm setup` "
+                "if this is a fresh environment."
+            )
+            logger.error(f"api_startup_failed: {msg}", exc_info=e)
+            raise RuntimeError(msg) from e
+        elif "password" in err_msg or "authentication" in err_msg:
+            msg = (
+                f"PostgreSQL authentication failed for database '{db_name}' "
+                f"at {db_host}:{db_port}. "
+                "Check your DATABASE_URL credentials in apps/api/.env."
+            )
+            logger.error(f"api_startup_failed: {msg}", exc_info=e)
+            raise RuntimeError(msg) from e
+        elif "database" in err_msg and "does not exist" in err_msg:
+            msg = (
+                f"PostgreSQL database '{db_name}' does not exist on {db_host}:{db_port}. "
+                "Run `pnpm setup` to initialize the database."
+            )
+            logger.error(f"api_startup_failed: {msg}", exc_info=e)
+            raise RuntimeError(msg) from e
+        elif "relation" in err_msg and "does not exist" in err_msg:
+            msg = (
+                "Database schema is not initialized (missing tables). "
+                "Run `uv run alembic upgrade head` or `pnpm setup`."
+            )
+            logger.error(f"api_startup_failed: {msg}", exc_info=e)
+            raise RuntimeError(msg) from e
+        else:
+            msg = (
+                f"Database check failed: {e}. "
+                "Please ensure PostgreSQL is running and run `pnpm setup`."
+            )
+            logger.error(f"api_startup_failed: {msg}", exc_info=e)
+            raise RuntimeError(msg) from e
+
     # Session Engine sweep loop — detects ACTIVE->IDLE->COMPLETED transitions
     # for sessions that have gone quiet. In-process asyncio task; no
     # additional infrastructure required for a single-instance API.
