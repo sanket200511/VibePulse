@@ -1,30 +1,51 @@
-# VibePulse — Live Seminar Demonstration Guide (5–7 Minutes)
+# VibePulse — Judge Demonstration & Seminar Playbook
 
-This guide provides the exact step-by-step procedure, commands, and speaking script for demonstrating VibePulse live during the seminar.
-
----
-
-## Architecture Overview (Mental Model)
-
-```
-Target Project on Disk
-       ↓
-Chokidar Watcher + Normaliser (Node.js Daemon :9000)
-       ↓
-FastAPI Ingestion (:8000) → PostgreSQL Local (:5432)
-       ↓
-Live WebSocket Pipeline (/ws/events, /ws/sessions)
-       ↓
-React/Vite Dashboard (:3000) [Workspace, Projects, History, Investigation]
-```
+This document is the official, end-to-end playbook for demonstrating VibePulse to judges and professors during the seminar.
 
 ---
 
-## Pre-Flight Checklist
+## 1. Executive Summary & Core Value Proposition
 
-Before the professor sits down:
-1. Ensure PostgreSQL is running on `localhost:5432`.
-2. Start the stack in your terminal:
+> **What to Say to the Judge**:
+> *"Most developer tools are either passive git log visualizers or intrusive screen monitors. VibePulse is different: it passively and continuously observes developer activity in real-time, understands the structural and architectural context of a development session, flags high-risk security leaks deterministically before they reach git, and allows engineers to investigate why those changes matter — all while strictly redacting sensitive credentials."*
+
+---
+
+## 2. Architecture & Mental Model
+
+```
+Observed Project (e.g. D:\VibePulse-Demo)
+      │
+      ▼
+Node.js Telemetry Daemon (:9000)
+├── Chokidar File Watcher (Ignored patterns: .git, node_modules, __pycache__)
+├── Path Normaliser & Native NTFS Canonicalizer
+├── Debouncer (collapses rapid file save bursts)
+└── WatchManager (enables dynamic project switching without process restart)
+      │
+      ▼ HTTP POST /events
+FastAPI Backend (:8000)
+├── Session Touch Engine (partitions events per canonical project root)
+├── Security Analyzer (AST pattern detector for SEC001 hardcoded secrets)
+├── Code Evolution Engine (detects function/class/import additions & removals)
+├── PostgreSQL 16 (:5432) (persistent audit log of events & analyses)
+└── WebSocket Hub (/ws/events, /ws/sessions)
+      │
+      ▼ WebSocket
+React / TanStack Query Dashboard (:3000)
+├── Workspace Home (Live session telemetry, event stream, pulse graph)
+├── Projects (Active & historical watched repositories)
+├── Investigation (AST-filtered incident investigation)
+└── Session History (Session playback and timeline)
+```
+
+---
+
+## 3. The 5-Minute Judge Demonstration
+
+### Setup (Pre-Demo)
+1. Ensure the controlled demo project exists: `D:\VibePulse-Demo`
+2. Start the local stack:
    ```powershell
    pnpm dev
    ```
@@ -32,138 +53,117 @@ Before the professor sits down:
 
 ---
 
-## Live Demo Steps
-
-### Step 1: Start & System Health (30 seconds)
+### Scene 1: Passive Observation & Live Stream (1 Minute)
 
 **Action**:
-Open `http://localhost:3000/projects`.
-
-**Terminal / Status Check**:
+Modify `src/auth.py` in `D:\VibePulse-Demo`:
 ```powershell
-Invoke-RestMethod http://localhost:9000/health
-```
-**Expected Output**:
-```json
-{
-  "status": "healthy",
-  "version": "0.1.0",
-  "observing": true,
-  "project_name": "ArithFlow",
-  "root": "D:\\Projects\\ArithFlow"
-}
-```
-
-**What to Say**:
-> *"VibePulse is a real-time Software Engineering Intelligence platform. It runs a zero-overhead local telemetry daemon that observes developer activity, processes events through an asynchronous pipeline, and provides live insights without modifying developer workflow."*
-
----
-
-### Step 2: Feature 1 — Real-Time Observability (1 minute)
-
-**Action**:
-Create or edit a harmless file in the currently watched project (`D:\Projects\ArithFlow`):
-```powershell
-Set-Content -Path "D:\Projects\ArithFlow\math_utils.py" -Value "def add(a, b): return a + b"
+Add-Content -Path "D:\VibePulse-Demo\src\auth.py" -Value "`ndef verify_signature(data: str) -> bool:`n    return len(data) > 0`n"
 ```
 
 **Expected Result**:
-- Within milliseconds, the **Workspace Home** (`http://localhost:3000`) updates live via WebSocket.
-- The event feed displays `FILE_CREATED math_utils.py`.
-- The active session counter increments deterministically.
+- Within milliseconds, `FILE_MODIFIED src/auth.py` appears live in Workspace Home via WebSocket.
+- The active session event counter increments.
+- Expanding the event row shows **Code Evolution**: `Function Added: verify_signature`.
 
-**Cleanup**:
-```powershell
-Remove-Item "D:\Projects\ArithFlow\math_utils.py"
-```
-
-**What to Say**:
-> *"As soon as I create or modify a file, the OS filesystem event is normalized, debounced to collapse bursts, and pushed over WebSocket to the dashboard. No synthetic polling — every metric is backed by deterministic evidence."*
+**Talking Points**:
+> *"Notice that I didn't type a git command or run a manual audit. VibePulse passively captured the OS-level file modification, debounced the write burst, extracted the AST change, and rendered it in real time."*
 
 ---
 
-### Step 3: Feature 2 — Zero-Restart Runtime Project Switching (1.5 minutes)
+### Scene 2: High-Risk Security Alert — Hardcoded Secret Leak (1.5 Minutes)
 
 **Action**:
-Switch observation to another project (`Animal Disease Prediction`) **without restarting the stack**:
+Add a fake API key and database URL to `config/settings.py`:
 ```powershell
-Invoke-RestMethod -Uri "http://localhost:9000/watch" -Method POST -ContentType "application/json" -Body '{"root": "D:\\Projects\\Animal Disease Prediction"}'
-```
+Add-Content -Path "D:\VibePulse-Demo\config\settings.py" -Value @'
 
-**Expected Output**:
-```json
-{
-  "status": "observing",
-  "project_name": "Animal Disease Prediction",
-  "root": "D:\\Projects\\Animal Disease Prediction"
-}
-```
-
-**Verification**:
-1. Create a test file in the new project:
-   ```powershell
-   Set-Content -Path "D:\Projects\Animal Disease Prediction\model_pipeline.py" -Value "# Model pipeline update"
-   ```
-2. Check `http://localhost:3000/projects` and Workspace Home.
-
-**Cleanup**:
-```powershell
-Remove-Item "D:\Projects\Animal Disease Prediction\model_pipeline.py"
-```
-
-**What to Say**:
-> *"VibePulse supports dynamic multi-project observation. Through our WatchManager abstraction, we can switch the active observation target live. The previous watcher closes cleanly, stale events are invalidated, and a new session is allocated without restarting FastAPI, the database, or the daemon."*
-
----
-
-### Step 4: Feature 3 — Real-Time Secret & Password Leak Detection (1.5 minutes)
-
-**Action**:
-Create a test file with obvious fake credentials in the active project:
-```powershell
-Set-Content -Path "D:\Projects\Animal Disease Prediction\test_config.py" -Value @'
-# Database Configuration
-API_KEY = "DEMO_FAKE_API_KEY_987654321"
-DATABASE_URL = "postgresql://demo_admin:DEMO_SECRET_PASS@localhost:5432/prod_db"
+# Critical service credentials
+API_KEY = "VIBEPULSE_DEMO_FAKE_KEY_123456"
+DATABASE_URL = "postgresql://admin_user:VIBEPULSE_DEMO_PASSWORD@localhost:5432/production_db"
 '@
 ```
 
 **Expected Result**:
-- Security Analyzer inspects the file modification AST / patterns.
-- Generates finding `SEC001` (Hardcoded Secret Detected) with `HIGH` severity.
-- **Critical Security Guarantee**: The raw secret is **100% redacted** in the database, API response, and UI:
-  `Value: ********REDACTED********`
+- The dashboard immediately highlights the event with a prominent **`HIGH RISK`** Security Alert.
+- Expanding the finding reveals:
+  - **Rule**: `SEC001` (Hardcoded Secret Detected)
+  - **Severity**: `HIGH`
+  - **Location**: `config/settings.py`
+  - **Redacted Evidence**: `API_KEY = "********REDACTED********"`
+  - **Remediation**: *"Move secret to environment/secret storage."*
 
-**Cleanup**:
-```powershell
-Remove-Item "D:\Projects\Animal Disease Prediction\test_config.py"
-```
-
-**What to Say**:
-> *"Here is VibePulse Security Guardian in action. As soon as a hardcoded secret or credential is committed or saved, our AST-level analyzer detects the leak, flags it as HIGH severity, and strictly redacts the sensitive value so raw credentials are never persisted to disk or leaked in logs."*
+**Talking Points**:
+> *"Here is VibePulse Security Guardian. As soon as a credential or connection string is written to a file, our AST analyzer catches it before it is ever committed. Crucially, notice the Zero-Leakage guarantee: the secret value is strictly redacted in PostgreSQL, the API, and the UI. We never store or log raw plaintext credentials."*
 
 ---
 
-### Step 5: Feature 4 — Session History & Investigation (1.5 minutes)
+### Scene 3: Explainable Risk Intelligence & Session Insights (1 Minute)
 
 **Action**:
-1. Open **History** (`http://localhost:3000/history`):
-   - Show the partitioned sessions for `ArithFlow` and `Animal Disease Prediction`.
-   - Select a session to view event timeline and duration.
-2. Open **Investigation** (`http://localhost:3000/investigation`):
-   - Filter by `severity:HIGH` to instantly isolate the secret leak event.
-   - Show deterministic AST search.
+Inspect the session summary and risk breakdown on the dashboard.
 
-**What to Say**:
-> *"All telemetry is partitioned per project and session. In Investigation, engineers can query historical activity with deterministic filters such as severity or event type. If an LLM provider is configured, VibePulse offers AI explanations; if offline, it gracefully falls back without disrupting the core observability pipeline."*
+**Talking Points**:
+> *"Why is this session marked HIGH risk? VibePulse doesn't generate opaque, unexplainable numbers. The risk score is directly derived from observable signals:
+> 1. Hardcoded credential pattern detected (+50)
+> 2. Sensitive configuration file modified (+20)
+> 3. Burst of rapid modifications (+15)
+> Every score is auditable and backed by deterministic evidence."*
 
 ---
 
-## Emergency Quick Commands
+### Scene 4: Incident Investigation & Timeline (1.5 Minutes)
 
-| Concern | Command |
-|---|---|
-| Check Doctor Status | `node scripts/doctor.mjs` |
-| Check Daemon Health | `Invoke-RestMethod http://localhost:9000/health` |
-| Switch Project Live | `Invoke-RestMethod -Uri "http://localhost:9000/watch" -Method POST -ContentType "application/json" -Body '{"root": "D:\\Projects\\..."}'` |
-| Free Collided Ports | `Get-NetTCPConnection -LocalPort 3000,8000,9000 -State Listen \| ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }` |
+**Action**:
+Click **Investigation** (`http://localhost:3000/investigation`) and filter by `severity:HIGH` or click the session replay.
+
+**Expected Result**:
+- The investigation engine displays the chronological incident sequence:
+  1. `src/auth.py` modified (routine development)
+  2. `config/settings.py` modified (configuration change)
+  3. `SEC001` hardcoded credential leak triggered
+- Full context and timeline position are visualised.
+
+**Talking Points**:
+> *"When security teams or senior engineers conduct a post-incident review, they don't have to wade through thousands of unrelated server logs. Investigation provides the complete developmental context leading up to the vulnerability."*
+
+---
+
+### Scene 5: Zero-Restart Runtime Project Switching (1 Minute)
+
+**Action**:
+Switch observation to another project (`Animal Disease Prediction`) without restarting the stack:
+```powershell
+Invoke-RestMethod -Uri "http://localhost:9000/watch" -Method POST -ContentType "application/json" -Body '{"root": "D:\\Projects\\Animal Disease Prediction"}'
+```
+
+**Verification**:
+Modify a file in `Animal Disease Prediction`:
+```powershell
+Add-Content -Path "D:\Projects\Animal Disease Prediction\test_live.py" -Value "# Switched project test"
+```
+Show on the dashboard that the event is attached to `Animal Disease Prediction`, while `VibePulse-Demo`'s history remains intact.
+
+**Talking Points**:
+> *"VibePulse is designed for real developer workflows where engineers switch repositories throughout the day. Through our WatchManager abstraction, observation targets can be changed dynamically without restarting the server or dropping monitoring connections."*
+
+---
+
+## 4. Post-Demo Cleanup Commands
+
+```powershell
+# Restore sample demo files
+Set-Content -Path "D:\VibePulse-Demo\src\auth.py" -Value "def authenticate_user(username: str, token: str) -> bool:`n    return bool(username and token)`n"
+Set-Content -Path "D:\VibePulse-Demo\config\settings.py" -Value "APP_ENV = 'production'`nDEBUG = False`n"
+Remove-Item "D:\Projects\Animal Disease Prediction\test_live.py" -ErrorAction SilentlyContinue
+```
+
+---
+
+## 5. Potential Failure Points & Backup Procedures
+
+| Potential Issue | Root Cause | Immediate Fix |
+|---|---|---|
+| Port collision on startup (`3000`, `8000`, `9000`) | Stale terminal processes holding sockets | Run: `Get-NetTCPConnection -LocalPort 3000,8000,9000 -State Listen \| ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }` then `pnpm dev` |
+| Redis Cloud latency / disconnect | Network firewall | Core observability, security scanning, and session tracking run against local PostgreSQL and are 100% functional without Redis |
+| External AI provider unavailable | Rate limit / offline API | VibePulse uses local deterministic AST analyzers as primary; AI summary falls back gracefully to deterministic heuristics |
