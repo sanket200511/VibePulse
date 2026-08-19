@@ -126,8 +126,8 @@ async def execute_investigation_query(
     count_stmt = select(func.count()).select_from(stmt.subquery())
     total_count = await db.scalar(count_stmt) or 0
 
-    # 4. Pagination & Ordering
-    stmt = stmt.order_by(DevelopmentEvent.timestamp.asc())
+    # 4. Pagination & Ordering (Newest incidents first)
+    stmt = stmt.order_by(DevelopmentEvent.timestamp.desc())
     stmt = stmt.limit(limit).offset(offset)
 
     # Return matching events

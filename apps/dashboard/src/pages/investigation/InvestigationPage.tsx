@@ -524,7 +524,9 @@ export function InvestigationPage() {
                       <div className="mt-1 space-y-1">
                         {(activeResult.affected_files.length > 0
                           ? activeResult.affected_files
-                          : [activeResult.file_path || "config/settings.py"]
+                          : activeResult.file_path
+                            ? [activeResult.file_path]
+                            : ["Observed Target"]
                         ).map((file, i) => (
                           <div
                             key={i}
