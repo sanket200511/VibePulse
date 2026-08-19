@@ -1,169 +1,154 @@
-# VibePulse — Judge Demonstration & Seminar Playbook
-
-This document is the official, end-to-end playbook for demonstrating VibePulse to judges and professors during the seminar.
+# VibePulse — Seminar Live Demonstration Script (5-Minute Runbook)
 
 ---
 
-## 1. Executive Summary & Core Value Proposition
+## Pre-Seminar Verification (1 Minute Before Going on Stage)
 
-> **What to Say to the Judge**:
-> *"Most developer tools are either passive git log visualizers or intrusive screen monitors. VibePulse is different: it passively and continuously observes developer activity in real-time, understands the structural and architectural context of a development session, flags high-risk security leaks deterministically before they reach git, and allows engineers to investigate why those changes matter — all while strictly redacting sensitive credentials."*
-
----
-
-## 2. Architecture & Mental Model
-
+Run the seminar diagnostic tool:
+```bash
+node scripts/seminar-doctor.mjs
 ```
-Observed Project (e.g. D:\VibePulse-Demo)
-      │
-      ▼
-Node.js Telemetry Daemon (:9000)
-├── Chokidar File Watcher (Ignored patterns: .git, node_modules, __pycache__)
-├── Path Normaliser & Native NTFS Canonicalizer
-├── Debouncer (collapses rapid file save bursts)
-└── WatchManager (enables dynamic project switching without process restart)
-      │
-      ▼ HTTP POST /events
-FastAPI Backend (:8000)
-├── Session Touch Engine (partitions events per canonical project root)
-├── Security Analyzer (AST pattern detector for SEC001 hardcoded secrets)
-├── Code Evolution Engine (detects function/class/import additions & removals)
-├── PostgreSQL 16 (:5432) (persistent audit log of events & analyses)
-└── WebSocket Hub (/ws/events, /ws/sessions)
-      │
-      ▼ WebSocket
-React / TanStack Query Dashboard (:3000)
-├── Workspace Home (Live session telemetry, event stream, pulse graph)
-├── Projects (Active & historical watched repositories)
-├── Investigation (AST-filtered incident investigation)
-└── Session History (Session playback and timeline)
+**Expected Output**:
+```
+[PASS] [✓] Node.js Runtime (v22.x)
+[PASS] [✓] pnpm Package Manager (9.x)
+[PASS] [✓] Python / uv Toolchain
+[PASS] [✓] PostgreSQL Server (:5432)
+[PASS] [✓] PostgreSQL Schema & Redis Cloud (Connected & Configured)
+[PASS] [✓] FastAPI Backend (:8000)
+[PASS] [✓] React/Vite Dashboard (:3000)
+[PASS] [✓] Telemetry Daemon (:9000)
+[PASS] [✓] Investigation Engine API (/api/investigation/search)
+[PASS] [✓] Security Guardian AST & SEC001 Regex Engine
+[PASS] [✓] Project Registration & Persistence API (/api/projects)
+====================================================
+           VIBEPULSE — READY FOR SEMINAR
+====================================================
 ```
 
 ---
 
-## 3. The 5-Minute Judge Demonstration
+## Exact Seminar Launch Command
 
-### Setup (Pre-Demo)
-1. Ensure the controlled demo project exists: `D:\VibePulse-Demo`
-2. Start the local stack:
-   ```powershell
-   pnpm dev
-   ```
-3. Open the browser to: `http://localhost:3000`
-
----
-
-### Scene 1: Passive Observation & Live Stream (1 Minute)
-
-**Action**:
-Modify `src/auth.py` in `D:\VibePulse-Demo`:
-```powershell
-Add-Content -Path "D:\VibePulse-Demo\src\auth.py" -Value "`ndef verify_signature(data: str) -> bool:`n    return len(data) > 0`n"
+```bash
+pnpm dev:seminar
 ```
-
-**Expected Result**:
-- Within milliseconds, `FILE_MODIFIED src/auth.py` appears live in Workspace Home via WebSocket.
-- The active session event counter increments.
-- Expanding the event row shows **Code Evolution**: `Function Added: verify_signature`.
-
-**Talking Points**:
-> *"Notice that I didn't type a git command or run a manual audit. VibePulse passively captured the OS-level file modification, debounced the write burst, extracted the AST change, and rendered it in real time."*
+*Launches the resilient supervisor with PostgreSQL health gate, backend readiness check, live telemetry daemon, and dashboard on `http://localhost:3000` with automated health-recovery.*
 
 ---
 
-### Scene 2: High-Risk Security Alert — Hardcoded Secret Leak (1.5 Minutes)
+## Timed 5-Minute Demonstration Runbook
 
-**Action**:
-Add a fake API key and database URL to `config/settings.py`:
-```powershell
-Add-Content -Path "D:\VibePulse-Demo\config\settings.py" -Value @'
-
-# Critical service credentials
-API_KEY = "VIBEPULSE_DEMO_FAKE_KEY_123456"
-DATABASE_URL = "postgresql://admin_user:VIBEPULSE_DEMO_PASSWORD@localhost:5432/production_db"
-'@
-```
-
-**Expected Result**:
-- The dashboard immediately highlights the event with a prominent **`HIGH RISK`** Security Alert.
-- Expanding the finding reveals:
-  - **Rule**: `SEC001` (Hardcoded Secret Detected)
-  - **Severity**: `HIGH`
-  - **Location**: `config/settings.py`
-  - **Redacted Evidence**: `API_KEY = "********REDACTED********"`
-  - **Remediation**: *"Move secret to environment/secret storage."*
-
-**Talking Points**:
-> *"Here is VibePulse Security Guardian. As soon as a credential or connection string is written to a file, our AST analyzer catches it before it is ever committed. Crucially, notice the Zero-Leakage guarantee: the secret value is strictly redacted in PostgreSQL, the API, and the UI. We never store or log raw plaintext credentials."*
+### **00:00 — 00:30 | Workspace Home & Live Observation**
+- **Action**: Open browser at `http://localhost:3000`.
+- **Narration**:
+  > *"Judges, VibePulse is a real-time developer observability and security intelligence platform. It runs quietly in the background alongside the developer, observing file mutations, active sessions, and security posture in real time."*
+- **Visuals**:
+  - Show the **Observation Status** card showing `Daemon Connected` (green pulse) and the current active project.
+  - Point out that all data shown is durable and backed by local PostgreSQL.
 
 ---
 
-### Scene 3: Explainable Risk Intelligence & Session Insights (1 Minute)
-
-**Action**:
-Inspect the session summary and risk breakdown on the dashboard.
-
-**Talking Points**:
-> *"Why is this session marked HIGH risk? VibePulse doesn't generate opaque, unexplainable numbers. The risk score is directly derived from observable signals:
-> 1. Hardcoded credential pattern detected (+50)
-> 2. Sensitive configuration file modified (+20)
-> 3. Burst of rapid modifications (+15)
-> Every score is auditable and backed by deterministic evidence."*
-
----
-
-### Scene 4: Incident Investigation & Timeline (1.5 Minutes)
-
-**Action**:
-Click **Investigation** (`http://localhost:3000/investigation`) and filter by `severity:HIGH` or click the session replay.
-
-**Expected Result**:
-- The investigation engine displays the chronological incident sequence:
-  1. `src/auth.py` modified (routine development)
-  2. `config/settings.py` modified (configuration change)
-  3. `SEC001` hardcoded credential leak triggered
-- Full context and timeline position are visualised.
-
-**Talking Points**:
-> *"When security teams or senior engineers conduct a post-incident review, they don't have to wade through thousands of unrelated server logs. Investigation provides the complete developmental context leading up to the vulnerability."*
+### **00:30 — 01:00 | Normal File Activity**
+- **Action**: In an observed project (e.g. `D:\VibePulse-Demo`), edit or touch a source file:
+  ```python
+  # In auth.py
+  def verify_jwt_token(token: str) -> bool:
+      return len(token) > 0
+  ```
+- **Narration**:
+  > *"As I write normal application logic, VibePulse ingests file modification events over WebSocket within milliseconds, tracking session timelines without any cloud dependency."*
+- **Visuals**:
+  - Show the event counter increase in real time on the dashboard without refreshing the browser.
 
 ---
 
-### Scene 5: Zero-Restart Runtime Project Switching (1 Minute)
-
-**Action**:
-Switch observation to another project (`Animal Disease Prediction`) without restarting the stack:
-```powershell
-Invoke-RestMethod -Uri "http://localhost:9000/watch" -Method POST -ContentType "application/json" -Body '{"root": "D:\\Projects\\Animal Disease Prediction"}'
-```
-
-**Verification**:
-Modify a file in `Animal Disease Prediction`:
-```powershell
-Add-Content -Path "D:\Projects\Animal Disease Prediction\test_live.py" -Value "# Switched project test"
-```
-Show on the dashboard that the event is attached to `Animal Disease Prediction`, while `VibePulse-Demo`'s history remains intact.
-
-**Talking Points**:
-> *"VibePulse is designed for real developer workflows where engineers switch repositories throughout the day. Through our WatchManager abstraction, observation targets can be changed dynamically without restarting the server or dropping monitoring connections."*
+### **01:00 — 02:00 | Security Incident: Accidental Credential Exposure**
+- **Action**: In `config/settings.py` or `src/database.py`, insert a demo secret:
+  ```python
+  # config/settings.py
+  DATABASE_URL = "postgresql://admin:secret@db.internal:5432/production"
+  API_KEY = "VIBEPULSE_DEMO_FAKE_KEY_123456"
+  ```
+- **Narration**:
+  > *"Now imagine a developer accidentally pastes a live API token or production database credential into configuration. Watch what happens."*
+- **Visuals**:
+  - Save the file.
+  - The **Investigation Command Center** badge or notification alerts immediately.
 
 ---
 
-## 4. Post-Demo Cleanup Commands
-
-```powershell
-# Restore sample demo files
-Set-Content -Path "D:\VibePulse-Demo\src\auth.py" -Value "def authenticate_user(username: str, token: str) -> bool:`n    return bool(username and token)`n"
-Set-Content -Path "D:\VibePulse-Demo\config\settings.py" -Value "APP_ENV = 'production'`nDEBUG = False`n"
-Remove-Item "D:\Projects\Animal Disease Prediction\test_live.py" -ErrorAction SilentlyContinue
-```
+### **02:00 — 03:00 | Investigation Command Center & Dynamic Evidence Graph**
+- **Action**: Navigate to `http://localhost:3000/investigation`.
+- **Narration**:
+  > *"Instead of an ordinary flat log list, VibePulse reconstructs the complete incident as a causal Directed Acyclic Graph."*
+- **Visuals**:
+  - **KPI Metrics Strip**: 
+    - `OBSERVED EVENTS`
+    - `SECURITY FINDINGS` (incremented)
+    - `CRITICAL INCIDENTS` (incremented)
+    - `SESSIONS`
+    - `OBSERVED PROJECTS`
+  - **Severity Ordering**: Incident ranked at the top (`CRITICAL RISK 100/100`).
+  - **Interactive Evidence Graph**:
+    1. Node 1: `Session Activity Initialized`
+    2. Node 2: `settings.py File Modified`
+    3. Node 3: `Secret Pattern Detected (SEC001: API_KEY)` (pulsing red)
+    4. Node 4: `Risk Escalated to CRITICAL (100/100)`
+    5. Node 5: `Investigation Incident Logged`
 
 ---
 
-## 5. Potential Failure Points & Backup Procedures
+### **03:00 — 03:45 | Explainability, Secret Redaction & Provenance**
+- **Action**: Click the red **Secret Pattern Detected** node in the Evidence Graph.
+- **Narration**:
+  > *"Notice two critical engineering guarantees: First, VibePulse masks and redacts secrets before persistence (`API_KEY = "[REDACTED]"`). Second, our detection pipeline is completely explainable — powered by Tree-Sitter AST inspection rather than opaque, hallucinating black boxes."*
+- **Visuals**:
+  - Detail drawer displays masked snippet.
+  - **Why This Was Flagged**:
+    - `+50` Hardcoded credential pattern detected (SEC001)
+    - `+20` Sensitive configuration file modified
+    - `+15` Authentication logic modified
+    - Final Composite Score: `100 / 100` (`CRITICAL`)
+  - **Detection Method & Analysis Provenance** card displays deterministic AST pipeline.
 
-| Potential Issue | Root Cause | Immediate Fix |
-|---|---|---|
-| Port collision on startup (`3000`, `8000`, `9000`) | Stale terminal processes holding sockets | Run: `Get-NetTCPConnection -LocalPort 3000,8000,9000 -State Listen \| ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }` then `pnpm dev` |
-| Redis Cloud latency / disconnect | Network firewall | Core observability, security scanning, and session tracking run against local PostgreSQL and are 100% functional without Redis |
-| External AI provider unavailable | Rate limit / offline API | VibePulse uses local deterministic AST analyzers as primary; AI summary falls back gracefully to deterministic heuristics |
+---
+
+### **03:45 — 04:30 | Remediation & Persistence Across Restarts**
+- **Action**:
+  1. Click **Mark as Reviewed** (badge transitions to green `✓ Reviewed`).
+  2. Kill the terminal process running the stack (Ctrl+C).
+  3. Start again with `pnpm dev:seminar`.
+  4. Refresh `http://localhost:3000/investigation` and `http://localhost:3000/history`.
+- **Narration**:
+  > *"If the daemon or entire development environment restarts, PostgreSQL remains the durable source of truth. Previous sessions and security investigations are permanently preserved, and a clean new session begins automatically."*
+- **Visuals**:
+  - History page shows both the finalized past session and the newly started session.
+  - Investigation Command Center retains the historical incident.
+
+---
+
+### **04:30 — 05:00 | Architecture Summary & Closing**
+- **Narration**:
+  > *"To summarize: VibePulse is a zero-latency, privacy-first developer observability and security intelligence engine that turns raw filesystem activity into explainable security incident graphs."*
+
+---
+
+## Fail-Safe Emergency Recovery Steps
+
+1. **If dashboard shows Disconnected**:
+   - Check if daemon is running on `:9000`:
+     ```bash
+     curl http://localhost:9000/health
+     ```
+2. **If backend database connection is interrupted**:
+   - Confirm PostgreSQL is active on port 5432:
+     ```bash
+     node scripts/seminar-doctor.mjs
+     ```
+3. **If port 3000 or 8000 is occupied by an old orphaned node process**:
+   - Kill lingering background processes:
+     ```powershell
+     Stop-Process -Name "node", "uvicorn" -Force -ErrorAction SilentlyContinue
+     ```
+   - Restart cleanly with `pnpm dev:seminar`.
