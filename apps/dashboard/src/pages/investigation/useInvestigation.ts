@@ -14,6 +14,11 @@ export interface InvestigationSecurityFinding {
   rule_id: string;
   severity: string;
   message: string;
+  file?: string | null;
+  line_number?: number | null;
+  redacted_evidence?: string | null;
+  category?: string | null;
+  recommendation?: string | null;
 }
 
 export interface InvestigationAIEvent {
@@ -22,15 +27,37 @@ export interface InvestigationAIEvent {
   interaction_type: string | null;
 }
 
+export interface RiskFactor {
+  label: string;
+  score: number;
+  category: string;
+}
+
+export interface EvidenceStep {
+  timestamp: string;
+  title: string;
+  description: string;
+  kind: "FILE_CHANGE" | "PATTERN_MATCH" | "CORRELATION" | "RISK_ESCALATION" | string;
+  severity?: string | null;
+  file?: string | null;
+}
+
 export interface InvestigationResult {
   id: string;
   timestamp: string;
   project_root: string;
+  project_name?: string | null;
   session_id: string;
   file_path: string | null;
+  file_name?: string | null;
   language: string | null;
   event_type: string;
   summary: string;
+  risk_score: number;
+  risk_level: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | string;
+  risk_factors: RiskFactor[];
+  evidence_chain: EvidenceStep[];
+  recommendation?: string | null;
   architecture_changes: InvestigationArchitectureChange[];
   security_findings: InvestigationSecurityFinding[];
   ai_event: InvestigationAIEvent | null;
@@ -47,53 +74,70 @@ export interface InvestigationResponse {
 const DEMO_RESULTS: InvestigationResult[] = [
   {
     id: "demo-inv-001",
-    timestamp: "2026-07-14T10:15:00Z",
-    project_root: "d:/VibeSync",
-    session_id: "session_vibesync_001",
-    file_path: "src/observation/watcher.ts",
-    language: "TypeScript",
+    timestamp: new Date().toISOString(),
+    project_root: "D:\\VibePulse-Demo",
+    project_name: "VibePulse-Demo",
+    session_id: "session-demo-001",
+    file_path: "config/settings.py",
+    file_name: "settings.py",
+    language: "Python",
     event_type: "FILE_MODIFIED",
-    summary: "Added FileSystemWatcher class with configurable debounce and event filtering",
-    architecture_changes: [{ kind: "CLASS_ADDED", symbol: "FileSystemWatcher" }],
-    security_findings: [],
-    ai_event: { provider: "Cursor", model: "claude-3-5-sonnet", interaction_type: "COMPLETION" },
-    replay_link: "/sessions/session_vibesync_001/replay",
-    timeline_position: 1,
-  },
-  {
-    id: "demo-inv-002",
-    timestamp: "2026-07-14T10:30:00Z",
-    project_root: "d:/VibeSync",
-    session_id: "session_vibesync_001",
-    file_path: "src/observation/publisher.ts",
-    language: "TypeScript",
-    event_type: "FILE_MODIFIED",
-    summary: "Refactored EventPublisher retry logic to use exponential backoff",
-    architecture_changes: [
-      { kind: "FUNCTION_ADDED", symbol: "withExponentialBackoff" },
-      { kind: "FUNCTION_REMOVED", symbol: "simpleRetry" },
+    summary: "Security Alert: Hardcoded API Key Detected (SEC001)",
+    risk_score: 85,
+    risk_level: "HIGH",
+    risk_factors: [
+      { label: "Hardcoded credential pattern detected (SEC001)", score: 50, category: "Security" },
+      { label: "Sensitive configuration file modified", score: 20, category: "Configuration" },
+      { label: "Authentication logic modified", score: 15, category: "Authentication" },
     ],
-    security_findings: [],
-    ai_event: null,
-    replay_link: "/sessions/session_vibesync_001/replay",
-    timeline_position: 2,
-  },
-  {
-    id: "demo-inv-003",
-    timestamp: "2026-07-14T11:00:00Z",
-    project_root: "d:/VibeSync",
-    session_id: "session_vibesync_001",
-    file_path: "src/api/client.ts",
-    language: "TypeScript",
-    event_type: "FILE_MODIFIED",
-    summary: "Detected use of eval() in API response parser — potential XSS vector",
+    evidence_chain: [
+      {
+        timestamp: new Date(Date.now() - 30000).toISOString(),
+        title: "src/auth.py modified",
+        description: "Authentication verification routines modified",
+        kind: "FILE_CHANGE",
+        file: "src/auth.py",
+      },
+      {
+        timestamp: new Date(Date.now() - 15000).toISOString(),
+        title: "config/settings.py modified",
+        description: "Credentials written to configuration",
+        kind: "FILE_CHANGE",
+        file: "config/settings.py",
+      },
+      {
+        timestamp: new Date(Date.now() - 10000).toISOString(),
+        title: "Hardcoded API Key Detected",
+        description: "SEC001 pattern match on line 12",
+        kind: "PATTERN_MATCH",
+        severity: "HIGH",
+        file: "config/settings.py",
+      },
+      {
+        timestamp: new Date().toISOString(),
+        title: "Risk escalated to HIGH",
+        description: "Composite risk score evaluated at 85/100",
+        kind: "RISK_ESCALATION",
+        severity: "HIGH",
+      },
+    ],
+    recommendation: "Move secret to environment variables or secret management storage.",
     architecture_changes: [],
     security_findings: [
-      { rule_id: "no-eval", severity: "HIGH", message: "Dangerous use of eval() detected" },
+      {
+        rule_id: "SEC001",
+        severity: "HIGH",
+        message: "Hardcoded Secret Detected",
+        file: "config/settings.py",
+        line_number: 12,
+        redacted_evidence: 'API_KEY = "********REDACTED********"',
+        category: "Credentials",
+        recommendation: "Move credentials to environment variables.",
+      },
     ],
-    ai_event: { provider: "Cursor", model: "claude-3-5-sonnet", interaction_type: "TOOL_USE" },
-    replay_link: "/sessions/session_vibesync_001/replay",
-    timeline_position: 3,
+    ai_event: null,
+    replay_link: "/sessions/session-demo-001/replay",
+    timeline_position: 1,
   },
 ];
 
@@ -102,24 +146,33 @@ export function useInvestigation(projectId: string | undefined, queryStr: string
   const queryClient = useQueryClient();
   const queryKey = useMemo(() => ["investigation", projectId, queryStr], [projectId, queryStr]);
 
-  // All hooks must be called unconditionally (Rules of Hooks)
   const query = useQuery<InvestigationResponse>({
     queryKey,
     queryFn: async () => {
-      const url = new URL(
-        projectId ? `/projects/${projectId}/investigation/search` : "/investigation/search",
-        getApiBaseUrl(),
-      );
+      const endpoint = projectId
+        ? `/api/projects/${projectId}/investigation/search`
+        : "/api/investigation/search";
+      const url = new URL(endpoint, getApiBaseUrl());
       if (queryStr) {
         url.searchParams.set("q", queryStr);
       }
       const res = await fetch(url.toString());
-      if (!res.ok) throw new Error("Failed to fetch investigation results");
+      if (!res.ok) {
+        // Fallback to legacy endpoint if needed
+        const legacyUrl = new URL(
+          projectId ? `/projects/${projectId}/investigation/search` : "/investigation/search",
+          getApiBaseUrl(),
+        );
+        if (queryStr) legacyUrl.searchParams.set("q", queryStr);
+        const legacyRes = await fetch(legacyUrl.toString());
+        if (!legacyRes.ok) throw new Error("Failed to fetch investigation results");
+        return legacyRes.json() as Promise<InvestigationResponse>;
+      }
       return res.json() as Promise<InvestigationResponse>;
     },
     enabled: !isDemo,
     refetchOnWindowFocus: false,
-    staleTime: 5000,
+    staleTime: 2000,
   });
 
   useEffect(() => {
@@ -129,40 +182,13 @@ export function useInvestigation(projectId: string | undefined, queryStr: string
       onMessage: (rawMsg: unknown) => {
         const msg = rawMsg as { type: string; event?: DevelopmentEvent; project_root?: string };
         if (!projectId || msg.event?.project_root === projectId || msg.project_root === projectId) {
-          if (msg.event && (!queryStr || queryStr === "")) {
-            queryClient.setQueryData<InvestigationResponse>(queryKey, (old) => {
-              if (!old) return old;
-              const newResult: InvestigationResult = {
-                id: msg.event!.id,
-                timestamp: msg.event!.timestamp,
-                project_root: msg.event!.project_root,
-                session_id: msg.event!.session_id,
-                file_path: msg.event!.file_path,
-                language: msg.event!.language,
-                event_type: msg.event!.event_type,
-                summary: `Live: ${msg.event!.event_type}`,
-                architecture_changes: [],
-                security_findings: [],
-                ai_event: null,
-                replay_link: null,
-                timeline_position: null,
-              };
-              return {
-                ...old,
-                total_count: old.total_count + 1,
-                results: [newResult, ...old.results],
-              };
-            });
-          } else {
-            void queryClient.invalidateQueries({ queryKey });
-          }
+          void queryClient.invalidateQueries({ queryKey: ["investigation"] });
         }
       },
     });
     return () => wsClient.close();
-  }, [isDemo, projectId, queryClient, queryKey, queryStr]);
+  }, [isDemo, projectId, queryClient]);
 
-  // Demo mode: return static demo data after all hooks have been called
   if (isDemo) {
     const filtered = queryStr
       ? DEMO_RESULTS.filter(

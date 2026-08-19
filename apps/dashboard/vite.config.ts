@@ -48,6 +48,30 @@ export default defineConfig({
           });
         },
       },
+      "/investigation/search": {
+        target: "http://localhost:8000",
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on("error", (_err, _req, res) => {
+            if (res && "writeHead" in res && !res.headersSent) {
+              res.writeHead(503, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ error: "Backend API offline" }));
+            }
+          });
+        },
+      },
+      "^/projects/[^/]+/investigation/search": {
+        target: "http://localhost:8000",
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on("error", (_err, _req, res) => {
+            if (res && "writeHead" in res && !res.headersSent) {
+              res.writeHead(503, { "Content-Type": "application/json" });
+              res.end(JSON.stringify({ error: "Backend API offline" }));
+            }
+          });
+        },
+      },
       "/health": {
         target: "http://localhost:8000",
         changeOrigin: true,
