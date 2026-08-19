@@ -103,6 +103,8 @@ class InvestigationResult(BaseModel):
 class InvestigationResponse(BaseModel):
     results: list[InvestigationResult]
     total_count: int
+    security_findings_count: int = 0
+    critical_count: int = 0
     suspicious_count: int = 0
     high_risk_count: int = 0
     sessions_count: int = 0

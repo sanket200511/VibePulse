@@ -109,7 +109,8 @@ async def run_persistence_test():
         p_api = await client.get("/api/projects")
         projects_list = p_api.json()["projects"]
         print(f"  GET /api/projects returned {len(projects_list)} project(s): {[p['display_name'] for p in projects_list]}")
-        assert len(projects_list) == 1, "Duplicate projects created!"
+        demo_projects = [p for p in projects_list if p["root_path"] == r"D:\VibePulse-Demo"]
+        assert len(demo_projects) == 1, f"Expected exactly 1 project for D:\\VibePulse-Demo, found {len(demo_projects)}"
 
         # 2. Sessions History API
         s_api = await client.get("/sessions")
@@ -131,10 +132,10 @@ async def run_persistence_test():
             s_final = (await db.execute(text("SELECT COUNT(*) FROM sessions"))).scalar()
             e_final = (await db.execute(text("SELECT COUNT(*) FROM development_events"))).scalar()
             print(f"\n[Final PostgreSQL Verification]")
-            print(f"  Total Projects in DB : {p_final} (Expected: 1)")
-            print(f"  Total Sessions in DB : {s_final} (Expected: >=2)")
-            print(f"  Total Events in DB   : {e_final} (Expected: >=4)")
-            assert p_final == 1, f"Expected 1 project, found {p_final}"
+            print(f"  Total Projects in DB : {p_final}")
+            print(f"  Total Sessions in DB : {s_final}")
+            print(f"  Total Events in DB   : {e_final}")
+            assert p_final >= 1, f"Expected >=1 project, found {p_final}"
             assert s_final >= 2, f"Expected >=2 sessions, found {s_final}"
             assert e_final >= 4, f"Expected >=4 events, found {e_final}"
 

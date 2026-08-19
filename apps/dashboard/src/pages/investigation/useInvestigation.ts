@@ -83,6 +83,8 @@ export interface InvestigationResult {
 export interface InvestigationResponse {
   results: InvestigationResult[];
   total_count: number;
+  security_findings_count: number;
+  critical_count: number;
   suspicious_count: number;
   high_risk_count: number;
   sessions_count: number;
