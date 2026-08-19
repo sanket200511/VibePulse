@@ -1,33 +1,74 @@
+import os
+import pathlib
 import uuid
 
 from app.features.projects.models import Project
-from sqlalchemy import select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-async def get_or_create_project(db: AsyncSession, root_path: str) -> Project:
+def normalize_root_path(root_path: str) -> str:
+    """
+    Normalize a project root path consistently across platforms.
+    Resolves canonical filesystem path when present, standardizes drive letters and slashes.
+    """
+    if not root_path or not root_path.strip():
+        return ""
+    clean = root_path.strip()
+
+    # Try resolving via filesystem if path exists
+    try:
+        p = pathlib.Path(clean)
+        if p.exists():
+            return str(p.resolve())
+    except OSError:
+        pass
+
+    # Pure normalization fallback
+    clean = os.path.normpath(clean).rstrip("/\\")
+    if len(clean) >= 2 and clean[1] == ":" and clean[0].isalpha():
+        clean = clean[0].upper() + clean[1:]
+    return clean
+
+
+async def get_or_create_project(
+    db: AsyncSession,
+    root_path: str,
+    display_name: str | None = None,
+) -> Project:
     """
     Ensure a canonical Project exists for a given filesystem root.
-    Uses basic path normalization to prevent trivial duplicate identities.
+    Uses path normalization and case-insensitive matching to prevent duplicate identities.
     """
-    normalized_path = root_path.rstrip("/\\")
+    normalized_path = normalize_root_path(root_path)
 
     # Check if exists
-    result = await db.execute(select(Project).where(Project.root_path == normalized_path))
+    stmt = select(Project).where(
+        or_(
+            Project.root_path == normalized_path,
+            Project.root_path == root_path,
+            Project.root_path == root_path.rstrip("/\\"),
+            func.lower(func.replace(Project.root_path, "\\", "/"))
+            == func.lower(func.replace(normalized_path, "\\", "/")),
+        )
+    )
+    result = await db.execute(stmt)
     project = result.scalar_one_or_none()
 
     if project:
         return project
 
-    # Derive display name from basename
-    parts = normalized_path.replace("\\", "/").split("/")
-    display_name = parts[-1] if parts else "Unknown Project"
+    # Derive display name from basename if not explicitly provided
+    if not display_name or not display_name.strip():
+        parts = normalized_path.replace("\\", "/").rstrip("/").split("/")
+        derived = parts[-1] if parts and parts[-1] else "Unknown Project"
+        display_name = derived
 
     # Create new
     project = Project(
         id=uuid.uuid4(),
         root_path=normalized_path,
-        display_name=display_name,
+        display_name=display_name.strip(),
     )
     db.add(project)
     await db.flush()

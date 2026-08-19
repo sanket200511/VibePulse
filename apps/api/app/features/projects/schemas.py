@@ -18,6 +18,13 @@ class ProjectRead(BaseModel):
     updated_at: datetime
 
 
+class ProjectCreate(BaseModel):
+    """Request schema to ensure or register a project."""
+
+    root_path: str
+    display_name: str | None = None
+
+
 class ProjectListRead(BaseModel):
     projects: list[ProjectRead]
 

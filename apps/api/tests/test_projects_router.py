@@ -40,6 +40,75 @@ async def test_get_projects_empty(client: AsyncClient):
 
 
 @pytest.mark.asyncio
+async def test_ensure_project_new(client: AsyncClient):
+    root = "C:/Users/ASUS/OneDrive/Desktop/OneStopAnalytics_Main"
+    response = await client.post("/api/projects", json={"root_path": root})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["display_name"] == "OneStopAnalytics_Main"
+    assert "id" in data
+
+    # Verify project appears in list
+    list_res = await client.get("/api/projects")
+    assert list_res.status_code == 200
+    p_ids = [p["id"] for p in list_res.json()["projects"]]
+    assert data["id"] in p_ids
+
+
+@pytest.mark.asyncio
+async def test_ensure_project_idempotent_no_duplicates(client: AsyncClient):
+    root = "C:/Users/ASUS/OneDrive/Desktop/OneStopAnalytics_Main"
+    res1 = await client.post("/api/projects", json={"root_path": root})
+    res2 = await client.post("/api/projects", json={"root_path": root})
+    res3 = await client.post("/api/projects/ensure", json={"root_path": root + "/"})
+    assert res1.status_code == 200
+    assert res2.status_code == 200
+    assert res3.status_code == 200
+    assert res1.json()["id"] == res2.json()["id"]
+    assert res1.json()["id"] == res3.json()["id"]
+
+
+@pytest.mark.asyncio
+async def test_ensure_project_empty_root_rejected(client: AsyncClient):
+    res = await client.post("/api/projects", json={"root_path": ""})
+    assert res.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_multiple_dynamic_projects_registration(client: AsyncClient):
+    proj_a = "D:/Projects/ProjectAlpha"
+    proj_b = "D:/Projects/ProjectBeta"
+
+    res_a = await client.post("/api/projects", json={"root_path": proj_a})
+    res_b = await client.post("/api/projects", json={"root_path": proj_b})
+
+    assert res_a.status_code == 200
+    assert res_b.status_code == 200
+    assert res_a.json()["id"] != res_b.json()["id"]
+    assert res_a.json()["display_name"] == "ProjectAlpha"
+    assert res_b.json()["display_name"] == "ProjectBeta"
+
+    list_res = await client.get("/api/projects")
+    assert list_res.status_code == 200
+    ids = [p["id"] for p in list_res.json()["projects"]]
+    assert res_a.json()["id"] in ids
+    assert res_b.json()["id"] in ids
+
+
+@pytest.mark.asyncio
+async def test_project_case_insensitive_and_slash_normalization(client: AsyncClient):
+    proj_lower = "d:/projects/test_case_proj"
+    proj_upper = "D:\\projects\\test_case_proj\\"
+
+    res1 = await client.post("/api/projects", json={"root_path": proj_lower})
+    res2 = await client.post("/api/projects", json={"root_path": proj_upper})
+
+    assert res1.status_code == 200
+    assert res2.status_code == 200
+    assert res1.json()["id"] == res2.json()["id"]
+
+
+@pytest.mark.asyncio
 async def test_get_projects_list(client: AsyncClient, projects_test_data):
     p1, p2, _ = projects_test_data
     response = await client.get("/api/projects")

@@ -4,7 +4,13 @@ from datetime import UTC, datetime
 from app.core.database import get_db
 from app.features.architecture_timeline.schemas import ProjectArchitectureTimelineRead
 from app.features.projects.models import Project
-from app.features.projects.schemas import ProjectIntelligenceRead, ProjectListRead, ProjectRead
+from app.features.projects.schemas import (
+    ProjectCreate,
+    ProjectIntelligenceRead,
+    ProjectListRead,
+    ProjectRead,
+)
+from app.features.projects.service import get_or_create_project
 from app.features.sessions.models import Session
 from app.features.sessions.schemas import SessionListRead, SessionRead
 from app.features.sessions.service import compute_effective_status
@@ -21,6 +27,26 @@ async def list_projects(db: AsyncSession = Depends(get_db)) -> ProjectListRead:
     result = await db.execute(select(Project).order_by(Project.updated_at.desc()))
     projects = result.scalars().all()
     return ProjectListRead(projects=[ProjectRead.model_validate(p) for p in projects])
+
+
+@router.post("", response_model=ProjectRead, status_code=status.HTTP_200_OK)
+@router.post("/ensure", response_model=ProjectRead, status_code=status.HTTP_200_OK)
+async def ensure_project(
+    payload: ProjectCreate,
+    db: AsyncSession = Depends(get_db),
+) -> ProjectRead:
+    """Ensure a project exists by root path (idempotent registration)."""
+    if not payload.root_path or not payload.root_path.strip():
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="root_path must not be empty",
+        )
+    project = await get_or_create_project(
+        db,
+        root_path=payload.root_path.strip(),
+        display_name=payload.display_name,
+    )
+    return ProjectRead.model_validate(project)
 
 
 @router.get("/{project_id}", response_model=ProjectRead)

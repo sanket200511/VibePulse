@@ -5,7 +5,7 @@
   "description": "VibePulse Daemon – File system observer and event emitter",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx watch --include .env src/index.ts",
     "start": "node dist/index.js",
     "build": "tsc",
     "lint": "eslint src/",
