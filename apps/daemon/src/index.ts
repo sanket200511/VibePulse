@@ -133,6 +133,12 @@ async function main(): Promise<void> {
 
   process.on("SIGINT", () => void shutdown("SIGINT"));
   process.on("SIGTERM", () => void shutdown("SIGTERM"));
+  process.on("unhandledRejection", (reason: unknown) => {
+    logger.error("[Daemon Resilient Supervisor] Unhandled rejection intercepted (process kept alive):", reason);
+  });
+  process.on("uncaughtException", (error: Error) => {
+    logger.error("[Daemon Resilient Supervisor] Uncaught exception intercepted (process kept alive):", error);
+  });
 }
 
 main().catch((error: unknown) => {
