@@ -56,19 +56,35 @@ if not hasattr(BackgroundTasks, "_patched_for_tests"):
     BackgroundTasks.add_task = patched_add_task
 # -----------------------------------------------
 
+import os
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 settings = get_settings()
 
-test_engine = create_async_engine(settings.database_url, pool_pre_ping=True)
+TEST_DB_URL = os.environ.get("TEST_DATABASE_URL", settings.database_url)
+IS_DEDICATED_TEST_DB = "test" in TEST_DB_URL.split("/")[-1].lower()
+
+# Connect tests strictly to isolated test_schema (or dedicated test database)
+test_engine = create_async_engine(
+    TEST_DB_URL,
+    connect_args=(
+        {}
+        if IS_DEDICATED_TEST_DB
+        else {"server_settings": {"search_path": "test_schema"}}
+    ),
+    pool_pre_ping=True,
+)
 TestSessionLocal = async_sessionmaker(bind=test_engine, expire_on_commit=False)
 
 
 @pytest_asyncio.fixture(scope="session")
 async def _schema() -> AsyncGenerator[None, None]:
-    """Only pulled in by fixtures that actually touch the database."""
+    """Prepares the isolated test schema and tables."""
     async with test_engine.begin() as conn:
+        if not IS_DEDICATED_TEST_DB:
+            await conn.execute(text("CREATE SCHEMA IF NOT EXISTS test_schema;"))
         await conn.run_sync(Base.metadata.create_all)
     yield
     await test_engine.dispose()
@@ -77,16 +93,18 @@ async def _schema() -> AsyncGenerator[None, None]:
 @pytest_asyncio.fixture
 async def _clean_rows(_schema: None) -> AsyncGenerator[None, None]:
     """
-    Deletes every row written by the test that requests it (directly or
-    transitively). Every test in the suite must go through this, including
-    the synchronous-TestClient websocket tests -- otherwise their rows
-    (written via the real, uncommitted-free get_db) persist in Postgres for
-    the rest of the run and are picked up by later tests that list rows
-    without a project_root filter (e.g. GET /sessions), or whose own
-    project_root-scoped lookup (ADR 0005) finds a leftover session it
-    shouldn't.
+    Deletes rows written by tests strictly within the isolated test schema.
+    Guarded by a strict assertion so production/development public schema is never touched.
     """
     async with test_engine.begin() as conn:
+        # HARD SAFETY GUARD: Prevent running table deletes on development public schema
+        curr_schema = await conn.scalar(text("SELECT current_schema();"))
+        if curr_schema not in ("test_schema", "vibepulse_test") and not IS_DEDICATED_TEST_DB:
+            raise RuntimeError(
+                f"REFUSING destructive test cleanup against non-test schema/database '{curr_schema}'! "
+                "Tests must execute inside isolated 'test_schema' or 'vibepulse_test' to protect development history."
+            )
+
         await conn.execute(DevelopmentEvent.__table__.delete())
         await conn.execute(Session.__table__.delete())
         await conn.execute(Project.__table__.delete())
@@ -106,6 +124,14 @@ async def _clean_rows(_schema: None) -> AsyncGenerator[None, None]:
         await asyncio.sleep(0.01)
 
     async with test_engine.begin() as conn:
+        # HARD SAFETY GUARD
+        curr_schema = await conn.scalar(text("SELECT current_schema();"))
+        if curr_schema not in ("test_schema", "vibepulse_test") and not IS_DEDICATED_TEST_DB:
+            raise RuntimeError(
+                f"REFUSING destructive test cleanup against non-test schema/database '{curr_schema}'! "
+                "Tests must execute inside isolated 'test_schema' or 'vibepulse_test' to protect development history."
+            )
+
         # event_analyses has ON DELETE CASCADE from event_id, so deleting
         # development_events automatically removes all child analyses.
         await conn.execute(DevelopmentEvent.__table__.delete())
