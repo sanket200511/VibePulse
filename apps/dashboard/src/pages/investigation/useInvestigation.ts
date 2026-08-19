@@ -42,6 +42,18 @@ export interface EvidenceStep {
   file?: string | null;
 }
 
+export interface EvidenceNode {
+  id: string;
+  step_number: number;
+  title: string;
+  subtitle: string;
+  kind: "SESSION_START" | "FILE_CHANGE" | "PATTERN_MATCH" | "RISK_ESCALATION" | "INVESTIGATION_CREATED" | string;
+  timestamp: string;
+  severity?: string | null;
+  file?: string | null;
+  details?: Record<string, unknown>;
+}
+
 export interface InvestigationResult {
   id: string;
   timestamp: string;
@@ -57,6 +69,9 @@ export interface InvestigationResult {
   risk_level: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | string;
   risk_factors: RiskFactor[];
   evidence_chain: EvidenceStep[];
+  evidence_nodes: EvidenceNode[];
+  affected_files: string[];
+  correlated_events_count: number;
   recommendation?: string | null;
   architecture_changes: InvestigationArchitectureChange[];
   security_findings: InvestigationSecurityFinding[];
@@ -68,6 +83,10 @@ export interface InvestigationResult {
 export interface InvestigationResponse {
   results: InvestigationResult[];
   total_count: number;
+  suspicious_count: number;
+  high_risk_count: number;
+  sessions_count: number;
+  projects_count: number;
   has_more: boolean;
 }
 
@@ -83,12 +102,13 @@ const DEMO_RESULTS: InvestigationResult[] = [
     language: "Python",
     event_type: "FILE_MODIFIED",
     summary: "Security Alert: Hardcoded API Key Detected (SEC001)",
-    risk_score: 85,
+    risk_score: 87,
     risk_level: "HIGH",
     risk_factors: [
       { label: "Hardcoded credential pattern detected (SEC001)", score: 50, category: "Security" },
       { label: "Sensitive configuration file modified", score: 20, category: "Configuration" },
-      { label: "Authentication logic modified", score: 15, category: "Authentication" },
+      { label: "Authentication-related file modified", score: 10, category: "Authentication" },
+      { label: "Multiple related changes in short interval", score: 7, category: "Timing" },
     ],
     evidence_chain: [
       {
@@ -116,12 +136,81 @@ const DEMO_RESULTS: InvestigationResult[] = [
       {
         timestamp: new Date().toISOString(),
         title: "Risk escalated to HIGH",
-        description: "Composite risk score evaluated at 85/100",
+        description: "Composite risk score evaluated at 87/100",
         kind: "RISK_ESCALATION",
         severity: "HIGH",
       },
     ],
-    recommendation: "Move secret to environment variables or secret management storage.",
+    evidence_nodes: [
+      {
+        id: "demo-node-1",
+        step_number: 1,
+        title: "Session Activity Initialized",
+        subtitle: "Developer activity observed by local daemon",
+        kind: "SESSION_START",
+        timestamp: new Date(Date.now() - 45000).toISOString(),
+        details: { source: "VibePulse Telemetry Daemon" },
+      },
+      {
+        id: "demo-node-2",
+        step_number: 2,
+        title: "src/auth.py Modified",
+        subtitle: "Authentication logic updated",
+        kind: "FILE_CHANGE",
+        timestamp: new Date(Date.now() - 30000).toISOString(),
+        file: "src/auth.py",
+        details: { event_type: "FILE_MODIFIED", file_path: "src/auth.py" },
+      },
+      {
+        id: "demo-node-3",
+        step_number: 3,
+        title: "config/settings.py Modified",
+        subtitle: "Configuration parameters changed",
+        kind: "FILE_CHANGE",
+        timestamp: new Date(Date.now() - 15000).toISOString(),
+        file: "config/settings.py",
+        details: { event_type: "FILE_MODIFIED", file_path: "config/settings.py" },
+      },
+      {
+        id: "demo-node-4",
+        step_number: 4,
+        title: "Secret Pattern Detected",
+        subtitle: "SEC001: Hardcoded Credential Detected",
+        kind: "PATTERN_MATCH",
+        timestamp: new Date(Date.now() - 10000).toISOString(),
+        severity: "HIGH",
+        file: "config/settings.py",
+        details: {
+          rule_id: "SEC001",
+          pattern: "API_KEY",
+          redacted_evidence: 'API_KEY = "********REDACTED********"',
+          confidence: "HIGH",
+          line_number: 12,
+        },
+      },
+      {
+        id: "demo-node-5",
+        step_number: 5,
+        title: "Risk Escalated: 37 → 87",
+        subtitle: "Risk Score evaluated at 87/100 from 4 signals",
+        kind: "RISK_ESCALATION",
+        timestamp: new Date(Date.now() - 5000).toISOString(),
+        severity: "HIGH",
+        details: { risk_score: 87, risk_level: "HIGH", contributing_factors: 4 },
+      },
+      {
+        id: "demo-node-6",
+        step_number: 6,
+        title: "Investigation Incident Logged",
+        subtitle: "Correlated incident ready for developer review and remediation",
+        kind: "INVESTIGATION_CREATED",
+        timestamp: new Date().toISOString(),
+        details: { status: "ACTIVE_INVESTIGATION" },
+      },
+    ],
+    affected_files: ["config/settings.py", "src/auth.py"],
+    correlated_events_count: 6,
+    recommendation: "Move secret to environment variables or secret management storage before committing.",
     architecture_changes: [],
     security_findings: [
       {
@@ -158,7 +247,6 @@ export function useInvestigation(projectId: string | undefined, queryStr: string
       }
       const res = await fetch(url.toString());
       if (!res.ok) {
-        // Fallback to legacy endpoint if needed
         const legacyUrl = new URL(
           projectId ? `/projects/${projectId}/investigation/search` : "/investigation/search",
           getApiBaseUrl(),
@@ -205,6 +293,10 @@ export function useInvestigation(projectId: string | undefined, queryStr: string
       data: {
         results: filtered,
         total_count: filtered.length,
+        suspicious_count: 1,
+        high_risk_count: 1,
+        sessions_count: 1,
+        projects_count: 1,
         has_more: false,
       } as InvestigationResponse,
       isLoading: false,
