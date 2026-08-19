@@ -18,6 +18,7 @@ from app.core.config import get_settings
 from app.core.database import Base, get_db, get_session_factory
 from app.features.analysis.models import EventAnalysis  # noqa: F401 - registers on Base
 from app.features.events.models import DevelopmentEvent
+from app.features.projects.models import Project
 from app.features.sessions.models import Session
 from app.main import app
 from fastapi import BackgroundTasks
@@ -70,8 +71,6 @@ async def _schema() -> AsyncGenerator[None, None]:
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield
-    async with test_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
     await test_engine.dispose()
 
 
@@ -87,6 +86,11 @@ async def _clean_rows(_schema: None) -> AsyncGenerator[None, None]:
     project_root-scoped lookup (ADR 0005) finds a leftover session it
     shouldn't.
     """
+    async with test_engine.begin() as conn:
+        await conn.execute(DevelopmentEvent.__table__.delete())
+        await conn.execute(Session.__table__.delete())
+        await conn.execute(Project.__table__.delete())
+
     yield
 
     # Wait briefly to ensure background tasks are scheduled
@@ -105,9 +109,9 @@ async def _clean_rows(_schema: None) -> AsyncGenerator[None, None]:
         # event_analyses has ON DELETE CASCADE from event_id, so deleting
         # development_events automatically removes all child analyses.
         await conn.execute(DevelopmentEvent.__table__.delete())
-        # sessions has no FK relationship to development_events (ADR 0005),
-        # so it needs its own explicit cleanup between tests.
+        # sessions and projects are explicitly cleaned up between tests.
         await conn.execute(Session.__table__.delete())
+        await conn.execute(Project.__table__.delete())
 
 
 @pytest_asyncio.fixture

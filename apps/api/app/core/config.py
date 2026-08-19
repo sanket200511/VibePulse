@@ -38,7 +38,12 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
 
     # ── CORS ─────────────────────────────────────────────────────────────────
-    cors_origins: list[AnyHttpUrl] = [AnyHttpUrl("http://localhost:5173")]
+    cors_origins: list[AnyHttpUrl] = [
+        AnyHttpUrl("http://localhost:3000"),
+        AnyHttpUrl("http://localhost:5173"),
+        AnyHttpUrl("http://127.0.0.1:3000"),
+        AnyHttpUrl("http://127.0.0.1:5173"),
+    ]
 
     # ── Session Engine ───────────────────────────────────────────────────────
     # A session moves ACTIVE -> IDLE after this many seconds without an event.
