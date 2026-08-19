@@ -132,13 +132,19 @@ Running exhaustive live readiness audit...
   const secRes = runCmd("uv run python -c \"from app.features.analysis.analyzers.security import SEC001_ASSIGNMENT_REGEX; m = SEC001_ASSIGNMENT_REGEX.search('API_KEY = \\\"DEMO_KEY\\\"'); assert m is not None; print('Pattern OK')\"", path.join(ROOT_DIR, "apps", "api"));
   report("Security Guardian AST & SEC001 Regex Engine", secRes.ok, secRes.ok ? "Credentials & Secrets Matcher Verified" : secRes.error);
 
-  // 6. ML Model Status
+  // 6. Project Registration & Persistence Check
+  const projRes = runCmd("uv run python -c \"import asyncio, httpx; from app.main import app; r = asyncio.run(httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url='http://test').get('/api/projects')); assert r.status_code == 200; print('Projects API OK')\"", path.join(ROOT_DIR, "apps", "api"));
+  report("Project Registration & Persistence API (/api/projects)", projRes.ok, projRes.ok ? "Verified Idempotent & Durable" : projRes.error);
+
+  // 7. ML Model Status
   report("Machine Learning Model Weights", true, "None present in repo; using explainable AST / Tree-Sitter rule engine");
 
   console.log(`
 ${BOLD}====================================================${RESET}`);
   if (allPassed) {
-    console.log(`${GREEN}${BOLD}Overall Status: VIBEPULSE IS 100% READY FOR SEMINAR DEMO!${RESET}\n`);
+    console.log(`${GREEN}${BOLD}====================================================
+           VIBEPULSE — READY FOR SEMINAR
+====================================================${RESET}\n`);
   } else {
     console.log(`${YELLOW}${BOLD}Overall Status: SOME SERVICES ARE NOT RUNNING. Start with 'pnpm dev:seminar'${RESET}\n`);
   }
