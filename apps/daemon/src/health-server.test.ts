@@ -12,15 +12,22 @@ import http from "http";
 import { afterEach, describe, expect, it } from "vitest";
 import { createHealthServer } from "./health-server";
 import { createObservationGate } from "./observation-gate";
+import type { WatchManager } from "./watch-manager";
 
 /** Send a simple HTTP request and return the parsed JSON response body. */
 function request(
   method: string,
   port: number,
   path: string,
+  body?: string,
 ): Promise<{ status: number; body: unknown }> {
   return new Promise((resolve, reject) => {
-    const req = http.request({ method, hostname: "127.0.0.1", port, path }, (res) => {
+    const headers: Record<string, string> = {};
+    if (body) {
+      headers["Content-Type"] = "application/json";
+      headers["Content-Length"] = Buffer.byteLength(body).toString();
+    }
+    const req = http.request({ method, hostname: "127.0.0.1", port, path, headers }, (res) => {
       let raw = "";
       res.on("data", (chunk: string) => (raw += chunk));
       res.on("end", () => {
@@ -32,6 +39,9 @@ function request(
       });
     });
     req.on("error", reject);
+    if (body) {
+      req.write(body);
+    }
     req.end();
   });
 }
@@ -160,6 +170,62 @@ describe("createHealthServer", () => {
       await request("POST", p, "/control/observe/stop");
       const afterStop = await request("GET", p, "/health");
       expect((afterStop.body as Record<string, unknown>)["observing"]).toBe(false);
+    });
+  });
+
+  describe("POST /watch and POST /control/watch", () => {
+    it("switches project when receiving valid root path", async () => {
+      const mockWatchManager = {
+        getStatus: () => ({
+          observing: true,
+          project_id: "p-456",
+          project_name: "SwitchedProject",
+          root: "/some/path",
+          canonical_root: "/some/path",
+          session_id: "s-456",
+        }),
+        switch: async () => ({
+          observing: true,
+          project_id: "p-456",
+          project_name: "SwitchedProject",
+          root: "/some/path",
+          canonical_root: "/some/path",
+          session_id: "s-456",
+        }),
+        getGate: () => createObservationGate(),
+      };
+
+      const p = nextPort();
+      server = createHealthServer(p, mockWatchManager as unknown as WatchManager);
+      server.listen();
+      await new Promise((r) => setTimeout(r, 20));
+
+      const { status, body } = await request(
+        "POST",
+        p,
+        "/watch",
+        JSON.stringify({ root: "/some/path" }),
+      );
+      expect(status).toBe(200);
+      expect((body as Record<string, unknown>)["project_name"]).toBe("SwitchedProject");
+      expect((body as Record<string, unknown>)["project_id"]).toBe("p-456");
+    });
+
+    it("returns 400 when missing root in body", async () => {
+      const mockWatchManager = {
+        getStatus: () => ({ observing: true }),
+        switch: async () => ({}),
+        getGate: () => createObservationGate(),
+      };
+
+      const p = nextPort();
+      server = createHealthServer(p, mockWatchManager as unknown as WatchManager);
+      server.listen();
+      await new Promise((r) => setTimeout(r, 20));
+
+      const { status, body } = await request("POST", p, "/watch", JSON.stringify({}));
+      expect(status).toBe(400);
+      expect((body as Record<string, unknown>)["error"]).toContain('Missing required "root"');
     });
   });
 

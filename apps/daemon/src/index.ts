@@ -1,50 +1,50 @@
 /**
  * VibePulse Daemon – Composition root.
  *
- * This file's only job is dependency wiring. It constructs each component
- * of the observation pipeline in order and hands each one exactly the
- * collaborators it needs. No business logic lives here.
- *
  * Pipeline:
- *   Watcher → Normaliser → Gate → Debouncer → Queue → Publisher → API
+ *   WatchManager (Watcher → Normaliser) → Gate → Debouncer → Queue → Publisher → API
  *
  * Control:
- *   HealthServer owns the gate control endpoints (POST /control/observe/start|stop).
+ *   HealthServer owns the health check and control endpoints:
+ *     GET  /health
+ *     POST /watch (runtime dynamic project switch)
+ *     POST /control/observe/start|stop
  */
 
-import { randomUUID } from "crypto";
 import { parsePort, getEnv } from "@vibepulse/config";
+import { loadDaemonEnv, watchEnvFile } from "./env-loader";
 import { loadConfig } from "./config";
-import { createNormaliser } from "./normaliser";
 import { createObservationGate } from "./observation-gate";
 import { createDebouncer } from "./debouncer";
 import { createEventQueue } from "./event-queue";
 import { createHttpPublisher } from "./publisher/http-publisher";
-import { createWatcher } from "./watcher";
+import { createWatchManager } from "./watch-manager";
 import { createHealthServer } from "./health-server";
 import { logger } from "./logger";
 import type { DevelopmentEvent } from "./event-types";
 import { createShutdownHandler } from "./shutdown";
 
+// Load .env and CLI flags before reading process.env
+loadDaemonEnv();
+
 const PORT = parsePort("DAEMON_PORT", 9000);
 
 async function main(): Promise<void> {
-  logger.info("⚡ VibePulse Daemon starting…");
-  logger.info(`   Version  : 0.1.0`);
-  logger.info(`   Node     : ${process.version}`);
-  logger.info(`   PID      : ${process.pid}`);
-
   // ── Configuration ─────────────────────────────────────────────────────────
   const config = loadConfig();
-  const watchRoot = process.env["WATCH_ROOT"] ?? process.cwd();
+  const rawWatchRoot = process.env["WATCH_ROOT"] ?? process.cwd();
   const apiUrl = getEnv("API_URL") ?? "http://localhost:8000";
-  const sessionId = randomUUID();
 
-  // ── Pipeline construction (in pipeline order) ─────────────────────────────
+  logger.info("=========================================");
+  logger.info("           VibePulse Daemon              ");
+  logger.info("=========================================");
+  logger.info(`Initial Target : ${rawWatchRoot}`);
+  logger.info(`API            : ${apiUrl}`);
+  logger.info(`Daemon port    : ${PORT}`);
 
-  const normaliser = createNormaliser({ projectRoot: watchRoot, sessionId });
-
+  // ── Pipeline primitives ───────────────────────────────────────────────────
   const gate = createObservationGate();
+  gate.open();
 
   const publisher = createHttpPublisher(apiUrl, config);
 
@@ -63,9 +63,6 @@ async function main(): Promise<void> {
     },
   });
 
-  // drainQueue() is fire-and-forget: called each time a debounced event is
-  // enqueued. If the API is unavailable, the publisher retries internally;
-  // after exhausting retries the event is logged and dropped (not re-queued).
   let isDraining = false;
   async function drainQueue(): Promise<void> {
     if (isDraining) return;
@@ -91,29 +88,46 @@ async function main(): Promise<void> {
     },
   });
 
-  const watcher = createWatcher({ root: watchRoot, normaliser, gate, debouncer });
+  // ── WatchManager & Control Server ─────────────────────────────────────────
+  const watchManager = createWatchManager({
+    apiUrl,
+    gate,
+    debouncer,
+  });
 
-  // ── Health / control server ────────────────────────────────────────────────
-  const healthServer = createHealthServer(PORT, gate);
+  const healthServer = createHealthServer(PORT, watchManager);
   healthServer.listen();
 
-  // ── Start watcher ─────────────────────────────────────────────────────────
-  await watcher.start();
+  // Start observation on initial project with retry
+  try {
+    await watchManager.start(rawWatchRoot);
+  } catch (err: unknown) {
+    logger.error(`Failed to start observation on initial target "${rawWatchRoot}":`, err);
+  }
 
-  logger.info(`✅  VibePulse Daemon running on port ${PORT}`);
-  logger.info(`   Watching : ${watchRoot}`);
-  logger.info(`   API      : ${apiUrl}`);
-  logger.info(`   Session  : ${sessionId}`);
+  // ── Watch .env file for live zero-restart project switching ─────────────────
+  const unwatchEnv = watchEnvFile((newRoot) => {
+    logger.info(`[EnvWatcher] Detected live WATCH_ROOT change: ${newRoot}`);
+    void watchManager.switch(newRoot).catch((err: unknown) => {
+      logger.error(`[EnvWatcher] Failed to switch to "${newRoot}":`, err);
+    });
+  });
 
   // ── Graceful shutdown ─────────────────────────────────────────────────────
   const shutdown = createShutdownHandler({
     gate,
-    watcher,
+    watcher: {
+      start: async () => {},
+      stop: async () => {
+        unwatchEnv();
+        await watchManager.stop();
+      },
+    },
     publisher,
     healthServer,
     drainQueue,
-    sessionId,
-    watchRoot,
+    sessionId: watchManager.getSessionId() ?? "shutdown-session",
+    watchRoot: watchManager.getCanonicalRoot() ?? rawWatchRoot,
     exitProcess: (code) => process.exit(code),
   });
 
