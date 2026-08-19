@@ -99,10 +99,11 @@ SEC001_ASSIGNMENT_REGEX = re.compile(
         (?:const\s+|let\s+|var\s+|export\s+)?
         (?P<quote1>["'])?
         (?P<key>
-            database_password|database_pass|db_password|db_pass|
+            database_url|db_url|database_password|database_pass|db_password|db_pass|
             admin_password|root_password|user_password|secret_password|
             auth_password|client_secret|api_secret|app_secret|secret_key|
-            password|passwd|pwd
+            api_key|apikey|access_token|auth_token|bearer_token|token|
+            private_key|password|passwd|pwd
         )
         (?P=quote1)?
         \s*(?:=|:|:=)\s*
