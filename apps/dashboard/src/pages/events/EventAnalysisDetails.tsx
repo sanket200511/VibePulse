@@ -7,6 +7,7 @@ import {
   Code2,
   Text,
   FileSignature,
+  ShieldAlert,
   type LucideIcon,
 } from "lucide-react";
 import { Badge } from "@vibepulse/ui";
@@ -31,7 +32,10 @@ interface SecurityFindingItem {
   language: string;
   timestamp: string;
   evidence: string;
+  redacted_evidence?: string;
   severity: "HIGH" | "MEDIUM" | "LOW";
+  category?: string;
+  description?: string;
 }
 
 interface SecurityFindings {
@@ -146,28 +150,28 @@ export function EventAnalysisDetails({ eventId }: { eventId: string }) {
   }
 
   if (error || !data) {
-    return <div className="px-4 py-2 text-sm text-red-500">Could not load evolution details.</div>;
+    return <div className="px-4 py-2 text-sm text-red-500">Could not load analysis details.</div>;
   }
 
   const evolution = data.analyses.find((a) => a.analyzer_name === "code_evolution");
-  if (!evolution) {
-    return (
-      <div className="text-muted-foreground px-4 py-2 text-sm">
-        No evolution observed for this event.
-      </div>
-    );
-  }
-
-  const findings = evolution.findings as EvolutionFindings;
-  const observations = findings.observations || [];
+  const evolutionFindings = (evolution?.findings as EvolutionFindings) || {};
+  const observations = evolutionFindings.observations || [];
 
   const security = data.analyses.find((a) => a.analyzer_name === "security_guardian");
   const securityFindings = (security?.findings as SecurityFindings)?.findings || [];
 
+  if (observations.length === 0 && securityFindings.length === 0) {
+    return (
+      <div className="text-muted-foreground px-4 py-2 text-sm">
+        No evolution or security findings observed for this event.
+      </div>
+    );
+  }
+
   return (
     <div className="bg-muted/30 border-border flex flex-col gap-6 border-t p-4">
       {/* Code Evolution Panel */}
-      {observations.length > 0 ? (
+      {observations.length > 0 && (
         <div>
           <div className="mb-4 flex items-center gap-2">
             <FileSignature className="text-muted-foreground h-4 w-4" />
@@ -199,21 +203,25 @@ export function EventAnalysisDetails({ eventId }: { eventId: string }) {
             })}
           </div>
         </div>
-      ) : (
-        <div className="text-muted-foreground text-sm">No structural changes observed.</div>
       )}
 
       {/* Security Findings Panel */}
       {securityFindings.length > 0 && (
-        <div className="border-border border-t pt-2">
-          <div className="mb-4 flex items-center gap-2">
-            <span className="text-lg">🛡️</span>
-            <span className="text-sm font-medium">Security Findings</span>
+        <div className={observations.length > 0 ? "border-border border-t pt-4" : ""}>
+          <div className="mb-3 flex items-center gap-2">
+            <ShieldAlert className="h-4 w-4 text-rose-500" />
+            <span className="text-foreground text-sm font-semibold">Security Findings</span>
+            <span className="rounded-full border border-rose-500/20 bg-rose-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-rose-500">
+              {securityFindings.length} {securityFindings.length === 1 ? "issue" : "issues"}
+            </span>
           </div>
           <div className="flex flex-col gap-3">
             {securityFindings.map((finding, i) => (
-              <div key={i} className="border-border bg-background overflow-hidden rounded border">
-                <div className="border-border bg-muted/20 flex items-center gap-3 border-b p-3">
+              <div
+                key={i}
+                className="border-border bg-card overflow-hidden rounded-lg border shadow-sm"
+              >
+                <div className="border-border flex flex-wrap items-center gap-2.5 border-b bg-rose-500/5 px-3.5 py-2.5">
                   <Badge
                     variant={
                       finding.severity === "HIGH"
@@ -225,13 +233,24 @@ export function EventAnalysisDetails({ eventId }: { eventId: string }) {
                   >
                     {finding.severity}
                   </Badge>
-                  <span className="text-sm font-medium">{finding.title}</span>
-                  <span className="text-muted-foreground ml-auto font-mono text-xs">
+                  {finding.rule_id && (
+                    <span className="bg-muted text-foreground border-border rounded border px-1.5 py-0.5 font-mono text-[11px] font-bold">
+                      {finding.rule_id}
+                    </span>
+                  )}
+                  <span className="text-foreground text-sm font-medium">{finding.title}</span>
+                  <span className="text-secondary-text ml-auto font-mono text-xs">
                     {finding.file}:{finding.line_number}
                   </span>
                 </div>
-                <div className="bg-muted/5 text-muted-foreground overflow-x-auto whitespace-pre p-3 font-mono text-xs">
-                  {finding.evidence}
+                <div className="flex flex-col gap-2 p-3.5">
+                  <div className="bg-background text-foreground border-border whitespace-pre-wrap break-all rounded-md border p-2.5 font-mono text-xs">
+                    {finding.evidence || finding.redacted_evidence || finding.symbol}
+                  </div>
+                  <p className="text-secondary-text text-[11px] leading-relaxed">
+                    {finding.description ||
+                      "Credential-like value detected. Secret is masked to prevent credential leakage."}
+                  </p>
                 </div>
               </div>
             ))}

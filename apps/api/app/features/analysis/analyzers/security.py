@@ -14,7 +14,10 @@ Findings schema
             "language": str,
             "timestamp": str,
             "evidence": str,
-            "severity": str  # "HIGH", "MEDIUM", "LOW"
+            "redacted_evidence": str,
+            "severity": str,  # "HIGH", "MEDIUM", "LOW"
+            "category": str,
+            "description": str,
         }
     ]
 }
@@ -42,9 +45,112 @@ class SecurityRule:
     category: str
 
 
+# ── Canonical Redaction & False-Positive Helpers ─────────────────────────────
+
+FALSE_POSITIVE_PLACEHOLDERS: set[str] = {
+    "your_password_here",
+    "your-password-here",
+    "your_password",
+    "your-password",
+    "yourpassword",
+    "your_pass_here",
+    "your_pass",
+    "your-pass",
+    "changeme",
+    "change_me",
+    "change-me",
+    "changeit",
+    "password",
+    "pass",
+    "pwd",
+    "<password>",
+    "<your_password>",
+    "<your-password>",
+    "<your_password_here>",
+    "[password]",
+    "{password}",
+    "placeholder",
+    "example",
+    "example_password",
+    "sample_password",
+    "test_password",
+    "xxxx",
+    "xxxxx",
+    "xxxxxx",
+    "******",
+    "...",
+    "123456",
+    "dummy",
+    "dummy_password",
+    "null",
+    "none",
+    "nil",
+    "undefined",
+    "true",
+    "false",
+    "todo",
+}
+
+# Regex for SEC001 assignment-style password and credential exposure
+SEC001_ASSIGNMENT_REGEX = re.compile(
+    r"""(?ix)
+    (?P<before>
+        (?:^|[\s,;{\[(])
+        (?:const\s+|let\s+|var\s+|export\s+)?
+        (?P<quote1>["'])?
+        (?P<key>
+            database_password|database_pass|db_password|db_pass|
+            admin_password|root_password|user_password|secret_password|
+            auth_password|client_secret|api_secret|app_secret|secret_key|
+            password|passwd|pwd
+        )
+        (?P=quote1)?
+        \s*(?:=|:|:=)\s*
+    )
+    (?:
+        (?P<qvalue>["'])(?P<val_quoted>[^"'\r\n]*)(?P=qvalue)
+        |
+        (?P<val_unquoted>[^\s#"';,}\]\r\n]+)
+    )
+    """
+)
+
+
+def is_placeholder_value(val: str) -> bool:
+    """Determine if an extracted credential value is a dummy/placeholder."""
+    val_clean = val.strip()
+    if not val_clean:
+        return True
+    val_lower = val_clean.lower()
+    if val_lower in FALSE_POSITIVE_PLACEHOLDERS:
+        return True
+    if val_lower.startswith("<") and val_lower.endswith(">"):
+        return True
+    if val_lower.startswith("${") and val_lower.endswith("}"):
+        return True
+    if val_lower.startswith("$") and len(val_lower) > 1 and val_lower[1:].isidentifier():
+        return True
+    unquoted = val_clean.strip("\"'`")
+    if not unquoted or unquoted.lower() in FALSE_POSITIVE_PLACEHOLDERS:
+        return True
+    return False
+
+
+def redact_assignment(before_str: str) -> str:
+    """
+    Returns a safe, redacted representation of the assignment.
+    NEVER includes the raw secret.
+    """
+    before_clean = before_str.strip()
+    if before_clean.endswith(("=", ":", ":=")):
+        return f'{before_clean}"[REDACTED]"'
+    return f'{before_clean} "[REDACTED]"'
+
+
 class SecurityAnalyzer:
     """
     Scans file contents for deterministic security patterns.
+    Strictly redacts all secret values before persistence or broadcast.
     """
 
     name = "security_guardian"
@@ -53,14 +159,77 @@ class SecurityAnalyzer:
     priority = 55
     enabled = True
 
+    SUPPORTED_EXTENSIONS: ClassVar[set[str]] = {
+        ".env",
+        ".env.example",
+        ".env.local",
+        ".env.test",
+        ".env.development",
+        ".env.production",
+        ".env.staging",
+        ".py",
+        ".ts",
+        ".tsx",
+        ".js",
+        ".jsx",
+        ".json",
+        ".yaml",
+        ".yml",
+        ".toml",
+        ".ini",
+        ".cfg",
+        ".conf",
+        ".properties",
+        ".txt",
+        ".sh",
+        ".bash",
+        ".zsh",
+        ".sql",
+        ".php",
+        ".rb",
+        ".go",
+        ".rs",
+        ".java",
+        ".kt",
+        ".cs",
+        ".cpp",
+        ".c",
+    }
+
+    IGNORED_PATH_SUBSTRINGS: ClassVar[tuple[str, ...]] = (
+        "node_modules",
+        ".git",
+        "dist",
+        "build",
+        "coverage",
+        ".venv",
+        "venv",
+        "__pycache__",
+        ".turbo",
+        ".next",
+        ".pytest_cache",
+        ".ruff_cache",
+    )
+
     RULES: ClassVar[list[SecurityRule]] = [
+        SecurityRule(
+            id="SEC001",
+            title="Password / Credential Exposure",
+            description=(
+                "Credential-like value detected. Secret is masked to prevent credential leakage."
+            ),
+            severity="HIGH",
+            pattern=SEC001_ASSIGNMENT_REGEX,
+            languages=("all",),
+            category="Secrets",
+        ),
         SecurityRule(
             id="HARDCODED_OPENAI_KEY",
             title="Hardcoded OpenAI Key",
             description="OpenAI API keys should not be hardcoded.",
             severity="HIGH",
             pattern=re.compile(r"(?:sk-[a-zA-Z0-9_-]{30,})"),
-            languages=("python", "typescript", "javascript"),
+            languages=("python", "typescript", "javascript", "all"),
             category="Secrets",
         ),
         SecurityRule(
@@ -71,16 +240,7 @@ class SecurityAnalyzer:
             pattern=re.compile(
                 r"(?i)(?:aws_access_key_id|aws_secret_access_key)\s*=\s*['\"][A-Za-z0-9/+=]{16,40}['\"]"
             ),
-            languages=("python", "typescript", "javascript"),
-            category="Secrets",
-        ),
-        SecurityRule(
-            id="HARDCODED_PASSWORD",
-            title="Hardcoded Password",
-            description="Avoid plaintext passwords in source code.",
-            severity="HIGH",
-            pattern=re.compile(r"(?i)(?:password|passwd|pwd)\s*=\s*['\"][^'\"]+['\"]"),
-            languages=("python", "typescript", "javascript"),
+            languages=("python", "typescript", "javascript", "all"),
             category="Secrets",
         ),
         SecurityRule(
@@ -89,7 +249,7 @@ class SecurityAnalyzer:
             description="Private keys must not be stored in source code.",
             severity="HIGH",
             pattern=re.compile(r"-----BEGIN (?:RSA |EC |DSA |OPENSSH |)PRIVATE KEY-----"),
-            languages=("python", "typescript", "javascript"),
+            languages=("python", "typescript", "javascript", "all"),
             category="Secrets",
         ),
         SecurityRule(
@@ -197,6 +357,25 @@ class SecurityAnalyzer:
         ),
     ]
 
+    def _resolve_language(self, ext: str, file_name: str) -> str:
+        if ext in (".py",):
+            return "python"
+        if ext in (".ts", ".tsx"):
+            return "typescript"
+        if ext in (".js", ".jsx"):
+            return "javascript"
+        if ext in (".json",):
+            return "json"
+        if ext in (".yaml", ".yml"):
+            return "yaml"
+        if ext in (".toml",):
+            return "toml"
+        if ext in (".ini", ".cfg", ".conf"):
+            return "ini"
+        if file_name.startswith(".env") or ext.startswith(".env"):
+            return "env"
+        return "text"
+
     def analyze(
         self,
         event: AnalyzableEvent,
@@ -208,17 +387,23 @@ class SecurityAnalyzer:
         if not event.file_path or not event.project_root:
             return None
 
-        ext = (event.file_extension or "").lower()
-        lang = None
-        if ext in (".py",):
-            lang = "python"
-        elif ext in (".ts", ".tsx"):
-            lang = "typescript"
-        elif ext in (".js", ".jsx"):
-            lang = "javascript"
-
-        if not lang:
+        # Ignore non-code or ignored paths
+        norm_path = event.file_path.replace("\\", "/").lower()
+        if any(
+            f"/{ignored}/" in f"/{norm_path}/" or norm_path.startswith(f"{ignored}/")
+            for ignored in self.IGNORED_PATH_SUBSTRINGS
+        ):
             return None
+
+        file_name = (event.file_name or os.path.basename(event.file_path)).lower()
+        ext = (event.file_extension or os.path.splitext(file_name)[1] or "").lower()
+
+        # Check supported files
+        is_env_file = file_name.startswith(".env") or ext.startswith(".env")
+        if not is_env_file and ext not in self.SUPPORTED_EXTENSIONS:
+            return None
+
+        lang = self._resolve_language(ext, file_name)
 
         if os.path.isabs(event.file_path):
             full_path = event.file_path
@@ -228,42 +413,97 @@ class SecurityAnalyzer:
         if not os.path.exists(full_path) or not os.path.isfile(full_path):
             return None
 
+        # Reject large files (> 1MB)
+        try:
+            if os.path.getsize(full_path) > 1_048_576:
+                return None
+        except OSError:
+            return None
+
         try:
             with open(full_path, encoding="utf-8", errors="ignore") as f:
                 lines = f.readlines()
         except OSError:
             return None
 
-        findings = []
+        findings: list[dict[str, object]] = []
+
         for i, line in enumerate(lines):
             line_stripped = line.strip()
-            if not line_stripped:
+            if not line_stripped or line_stripped.startswith(("#", "//", "/*", "*")):
                 continue
 
             for rule in self.RULES:
-                if lang not in rule.languages:
+                if "all" not in rule.languages and lang not in rule.languages:
                     continue
 
-                match = rule.pattern.search(line_stripped)
-                if match:
-                    # Truncate evidence if too long
-                    evidence = line_stripped
-                    if len(evidence) > 100:
-                        evidence = evidence[:97] + "..."
+                if rule.id == "SEC001":
+                    match = rule.pattern.search(line_stripped)
+                    if not match:
+                        continue
+
+                    val = match.group("val_quoted") or match.group("val_unquoted") or ""
+                    if is_placeholder_value(val):
+                        continue
+
+                    before = match.group("before")
+                    redacted = redact_assignment(before)
 
                     findings.append(
                         {
                             "rule_id": rule.id,
                             "title": rule.title,
                             "line_number": i + 1,
-                            "symbol": match.group(0),
+                            "symbol": redacted,
                             "file": event.file_name or event.file_path or "",
                             "language": lang,
                             "timestamp": event.timestamp.isoformat(),
-                            "evidence": evidence,
+                            "evidence": redacted,
+                            "redacted_evidence": redacted,
                             "severity": rule.severity,
+                            "category": rule.category,
+                            "description": rule.description,
                         }
                     )
+                else:
+                    match = rule.pattern.search(line_stripped)
+                    if match:
+                        matched_str = match.group(0)
+                        # Redact secret rules if matching OpenAI / AWS / Private key
+                        if rule.category == "Secrets":
+                            if "sk-" in matched_str:
+                                redacted = re.sub(
+                                    r"sk-[a-zA-Z0-9_-]{30,}", "sk-[REDACTED]", line_stripped
+                                )
+                            elif "aws" in matched_str.lower():
+                                redacted = re.sub(
+                                    r"=['\"][A-Za-z0-9/+=]{16,40}['\"]",
+                                    '="[REDACTED]"',
+                                    line_stripped,
+                                )
+                            else:
+                                redacted = "[REDACTED_SECRET]"
+                        else:
+                            redacted = line_stripped
+                            if len(redacted) > 100:
+                                redacted = redacted[:97] + "..."
+
+                        findings.append(
+                            {
+                                "rule_id": rule.id,
+                                "title": rule.title,
+                                "line_number": i + 1,
+                                "symbol": redacted if rule.category == "Secrets" else matched_str,
+                                "file": event.file_name or event.file_path or "",
+                                "language": lang,
+                                "timestamp": event.timestamp.isoformat(),
+                                "evidence": redacted,
+                                "redacted_evidence": redacted,
+                                "severity": rule.severity,
+                                "category": rule.category,
+                                "description": rule.description,
+                            }
+                        )
 
         if not findings:
             return None
