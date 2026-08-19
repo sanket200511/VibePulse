@@ -2,134 +2,76 @@ import { useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import {
   Search,
-  Filter,
   ShieldAlert,
-  Lock,
   Clock,
   X,
-  AlertTriangle,
   FolderGit2,
   Flame,
+  Activity,
+  Layers,
+  CheckCircle2,
+  ChevronRight,
+  AlertCircle,
+  FileText,
+  FileCode,
+  ShieldCheck,
+  TrendingUp,
 } from "lucide-react";
 import { Badge } from "@vibepulse/ui";
-import { useInvestigation, type InvestigationResult } from "./useInvestigation";
+import { useInvestigation, type InvestigationResult, type EvidenceNode } from "./useInvestigation";
 import { LoadingState } from "../../components/states";
-
-const SEVERITY_COLORS = {
-  CRITICAL: {
-    badge: "danger" as const,
-    border: "border-rose-500/50",
-    bg: "bg-rose-500/10",
-    text: "text-rose-400",
-    bar: "bg-rose-500",
-  },
-  HIGH: {
-    badge: "danger" as const,
-    border: "border-red-500/40",
-    bg: "bg-red-500/10",
-    text: "text-red-400",
-    bar: "bg-red-500",
-  },
-  MEDIUM: {
-    badge: "warning" as const,
-    border: "border-amber-500/30",
-    bg: "bg-amber-500/10",
-    text: "text-amber-400",
-    bar: "bg-amber-500",
-  },
-  LOW: {
-    badge: "default" as const,
-    border: "border-zinc-700/50",
-    bg: "bg-zinc-800/30",
-    text: "text-zinc-400",
-    bar: "bg-zinc-500",
-  },
-} as const;
 
 export function InvestigationPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const [query, setQuery] = useState("");
-  const [selectedSeverity, setSelectedSeverity] = useState<string | null>(null);
-  const [selectedProject, setSelectedProject] = useState<string | null>(null);
-  const [selectedType, setSelectedType] = useState<string | null>(null);
   const [activeFinding, setActiveFinding] = useState<InvestigationResult | null>(null);
+  const [selectedNode, setSelectedNode] = useState<EvidenceNode | null>(null);
+  const [reviewedIncidents, setReviewedIncidents] = useState<Set<string>>(new Set());
 
   const { data, isLoading, isError } = useInvestigation(projectId, query);
 
-  // Dynamic filter stats derived from real data
-  const { severityCounts, projectCounts, typeCounts, filteredResults } = useMemo(() => {
-    const rawResults = data?.results || [];
+  const rawResults = useMemo(() => data?.results || [], [data?.results]);
 
-    const sCounts: Record<string, number> = { CRITICAL: 0, HIGH: 0, MEDIUM: 0, LOW: 0 };
-    const pCounts: Record<string, number> = {};
-    const tCounts: Record<string, number> = {
-      Secrets: 0,
-      "Config Changes": 0,
-      "File Modifications": 0,
-      "File Creations": 0,
-    };
+  // Filtered by query
+  const filteredResults = useMemo(() => {
+    if (!query) return rawResults;
+    const q = query.toLowerCase();
+    return rawResults.filter(
+      (r) =>
+        r.summary.toLowerCase().includes(q) ||
+        (r.file_path || "").toLowerCase().includes(q) ||
+        (r.project_name || "").toLowerCase().includes(q) ||
+        (r.risk_level || "").toLowerCase().includes(q) ||
+        r.security_findings?.some((f) => f.message.toLowerCase().includes(q) || f.rule_id.toLowerCase().includes(q)),
+    );
+  }, [rawResults, query]);
 
-    for (const r of rawResults) {
-      // Severity count
-      const lev = (r.risk_level || "LOW").toUpperCase();
-      sCounts[lev] = (sCounts[lev] || 0) + 1;
-
-      // Project count
-      const pName = r.project_name || "Unknown";
-      pCounts[pName] = (pCounts[pName] || 0) + 1;
-
-      // Type count
-      if (r.security_findings && r.security_findings.length > 0) {
-        tCounts["Secrets"] = (tCounts["Secrets"] || 0) + 1;
-      }
-      const fPath = (r.file_path || "").toLowerCase();
-      if (fPath.includes("config") || fPath.includes("settings") || fPath.includes(".env")) {
-        tCounts["Config Changes"] = (tCounts["Config Changes"] || 0) + 1;
-      }
-      if (r.event_type === "FILE_MODIFIED") {
-        tCounts["File Modifications"] = (tCounts["File Modifications"] || 0) + 1;
-      } else if (r.event_type === "FILE_CREATED") {
-        tCounts["File Creations"] = (tCounts["File Creations"] || 0) + 1;
-      }
-    }
-
-    // Filter results based on sidebar selections
-    const filtered = rawResults.filter((r) => {
-      if (selectedSeverity && (r.risk_level || "LOW").toUpperCase() !== selectedSeverity) {
-        return false;
-      }
-      if (selectedProject && (r.project_name || "Unknown") !== selectedProject) {
-        return false;
-      }
-      if (selectedType) {
-        if (selectedType === "Secrets" && (!r.security_findings || r.security_findings.length === 0)) return false;
-        if (selectedType === "Config Changes") {
-          const fPath = (r.file_path || "").toLowerCase();
-          if (!fPath.includes("config") && !fPath.includes("settings") && !fPath.includes(".env")) {
-            return false;
-          }
-        }
-        if (selectedType === "File Modifications" && r.event_type !== "FILE_MODIFIED") return false;
-        if (selectedType === "File Creations" && r.event_type !== "FILE_CREATED") return false;
-      }
-      return true;
-    });
-
-    return {
-      severityCounts: sCounts,
-      projectCounts: pCounts,
-      typeCounts: tCounts,
-      filteredResults: filtered,
-    };
-  }, [data, selectedSeverity, selectedProject, selectedType]);
+  // Derived real intelligence counts
+  const stats = useMemo(() => {
+    const total = data?.total_count ?? rawResults.length;
+    const suspicious = data?.suspicious_count ?? rawResults.filter((r) => r.risk_score >= 30 || r.security_findings?.length > 0).length;
+    const highRisk = data?.high_risk_count ?? rawResults.filter((r) => r.risk_score >= 60 || r.risk_level === "HIGH" || r.risk_level === "CRITICAL").length;
+    const sessions = data?.sessions_count ?? new Set(rawResults.map((r) => r.session_id)).size;
+    const projects = data?.projects_count ?? new Set(rawResults.map((r) => r.project_root)).size;
+    return { total, suspicious, highRisk, sessions, projects };
+  }, [data?.total_count, data?.suspicious_count, data?.high_risk_count, data?.sessions_count, data?.projects_count, rawResults]);
 
   const activeResult = activeFinding || (filteredResults.length > 0 ? filteredResults[0] : null);
-  const totalHighRisk = (severityCounts["HIGH"] ?? 0) + (severityCounts["CRITICAL"] ?? 0);
+  const isReviewed = activeResult ? reviewedIncidents.has(activeResult.id) : false;
+
+  const handleMarkReviewed = (id: string) => {
+    setReviewedIncidents((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   return (
     <div className="flex h-full flex-col bg-zinc-950 text-zinc-100">
-      {/* Investigation Top Navigation / Search Header */}
-      <div className="border-b border-zinc-800/80 bg-zinc-950/90 px-6 py-4 backdrop-blur-md">
+      {/* 1. TOP INVESTIGATION COMMAND CENTER HEADER */}
+      <div className="border-b border-zinc-800/80 bg-zinc-950/90 px-6 py-3.5 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl flex-col gap-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -138,256 +80,165 @@ export function InvestigationPage() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-xl font-bold tracking-tight text-white">Investigation Workspace</h1>
+                  <h1 className="text-lg font-bold tracking-tight text-white">Investigation Command Center</h1>
                   <span className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-400">
                     <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
-                    Live
+                    Live Observation
                   </span>
                 </div>
                 <p className="text-xs text-zinc-400">
-                  Real-time security correlation, risk escalation, and developmental evidence chain.
+                  <span className="font-semibold text-zinc-300">Detect</span> → <span className="font-semibold text-zinc-300">Correlate</span> → <span className="font-semibold text-zinc-300">Explain</span> → <span className="font-semibold text-zinc-300">Resolve</span>
                 </p>
               </div>
             </div>
-            {data && (
-              <div className="flex items-center gap-3 text-xs text-zinc-400">
-                <span>
-                  Observed Events: <strong className="text-white">{data.total_count}</strong>
-                </span>
-                {totalHighRisk > 0 && (
-                  <span className="flex items-center gap-1 rounded-md border border-rose-500/30 bg-rose-500/10 px-2 py-1 font-semibold text-rose-400">
-                    <Flame className="h-3.5 w-3.5" />
-                    {totalHighRisk} High Risk
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
 
-          {/* Search Input Bar */}
-          <div className="relative flex items-center">
-            <Search className="absolute left-4 h-4 w-4 text-zinc-400" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Filter by keyword or token (e.g. severity:HIGH, secret, auth.py, settings.py, config)..."
-              className="w-full rounded-lg border border-zinc-800 bg-zinc-900/90 pl-11 pr-24 py-2.5 text-sm text-white placeholder:text-zinc-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            />
-            {query && (
-              <button
-                onClick={() => setQuery("")}
-                className="absolute right-12 text-xs text-zinc-400 hover:text-white"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-            <div className="absolute right-3 hidden items-center gap-1 rounded border border-zinc-700 bg-zinc-800 px-1.5 py-0.5 font-mono text-[10px] text-zinc-400 sm:flex">
-              ⌘K
+            {/* Quick Search */}
+            <div className="relative w-80">
+              <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search development activity (e.g. secret, auth.py)..."
+                className="w-full rounded-md border border-zinc-800 bg-zinc-900/90 pl-8 pr-8 py-1.5 text-xs text-white placeholder:text-zinc-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              />
+              {query && (
+                <button
+                  onClick={() => setQuery("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Quick Query Filters */}
-          <div className="flex flex-wrap items-center gap-1.5 pt-1 text-xs">
-            <span className="text-zinc-500">Quick Filters:</span>
-            {[
-              { label: "High Risk Only", val: "severity:HIGH" },
-              { label: "Credentials & Secrets", val: "secret" },
-              { label: "Configuration", val: "config" },
-              { label: "Authentication", val: "auth" },
-            ].map((chip) => (
-              <button
-                key={chip.val}
-                onClick={() => setQuery(query === chip.val ? "" : chip.val)}
-                className={`rounded-full border px-2.5 py-0.5 text-xs font-medium transition-all ${
-                  query.includes(chip.val)
-                    ? "border-indigo-500 bg-indigo-500/20 text-indigo-300"
-                    : "border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"
-                }`}
-              >
-                {chip.label}
-              </button>
-            ))}
+          {/* 2. REAL INTELLIGENCE METRIC STRIP */}
+          <div className="grid grid-cols-5 gap-3 pt-1">
+            <div className="flex items-center gap-2.5 rounded-lg border border-zinc-800/80 bg-zinc-900/50 px-3.5 py-2">
+              <Activity className="h-4 w-4 text-indigo-400" />
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Observed Events</p>
+                <p className="font-mono text-sm font-bold text-white">{stats.total}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 rounded-lg border border-zinc-800/80 bg-zinc-900/50 px-3.5 py-2">
+              <AlertCircle className="h-4 w-4 text-amber-400" />
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Suspicious Activity</p>
+                <p className="font-mono text-sm font-bold text-amber-300">{stats.suspicious}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 rounded-lg border border-zinc-800/80 bg-zinc-900/50 px-3.5 py-2">
+              <Flame className="h-4 w-4 text-rose-400" />
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">High Risk Findings</p>
+                <p className="font-mono text-sm font-bold text-rose-400">{stats.highRisk}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 rounded-lg border border-zinc-800/80 bg-zinc-900/50 px-3.5 py-2">
+              <Layers className="h-4 w-4 text-emerald-400" />
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Sessions</p>
+                <p className="font-mono text-sm font-bold text-white">{stats.sessions}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 rounded-lg border border-zinc-800/80 bg-zinc-900/50 px-3.5 py-2">
+              <FolderGit2 className="h-4 w-4 text-purple-400" />
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Observed Projects</p>
+                <p className="font-mono text-sm font-bold text-white">{stats.projects}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Main Workspace: Filters Sidebar + Results + Incident Detail Inspector */}
+      {/* 3. MAIN WORKSPACE: ACTIVE INCIDENTS & EVIDENCE INVESTIGATOR */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Dynamic Filters Sidebar */}
-        <aside className="w-64 shrink-0 overflow-y-auto border-r border-zinc-800/80 bg-zinc-950/60 p-4">
-          <div className="space-y-6">
-            {/* Risk Level Filter */}
-            <div>
-              <h3 className="mb-2.5 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-zinc-400">
-                <span className="flex items-center gap-1.5">
-                  <Filter className="h-3.5 w-3.5 text-indigo-400" />
-                  Risk Level
-                </span>
-                {selectedSeverity && (
-                  <button
-                    onClick={() => setSelectedSeverity(null)}
-                    className="text-[10px] lowercase text-indigo-400 hover:underline"
-                  >
-                    clear
-                  </button>
-                )}
-              </h3>
-              <div className="space-y-1">
-                {(["CRITICAL", "HIGH", "MEDIUM", "LOW"] as const).map((sev) => {
-                  const count = severityCounts[sev] || 0;
-                  const isSelected = selectedSeverity === sev;
-                  const color = SEVERITY_COLORS[sev];
-                  return (
-                    <button
-                      key={sev}
-                      onClick={() => setSelectedSeverity(isSelected ? null : sev)}
-                      className={`flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-xs transition-all ${
-                        isSelected
-                          ? `${color.bg} ${color.border} font-semibold ${color.text} border`
-                          : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200"
-                      }`}
-                    >
-                      <span className="flex items-center gap-2">
-                        <span className={`h-2 w-2 rounded-full ${color.bar}`} />
-                        {sev}
-                      </span>
-                      <span className="font-mono text-[11px] opacity-70">({count})</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Event Category Filter */}
-            <div>
-              <h3 className="mb-2.5 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-zinc-400">
-                <span>Category</span>
-                {selectedType && (
-                  <button
-                    onClick={() => setSelectedType(null)}
-                    className="text-[10px] lowercase text-indigo-400 hover:underline"
-                  >
-                    clear
-                  </button>
-                )}
-              </h3>
-              <div className="space-y-1">
-                {Object.entries(typeCounts).map(([cat, count]) => {
-                  const isSelected = selectedType === cat;
-                  return (
-                    <button
-                      key={cat}
-                      onClick={() => setSelectedType(isSelected ? null : cat)}
-                      className={`flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-xs transition-all ${
-                        isSelected
-                          ? "border border-indigo-500/40 bg-indigo-500/10 font-semibold text-indigo-300"
-                          : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200"
-                      }`}
-                    >
-                      <span className="truncate">{cat}</span>
-                      <span className="font-mono text-[11px] opacity-70">({count})</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Observed Projects Filter */}
-            <div>
-              <h3 className="mb-2.5 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-zinc-400">
-                <span className="flex items-center gap-1.5">
-                  <FolderGit2 className="h-3.5 w-3.5 text-indigo-400" />
-                  Projects
-                </span>
-                {selectedProject && (
-                  <button
-                    onClick={() => setSelectedProject(null)}
-                    className="text-[10px] lowercase text-indigo-400 hover:underline"
-                  >
-                    clear
-                  </button>
-                )}
-              </h3>
-              <div className="space-y-1">
-                {Object.entries(projectCounts).map(([pName, count]) => {
-                  const isSelected = selectedProject === pName;
-                  return (
-                    <button
-                      key={pName}
-                      onClick={() => setSelectedProject(isSelected ? null : pName)}
-                      className={`flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-xs transition-all ${
-                        isSelected
-                          ? "border border-indigo-500/40 bg-indigo-500/10 font-semibold text-indigo-300"
-                          : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200"
-                      }`}
-                    >
-                      <span className="truncate font-mono">{pName}</span>
-                      <span className="font-mono text-[11px] opacity-70">({count})</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </aside>
-
-        {/* Results List Column */}
-        <div className="w-1/2 overflow-y-auto border-r border-zinc-800/80 p-4">
-          <div className="mb-3 flex items-center justify-between text-xs text-zinc-400">
-            <span>
-              Showing <strong className="text-white">{filteredResults.length}</strong> findings & events
-            </span>
-            {(selectedSeverity || selectedProject || selectedType) && (
+        {/* Left Column: Active Investigations & Live Stream */}
+        <div className="w-[380px] shrink-0 overflow-y-auto border-r border-zinc-800/80 p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+              Active Investigations ({filteredResults.length})
+            </h3>
+            {query && (
               <button
-                onClick={() => {
-                  setSelectedSeverity(null);
-                  setSelectedProject(null);
-                  setSelectedType(null);
-                }}
-                className="text-xs text-indigo-400 hover:underline"
+                onClick={() => setQuery("")}
+                className="text-[11px] text-indigo-400 hover:underline"
               >
-                Reset filters
+                Clear search
               </button>
             )}
           </div>
 
           {isLoading ? (
-            <LoadingState label="Analyzing telemetry & reconstructing incidents..." />
+            <LoadingState label="Reconstructing investigation incidents..." />
           ) : isError ? (
-            <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-zinc-800 py-16 text-center text-zinc-400">
-              <AlertTriangle className="h-8 w-8 text-amber-500" />
-              <p className="text-sm font-medium text-zinc-200">Investigation Engine Initializing</p>
-              <p className="max-w-xs text-xs text-zinc-500">
-                Awaiting telemetry events from daemon.
+            <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-zinc-800 py-12 text-center text-zinc-400">
+              <ShieldAlert className="h-6 w-6 text-amber-500" />
+              <p className="text-xs font-semibold text-zinc-200">Investigation Engine Initializing</p>
+              <p className="max-w-xs text-[11px] text-zinc-500">
+                Awaiting telemetry events from local daemon.
               </p>
             </div>
           ) : filteredResults.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-zinc-800/80 py-16 text-center">
-              <Search className="mb-3 h-10 w-10 text-zinc-600" />
-              <p className="text-sm font-semibold text-zinc-300">No Investigations Yet</p>
-              <p className="mt-1 max-w-sm text-xs text-zinc-500">
-                VibePulse is observing your development activity. Security findings, credential leaks, and risk escalations will appear here in real time.
+            /* 10. SYSTEM CLEAR / NO DATA OPERATIONAL STATE */
+            <div className="rounded-xl border border-dashed border-zinc-800 bg-zinc-900/30 p-5 text-center">
+              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+              <h4 className="text-sm font-bold uppercase tracking-wider text-emerald-400">System Clear</h4>
+              <p className="mt-1 text-xs text-zinc-400">
+                VibePulse is actively observing development activity.
               </p>
+              <div className="my-3 border-t border-zinc-800/80 pt-3 text-left">
+                <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Actively Monitoring:</p>
+                <ul className="space-y-1 text-xs text-zinc-400">
+                  <li className="flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                    File modifications & creations
+                  </li>
+                  <li className="flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
+                    Development sessions & context
+                  </li>
+                  <li className="flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-purple-400" />
+                    Configuration & auth changes
+                  </li>
+                  <li className="flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-rose-400" />
+                    Credential & secret patterns (SEC001)
+                  </li>
+                </ul>
+              </div>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {filteredResults.map((result) => {
                 const isSelected = activeResult?.id === result.id;
-                const sev = (result.risk_level || "LOW").toUpperCase() as keyof typeof SEVERITY_COLORS;
-                const hasSecurity = result.security_findings && result.security_findings.length > 0;
+                const isItemReviewed = reviewedIncidents.has(result.id);
+                const sev = (result.risk_level || "LOW").toUpperCase();
 
                 return (
                   <div
                     key={result.id}
-                    onClick={() => setActiveFinding(result)}
-                    className={`cursor-pointer rounded-lg border p-4 transition-all ${
+                    onClick={() => {
+                      setActiveFinding(result);
+                      setSelectedNode(null);
+                    }}
+                    className={`cursor-pointer rounded-lg border p-3.5 transition-all ${
                       isSelected
-                        ? "border-indigo-500/80 bg-indigo-950/20 shadow-lg shadow-indigo-500/5 ring-1 ring-indigo-500/50"
+                        ? "border-indigo-500/80 bg-indigo-950/20 shadow-md ring-1 ring-indigo-500/40"
                         : "border-zinc-800/80 bg-zinc-900/40 hover:border-zinc-700 hover:bg-zinc-900/70"
                     }`}
                   >
-                    <div className="mb-2 flex items-center justify-between gap-2">
+                    <div className="mb-2 flex items-center justify-between gap-1.5">
                       <div className="flex items-center gap-2">
                         <Badge
                           variant={
@@ -398,39 +249,39 @@ export function InvestigationPage() {
                                 : "default"
                           }
                         >
-                          {sev}
+                          {String(sev)} RISK
                         </Badge>
-                        <span className="font-mono text-xs font-semibold text-zinc-200">
-                          Risk: {result.risk_score}/100
+                        <span className="font-mono text-xs font-bold text-zinc-200">
+                          {result.risk_score} / 100
                         </span>
                       </div>
-                      <span className="font-mono text-[11px] text-zinc-400">
-                        {new Date(result.timestamp).toLocaleTimeString()}
-                      </span>
+                      {isItemReviewed ? (
+                        <span className="flex items-center gap-1 text-[10px] font-semibold text-emerald-400">
+                          <CheckCircle2 className="h-3 w-3" /> Reviewed
+                        </span>
+                      ) : (
+                        <span className="font-mono text-[10px] text-zinc-400">
+                          {new Date(result.timestamp).toLocaleTimeString()}
+                        </span>
+                      )}
                     </div>
 
-                    <h4 className="mb-1 text-sm font-semibold text-white">
+                    <h4 className="mb-1 text-xs font-semibold text-white">
                       {result.summary}
                     </h4>
 
-                    <div className="mb-3 flex items-center gap-3 text-xs text-zinc-400">
+                    <div className="mb-2 flex items-center gap-2 text-[11px] text-zinc-400">
                       <span className="truncate font-mono">{result.file_name || result.file_path || "Project Root"}</span>
                       <span>•</span>
                       <span className="truncate">{result.project_name || "Project"}</span>
                     </div>
 
-                    {/* Redacted evidence snippet for secrets */}
-                    {hasSecurity && (
-                      <div className="rounded-md border border-rose-500/20 bg-rose-950/20 p-2.5">
-                        <div className="flex items-center gap-1.5 text-xs font-semibold text-rose-400">
-                          <Lock className="h-3.5 w-3.5" />
-                          <span>Redacted Finding:</span>
-                        </div>
-                        <p className="mt-1 font-mono text-[11px] text-zinc-300">
-                          {result.security_findings[0]?.redacted_evidence || 'API_KEY = "********REDACTED********"'}
-                        </p>
-                      </div>
-                    )}
+                    <div className="flex items-center justify-between border-t border-zinc-800/60 pt-2 text-[10px] text-zinc-500">
+                      <span>{result.correlated_events_count || 4} correlated events</span>
+                      <span className="flex items-center gap-1 font-semibold text-indigo-400 hover:underline">
+                        Investigate <ChevronRight className="h-3 w-3" />
+                      </span>
+                    </div>
                   </div>
                 );
               })}
@@ -438,14 +289,14 @@ export function InvestigationPage() {
           )}
         </div>
 
-        {/* Right Column: Detailed Incident Investigation Console */}
+        {/* Right Column: THE WOW FEATURE — INTERACTIVE INCIDENT INVESTIGATION */}
         <div className="flex-1 overflow-y-auto bg-zinc-950/90 p-6">
           {activeResult ? (
-            <div className="mx-auto max-w-2xl space-y-6">
-              {/* Incident Header */}
-              <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-5">
+            <div className="mx-auto max-w-3xl space-y-6">
+              {/* SECTION 1: INCIDENT OVERVIEW CARD */}
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900/70 p-5 shadow-lg">
                 <div className="mb-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2.5">
                     <Badge
                       variant={
                         activeResult.risk_level === "HIGH" || activeResult.risk_level === "CRITICAL"
@@ -457,9 +308,14 @@ export function InvestigationPage() {
                     >
                       {activeResult.risk_level} RISK
                     </Badge>
-                    <span className="text-xs text-zinc-400">
-                      Incident ID: <span className="font-mono text-zinc-300">{activeResult.id.slice(0, 8)}</span>
+                    <span className="font-mono text-sm font-bold text-white">
+                      RISK SCORE: {activeResult.risk_score} / 100
                     </span>
+                    {isReviewed && (
+                      <span className="flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-400">
+                        <CheckCircle2 className="h-3 w-3" /> Reviewed
+                      </span>
+                    )}
                   </div>
                   <span className="flex items-center gap-1 text-xs text-zinc-400">
                     <Clock className="h-3.5 w-3.5" />
@@ -469,134 +325,252 @@ export function InvestigationPage() {
 
                 <h2 className="text-lg font-bold text-white">{activeResult.summary}</h2>
 
-                <div className="mt-3 grid grid-cols-2 gap-2 border-t border-zinc-800/80 pt-3 text-xs text-zinc-400">
+                <div className="mt-4 grid grid-cols-3 gap-3 border-t border-zinc-800/80 pt-3 text-xs">
                   <div>
-                    <span className="text-zinc-500">Target Project:</span>{" "}
-                    <strong className="text-zinc-200 font-mono">{activeResult.project_name || "Project"}</strong>
+                    <span className="text-zinc-500">Project:</span>
+                    <p className="truncate font-mono font-semibold text-zinc-200">
+                      {activeResult.project_name || "Project"}
+                    </p>
                   </div>
                   <div>
-                    <span className="text-zinc-500">File Involved:</span>{" "}
-                    <strong className="text-zinc-200 font-mono">{activeResult.file_name || activeResult.file_path || "—"}</strong>
+                    <span className="text-zinc-500">Primary File:</span>
+                    <p className="truncate font-mono font-semibold text-indigo-400">
+                      {activeResult.file_name || activeResult.file_path || "—"}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500">Session ID:</span>
+                    <p className="truncate font-mono text-zinc-400">
+                      {activeResult.session_id.slice(0, 12)}...
+                    </p>
                   </div>
                 </div>
               </div>
 
-              {/* Explainable Risk Scoring Bar */}
-              <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-5">
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">
-                    Explainable Risk Score
-                  </span>
-                  <span className="font-mono text-sm font-bold text-white">
-                    {activeResult.risk_score} / 100 ({activeResult.risk_level})
-                  </span>
+              {/* SECTION 3: THE WOW FEATURE — INTERACTIVE INCIDENT EVIDENCE GRAPH */}
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-lg">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Layers className="h-4 w-4 text-indigo-400" />
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-300">
+                      Incident Evidence Graph
+                    </h3>
+                  </div>
+                  <span className="text-[11px] text-zinc-500">Click any node to inspect raw evidence</span>
                 </div>
 
-                {/* Score Progress Bar */}
-                <div className="h-2.5 w-full overflow-hidden rounded-full bg-zinc-800">
-                  <div
-                    className={`h-full rounded-full transition-all duration-500 ${
-                      activeResult.risk_score >= 80
-                        ? "bg-rose-500"
-                        : activeResult.risk_score >= 60
-                          ? "bg-red-500"
-                          : activeResult.risk_score >= 30
-                            ? "bg-amber-500"
-                            : "bg-emerald-500"
-                    }`}
-                    style={{ width: `${Math.max(activeResult.risk_score, 8)}%` }}
-                  />
+                {/* The Directed Graph Visualization */}
+                <div className="space-y-3">
+                  {(activeResult.evidence_nodes || []).map((node, idx, arr) => {
+                    const isNodeSelected = selectedNode?.id === node.id;
+                    const isSecretNode = node.kind === "PATTERN_MATCH";
+                    const isEscalationNode = node.kind === "RISK_ESCALATION";
+
+                    return (
+                      <div key={node.id} className="flex flex-col items-center">
+                        {/* Node Card */}
+                        <div
+                          onClick={() => setSelectedNode(isNodeSelected ? null : node)}
+                          className={`w-full max-w-lg cursor-pointer rounded-lg border p-3.5 transition-all ${
+                            isSecretNode
+                              ? "border-rose-500/70 bg-rose-950/30 shadow-lg shadow-rose-500/10 ring-1 ring-rose-500/60"
+                              : isEscalationNode
+                                ? "border-red-500/60 bg-red-950/20"
+                                : isNodeSelected
+                                  ? "border-indigo-500 bg-indigo-950/30 ring-1 ring-indigo-500"
+                                  : "border-zinc-800 bg-zinc-950/70 hover:border-zinc-700 hover:bg-zinc-900"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2.5">
+                              <span
+                                className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
+                                  isSecretNode
+                                    ? "bg-rose-500 text-white animate-pulse"
+                                    : isEscalationNode
+                                      ? "bg-red-500 text-white"
+                                      : "bg-indigo-600 text-white"
+                                }`}
+                              >
+                                {node.step_number}
+                              </span>
+                              <div>
+                                <h4 className="text-xs font-bold text-white">{node.title}</h4>
+                                <p className="text-[11px] text-zinc-400">{node.subtitle}</p>
+                              </div>
+                            </div>
+                            <span className="font-mono text-[10px] text-zinc-500">
+                              {new Date(node.timestamp).toLocaleTimeString()}
+                            </span>
+                          </div>
+
+                          {/* Redacted snippet preview on secret node */}
+                          {isSecretNode && (
+                            <div className="mt-2.5 rounded border border-rose-500/30 bg-black/40 p-2 font-mono text-[11px] text-rose-300">
+                              <span className="text-zinc-500">Evidence: </span>
+                              {node.details?.redacted_evidence ? String(node.details.redacted_evidence) : 'API_KEY = "********REDACTED********"'}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Connecting Line Down to Next Node */}
+                        {idx < arr.length - 1 && (
+                          <div className="my-1 flex flex-col items-center">
+                            <div className="h-4 w-0.5 bg-gradient-to-b from-indigo-500 to-zinc-700" />
+                            <div className="h-1 w-1 rounded-full bg-indigo-400" />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
 
-                {/* Contributing Risk Factors */}
-                <div className="mt-4 space-y-2">
-                  <span className="text-[11px] font-semibold text-zinc-400">Contributing Evidence Factors:</span>
-                  <div className="space-y-1.5">
-                    {(activeResult.risk_factors || []).map((factor, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center justify-between rounded-md bg-zinc-950/60 px-3 py-1.5 text-xs"
+                {/* Selected Node Detail Drawer */}
+                {selectedNode && (
+                  <div className="mt-4 rounded-lg border border-indigo-500/40 bg-indigo-950/30 p-4 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-indigo-300">Node Detail: {selectedNode.title}</span>
+                      <button
+                        onClick={() => setSelectedNode(null)}
+                        className="text-zinc-400 hover:text-white"
                       >
-                        <span className="text-zinc-300">{factor.label}</span>
-                        <span className="font-mono font-bold text-rose-400">+{factor.score}</span>
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    <pre className="mt-2 overflow-x-auto rounded bg-black/50 p-2.5 font-mono text-[11px] text-zinc-300">
+                      {JSON.stringify(
+                        {
+                          step: selectedNode.step_number,
+                          kind: selectedNode.kind,
+                          timestamp: selectedNode.timestamp,
+                          file: selectedNode.file,
+                          severity: selectedNode.severity,
+                          details: selectedNode.details,
+                        },
+                        null,
+                        2,
+                      )}
+                    </pre>
+                  </div>
+                )}
+              </div>
+
+              {/* SECTION 4: "WHY THIS WAS FLAGGED" (EXPLAINABLE RISK BREAKDOWN) */}
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-lg">
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 text-rose-400" />
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-300">
+                      Why This Was Flagged (Risk Calculation)
+                    </h3>
+                  </div>
+                  <span className="font-mono text-sm font-bold text-rose-400">
+                    Final Score: {activeResult.risk_score} / 100
+                  </span>
+                </div>
+
+                <div className="space-y-1.5">
+                  {(activeResult.risk_factors || []).map((factor, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between rounded-md border border-zinc-800/80 bg-zinc-950/60 px-3 py-2 text-xs"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-rose-400" />
+                        <span className="text-zinc-200">{factor.label}</span>
+                      </div>
+                      <span className="font-mono font-bold text-rose-400">+{factor.score}</span>
+                    </div>
+                  ))}
+                  <div className="flex items-center justify-between border-t border-zinc-800 pt-2 text-xs font-bold">
+                    <span className="text-zinc-400 uppercase text-[11px]">Composite Risk Level</span>
+                    <span className="font-mono text-rose-400 uppercase">{activeResult.risk_level}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 5 & 6: INCIDENT TIMELINE & AFFECTED SURFACE */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* Incident Timeline */}
+                <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 shadow-lg">
+                  <h3 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-zinc-300">
+                    <Clock className="h-3.5 w-3.5 text-indigo-400" />
+                    Incident Timeline
+                  </h3>
+                  <div className="space-y-3">
+                    {(activeResult.evidence_chain || []).map((step, idx) => (
+                      <div key={idx} className="flex items-start gap-2.5 text-xs">
+                        <span className="font-mono text-[10px] text-zinc-500">
+                          {new Date(step.timestamp).toLocaleTimeString()}
+                        </span>
+                        <div className="flex-1">
+                          <p className="font-semibold text-zinc-200">{step.title}</p>
+                          <p className="text-[11px] text-zinc-400">{step.description}</p>
+                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
-              </div>
 
-              {/* Evidence Chain — Chronological Visual Audit Trail */}
-              <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-5">
-                <h3 className="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-zinc-400">
-                  <ShieldAlert className="h-4 w-4 text-indigo-400" />
-                  Development Evidence Chain
-                </h3>
-
-                <div className="relative space-y-4 before:absolute before:inset-y-0 before:left-[11px] before:w-0.5 before:bg-zinc-800">
-                  {(activeResult.evidence_chain || []).map((step, idx) => (
-                    <div key={idx} className="relative flex items-start gap-3 pl-6">
-                      <div
-                        className={`absolute left-0 top-1 h-5 w-5 -translate-x-1/2 rounded-full border-2 border-zinc-950 p-0.5 text-center ${
-                          step.kind === "PATTERN_MATCH" || step.kind === "RISK_ESCALATION"
-                            ? "bg-rose-500 text-white"
-                            : "bg-indigo-500 text-white"
-                        }`}
-                      >
-                        <div className="h-full w-full rounded-full bg-white/20" />
-                      </div>
-                      <div className="flex-1 rounded-lg border border-zinc-800/60 bg-zinc-950/40 p-3 text-xs">
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-zinc-200">{step.title}</span>
-                          <span className="font-mono text-[10px] text-zinc-500">
-                            {new Date(step.timestamp).toLocaleTimeString()}
-                          </span>
-                        </div>
-                        <p className="mt-1 text-zinc-400">{step.description}</p>
-                        {step.file && (
-                          <span className="mt-1.5 inline-block font-mono text-[10px] text-indigo-400">
-                            {step.file}
-                          </span>
-                        )}
+                {/* Affected Surface */}
+                <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 shadow-lg">
+                  <h3 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-zinc-300">
+                    <FileCode className="h-3.5 w-3.5 text-indigo-400" />
+                    Affected Surface
+                  </h3>
+                  <div className="space-y-2 text-xs">
+                    <div>
+                      <span className="text-[11px] font-semibold text-zinc-500">Affected Files:</span>
+                      <div className="mt-1 space-y-1">
+                        {(activeResult.affected_files.length > 0
+                          ? activeResult.affected_files
+                          : [activeResult.file_path || "config/settings.py"]
+                        ).map((file, i) => (
+                          <div
+                            key={i}
+                            className="flex items-center gap-1.5 rounded bg-zinc-950/80 px-2 py-1 font-mono text-[11px] text-indigo-300"
+                          >
+                            <FileText className="h-3 w-3 text-zinc-500" />
+                            {file}
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Security Finding Details & Redaction */}
-              {activeResult.security_findings && activeResult.security_findings.length > 0 && (
-                <div className="rounded-xl border border-rose-500/30 bg-rose-950/10 p-5">
-                  <div className="mb-3 flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-rose-400">
-                      <Lock className="h-4 w-4" />
-                      Detected Security Violation
-                    </span>
-                    <Badge variant="danger">{activeResult.security_findings[0]?.rule_id || "SEC001"}</Badge>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="rounded-md border border-zinc-800 bg-zinc-950 p-3 font-mono text-xs text-zinc-300">
-                      <span className="text-zinc-500"># Masked Evidence:</span>
-                      <pre className="mt-1 overflow-x-auto text-rose-300">
-                        {activeResult.security_findings[0]?.redacted_evidence || 'API_KEY = "********REDACTED********"'}
-                      </pre>
-                    </div>
-
-                    <div className="rounded-md border border-emerald-500/20 bg-emerald-950/20 p-3 text-xs">
-                      <span className="font-semibold text-emerald-400">Actionable Remediation:</span>
-                      <p className="mt-1 text-zinc-300">
-                        {activeResult.recommendation ||
-                          activeResult.security_findings[0]?.recommendation ||
-                          "Move secrets to environment variables or secret management vaults."}
-                      </p>
+                    <div className="border-t border-zinc-800/80 pt-2 text-[11px]">
+                      <span className="text-zinc-500">Session Context: </span>
+                      <span className="font-mono text-zinc-300">{activeResult.session_id}</span>
                     </div>
                   </div>
                 </div>
-              )}
+              </div>
+
+              {/* SECTION 8: RECOMMENDED ACTION & RESOLUTION */}
+              <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/10 p-5 shadow-lg">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-400">
+                    <CheckCircle2 className="h-4 w-4" />
+                    Recommended Remediation Action
+                  </span>
+                  <button
+                    onClick={() => handleMarkReviewed(activeResult.id)}
+                    className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
+                      isReviewed
+                        ? "border border-emerald-500/40 bg-emerald-500/20 text-emerald-300"
+                        : "bg-emerald-600 text-white hover:bg-emerald-500"
+                    }`}
+                  >
+                    {isReviewed ? "✓ Marked as Reviewed" : "Mark as Reviewed"}
+                  </button>
+                </div>
+                <p className="text-xs text-zinc-300 leading-relaxed">
+                  {activeResult.recommendation ||
+                    "Move credentials and connection strings to environment variables (.env) or managed secret storage (e.g. AWS Secrets Manager, HashiCorp Vault) before committing changes."}
+                </p>
+              </div>
             </div>
           ) : (
-            <div className="flex h-full items-center justify-center text-zinc-500 text-sm">
-              Select an observation from the list to view its complete investigation evidence.
+            <div className="flex h-full items-center justify-center text-sm text-zinc-500">
+              Select an investigation incident from the active list to inspect its complete evidence graph.
             </div>
           )}
         </div>

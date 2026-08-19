@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -47,6 +48,18 @@ class EvidenceStep(BaseModel):
     file: str | None = None
 
 
+class EvidenceNode(BaseModel):
+    id: str
+    step_number: int
+    title: str
+    subtitle: str
+    kind: str  # e.g. "SESSION_START" | "FILE_CHANGE" | "PATTERN_MATCH" | "RISK_ESCALATION"
+    timestamp: datetime
+    severity: str | None = None
+    file: str | None = None
+    details: dict[str, Any] = Field(default_factory=dict)
+
+
 class InvestigationResult(BaseModel):
     """
     Canonical model returned by every investigation endpoint.
@@ -69,6 +82,9 @@ class InvestigationResult(BaseModel):
     risk_level: str = "LOW"
     risk_factors: list[RiskFactor] = Field(default_factory=list)
     evidence_chain: list[EvidenceStep] = Field(default_factory=list)
+    evidence_nodes: list[EvidenceNode] = Field(default_factory=list)
+    affected_files: list[str] = Field(default_factory=list)
+    correlated_events_count: int = 1
     recommendation: str | None = None
 
     # Enriched fields based on subsequent analysis or event types
@@ -87,6 +103,10 @@ class InvestigationResult(BaseModel):
 class InvestigationResponse(BaseModel):
     results: list[InvestigationResult]
     total_count: int
+    suspicious_count: int = 0
+    high_risk_count: int = 0
+    sessions_count: int = 0
+    projects_count: int = 0
     has_more: bool
 
 
