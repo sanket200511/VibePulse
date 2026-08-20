@@ -1,7 +1,8 @@
 import asyncio
 import sys
-from sqlalchemy.ext.asyncio import create_async_engine
+
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import create_async_engine
 
 
 async def main() -> None:
