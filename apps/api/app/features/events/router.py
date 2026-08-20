@@ -103,6 +103,13 @@ async def ingest_event(
         # synchronous (same request-scoped db session) since it is a cheap
         # counter update, not heavy pipeline work.
         session_row, session_was_created = await session_service.touch_session(db, analyzable)
+
+        # Project Context Memory: update observation window and event counter
+        from app.features.project_context.service import touch_project_context_on_event
+        await touch_project_context_on_event(
+            db, analyzable.project_root, analyzable.file_path, analyzable.language
+        )
+
         await db.commit()
         now = datetime.now(tz=UTC)
         session_read = SessionRead.from_session(

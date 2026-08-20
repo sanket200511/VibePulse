@@ -5,8 +5,9 @@ Drops all public schema tables and recreates the schema, then runs Alembic migra
 
 import asyncio
 import sys
-from sqlalchemy.ext.asyncio import create_async_engine
+
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import create_async_engine
 
 
 async def reset() -> None:

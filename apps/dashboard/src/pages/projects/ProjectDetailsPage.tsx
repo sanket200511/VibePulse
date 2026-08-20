@@ -12,6 +12,7 @@ import { ArrowLeft, Clock } from "lucide-react";
 import { formatRelativeTime } from "../../lib/relative-time";
 import { useState } from "react";
 import { ProjectIntelligencePanel } from "./ProjectIntelligencePanel";
+import { ProjectContextMemory } from "./ProjectContextMemory";
 
 interface PaginatedSessions {
   sessions: Session[];
@@ -191,7 +192,12 @@ export function ProjectDetailsPage() {
         </div>
       </div>
 
-      {/* Project Intelligence */}
+      {/* Project Context Memory (Durable Progressive Understanding) */}
+      <div className="mb-10">
+        <ProjectContextMemory projectId={project.id} />
+      </div>
+
+      {/* Project Intelligence & Temporal Pulse */}
       <div className="mb-12">
         <ProjectIntelligencePanel projectId={project.id} />
       </div>
