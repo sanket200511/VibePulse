@@ -45,7 +45,7 @@ export function ProjectCard({
 
   return (
     <div
-      className={`bg-card border-border hover:border-accent-color/30 group relative flex flex-col overflow-hidden rounded-xl border p-6 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md ${
+      className={`bg-card border-border hover:border-accent-color/30 group relative flex flex-col rounded-xl border p-6 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md ${
         pulse
           ? "ring-accent-color scale-[1.02] shadow-[0_0_15px_rgba(var(--accent-color-rgb),0.2)] ring-2"
           : ""
@@ -80,7 +80,7 @@ export function ProjectCard({
           </button>
 
           {menuOpen && (
-            <div className="bg-card border-border absolute right-0 top-full z-20 mt-1 w-52 overflow-hidden rounded-xl border py-1 shadow-xl">
+            <div className="bg-card border-border absolute right-0 top-full z-30 mt-1 w-52 overflow-hidden rounded-xl border py-1 shadow-xl">
               <button
                 type="button"
                 onClick={(e) => {
@@ -115,7 +115,7 @@ export function ProjectCard({
                       setMenuOpen(false);
                       onDeleteRequest(project);
                     }}
-                    className="hover:bg-red-500/10 flex w-full items-center gap-2.5 px-3.5 py-2 text-left text-xs font-medium text-red-400 transition-colors hover:text-red-300"
+                    className="flex w-full items-center gap-2.5 px-3.5 py-2 text-left text-xs font-medium text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                     Remove from VibePulse
