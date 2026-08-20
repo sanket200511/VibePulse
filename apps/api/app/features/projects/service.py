@@ -1,10 +1,28 @@
 import os
 import pathlib
 import uuid
+from typing import Any
 
+from app.features.analysis.models import EventAnalysis
+from app.features.events.models import DevelopmentEvent
+from app.features.project_context.models import ProjectContext
 from app.features.projects.models import Project
-from sqlalchemy import func, or_, select
+from app.features.sessions.constants import SessionStatus
+from app.features.sessions.models import Session
+from sqlalchemy import delete, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+
+class ProjectActiveError(Exception):
+    """Raised when an operation cannot be performed because a project has active observations."""
+
+    def __init__(self, project_name: str, project_root: str, active_sessions: int) -> None:
+        self.project_name = project_name
+        self.project_root = project_root
+        self.active_sessions = active_sessions
+        super().__init__(
+            f"Project '{project_name}' has {active_sessions} active observation session(s)."
+        )
 
 
 def normalize_root_path(root_path: str) -> str:
@@ -75,9 +93,104 @@ async def get_or_create_project(
     return project
 
 
+async def delete_project(db: AsyncSession, project_id: uuid.UUID) -> dict[str, Any] | None:
+    """
+    Safely delete a project's observation telemetry, sessions, analyses,
+    investigations, and context memory from PostgreSQL in a single atomic transaction.
+
+    Safety:
+    - NEVER touches or deletes physical files/directories on the filesystem.
+    - Fails with ProjectActiveError (409) if the project has an ACTIVE session.
+    - Transactional: Rolls back completely on failure.
+    - Returns structured counts of removed entities.
+    """
+    project = await db.get(Project, project_id)
+    if not project:
+        return None
+
+    # Path match criteria for sessions and events
+    norm_root = normalize_root_path(project.root_path)
+    root_conditions = or_(
+        Session.project_id == project.id,
+        Session.project_root == project.root_path,
+        Session.project_root == norm_root,
+        func.lower(func.replace(Session.project_root, "\\", "/"))
+        == func.lower(func.replace(project.root_path, "\\", "/")),
+    )
+
+    # 1. Check for Active Sessions
+    active_stmt = select(func.count(Session.id)).where(
+        root_conditions,
+        Session.status == SessionStatus.ACTIVE.value,
+    )
+    active_count = (await db.execute(active_stmt)).scalar() or 0
+    if active_count > 0:
+        raise ProjectActiveError(
+            project_name=project.display_name,
+            project_root=project.root_path,
+            active_sessions=active_count,
+        )
+
+    # 2. Gather session IDs for this project
+    sessions_query = select(Session.id).where(root_conditions)
+    session_ids = (await db.execute(sessions_query)).scalars().all()
+    sessions_count = len(session_ids)
+
+    # Find all event IDs for this project
+    event_conditions = or_(
+        DevelopmentEvent.project_root == project.root_path,
+        DevelopmentEvent.project_root == norm_root,
+        func.lower(func.replace(DevelopmentEvent.project_root, "\\", "/"))
+        == func.lower(func.replace(project.root_path, "\\", "/")),
+    )
+    if session_ids:
+        event_conditions = or_(event_conditions, DevelopmentEvent.session_id.in_(session_ids))
+
+    events_stmt = select(DevelopmentEvent.id).where(event_conditions)
+    event_ids = (await db.execute(events_stmt)).scalars().all()
+    events_count = len(event_ids)
+
+    analyses_count = 0
+    if event_ids:
+        analyses_stmt = select(func.count(EventAnalysis.id)).where(
+            EventAnalysis.event_id.in_(event_ids)
+        )
+        analyses_count = (await db.execute(analyses_stmt)).scalar() or 0
+
+    ctx_stmt = select(func.count(ProjectContext.id)).where(
+        ProjectContext.project_id == project.id
+    )
+    context_count = (await db.execute(ctx_stmt)).scalar() or 0
+
+    # 3. Explicit Atomic Deletion in strict dependency order
+    if event_ids:
+        await db.execute(delete(EventAnalysis).where(EventAnalysis.event_id.in_(event_ids)))
+        await db.execute(delete(DevelopmentEvent).where(DevelopmentEvent.id.in_(event_ids)))
+
+    await db.execute(delete(ProjectContext).where(ProjectContext.project_id == project.id))
+    if session_ids:
+        await db.execute(delete(Session).where(Session.id.in_(session_ids)))
+
+    await db.execute(delete(Project).where(Project.id == project.id))
+
+    await db.commit()
+
+    return {
+        "deleted": True,
+        "project_id": project.id,
+        "project_name": project.display_name,
+        "deleted_counts": {
+            "events": events_count,
+            "sessions": sessions_count,
+            "analyses": analyses_count,
+            "investigations": analyses_count,
+            "context": context_count,
+        },
+    }
+
+
 async def get_project_intelligence(db: AsyncSession, project_id: uuid.UUID) -> dict:
-    from app.features.sessions.models import Session
-    from sqlalchemy import func, text
+    from sqlalchemy import text
 
     # Query 1: Basic metrics & observation window
     metrics_stmt = select(

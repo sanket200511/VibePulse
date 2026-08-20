@@ -6,11 +6,16 @@ from app.features.architecture_timeline.schemas import ProjectArchitectureTimeli
 from app.features.projects.models import Project
 from app.features.projects.schemas import (
     ProjectCreate,
+    ProjectDeleteResponse,
     ProjectIntelligenceRead,
     ProjectListRead,
     ProjectRead,
 )
-from app.features.projects.service import get_or_create_project
+from app.features.projects.service import (
+    ProjectActiveError,
+    delete_project,
+    get_or_create_project,
+)
 from app.features.sessions.models import Session
 from app.features.sessions.schemas import SessionListRead, SessionRead
 from app.features.sessions.service import compute_effective_status
@@ -56,6 +61,45 @@ async def get_project(project_id: uuid.UUID, db: AsyncSession = Depends(get_db))
     if not project:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
     return ProjectRead.model_validate(project)
+
+
+@router.delete(
+    "/{project_id}",
+    response_model=ProjectDeleteResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def delete_project_endpoint(
+    project_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+) -> ProjectDeleteResponse:
+    """
+    Safely delete a project's observation telemetry, sessions, analyses,
+    investigations, and context memory from PostgreSQL without touching the filesystem.
+    """
+    try:
+        result = await delete_project(db, project_id)
+    except ProjectActiveError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={
+                "error": "PROJECT_ACTIVE",
+                "message": (
+                    "This project is currently being observed. "
+                    "Stop observation before deleting it."
+                ),
+                "project_name": exc.project_name,
+                "project_root": exc.project_root,
+                "reason": "Active observation session in progress",
+            },
+        ) from exc
+
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Project not found",
+        )
+
+    return ProjectDeleteResponse(**result)
 
 
 @router.get("/{project_id}/sessions", response_model=SessionListRead)
@@ -126,4 +170,6 @@ async def get_project_architecture_endpoint(
     if timeline is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
 
-    return ProjectArchitectureTimelineRead.from_timeline(project_id, datetime.now(tz=UTC), timeline)
+    return ProjectArchitectureTimelineRead.from_timeline(
+        project_id, datetime.now(tz=UTC), timeline
+    )

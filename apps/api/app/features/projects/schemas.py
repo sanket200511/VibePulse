@@ -59,3 +59,18 @@ class ProjectIntelligenceRead(BaseModel):
     event_composition: dict[str, int]
     language_activity: dict[str, int]
     frequently_observed_files: list[FrequentlyObservedFile]
+
+
+class DeletedCounts(BaseModel):
+    events: int
+    sessions: int
+    analyses: int
+    investigations: int
+    context: int
+
+
+class ProjectDeleteResponse(BaseModel):
+    deleted: bool = True
+    project_id: uuid.UUID
+    project_name: str
+    deleted_counts: DeletedCounts

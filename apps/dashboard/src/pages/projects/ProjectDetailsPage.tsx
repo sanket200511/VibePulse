@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getApiBaseUrl } from "../../lib/api-config";
 import { useDemoMode } from "../../demo/config";
@@ -8,11 +8,12 @@ import { EmptyState, ErrorState } from "../../components/states";
 import type { Project } from "./types";
 import type { Session } from "../sessions/types";
 import { SessionCard } from "../sessions/SessionRow";
-import { ArrowLeft, Clock } from "lucide-react";
+import { ArrowLeft, Clock, Trash2 } from "lucide-react";
 import { formatRelativeTime } from "../../lib/relative-time";
 import { useState } from "react";
 import { ProjectIntelligencePanel } from "./ProjectIntelligencePanel";
 import { ProjectContextMemory } from "./ProjectContextMemory";
+import { DeleteProjectModal } from "./DeleteProjectModal";
 
 interface PaginatedSessions {
   sessions: Session[];
@@ -25,6 +26,8 @@ interface PaginatedSessions {
 export function ProjectDetailsPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const { isDemo } = useDemoMode();
+  const navigate = useNavigate();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const projectQuery = useQuery({
     queryKey: ["project", projectId],
@@ -74,10 +77,7 @@ export function ProjectDetailsPage() {
       isError = true;
       errorMessage = "Project not found";
     } else {
-      // Filter demo sessions by project root matching or project_id if demo graph handles it
-      // demoSessionsList items have project_id in our PX-8.1 migration!
       const projectSessions = demoSessionsList.filter((s) => s.project_id === projectId);
-      // Sort newest first
       projectSessions.sort(
         (a, b) => new Date(b.started_at).getTime() - new Date(a.started_at).getTime(),
       );
@@ -88,10 +88,6 @@ export function ProjectDetailsPage() {
     }
   } else {
     project = projectQuery.data;
-    // For a real pagination UI using "Load More", we'd aggregate pages, but to keep it simple and match standard tanstack infinite query,
-    // Wait, the prompt says: "Choose an interaction based on the pagination contract: Load More OR Previous / Next ... For VibePulse's reflective chronological experience, prefer a calm progressive pattern over enterprise-style dense pagination controls".
-    // "Load More" is usually best with `useInfiniteQuery`, but we can also just do Previous/Next for simplicity with standard `useQuery`.
-    // Let's stick to simple Prev/Next pages.
     sessions = sessionsQuery.data?.sessions || [];
     hasMore = sessionsQuery.data?.has_more || false;
     isLoading = projectQuery.isLoading || sessionsQuery.isLoading;
@@ -139,11 +135,11 @@ export function ProjectDetailsPage() {
         .sort((a, b) => new Date(b.started_at).getTime() - new Date(a.started_at).getTime())[0]
     : page === 0
       ? sessionsQuery.data?.sessions[0]
-      : undefined; // Only accurate if on page 0 or derived from a separate latest-session endpoint, but we just use the first item on page 0.
+      : undefined;
 
   return (
     <div className="animate-fade-in-up flex flex-1 flex-col p-8">
-      {/* Region A & B combined: Identity and Current State */}
+      {/* Identity and Current State */}
       <div className="mb-8">
         <Link
           to="/projects"
@@ -202,7 +198,7 @@ export function ProjectDetailsPage() {
         <ProjectIntelligencePanel projectId={project.id} />
       </div>
 
-      {/* Region C: Session History */}
+      {/* Session History */}
       <div className="flex-1">
         <h2 className="text-primary-text mb-6 text-xl font-bold tracking-tight">Session History</h2>
 
@@ -214,12 +210,7 @@ export function ProjectDetailsPage() {
         ) : (
           <div className="flex flex-col gap-4">
             {sessions.map((session) => (
-              <SessionCard
-                key={session.id}
-                session={session}
-                // We'll pass project context visually through the fact that we're on the project page
-                // The SessionCard already links to `/sessions/${session.id}` which is correct
-              />
+              <SessionCard key={session.id} session={session} />
             ))}
 
             {/* Pagination Controls */}
@@ -243,6 +234,39 @@ export function ProjectDetailsPage() {
           </div>
         )}
       </div>
+
+      {/* Danger Zone */}
+      <div className="border-border mt-16 rounded-xl border border-red-500/20 bg-red-500/5 p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h3 className="text-sm font-bold text-red-400">Danger Zone</h3>
+            <p className="text-secondary-text mt-1 text-xs leading-relaxed max-w-xl">
+              Remove this project from VibePulse. Permanently deletes stored telemetry,
+              sessions, investigations, and project memory. Your actual project files and directory
+              will <strong className="text-primary-text">NOT</strong> be deleted.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsDeleteModalOpen(true)}
+            className="flex items-center gap-2 self-start sm:self-auto rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs font-semibold text-red-400 transition-all hover:bg-red-500 hover:text-white"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            Remove from VibePulse
+          </button>
+        </div>
+      </div>
+
+      {isDeleteModalOpen && (
+        <DeleteProjectModal
+          project={project}
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onDeleted={() => {
+            void navigate("/projects");
+          }}
+        />
+      )}
     </div>
   );
 }
