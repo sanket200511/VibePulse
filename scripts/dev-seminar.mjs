@@ -27,7 +27,7 @@ const SERVICES = {
     url: "http://localhost:8000/health",
     port: 8000,
     command: "uv",
-    args: ["run", "uvicorn", "app.main:app", "--port", "8000"],
+    args: ["run", "uvicorn", "app.main:app", "--port", "8000", "--reload"],
     cwd: path.join(ROOT_DIR, "apps", "api"),
     color: "\x1b[34m", // Blue
   },
@@ -175,7 +175,7 @@ function spawnService(key) {
     log(
       "SUPERVISOR",
       `${RED}[CRITICAL] ${svc.name} process exited with code ${code}.${RESET}`,
-      RED
+      RED,
     );
 
     restartCounts[key]++;
@@ -183,7 +183,7 @@ function spawnService(key) {
       log(
         "SUPERVISOR",
         `${RED}Exceeded maximum restart attempts (10) for ${svc.name}. Halting automatic restart.${RESET}`,
-        RED
+        RED,
       );
       return;
     }
@@ -191,7 +191,7 @@ function spawnService(key) {
     log(
       "SUPERVISOR",
       `${YELLOW}Restarting ${svc.name} in 2 seconds (Attempt ${restartCounts[key]}/10)...${RESET}`,
-      YELLOW
+      YELLOW,
     );
     setTimeout(() => {
       if (!isShuttingDown) {
@@ -205,7 +205,9 @@ function shutdownAll(signal = "SIGINT") {
   if (isShuttingDown) return;
   isShuttingDown = true;
 
-  console.log(`\n${YELLOW}[SUPERVISOR] Received ${signal}. Shutting down all VibePulse services...${RESET}`);
+  console.log(
+    `\n${YELLOW}[SUPERVISOR] Received ${signal}. Shutting down all VibePulse services...${RESET}`,
+  );
 
   for (const [key, proc] of Object.entries(processes)) {
     if (proc && !proc.killed) {
@@ -249,7 +251,9 @@ Daemon     : http://localhost:9000
   log("SUPERVISOR", "Running pre-flight database readiness checks...", CYAN);
   const pgUp = await checkTcpPort("127.0.0.1", 5432);
   if (!pgUp) {
-    console.error(`${RED}[ERROR] Local PostgreSQL is not reachable on port 5432! Please ensure PostgreSQL service is running.${RESET}`);
+    console.error(
+      `${RED}[ERROR] Local PostgreSQL is not reachable on port 5432! Please ensure PostgreSQL service is running.${RESET}`,
+    );
     process.exit(1);
   }
   log("SUPERVISOR", `${GREEN}[✓] PostgreSQL reachable on localhost:5432${RESET}`, GREEN);
@@ -259,7 +263,11 @@ Daemon     : http://localhost:9000
   spawnService("api");
   const apiReady = await waitForService("api", 35, 1000);
   if (!apiReady) {
-    log("SUPERVISOR", `${RED}[WARNING] API took longer than 35s to respond on /health, continuing startup...${RESET}`, RED);
+    log(
+      "SUPERVISOR",
+      `${RED}[WARNING] API took longer than 35s to respond on /health, continuing startup...${RESET}`,
+      RED,
+    );
   } else {
     log("SUPERVISOR", `${GREEN}[✓] API is HEALTHY (http://localhost:8000/health)${RESET}`, GREEN);
   }
@@ -269,7 +277,11 @@ Daemon     : http://localhost:9000
   spawnService("dashboard");
   const dashReady = await waitForService("dashboard", 25, 1000);
   if (!dashReady) {
-    log("SUPERVISOR", `${RED}[WARNING] Dashboard took longer than 25s to respond on port 3000, continuing startup...${RESET}`, RED);
+    log(
+      "SUPERVISOR",
+      `${RED}[WARNING] Dashboard took longer than 25s to respond on port 3000, continuing startup...${RESET}`,
+      RED,
+    );
   } else {
     log("SUPERVISOR", `${GREEN}[✓] Dashboard is HEALTHY (http://localhost:3000)${RESET}`, GREEN);
   }
@@ -279,9 +291,17 @@ Daemon     : http://localhost:9000
   spawnService("daemon");
   const daemonReady = await waitForService("daemon", 20, 1000);
   if (!daemonReady) {
-    log("SUPERVISOR", `${RED}[WARNING] Daemon took longer than 20s to respond on port 9000, continuing startup...${RESET}`, RED);
+    log(
+      "SUPERVISOR",
+      `${RED}[WARNING] Daemon took longer than 20s to respond on port 9000, continuing startup...${RESET}`,
+      RED,
+    );
   } else {
-    log("SUPERVISOR", `${GREEN}[✓] Daemon is HEALTHY (http://localhost:9000/health)${RESET}`, GREEN);
+    log(
+      "SUPERVISOR",
+      `${GREEN}[✓] Daemon is HEALTHY (http://localhost:9000/health)${RESET}`,
+      GREEN,
+    );
   }
 
   console.log(`
