@@ -62,7 +62,7 @@ export function DeleteProjectModal({
         if (errorObj?.isConflict) {
           setConflictError(
             errorObj.detail?.message ||
-              "This project is currently being observed. Stop observation before deleting it."
+              "This project is currently being observed. Stop observation before deleting it.",
           );
         }
       },
@@ -87,9 +87,9 @@ export function DeleteProjectModal({
       />
 
       {/* Modal Card */}
-      <div className="bg-card border-border relative z-10 w-full max-w-lg overflow-hidden rounded-2xl border shadow-2xl transition-all">
+      <div className="bg-card border-border relative z-10 flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border shadow-2xl transition-all">
         {/* Header */}
-        <div className="border-border flex items-center justify-between border-b px-6 py-4">
+        <div className="border-border flex shrink-0 items-center justify-between border-b px-6 py-4">
           <div className="flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-500/10 text-red-500">
               <AlertTriangle className="h-5 w-5" />
@@ -111,14 +111,14 @@ export function DeleteProjectModal({
           </button>
         </div>
 
-        <div className="space-y-4 p-6">
+        <div className="space-y-4 overflow-y-auto p-6">
           {/* Active Conflict Banner */}
           {conflictError && (
             <div className="border-border flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-amber-300">
               <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
               <div className="text-xs">
                 <div className="font-semibold text-amber-200">Project Currently Active</div>
-                <p className="mt-1 text-amber-300/90 leading-relaxed">{conflictError}</p>
+                <p className="mt-1 leading-relaxed text-amber-300/90">{conflictError}</p>
                 <p className="mt-1 font-mono text-[11px] text-amber-400/80">
                   Root: {project.root_path}
                 </p>
@@ -142,7 +142,7 @@ export function DeleteProjectModal({
               <Database className="h-3.5 w-3.5" />
               VibePulse will permanently remove its stored PostgreSQL data:
             </div>
-            <ul className="text-secondary-text space-y-1.5 pl-4 list-disc marker:text-red-400">
+            <ul className="text-secondary-text list-disc space-y-1.5 pl-4 marker:text-red-400">
               <li>
                 <strong className="text-primary-text">{totalEvents}</strong> development events
               </li>
@@ -164,7 +164,10 @@ export function DeleteProjectModal({
               Target Project
             </div>
             <div className="text-primary-text mt-1 text-sm font-bold">{project.display_name}</div>
-            <div className="text-secondary-text mt-0.5 truncate font-mono text-[11px]" title={project.root_path}>
+            <div
+              className="text-secondary-text mt-0.5 truncate font-mono text-[11px]"
+              title={project.root_path}
+            >
               {project.root_path}
             </div>
           </div>
@@ -175,7 +178,8 @@ export function DeleteProjectModal({
               htmlFor="confirm-project-name"
               className="text-secondary-text block text-xs font-medium"
             >
-              To confirm, type <strong className="text-primary-text font-mono">{project.display_name}</strong> below:
+              To confirm, type{" "}
+              <strong className="text-primary-text font-mono">{project.display_name}</strong> below:
             </label>
             <input
               id="confirm-project-name"
@@ -184,7 +188,7 @@ export function DeleteProjectModal({
               onChange={(e) => setConfirmName(e.target.value)}
               placeholder={project.display_name}
               disabled={deleteMutation.isPending}
-              className="border-border bg-background text-primary-text placeholder:text-muted-foreground focus:border-red-500 focus:ring-red-500/20 mt-2 w-full rounded-lg border px-3.5 py-2 font-mono text-xs shadow-sm transition-all focus:outline-none focus:ring-2 disabled:opacity-50"
+              className="border-border bg-background text-primary-text placeholder:text-muted-foreground mt-2 w-full rounded-lg border px-3.5 py-2 font-mono text-xs shadow-sm transition-all focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 disabled:opacity-50"
             />
           </div>
 
@@ -196,7 +200,7 @@ export function DeleteProjectModal({
         </div>
 
         {/* Footer */}
-        <div className="border-border bg-card-subtle/30 flex items-center justify-end gap-3 border-t px-6 py-4">
+        <div className="border-border bg-card-subtle/30 flex shrink-0 items-center justify-end gap-3 border-t px-6 py-4">
           <button
             type="button"
             onClick={onClose}
