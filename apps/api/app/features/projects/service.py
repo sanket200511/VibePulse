@@ -1,8 +1,10 @@
 import os
 import pathlib
 import uuid
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
+from app.core.config import get_settings
 from app.features.analysis.models import EventAnalysis
 from app.features.events.models import DevelopmentEvent
 from app.features.project_context.models import ProjectContext
@@ -118,12 +120,15 @@ async def delete_project(db: AsyncSession, project_id: uuid.UUID) -> dict[str, A
         == func.lower(func.replace(project.root_path, "\\", "/")),
     )
 
-    # 1. Check for Active Sessions
-    active_stmt = select(func.count(Session.id)).where(
+    # 1. Check for Active Sessions (within idle observation window)
+    now = datetime.now(tz=UTC)
+    idle_cutoff = now - timedelta(seconds=get_settings().session_idle_timeout_seconds)
+    active_stmt = select(Session).where(
         root_conditions,
         Session.status == SessionStatus.ACTIVE.value,
+        Session.last_event_at > idle_cutoff,
     )
-    active_count = (await db.execute(active_stmt)).scalar() or 0
+    active_count = len(list((await db.execute(active_stmt)).scalars().all()))
     if active_count > 0:
         raise ProjectActiveError(
             project_name=project.display_name,
@@ -157,9 +162,7 @@ async def delete_project(db: AsyncSession, project_id: uuid.UUID) -> dict[str, A
         )
         analyses_count = (await db.execute(analyses_stmt)).scalar() or 0
 
-    ctx_stmt = select(func.count(ProjectContext.id)).where(
-        ProjectContext.project_id == project.id
-    )
+    ctx_stmt = select(func.count(ProjectContext.id)).where(ProjectContext.project_id == project.id)
     context_count = (await db.execute(ctx_stmt)).scalar() or 0
 
     # 3. Explicit Atomic Deletion in strict dependency order

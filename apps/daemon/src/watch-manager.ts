@@ -82,10 +82,24 @@ export function createWatchManager({ apiUrl, gate, debouncer }: WatchManagerOpti
     const thisGeneration = activeGeneration;
 
     // Stop existing watcher if running
-    if (currentWatcher) {
+    if (currentWatcher && currentCanonicalRoot && currentSessionId) {
       logger.info(`[WatchManager] Stopping active watcher for: ${currentCanonicalRoot}`);
       try {
         await currentWatcher.stop();
+        // Notify API of observation stop for previous session
+        await fetch(`${apiUrl}/events`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            schema_version: 1,
+            event_type: "OBSERVATION_STOPPED",
+            timestamp: new Date().toISOString(),
+            session_id: currentSessionId,
+            project_root: currentCanonicalRoot,
+            metadata: { reason: "project_switched" },
+            daemon_seq: 999999,
+          }),
+        }).catch(() => {});
       } catch (err) {
         logger.warn("[WatchManager] Warning stopping previous watcher:", err);
       }
@@ -146,8 +160,25 @@ export function createWatchManager({ apiUrl, gate, debouncer }: WatchManagerOpti
 
     async stop(): Promise<void> {
       activeGeneration++;
-      if (currentWatcher) {
-        await currentWatcher.stop();
+      if (currentWatcher && currentCanonicalRoot && currentSessionId) {
+        try {
+          await currentWatcher.stop();
+          await fetch(`${apiUrl}/events`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              schema_version: 1,
+              event_type: "OBSERVATION_STOPPED",
+              timestamp: new Date().toISOString(),
+              session_id: currentSessionId,
+              project_root: currentCanonicalRoot,
+              metadata: { reason: "daemon_stopped" },
+              daemon_seq: 999999,
+            }),
+          }).catch(() => {});
+        } catch (err) {
+          logger.warn("[WatchManager] Warning stopping watcher:", err);
+        }
         currentWatcher = null;
       }
       currentRoot = null;
