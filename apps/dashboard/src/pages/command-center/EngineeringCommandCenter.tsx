@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Activity, ArrowLeft, RotateCcw, Wifi, WifiOff, Flame, Layers, Search } from "lucide-react";
 import { Badge } from "@vibepulse/ui";
@@ -9,9 +10,17 @@ import { useCommandCenter } from "./useCommandCenter";
 import { IntelligenceCascadeRibbon } from "./IntelligenceCascadeRibbon";
 import { LiveEventCascadeStream } from "./LiveEventCascadeStream";
 import { ProjectHealthScorecard } from "../projects/ProjectHealthScorecard";
+import { EvidenceInspector } from "../evidence/EvidenceInspector";
+import type { EntityType } from "../evidence/types";
 
 export function EngineeringCommandCenter() {
   const { projectId } = useParams<{ projectId: string }>();
+
+  // Evidence Inspector Modal State
+  const [inspectTarget, setInspectTarget] = useState<{
+    type: EntityType;
+    id: string;
+  } | null>(null);
 
   // Fetch project details
   const { data: project } = useQuery<Project>({
@@ -104,7 +113,7 @@ export function EngineeringCommandCenter() {
       {/* ── VISUAL INTELLIGENCE CASCADE RIBBON ─────────────────────────────── */}
       <IntelligenceCascadeRibbon activeStage={activeStage} />
 
-      {/* ── SECTION 1: UNIFIED PROJECT HEALTH & PRIORITIES (SPRINT 7 REUSED) ── */}
+      {/* ── SECTION 1: UNIFIED PROJECT HEALTH & PRIORITIES ─────────────────── */}
       <ProjectHealthScorecard projectId={projectId} />
 
       {/* ── SECTION 2: LIVE EVENT STREAM & CAUSAL CASCADE ─────────────────── */}
@@ -116,6 +125,7 @@ export function EngineeringCommandCenter() {
           onSelectEvent={setSelectedEventId}
           health={health}
           security={security}
+          onInspectWhy={(type, id) => setInspectTarget({ type, id })}
         />
       </div>
 
@@ -203,6 +213,16 @@ export function EngineeringCommandCenter() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ── EVIDENCE INSPECTOR MODAL ────────────────────────────────────────── */}
+      {inspectTarget && (
+        <EvidenceInspector
+          projectId={projectId}
+          entityType={inspectTarget.type}
+          entityId={inspectTarget.id}
+          onClose={() => setInspectTarget(null)}
+        />
       )}
     </div>
   );

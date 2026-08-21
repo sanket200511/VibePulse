@@ -191,6 +191,9 @@ def create_app() -> FastAPI:
     from app.features.project_health.router import router as project_health_router
 
     app.include_router(project_health_router)
+    from app.features.evidence.router import router as evidence_router
+
+    app.include_router(evidence_router)
 
     return app
 

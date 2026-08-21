@@ -12,6 +12,7 @@ interface Props {
   onSelectEvent: (id: string) => void;
   health: UnifiedProjectHealth | undefined;
   security: SecurityIntelligence | undefined;
+  onInspectWhy?: (type: "security" | "health", id: string) => void;
 }
 
 export function LiveEventCascadeStream({
@@ -21,6 +22,7 @@ export function LiveEventCascadeStream({
   onSelectEvent,
   health,
   security,
+  onInspectWhy,
 }: Props) {
   const navigate = useNavigate();
 
@@ -156,12 +158,22 @@ export function LiveEventCascadeStream({
                       <span className="font-mono text-xs font-bold text-white">
                         {f.title} ({f.rule_id})
                       </span>
-                      <Badge
-                        variant="outline"
-                        className="border-rose-600/50 text-[9px] font-bold text-rose-400"
-                      >
-                        {f.severity}
-                      </Badge>
+                      <div className="flex items-center gap-1.5">
+                        {onInspectWhy && (
+                          <button
+                            onClick={() => onInspectWhy("security", f.finding_id)}
+                            className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300"
+                          >
+                            Why?
+                          </button>
+                        )}
+                        <Badge
+                          variant="outline"
+                          className="border-rose-600/50 text-[9px] font-bold text-rose-400"
+                        >
+                          {f.severity}
+                        </Badge>
+                      </div>
                     </div>
                     {f.redacted_evidence && (
                       <pre className="overflow-x-auto rounded bg-black/50 p-1.5 font-mono text-[10px] text-rose-300">
