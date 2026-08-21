@@ -14,6 +14,7 @@ import { AIProvenancePage } from "./pages/projects/AIProvenancePage";
 import { InvestigationPage } from "./pages/investigation/InvestigationPage";
 import { SecurityCommandCenter } from "./pages/security/SecurityCommandCenter";
 import { PredictionsPage } from "./pages/predictions/PredictionsPage";
+import { EngineeringCommandCenter } from "./pages/command-center/EngineeringCommandCenter";
 
 /**
  * Application router.
@@ -45,6 +46,10 @@ export default function App() {
           <Route path="/sessions/:sessionId/replay" element={<ReplayPage />} />
           <Route path="/projects/:projectId" element={<ProjectStoryPage />} />
           <Route path="/projects/:projectId/story" element={<ProjectStoryPage />} />
+          <Route
+            path="/projects/:projectId/command-center"
+            element={<EngineeringCommandCenter />}
+          />
           <Route path="/projects/:projectId/security" element={<SecurityCommandCenter />} />
           <Route path="/projects/:projectId/ai-provenance" element={<AIProvenancePage />} />
           <Route path="/projects/:projectId/investigation" element={<InvestigationPage />} />
