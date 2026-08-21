@@ -19,17 +19,13 @@ router = APIRouter(tags=["investigation"])
 @router.get("/investigation/search", response_model=InvestigationResponse)
 @router.get("/api/investigation/search", response_model=InvestigationResponse)
 async def global_investigation_search(
-    q: str = Query(
-        "", description="Hybrid search query with filters and full-text terms"
-    ),
+    q: str = Query("", description="Hybrid search query with filters and full-text terms"),
     limit: int = Query(100, ge=1, le=1000),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
 ) -> InvestigationResponse:
     """Search all events across all projects."""
-    return await search_investigation(
-        db=db, query_string=q, limit=limit, offset=offset
-    )
+    return await search_investigation(db=db, query_string=q, limit=limit, offset=offset)
 
 
 @router.get(
@@ -42,9 +38,7 @@ async def global_investigation_search(
 )
 async def project_investigation_search(
     project_id: uuid.UUID,
-    q: str = Query(
-        "", description="Hybrid search query with filters and full-text terms"
-    ),
+    q: str = Query("", description="Hybrid search query with filters and full-text terms"),
     limit: int = Query(100, ge=1, le=1000),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
@@ -69,9 +63,7 @@ async def project_investigation_search(
 )
 async def session_investigation_search(
     session_id: uuid.UUID,
-    q: str = Query(
-        "", description="Hybrid search query with filters and full-text terms"
-    ),
+    q: str = Query("", description="Hybrid search query with filters and full-text terms"),
     limit: int = Query(100, ge=1, le=1000),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),

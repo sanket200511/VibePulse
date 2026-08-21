@@ -42,9 +42,7 @@ def format_iso(dt: datetime | str | None) -> str:
     return dt.isoformat()
 
 
-async def generate_project_context_markdown(
-    db: AsyncSession, project_id: uuid.UUID
-) -> str:
+async def generate_project_context_markdown(db: AsyncSession, project_id: uuid.UUID) -> str:
     """
     Generates a canonical, professional, and portable PROJECT_CONTEXT.md document
     derived deterministically from stored PostgreSQL telemetry, project_contexts,
@@ -90,9 +88,7 @@ async def generate_project_context_markdown(
     fw_names = [f.name for f in context.frameworks]
 
     tech_stack_phrase = (
-        ", ".join(fw_names or lang_names)
-        if (fw_names or lang_names)
-        else "Standard Software"
+        ", ".join(fw_names or lang_names) if (fw_names or lang_names) else "Standard Software"
     )
     exec_summary_observed = (
         f"VibePulse observed this project as a {tech_stack_phrase} application "
@@ -152,20 +148,24 @@ async def generate_project_context_markdown(
     # 2. Technology Stack & Languages
     # ─────────────────────────────────────────────────────────────────────────
     if context.languages:
-        lines.extend([
-            "| Language | Observed Events | Share |",
-            "|---|---|---|",
-        ])
+        lines.extend(
+            [
+                "| Language | Observed Events | Share |",
+                "|---|---|---|",
+            ]
+        )
         for lang_name, lang_info in context.languages.items():
             lines.append(f"| {lang_name} | {lang_info.count} | {lang_info.percentage}% |")
         lines.append("")
     else:
         lines.append("No programming language files observed yet.\n")
 
-    lines.extend([
-        "## 4. Frameworks",
-        "",
-    ])
+    lines.extend(
+        [
+            "## 4. Frameworks",
+            "",
+        ]
+    )
     if context.frameworks:
         for fw in context.frameworks:
             lines.append(f"### {fw.name}")
@@ -178,10 +178,12 @@ async def generate_project_context_markdown(
     else:
         lines.append("No third-party frameworks detected yet.\n")
 
-    lines.extend([
-        "## 5. Technologies",
-        "",
-    ])
+    lines.extend(
+        [
+            "## 5. Technologies",
+            "",
+        ]
+    )
     if context.technologies:
         for tech in context.technologies:
             lines.append(f"- **{tech.name}** ({tech.category})")
@@ -192,10 +194,12 @@ async def generate_project_context_markdown(
     else:
         lines.append("No specific external technology runtimes detected yet.\n")
 
-    lines.extend([
-        "## 6. Package Managers",
-        "",
-    ])
+    lines.extend(
+        [
+            "## 6. Package Managers",
+            "",
+        ]
+    )
     if context.package_managers:
         for pm in context.package_managers:
             lines.append(f"- **{pm.name}** ({pm.category})")
@@ -208,17 +212,21 @@ async def generate_project_context_markdown(
     # ─────────────────────────────────────────────────────────────────────────
     # 3. Project Structure
     # ─────────────────────────────────────────────────────────────────────────
-    lines.extend([
-        "---",
-        "",
-        "## 7. Important Files",
-        "",
-    ])
+    lines.extend(
+        [
+            "---",
+            "",
+            "## 7. Important Files",
+            "",
+        ]
+    )
     if context.important_files:
-        lines.extend([
-            "| File Path | Role / Reason | Activity Count | Last Observed |",
-            "|---|---|---|---|",
-        ])
+        lines.extend(
+            [
+                "| File Path | Role / Reason | Activity Count | Last Observed |",
+                "|---|---|---|---|",
+            ]
+        )
         for f in context.important_files:
             last_mod_str = format_iso(f.last_modified)
             lines.append(f"| `{f.path}` | {f.reason} | {f.activity_count} | {last_mod_str} |")
@@ -226,10 +234,12 @@ async def generate_project_context_markdown(
     else:
         lines.append("No files tracked yet.\n")
 
-    lines.extend([
-        "## 8. Configuration Files",
-        "",
-    ])
+    lines.extend(
+        [
+            "## 8. Configuration Files",
+            "",
+        ]
+    )
     if context.configuration_files:
         for cfg in context.configuration_files:
             lines.append(f"- `{cfg.path}` — *{cfg.kind}*")
@@ -237,10 +247,12 @@ async def generate_project_context_markdown(
     else:
         lines.append("No configuration manifests observed.\n")
 
-    lines.extend([
-        "## 9. Source Directories",
-        "",
-    ])
+    lines.extend(
+        [
+            "## 9. Source Directories",
+            "",
+        ]
+    )
     if context.source_directories:
         for sdir in context.source_directories:
             lines.append(f"- `{sdir}`")
@@ -248,10 +260,12 @@ async def generate_project_context_markdown(
     else:
         lines.append("No standard source directories identified yet.\n")
 
-    lines.extend([
-        "## 10. Test Directories",
-        "",
-    ])
+    lines.extend(
+        [
+            "## 10. Test Directories",
+            "",
+        ]
+    )
     if context.test_directories:
         for tdir in context.test_directories:
             lines.append(f"- `{tdir}`")
@@ -279,20 +293,22 @@ async def generate_project_context_markdown(
         else "- **Tracked Modules**: None observed"
     )
 
-    lines.extend([
-        "---",
-        "",
-        "## 11. Architecture Summary",
-        "",
-        f"- **Project Topology**: `{arch.project_type}`",
-        source_roots_str,
-        test_roots_str,
-        modules_str,
-        f"- **Active Git Branch**: `{context.git_context.branch or 'N/A'}`",
-        "",
-        "## 12. Development Patterns",
-        "",
-    ])
+    lines.extend(
+        [
+            "---",
+            "",
+            "## 11. Architecture Summary",
+            "",
+            f"- **Project Topology**: `{arch.project_type}`",
+            source_roots_str,
+            test_roots_str,
+            modules_str,
+            f"- **Active Git Branch**: `{context.git_context.branch or 'N/A'}`",
+            "",
+            "## 12. Development Patterns",
+            "",
+        ]
+    )
     if context.development_patterns:
         for pat in context.development_patterns:
             lines.append(f"### {pat.name}")
@@ -315,44 +331,50 @@ async def generate_project_context_markdown(
         "strictly redacted to `[REDACTED]`)"
     )
 
-    lines.extend([
-        "---",
-        "",
-        "## 13. Security Posture",
-        "",
-        f"- **Total Findings**: `{sec.total_findings}`",
-        f"- **Critical Risk**: `{sec.critical}`",
-        f"- **High Risk**: `{sec.high}`",
-        f"- **Medium Risk**: `{sec.medium}`",
-        f"- **Low Risk**: `{sec.low}`",
-        f"- **Top Triggered Rules**: {rules_str}",
-        redact_note,
-        "",
-    ])
+    lines.extend(
+        [
+            "---",
+            "",
+            "## 13. Security Posture",
+            "",
+            f"- **Total Findings**: `{sec.total_findings}`",
+            f"- **Critical Risk**: `{sec.critical}`",
+            f"- **High Risk**: `{sec.high}`",
+            f"- **Medium Risk**: `{sec.medium}`",
+            f"- **Low Risk**: `{sec.low}`",
+            f"- **Top Triggered Rules**: {rules_str}",
+            redact_note,
+            "",
+        ]
+    )
 
     # ─────────────────────────────────────────────────────────────────────────
     # 6. Activity & Development History
     # ─────────────────────────────────────────────────────────────────────────
     act = context.activity_summary
-    lines.extend([
-        "---",
-        "",
-        "## 14. Activity Summary",
-        "",
-        f"- **Total Recorded Events**: `{act.total_events}`",
-        f"- **Total Recorded Sessions**: `{act.total_sessions}`",
-        f"- **First Activity Recorded**: `{format_iso(act.first_observed_at)}`",
-        f"- **Latest Activity Recorded**: `{format_iso(act.latest_observed_at)}`",
-        "",
-        "## 15. Development History",
-        "",
-    ])
+    lines.extend(
+        [
+            "---",
+            "",
+            "## 14. Activity Summary",
+            "",
+            f"- **Total Recorded Events**: `{act.total_events}`",
+            f"- **Total Recorded Sessions**: `{act.total_sessions}`",
+            f"- **First Activity Recorded**: `{format_iso(act.first_observed_at)}`",
+            f"- **Latest Activity Recorded**: `{format_iso(act.latest_observed_at)}`",
+            "",
+            "## 15. Development History",
+            "",
+        ]
+    )
 
     if sessions:
-        lines.extend([
-            "| Session ID | Started At | Events | Status | Dominant Languages |",
-            "|---|---|---|---|---|",
-        ])
+        lines.extend(
+            [
+                "| Session ID | Started At | Events | Status | Dominant Languages |",
+                "|---|---|---|---|---|",
+            ]
+        )
         for s in sessions:
             langs = list((s.languages or {}).keys())
             lang_str = ", ".join(langs) if langs else "N/A"
@@ -368,25 +390,25 @@ async def generate_project_context_markdown(
     # ─────────────────────────────────────────────────────────────────────────
     # 7. Investigation History
     # ─────────────────────────────────────────────────────────────────────────
-    lines.extend([
-        "## 16. Security / Investigation History",
-        "",
-    ])
+    lines.extend(
+        [
+            "## 16. Security / Investigation History",
+            "",
+        ]
+    )
 
     if analyses_rows:
-        lines.extend([
-            "| Timestamp | Analyzer / Rule | File Target | Risk Assessment |",
-            "|---|---|---|---|",
-        ])
+        lines.extend(
+            [
+                "| Timestamp | Analyzer / Rule | File Target | Risk Assessment |",
+                "|---|---|---|---|",
+            ]
+        )
         for analysis, event in analyses_rows:
-            findings_dict = (
-                analysis.findings if isinstance(analysis.findings, dict) else {}
-            )
+            findings_dict = analysis.findings if isinstance(analysis.findings, dict) else {}
             rule = findings_dict.get("rule_id", "SEC001")
             score = findings_dict.get("risk_score", 0)
-            f_path_tail = (
-                event.file_path.split("/")[-1] if event.file_path else "unknown"
-            )
+            f_path_tail = event.file_path.split("/")[-1] if event.file_path else "unknown"
             file_name = event.file_name or f_path_tail
             t_str = format_iso(analysis.created_at)
             lines.append(f"| {t_str} | `{rule}` | `{file_name}` | Risk Score: `{score}` |")
@@ -406,50 +428,52 @@ async def generate_project_context_markdown(
     file_count = len(context.important_files)
     src_dir_count = len(context.source_directories)
 
-    lines.extend([
-        "---",
-        "",
-        "# AI Handoff Context",
-        "",
-        "## What VibePulse Knows",
-        f"1. Verified repository root path is `{project.root_path}`.",
-        f"2. Verified active language ecosystem: {lang_str}.",
-        f"3. Verified project structure: {file_count} active files across {src_dir_count} roots.",
-        f"4. Verified {sec.total_findings} security events analyzed with AST guardrails.",
-        "",
-        "## What VibePulse Inferred",
-        f"1. Primary engineering emphasis: {pattern_names}.",
-        f"2. Application topology: {arch.project_type}.",
-        "",
-        "## Unknown / Not Yet Observed",
-        "- **Deployment Infrastructure**: Container orchestration is unobserved in telemetry.",
-        "- **Production Configuration**: Live secrets are intentionally excluded and unobserved.",
-        "- **Business Domain Rules**: Functional user requirements are not extractable from edits.",
-        "",
-        "## Recommended First Questions for an AI Agent",
-        f"1. What is the target runtime for `{project.display_name}` (Local, AWS, Docker)?",
-        "2. Are there specific linting or architectural rules that changes must satisfy?",
-        "3. Which modules are production-critical and require backwards compatibility?",
-        "4. Which test suite should be executed to validate new feature changes?",
-        "",
-        "---",
-        "",
-        "## Context Provenance",
-        "",
-        "This context was generated deterministically from:",
-        "- PostgreSQL `project_contexts` table",
-        f"- `{act.total_events}` recorded development events",
-        f"- `{act.total_sessions}` recorded development sessions",
-        f"- `{sec.total_findings}` stored security investigation findings",
-        "- Observed filesystem artifacts and configuration manifests",
-        "",
-        f"- **Context Version**: `v{context.context_version}`",
-        f"- **Generated At**: `{now}`",
-        f"- **Last Analyzed**: `{format_iso(context.last_analyzed_at)}`",
-        f"- **Event Count Used**: `{act.total_events}`",
-        f"- **Session Count Used**: `{act.total_sessions}`",
-        "",
-    ])
+    lines.extend(
+        [
+            "---",
+            "",
+            "# AI Handoff Context",
+            "",
+            "## What VibePulse Knows",
+            f"1. Verified repository root path is `{project.root_path}`.",
+            f"2. Verified active language ecosystem: {lang_str}.",
+            f"3. Verified project structure: {file_count} files across {src_dir_count} roots.",
+            f"4. Verified {sec.total_findings} security events analyzed with AST guardrails.",
+            "",
+            "## What VibePulse Inferred",
+            f"1. Primary engineering emphasis: {pattern_names}.",
+            f"2. Application topology: {arch.project_type}.",
+            "",
+            "## Unknown / Not Yet Observed",
+            "- **Deployment Infrastructure**: Container orchestration is unobserved.",
+            "- **Production Configuration**: Live secrets are intentionally excluded.",
+            "- **Business Domain Rules**: Functional user requirements are unobserved.",
+            "",
+            "## Recommended First Questions for an AI Agent",
+            f"1. What is the target runtime for `{project.display_name}` (Local, AWS, Docker)?",
+            "2. Are there specific linting or architectural rules that changes must satisfy?",
+            "3. Which modules are production-critical and require backwards compatibility?",
+            "4. Which test suite should be executed to validate new feature changes?",
+            "",
+            "---",
+            "",
+            "## Context Provenance",
+            "",
+            "This context was generated deterministically from:",
+            "- PostgreSQL `project_contexts` table",
+            f"- `{act.total_events}` recorded development events",
+            f"- `{act.total_sessions}` recorded development sessions",
+            f"- `{sec.total_findings}` stored security investigation findings",
+            "- Observed filesystem artifacts and configuration manifests",
+            "",
+            f"- **Context Version**: `v{context.context_version}`",
+            f"- **Generated At**: `{now}`",
+            f"- **Last Analyzed**: `{format_iso(context.last_analyzed_at)}`",
+            f"- **Event Count Used**: `{act.total_events}`",
+            f"- **Session Count Used**: `{act.total_sessions}`",
+            "",
+        ]
+    )
 
     raw_doc = "\n".join(lines)
     return redact_sensitive_text(raw_doc)

@@ -30,9 +30,7 @@ async def get_project_context_endpoint(
     """
     project = await db.get(Project, project_id)
     if not project:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Project not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
 
     try:
         return await get_or_create_project_context(db, project_id)
@@ -55,9 +53,7 @@ async def refresh_project_context_endpoint(
     """
     project = await db.get(Project, project_id)
     if not project:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Project not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
 
     try:
         return await refresh_project_context(db, project_id)
@@ -83,9 +79,7 @@ async def export_project_context_endpoint(
     """
     project = await db.get(Project, project_id)
     if not project:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Project not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
 
     if format.lower() != "markdown":
         raise HTTPException(

@@ -67,9 +67,7 @@ CONFIG_PATTERNS: dict[str, str] = {
 }
 
 
-async def aggregate_project_context(
-    db: AsyncSession, project_id: uuid.UUID
-) -> dict[str, Any]:
+async def aggregate_project_context(db: AsyncSession, project_id: uuid.UUID) -> dict[str, Any]:
     """
     Deterministically computes the complete Project Context from stored PostgreSQL
     evidence (projects, sessions, development_events, event_analyses).
@@ -89,9 +87,7 @@ async def aggregate_project_context(
 
     # 2. Fetch all sessions for this project
     sessions_stmt = (
-        select(Session)
-        .where(Session.project_id == project_id)
-        .order_by(Session.started_at.asc())
+        select(Session).where(Session.project_id == project_id).order_by(Session.started_at.asc())
     )
     sessions_res = await db.execute(sessions_stmt)
     sessions = sessions_res.scalars().all()
@@ -155,15 +151,17 @@ async def aggregate_project_context(
     ) -> None:
         if name not in detected_tech_names:
             detected_tech_names.add(name)
-            target_list.append({
-                "name": name,
-                "category": category,
-                "provenance": {
-                    "source": source,
-                    "evidence": evidence,
-                    "detection_type": "deterministic",
-                },
-            })
+            target_list.append(
+                {
+                    "name": name,
+                    "category": category,
+                    "provenance": {
+                        "source": source,
+                        "evidence": evidence,
+                        "detection_type": "deterministic",
+                    },
+                }
+            )
 
     for f_path in observed_files_set:
         f_lower = f_path.lower()
@@ -308,10 +306,12 @@ async def aggregate_project_context(
     for f_path in observed_files_set:
         base_name = f_path.split("/")[-1]
         if base_name in CONFIG_PATTERNS:
-            configuration_files.append({
-                "path": f_path,
-                "kind": CONFIG_PATTERNS[base_name],
-            })
+            configuration_files.append(
+                {
+                    "path": f_path,
+                    "kind": CONFIG_PATTERNS[base_name],
+                }
+            )
 
     # ── DETECT DIRECTORIES (SOURCE & TEST) ───────────────────────────────────
     source_dirs: set[str] = set()
@@ -349,23 +349,27 @@ async def aggregate_project_context(
             reason = CONFIG_PATTERNS[base]
 
         last_mod = file_last_modified.get(f_path)
-        important_files.append({
-            "path": f_path,
-            "reason": reason,
-            "activity_count": count,
-            "last_modified": last_mod.isoformat() if last_mod else None,
-        })
+        important_files.append(
+            {
+                "path": f_path,
+                "reason": reason,
+                "activity_count": count,
+                "last_modified": last_mod.isoformat() if last_mod else None,
+            }
+        )
 
     # ── DEVELOPMENT PATTERNS ─────────────────────────────────────────────────
     development_patterns: list[dict[str, Any]] = []
     auth_files = [f for f in observed_files_set if "auth" in f.lower() or "secret" in f.lower()]
     if auth_files:
-        development_patterns.append({
-            "name": "Authentication & Credential Security",
-            "description": "Continuous activity on authentication handlers and credentials.",
-            "evidence_count": len(auth_files),
-            "sample_files": auth_files[:3],
-        })
+        development_patterns.append(
+            {
+                "name": "Authentication & Credential Security",
+                "description": "Continuous activity on authentication handlers and credentials.",
+                "evidence_count": len(auth_files),
+                "sample_files": auth_files[:3],
+            }
+        )
 
     api_files = [
         f
@@ -373,12 +377,14 @@ async def aggregate_project_context(
         if any(term in f.lower() for term in ("api", "router", "endpoint"))
     ]
     if api_files:
-        development_patterns.append({
-            "name": "API & Endpoint Architecture",
-            "description": "Active modification of HTTP routing, schemas, and endpoints.",
-            "evidence_count": len(api_files),
-            "sample_files": api_files[:3],
-        })
+        development_patterns.append(
+            {
+                "name": "API & Endpoint Architecture",
+                "description": "Active modification of HTTP routing, schemas, and endpoints.",
+                "evidence_count": len(api_files),
+                "sample_files": api_files[:3],
+            }
+        )
 
     db_files = [
         f
@@ -386,12 +392,14 @@ async def aggregate_project_context(
         if any(term in f.lower() for term in ("alembic", "model", "database", ".sql"))
     ]
     if db_files:
-        development_patterns.append({
-            "name": "Database Schema & Persistence Engineering",
-            "description": "Development on ORM entities, migrations, and PostgreSQL persistence.",
-            "evidence_count": len(db_files),
-            "sample_files": db_files[:3],
-        })
+        development_patterns.append(
+            {
+                "name": "Database Schema & Persistence Engineering",
+                "description": "Development on ORM entities, migrations, and persistence.",
+                "evidence_count": len(db_files),
+                "sample_files": db_files[:3],
+            }
+        )
 
     ui_files = [
         f
@@ -400,21 +408,25 @@ async def aggregate_project_context(
         or any(term in f.lower() for term in ("component", "pages"))
     ]
     if ui_files:
-        development_patterns.append({
-            "name": "Frontend UI & Component Engineering",
-            "description": "User interface design, React components, and state management.",
-            "evidence_count": len(ui_files),
-            "sample_files": ui_files[:3],
-        })
+        development_patterns.append(
+            {
+                "name": "Frontend UI & Component Engineering",
+                "description": "User interface design, React components, and state management.",
+                "evidence_count": len(ui_files),
+                "sample_files": ui_files[:3],
+            }
+        )
 
     test_files = [f for f in observed_files_set if "test" in f.lower()]
     if test_files:
-        development_patterns.append({
-            "name": "Automated Quality Assurance & Verification",
-            "description": "Regression test suite maintenance and automated verification.",
-            "evidence_count": len(test_files),
-            "sample_files": test_files[:3],
-        })
+        development_patterns.append(
+            {
+                "name": "Automated Quality Assurance & Verification",
+                "description": "Regression test suite maintenance and automated verification.",
+                "evidence_count": len(test_files),
+                "sample_files": test_files[:3],
+            }
+        )
 
     # ── SECURITY SUMMARY ─────────────────────────────────────────────────────
     crit_count = 0
@@ -562,9 +574,7 @@ async def get_or_create_project_context(
     return _to_read_schema(context_row, project)
 
 
-async def refresh_project_context(
-    db: AsyncSession, project_id: uuid.UUID
-) -> ProjectContextRead:
+async def refresh_project_context(db: AsyncSession, project_id: uuid.UUID) -> ProjectContextRead:
     """
     Recomputes derived Project Context from stored evidence and updates the durable record.
     """
@@ -656,27 +666,29 @@ async def touch_project_context_on_event(
 
 
 def _to_read_schema(row: ProjectContext, project: Project) -> ProjectContextRead:
-    return ProjectContextRead.model_validate({
-        "id": row.id,
-        "project_id": row.project_id,
-        "project_display_name": project.display_name,
-        "project_root_path": project.root_path,
-        "languages": row.languages or {},
-        "frameworks": row.frameworks or [],
-        "technologies": row.technologies or [],
-        "package_managers": row.package_managers or [],
-        "important_files": row.important_files or [],
-        "configuration_files": row.configuration_files or [],
-        "test_directories": row.test_directories or [],
-        "source_directories": row.source_directories or [],
-        "git_context": row.git_context or {},
-        "development_patterns": row.development_patterns or [],
-        "security_summary": row.security_summary or {},
-        "activity_summary": row.activity_summary or {},
-        "architecture_summary": row.architecture_summary or {},
-        "context_version": row.context_version,
-        "first_observed_at": row.first_observed_at,
-        "last_analyzed_at": row.last_analyzed_at,
-        "created_at": row.created_at,
-        "updated_at": row.updated_at,
-    })
+    return ProjectContextRead.model_validate(
+        {
+            "id": row.id,
+            "project_id": row.project_id,
+            "project_display_name": project.display_name,
+            "project_root_path": project.root_path,
+            "languages": row.languages or {},
+            "frameworks": row.frameworks or [],
+            "technologies": row.technologies or [],
+            "package_managers": row.package_managers or [],
+            "important_files": row.important_files or [],
+            "configuration_files": row.configuration_files or [],
+            "test_directories": row.test_directories or [],
+            "source_directories": row.source_directories or [],
+            "git_context": row.git_context or {},
+            "development_patterns": row.development_patterns or [],
+            "security_summary": row.security_summary or {},
+            "activity_summary": row.activity_summary or {},
+            "architecture_summary": row.architecture_summary or {},
+            "context_version": row.context_version,
+            "first_observed_at": row.first_observed_at,
+            "last_analyzed_at": row.last_analyzed_at,
+            "created_at": row.created_at,
+            "updated_at": row.updated_at,
+        }
+    )

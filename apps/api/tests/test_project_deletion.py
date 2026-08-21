@@ -6,9 +6,6 @@ from unittest.mock import patch
 
 import httpx
 import pytest
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.features.analysis.models import EventAnalysis
 from app.features.events.models import DevelopmentEvent
 from app.features.investigation.domain import parse_investigation_query
@@ -18,6 +15,8 @@ from app.features.project_context.service import get_or_create_project_context
 from app.features.projects.models import Project
 from app.features.sessions.constants import SessionStatus
 from app.features.sessions.models import Session
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 @pytest.mark.asyncio
@@ -469,8 +468,6 @@ async def test_delete_rollback_on_failure(
     p_check = await db_session.get(Project, p_id)
     assert p_check is not None
     ctx_check = (
-        await db_session.execute(
-            select(ProjectContext).where(ProjectContext.project_id == p_id)
-        )
+        await db_session.execute(select(ProjectContext).where(ProjectContext.project_id == p_id))
     ).scalar_one_or_none()
     assert ctx_check is not None

@@ -29,9 +29,7 @@ class ProjectContext(Base):
 
     languages: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict, nullable=False)
     frameworks: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, default=list, nullable=False)
-    technologies: Mapped[list[dict[str, Any]]] = mapped_column(
-        JSONB, default=list, nullable=False
-    )
+    technologies: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, default=list, nullable=False)
     package_managers: Mapped[list[dict[str, Any]]] = mapped_column(
         JSONB, default=list, nullable=False
     )

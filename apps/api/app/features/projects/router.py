@@ -84,8 +84,7 @@ async def delete_project_endpoint(
             detail={
                 "error": "PROJECT_ACTIVE",
                 "message": (
-                    "This project is currently being observed. "
-                    "Stop observation before deleting it."
+                    "This project is currently being observed. Stop observation before deleting it."
                 ),
                 "project_name": exc.project_name,
                 "project_root": exc.project_root,
@@ -170,6 +169,4 @@ async def get_project_architecture_endpoint(
     if timeline is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
 
-    return ProjectArchitectureTimelineRead.from_timeline(
-        project_id, datetime.now(tz=UTC), timeline
-    )
+    return ProjectArchitectureTimelineRead.from_timeline(project_id, datetime.now(tz=UTC), timeline)
