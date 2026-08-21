@@ -106,6 +106,7 @@ async def ingest_event(
 
         # Project Context Memory: update observation window and event counter
         from app.features.project_context.service import touch_project_context_on_event
+
         await touch_project_context_on_event(
             db, analyzable.project_root, analyzable.file_path, analyzable.language
         )

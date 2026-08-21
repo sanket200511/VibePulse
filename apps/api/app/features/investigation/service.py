@@ -108,9 +108,7 @@ def _compute_risk_and_evidence(
                 EvidenceStep(
                     timestamp=timestamp,
                     title="Suspicious credential pattern detected",
-                    description=(
-                        f"{finding.message} in {file_name}:{finding.line_number or 1}"
-                    ),
+                    description=(f"{finding.message} in {file_name}:{finding.line_number or 1}"),
                     kind="PATTERN_MATCH",
                     severity="HIGH",
                     file=file_path,
@@ -191,8 +189,7 @@ def _compute_risk_and_evidence(
 
     # 3. Authentication logic modification
     if any(
-        auth_kw in file_lower
-        for auth_kw in ("auth", "login", "token", "jwt", "session", "oauth")
+        auth_kw in file_lower for auth_kw in ("auth", "login", "token", "jwt", "session", "oauth")
     ):
         score += 15
         factors.append(
@@ -205,9 +202,7 @@ def _compute_risk_and_evidence(
 
     # 4. Architectural removals / refactors
     removed_changes = [
-        c
-        for c in architecture_changes
-        if "REMOVED" in c.kind or "DELETED" in c.kind
+        c for c in architecture_changes if "REMOVED" in c.kind or "DELETED" in c.kind
     ]
     if removed_changes:
         score += 10
@@ -372,8 +367,7 @@ async def search_investigation(
                     message=msg,
                     file=finding.get("file") or event.file_path,
                     line_number=finding.get("line_number"),
-                    redacted_evidence=finding.get("redacted_evidence")
-                    or finding.get("evidence"),
+                    redacted_evidence=finding.get("redacted_evidence") or finding.get("evidence"),
                     category=finding.get("category") or "Credentials",
                     recommendation="Move secret to environment/secret storage.",
                 )
@@ -418,11 +412,7 @@ async def search_investigation(
         if risk_score >= 30 or security_findings:
             suspicious_count += 1
 
-        project_name = (
-            os.path.basename(event.project_root)
-            if event.project_root
-            else "Project"
-        )
+        project_name = os.path.basename(event.project_root) if event.project_root else "Project"
         summary = f"{event.event_type.replace('_', ' ').title()}"
         if event.file_name:
             summary += f" on {event.file_name}"

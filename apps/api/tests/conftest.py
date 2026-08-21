@@ -57,6 +57,7 @@ if not hasattr(BackgroundTasks, "_patched_for_tests"):
 # -----------------------------------------------
 
 import os
+
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -70,9 +71,7 @@ IS_DEDICATED_TEST_DB = "test" in TEST_DB_URL.split("/")[-1].lower()
 test_engine = create_async_engine(
     TEST_DB_URL,
     connect_args=(
-        {}
-        if IS_DEDICATED_TEST_DB
-        else {"server_settings": {"search_path": "test_schema"}}
+        {} if IS_DEDICATED_TEST_DB else {"server_settings": {"search_path": "test_schema"}}
     ),
     pool_pre_ping=True,
 )
@@ -101,8 +100,9 @@ async def _clean_rows(_schema: None) -> AsyncGenerator[None, None]:
         curr_schema = await conn.scalar(text("SELECT current_schema();"))
         if curr_schema not in ("test_schema", "vibepulse_test") and not IS_DEDICATED_TEST_DB:
             raise RuntimeError(
-                f"REFUSING destructive test cleanup against non-test schema/database '{curr_schema}'! "
-                "Tests must execute inside isolated 'test_schema' or 'vibepulse_test' to protect development history."
+                f"REFUSING destructive test cleanup against non-test schema '{curr_schema}'! "
+                "Tests must execute inside isolated 'test_schema' or 'vibepulse_test' "
+                "to protect development history."
             )
 
         await conn.execute(DevelopmentEvent.__table__.delete())
@@ -128,8 +128,9 @@ async def _clean_rows(_schema: None) -> AsyncGenerator[None, None]:
         curr_schema = await conn.scalar(text("SELECT current_schema();"))
         if curr_schema not in ("test_schema", "vibepulse_test") and not IS_DEDICATED_TEST_DB:
             raise RuntimeError(
-                f"REFUSING destructive test cleanup against non-test schema/database '{curr_schema}'! "
-                "Tests must execute inside isolated 'test_schema' or 'vibepulse_test' to protect development history."
+                f"REFUSING destructive test cleanup against non-test schema '{curr_schema}'! "
+                "Tests must execute inside isolated 'test_schema' or 'vibepulse_test' "
+                "to protect development history."
             )
 
         # event_analyses has ON DELETE CASCADE from event_id, so deleting

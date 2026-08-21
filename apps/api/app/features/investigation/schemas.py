@@ -88,12 +88,8 @@ class InvestigationResult(BaseModel):
     recommendation: str | None = None
 
     # Enriched fields based on subsequent analysis or event types
-    architecture_changes: list[InvestigationArchitectureChange] = Field(
-        default_factory=list
-    )
-    security_findings: list[InvestigationSecurityFinding] = Field(
-        default_factory=list
-    )
+    architecture_changes: list[InvestigationArchitectureChange] = Field(default_factory=list)
+    security_findings: list[InvestigationSecurityFinding] = Field(default_factory=list)
     ai_event: InvestigationAIEvent | None = None
 
     replay_link: str | None = None

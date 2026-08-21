@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 from httpx import AsyncClient
@@ -37,51 +37,60 @@ async def test_project_context_derived_from_real_events(client: AsyncClient):
     sess_id = str(uuid.uuid4())
 
     # Ingest Python event (main.py)
-    e1 = await client.post("/events", json={
-        "schema_version": 1,
-        "event_type": "FILE_CREATED",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "session_id": sess_id,
-        "project_root": root_path,
-        "file_path": rf"{root_path}\app\main.py",
-        "file_name": "main.py",
-        "file_extension": ".py",
-        "language": "Python",
-        "git_branch": "master",
-        "metadata": {},
-    })
+    e1 = await client.post(
+        "/events",
+        json={
+            "schema_version": 1,
+            "event_type": "FILE_CREATED",
+            "timestamp": datetime.now(UTC).isoformat(),
+            "session_id": sess_id,
+            "project_root": root_path,
+            "file_path": rf"{root_path}\app\main.py",
+            "file_name": "main.py",
+            "file_extension": ".py",
+            "language": "Python",
+            "git_branch": "master",
+            "metadata": {},
+        },
+    )
     assert e1.status_code == 201
 
     # Ingest React TSX event (App.tsx)
-    e2 = await client.post("/events", json={
-        "schema_version": 1,
-        "event_type": "FILE_MODIFIED",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "session_id": sess_id,
-        "project_root": root_path,
-        "file_path": rf"{root_path}\src\App.tsx",
-        "file_name": "App.tsx",
-        "file_extension": ".tsx",
-        "language": "TypeScript",
-        "git_branch": "master",
-        "metadata": {},
-    })
+    e2 = await client.post(
+        "/events",
+        json={
+            "schema_version": 1,
+            "event_type": "FILE_MODIFIED",
+            "timestamp": datetime.now(UTC).isoformat(),
+            "session_id": sess_id,
+            "project_root": root_path,
+            "file_path": rf"{root_path}\src\App.tsx",
+            "file_name": "App.tsx",
+            "file_extension": ".tsx",
+            "language": "TypeScript",
+            "git_branch": "master",
+            "metadata": {},
+        },
+    )
     assert e2.status_code == 201
 
     # Ingest Config event (pyproject.toml)
-    e3 = await client.post("/events", json={
-        "schema_version": 1,
-        "event_type": "FILE_MODIFIED",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "session_id": sess_id,
-        "project_root": root_path,
-        "file_path": rf"{root_path}\pyproject.toml",
-        "file_name": "pyproject.toml",
-        "file_extension": ".toml",
-        "language": "TOML",
-        "git_branch": "master",
-        "metadata": {},
-    })
+    e3 = await client.post(
+        "/events",
+        json={
+            "schema_version": 1,
+            "event_type": "FILE_MODIFIED",
+            "timestamp": datetime.now(UTC).isoformat(),
+            "session_id": sess_id,
+            "project_root": root_path,
+            "file_path": rf"{root_path}\pyproject.toml",
+            "file_name": "pyproject.toml",
+            "file_extension": ".toml",
+            "language": "TOML",
+            "git_branch": "master",
+            "metadata": {},
+        },
+    )
     assert e3.status_code == 201
 
     # Refresh and query Project Context
@@ -121,41 +130,45 @@ async def test_project_context_multi_project_isolation(client: AsyncClient):
     id_a = p_a["id"]
     sess_a = str(uuid.uuid4())
 
-    await client.post("/events", json={
-        "schema_version": 1,
-        "event_type": "FILE_CREATED",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "session_id": sess_a,
-        "project_root": root_a,
-        "file_path": rf"{root_a}\server.py",
-        "file_name": "server.py",
-        "file_extension": ".py",
-        "language": "Python",
-        "metadata": {},
-    })
+    await client.post(
+        "/events",
+        json={
+            "schema_version": 1,
+            "event_type": "FILE_CREATED",
+            "timestamp": datetime.now(UTC).isoformat(),
+            "session_id": sess_a,
+            "project_root": root_a,
+            "file_path": rf"{root_a}\server.py",
+            "file_name": "server.py",
+            "file_extension": ".py",
+            "language": "Python",
+            "metadata": {},
+        },
+    )
 
     # Project 2: Beta (Rust Engine)
     root_b = rf"D:\Test-Projects\Beta-{uuid.uuid4().hex[:8]}"
     p_b = (
-        await client.post(
-            "/api/projects", json={"root_path": root_b, "display_name": "Beta-Core"}
-        )
+        await client.post("/api/projects", json={"root_path": root_b, "display_name": "Beta-Core"})
     ).json()
     id_b = p_b["id"]
     sess_b = str(uuid.uuid4())
 
-    await client.post("/events", json={
-        "schema_version": 1,
-        "event_type": "FILE_CREATED",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "session_id": sess_b,
-        "project_root": root_b,
-        "file_path": rf"{root_b}\engine.rs",
-        "file_name": "engine.rs",
-        "file_extension": ".rs",
-        "language": "Rust",
-        "metadata": {},
-    })
+    await client.post(
+        "/events",
+        json={
+            "schema_version": 1,
+            "event_type": "FILE_CREATED",
+            "timestamp": datetime.now(UTC).isoformat(),
+            "session_id": sess_b,
+            "project_root": root_b,
+            "file_path": rf"{root_b}\engine.rs",
+            "file_name": "engine.rs",
+            "file_extension": ".rs",
+            "language": "Rust",
+            "metadata": {},
+        },
+    )
 
     # Query Context for Alpha
     ctx_a = (await client.post(f"/api/projects/{id_a}/context/refresh")).json()
@@ -180,18 +193,21 @@ async def test_project_context_no_secret_leakage(client: AsyncClient):
     sess_id = str(uuid.uuid4())
 
     # Ingest event with credential in sensitive file
-    await client.post("/events", json={
-        "schema_version": 1,
-        "event_type": "FILE_MODIFIED",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "session_id": sess_id,
-        "project_root": root_path,
-        "file_path": rf"{root_path}\config\auth.py",
-        "file_name": "auth.py",
-        "file_extension": ".py",
-        "language": "Python",
-        "metadata": {"diff_preview": 'API_KEY = "[REDACTED]"'},
-    })
+    await client.post(
+        "/events",
+        json={
+            "schema_version": 1,
+            "event_type": "FILE_MODIFIED",
+            "timestamp": datetime.now(UTC).isoformat(),
+            "session_id": sess_id,
+            "project_root": root_path,
+            "file_path": rf"{root_path}\config\auth.py",
+            "file_name": "auth.py",
+            "file_extension": ".py",
+            "language": "Python",
+            "metadata": {"diff_preview": 'API_KEY = "[REDACTED]"'},
+        },
+    )
 
     ctx = (await client.post(f"/api/projects/{p_id}/context/refresh")).json()
 
@@ -212,19 +228,22 @@ async def test_export_project_context_markdown(client: AsyncClient):
     sess_id = str(uuid.uuid4())
 
     # Ingest event with secret that should be redacted
-    await client.post("/events", json={
-        "schema_version": 1,
-        "event_type": "FILE_CREATED",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "session_id": sess_id,
-        "project_root": root_path,
-        "file_path": rf"{root_path}\apps\api\app\main.py",
-        "file_name": "main.py",
-        "file_extension": ".py",
-        "language": "Python",
-        "git_branch": "feature/export",
-        "metadata": {"diff_preview": 'api_key = "ghp_123456789012345678901234567890123456"'},
-    })
+    await client.post(
+        "/events",
+        json={
+            "schema_version": 1,
+            "event_type": "FILE_CREATED",
+            "timestamp": datetime.now(UTC).isoformat(),
+            "session_id": sess_id,
+            "project_root": root_path,
+            "file_path": rf"{root_path}\apps\api\app\main.py",
+            "file_name": "main.py",
+            "file_extension": ".py",
+            "language": "Python",
+            "git_branch": "feature/export",
+            "metadata": {"diff_preview": 'api_key = "ghp_123456789012345678901234567890123456"'},
+        },
+    )
 
     # Call export endpoint
     exp_res = await client.get(f"/api/projects/{p_id}/context/export?format=markdown")
