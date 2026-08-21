@@ -34,8 +34,7 @@ async def main() -> None:
         async with engine.connect() as conn:
             res = await conn.execute(
                 text(
-                    "SELECT table_name FROM information_schema.tables "
-                    "WHERE table_schema = 'public'"
+                    "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
                 )
             )
             existing_tables = {r[0] for r in res.fetchall()}

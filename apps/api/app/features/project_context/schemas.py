@@ -10,7 +10,8 @@ class EvidenceProvenance(BaseModel):
 
     source: str
     evidence: str
-    detection_type: str = "deterministic"
+    classification: str = "OBSERVED"  # "OBSERVED" | "INFERRED" | "UNKNOWN"
+    confidence_reason: str | None = None
 
 
 class LanguageDistribution(BaseModel):
@@ -18,6 +19,7 @@ class LanguageDistribution(BaseModel):
 
     count: int
     percentage: float
+    recent_activity_count: int = 0
 
 
 class TechnologyDetail(BaseModel):
@@ -90,6 +92,53 @@ class ArchitectureSummaryDetail(BaseModel):
     modules: list[str] = Field(default_factory=list)
 
 
+class ActivityHeatmapCell(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    day_of_week: int  # 0=Monday..6=Sunday
+    hour_of_day: int  # 0..23
+    event_count: int
+
+
+class FileActivityRanking(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    file_path: str
+    event_count: int
+    event_types_breakdown: dict[str, int] = Field(default_factory=dict)
+    last_observed_at: datetime | None = None
+
+
+class DevelopmentFocusDetail(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    focus: str
+    classification: str = "INFERRED"
+    confidence_reason: str = ""
+    evidence_summary: list[str] = Field(default_factory=list)
+    active_window: str = "Last 7 days"
+
+
+class ArchitectureSignalDetail(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    signal: str
+    classification: str = "OBSERVED"  # "OBSERVED" | "INFERRED"
+    evidence_files: list[str] = Field(default_factory=list)
+    description: str = ""
+
+
+class GitIntelligenceDetail(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    is_git_repository: bool = False
+    branch: str | None = None
+    latest_commit_hash: str | None = None
+    latest_commit_timestamp: str | None = None
+    uncommitted_changes_count: int = 0
+    provenance: str = "OBSERVED FROM GIT"
+
+
 class ProjectContextRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -113,6 +162,20 @@ class ProjectContextRead(BaseModel):
     architecture_summary: ArchitectureSummaryDetail = Field(
         default_factory=ArchitectureSummaryDetail
     )
+
+    development_focus: DevelopmentFocusDetail = Field(
+        default_factory=lambda: DevelopmentFocusDetail(
+            focus="General",
+            classification="UNKNOWN",
+            confidence_reason="Awaiting initial observation telemetry.",
+            evidence_summary=[],
+            active_window="Initial",
+        )
+    )
+    activity_heatmap: list[ActivityHeatmapCell] = Field(default_factory=list)
+    file_rankings: list[FileActivityRanking] = Field(default_factory=list)
+    architecture_signals: list[ArchitectureSignalDetail] = Field(default_factory=list)
+    git_intelligence: GitIntelligenceDetail = Field(default_factory=GitIntelligenceDetail)
 
     context_version: int = 1
     first_observed_at: datetime | None = None
