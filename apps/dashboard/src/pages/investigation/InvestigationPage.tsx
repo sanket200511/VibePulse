@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useParams } from "react-router-dom";
 import {
   Search,
@@ -16,11 +16,21 @@ import {
   Cpu,
   Layers,
   Activity,
+  History,
+  CheckSquare,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  Sparkles,
+  HeartPulse,
 } from "lucide-react";
 import { Badge } from "@vibepulse/ui";
 import {
   useInvestigation,
   useIncidentDetail,
+  useIncidentHistory,
+  useIncidentMetrics,
+  useProjectHealthSummary,
   useUpdateIncidentReview,
   type EvidenceNode,
 } from "./useInvestigation";
@@ -34,6 +44,15 @@ const SEVERITY_RANK: Record<string, number> = {
   LOW: 3,
 };
 
+const RESOLUTION_TEMPLATES = [
+  "Secret revoked, rotated in upstream provider, and externalized to environment variable (.env).",
+  "Disabled insecure debug mode in settings configuration.",
+  "Restricted permissive CORS wildcard origins to trusted frontend domains.",
+  "Refactored dynamic code execution to use safe static parsers.",
+  "Sanitized shell command execution using parameterized subprocess.",
+  "False positive confirmed through manual security review.",
+];
+
 export function InvestigationPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const [query, setQuery] = useState("");
@@ -42,9 +61,20 @@ export function InvestigationPage() {
   const [selectedNode, setSelectedNode] = useState<EvidenceNode | null>(null);
   const [resolutionModalOpen, setResolutionModalOpen] = useState(false);
   const [resolutionNote, setResolutionNote] = useState("");
+  const [targetStatus, setTargetStatus] = useState<string>("RESOLVED");
+
+  // Evidence Graph Interactive Navigation State
+  const [graphZoom, setGraphZoom] = useState<number>(1);
+  const [graphPan, setGraphPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const panStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
   const { data, isLoading, isError } = useInvestigation(projectId, query);
   const rawResults = useMemo(() => data?.results || [], [data?.results]);
+
+  // Metrics & Health Summary
+  const { data: metrics } = useIncidentMetrics(projectId);
+  const { data: healthSummary } = useProjectHealthSummary(projectId);
 
   // Filter and sort results
   const filteredResults = useMemo(() => {
@@ -82,21 +112,23 @@ export function InvestigationPage() {
     return null;
   }, [selectedIncidentId, filteredResults]);
 
-  // Fetch detailed incident investigation for active incident
+  // Fetch detailed incident investigation & review history for active incident
   const { data: incidentDetail, isLoading: isDetailLoading } = useIncidentDetail(
     projectId,
     activeIncidentId,
   );
+  const { data: historyData } = useIncidentHistory(projectId, activeIncidentId);
 
   const updateReviewMutation = useUpdateIncidentReview(projectId, activeIncidentId);
 
-  const handleStatusChange = (newStatus: string, note?: string) => {
-    if (newStatus === "RESOLVED" && !note && !resolutionModalOpen) {
-      setResolutionModalOpen(true);
-      return;
-    }
+  const openStatusModal = (status: string) => {
+    setTargetStatus(status);
+    setResolutionModalOpen(true);
+  };
+
+  const handleConfirmStatusChange = (note?: string) => {
     updateReviewMutation.mutate({
-      status: newStatus,
+      status: targetStatus,
       reviewed_by: "Security Engineer",
       resolution_note: note || resolutionNote || undefined,
     });
@@ -114,6 +146,29 @@ export function InvestigationPage() {
     }
     window.open(url, "_blank");
   };
+
+  // Graph navigation controls
+  const handleZoomIn = () => setGraphZoom((prev) => Math.min(prev + 0.15, 2.0));
+  const handleZoomOut = () => setGraphZoom((prev) => Math.max(prev - 0.15, 0.5));
+  const handleResetView = () => {
+    setGraphZoom(1);
+    setGraphPan({ x: 0, y: 0 });
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsPanning(true);
+    panStartRef.current = { x: e.clientX - graphPan.x, y: e.clientY - graphPan.y };
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isPanning) return;
+    setGraphPan({
+      x: e.clientX - panStartRef.current.x,
+      y: e.clientY - panStartRef.current.y,
+    });
+  };
+
+  const handleMouseUp = () => setIsPanning(false);
 
   if (isLoading) {
     return <LoadingState label="Reconstructing investigation intelligence..." />;
@@ -145,12 +200,12 @@ export function InvestigationPage() {
               variant="outline"
               className="border-indigo-500/40 font-mono text-xs text-indigo-300"
             >
-              UNIFIED INCIDENT INTELLIGENCE
+              INCIDENT COLLABORATION & RESOLUTION
             </Badge>
           </div>
           <p className="mt-1 text-sm text-gray-400">
-            Deterministic incident reconstruction orchestrating Telemetry, Engineering DNA, and
-            Security Posture.
+            Unified incident reconstruction, live multi-tab collaboration, audit trail, and
+            evidence-backed resolution intelligence.
           </p>
         </div>
 
@@ -159,7 +214,7 @@ export function InvestigationPage() {
           <button
             onClick={() => handleExport("markdown")}
             disabled={!activeIncidentId}
-            className="flex items-center gap-1.5 rounded-md border border-gray-700 bg-gray-800 px-3 py-1.5 text-xs font-semibold text-gray-200 transition hover:bg-gray-700"
+            className="flex items-center gap-1.5 rounded-md border border-gray-700 bg-gray-800 px-3 py-1.5 text-xs font-semibold text-gray-200 transition hover:bg-gray-700 disabled:opacity-50"
           >
             <Download className="h-3.5 w-3.5" />
             Export Report
@@ -167,13 +222,87 @@ export function InvestigationPage() {
           <button
             onClick={() => handleExport("ai")}
             disabled={!activeIncidentId}
-            className="flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-500"
+            className="flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-500 disabled:opacity-50"
           >
             <Share2 className="h-3.5 w-3.5" />
             Export for AI Handoff
           </button>
         </div>
       </div>
+
+      {/* ── METRICS & PROJECT HEALTH SUMMARY BAR ───────────────────────────── */}
+      {metrics && (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="rounded-lg border border-gray-800 bg-gray-900/60 p-3">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+              OPEN INCIDENTS
+            </div>
+            <div className="mt-1 font-mono text-xl font-bold text-amber-400">
+              {metrics.open_incidents}
+            </div>
+          </div>
+          <div className="rounded-lg border border-gray-800 bg-gray-900/60 p-3">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+              INVESTIGATING
+            </div>
+            <div className="mt-1 font-mono text-xl font-bold text-blue-400">
+              {metrics.investigating_incidents}
+            </div>
+          </div>
+          <div className="rounded-lg border border-gray-800 bg-gray-900/60 p-3">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+              RESOLVED
+            </div>
+            <div className="mt-1 font-mono text-xl font-bold text-emerald-400">
+              {metrics.resolved_incidents}
+            </div>
+          </div>
+          <div className="rounded-lg border border-gray-800 bg-gray-900/60 p-3">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+              RESOLUTION RATE
+            </div>
+            <div className="mt-1 font-mono text-xl font-bold text-indigo-400">
+              {metrics.resolution_rate_percent !== null &&
+              metrics.resolution_rate_percent !== undefined
+                ? `${metrics.resolution_rate_percent}%`
+                : "—"}
+            </div>
+          </div>
+          <div className="rounded-lg border border-gray-800 bg-gray-900/60 p-3">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+              AVG RESOLUTION TIME
+            </div>
+            <div className="mt-1 font-mono text-xs font-semibold text-gray-200">
+              {metrics.avg_resolution_time_seconds !== null &&
+              metrics.avg_resolution_time_seconds !== undefined
+                ? `${Math.round(metrics.avg_resolution_time_seconds)}s`
+                : "Insufficient historical data"}
+            </div>
+          </div>
+          <div className="rounded-lg border border-gray-800 bg-gray-900/60 p-3">
+            <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+              <HeartPulse className="h-3 w-3 text-indigo-400" />
+              PROJECT POSTURE
+            </div>
+            <div className="mt-1 flex items-center gap-1.5">
+              <span
+                className={`font-mono text-xs font-bold ${
+                  healthSummary?.security_posture === "CRITICAL"
+                    ? "text-red-400"
+                    : healthSummary?.security_posture === "HIGH"
+                      ? "text-amber-400"
+                      : "text-emerald-400"
+                }`}
+              >
+                {healthSummary?.security_posture || "NORMAL"}
+              </span>
+              <span className="text-[10px] text-gray-500">
+                · {healthSummary?.most_affected_subsystem || "Core"}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── FILTER & STATUS TABS ────────────────────────────────────────────── */}
       <div className="flex flex-col items-stretch justify-between gap-3 rounded-lg border border-gray-800 bg-gray-900/60 p-3 sm:flex-row sm:items-center">
@@ -280,7 +409,7 @@ export function InvestigationPage() {
             </div>
           ) : incidentDetail ? (
             <>
-              {/* 1. HERO INCIDENT HEADER */}
+              {/* 1. HERO INCIDENT HEADER & RESOLUTION CENTER */}
               <div className="space-y-4 rounded-xl border border-gray-800 bg-gradient-to-r from-gray-900 via-gray-900 to-indigo-950/30 p-5 shadow-xl">
                 <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
                   <div>
@@ -299,7 +428,13 @@ export function InvestigationPage() {
                       </Badge>
                       <Badge
                         variant="outline"
-                        className="border-gray-700 font-mono text-xs text-gray-300"
+                        className={`font-mono text-xs ${
+                          incidentDetail.status === "RESOLVED"
+                            ? "border-emerald-500 bg-emerald-950/30 text-emerald-400"
+                            : incidentDetail.status === "INVESTIGATING"
+                              ? "border-amber-500 bg-amber-950/30 text-amber-400"
+                              : "border-gray-700 text-gray-300"
+                        }`}
                       >
                         STATUS: {incidentDetail.status}
                       </Badge>
@@ -328,12 +463,12 @@ export function InvestigationPage() {
                   </div>
                 </div>
 
-                {/* Review Workflow Action Bar */}
+                {/* RESOLUTION CENTER ACTION BAR */}
                 <div className="flex flex-wrap items-center justify-between gap-2 border-t border-gray-800/80 pt-3 text-xs">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-gray-400">Lifecycle Actions:</span>
+                    <span className="font-semibold text-gray-400">Transition State:</span>
                     <button
-                      onClick={() => handleStatusChange("INVESTIGATING")}
+                      onClick={() => openStatusModal("INVESTIGATING")}
                       className={`rounded px-2.5 py-1 text-xs font-semibold transition ${
                         incidentDetail.status === "INVESTIGATING"
                           ? "bg-amber-600 text-white"
@@ -341,10 +476,10 @@ export function InvestigationPage() {
                       }`}
                     >
                       <Eye className="mr-1 inline h-3 w-3" />
-                      Start Investigation
+                      Investigate
                     </button>
                     <button
-                      onClick={() => handleStatusChange("REVIEWED")}
+                      onClick={() => openStatusModal("REVIEWED")}
                       className={`rounded px-2.5 py-1 text-xs font-semibold transition ${
                         incidentDetail.status === "REVIEWED"
                           ? "bg-blue-600 text-white"
@@ -352,13 +487,13 @@ export function InvestigationPage() {
                       }`}
                     >
                       <Check className="mr-1 inline h-3 w-3" />
-                      Mark Reviewed
+                      Reviewed
                     </button>
                     <button
-                      onClick={() => handleStatusChange("RESOLVED")}
+                      onClick={() => openStatusModal("RESOLVED")}
                       className={`rounded px-2.5 py-1 text-xs font-semibold transition ${
                         incidentDetail.status === "RESOLVED"
-                          ? "bg-emerald-600 text-white"
+                          ? "bg-emerald-600 text-white shadow-md shadow-emerald-950"
                           : "border border-emerald-700/50 bg-emerald-950 text-emerald-300 hover:bg-emerald-900"
                       }`}
                     >
@@ -369,13 +504,127 @@ export function InvestigationPage() {
 
                   {incidentDetail.review_record?.resolution_note && (
                     <div className="line-clamp-1 max-w-xs text-xs italic text-emerald-400">
-                      Note: &ldquo;{incidentDetail.review_record.resolution_note}&rdquo;
+                      Latest Note: &ldquo;{incidentDetail.review_record.resolution_note}&rdquo;
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* 2. INCIDENT STORY & NARRATIVE */}
+              {/* 2. RESOLUTION INTELLIGENCE & REMEDIATION CHECKLIST */}
+              {incidentDetail.resolution_recommendations &&
+                incidentDetail.resolution_recommendations.length > 0 && (
+                  <div className="space-y-4 rounded-xl border border-emerald-900/40 bg-emerald-950/10 p-5 shadow-lg">
+                    <div className="flex items-center justify-between">
+                      <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-emerald-300">
+                        <Sparkles className="h-4 w-4 text-emerald-400" />
+                        Resolution Intelligence & Remediation Guidance
+                      </h3>
+                      <Badge
+                        variant="outline"
+                        className="border-emerald-500/40 font-mono text-[10px] text-emerald-400"
+                      >
+                        EVIDENCE-BACKED ACTIONS
+                      </Badge>
+                    </div>
+
+                    <div className="space-y-4">
+                      {incidentDetail.resolution_recommendations.map((rec, idx) => (
+                        <div
+                          key={idx}
+                          className="space-y-3 rounded-lg border border-emerald-900/40 bg-gray-950/80 p-4"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-gray-100">{rec.title}</span>
+                            <span className="rounded border border-emerald-800 bg-emerald-950 px-2 py-0.5 font-mono text-[10px] text-emerald-400">
+                              {rec.rule_id}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-300">{rec.why}</p>
+
+                          {/* Recommended Actions */}
+                          <div className="space-y-1.5 pt-1">
+                            <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                              RECOMMENDED REMEDIATION ACTIONS
+                            </div>
+                            {rec.recommended_actions.map((act, aIdx) => (
+                              <div
+                                key={aIdx}
+                                className="flex items-start gap-2 text-xs text-gray-300"
+                              >
+                                <CheckSquare className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-400" />
+                                <span>{act}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Verification Steps */}
+                          <div className="space-y-1.5 border-t border-gray-800/80 pt-1">
+                            <div className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">
+                              VERIFICATION CHECKLIST
+                            </div>
+                            {rec.verification_steps.map((ver, vIdx) => (
+                              <div
+                                key={vIdx}
+                                className="flex items-start gap-2 text-xs text-gray-300"
+                              >
+                                <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-indigo-400" />
+                                <span>{ver}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+              {/* 3. REVIEW AUDIT HISTORY TIMELINE */}
+              <div className="space-y-3 rounded-xl border border-gray-800 bg-gray-900/60 p-5">
+                <div className="flex items-center justify-between">
+                  <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-white">
+                    <History className="h-4 w-4 text-indigo-400" />
+                    Review Audit Trail & Transitions
+                  </h3>
+                  <span className="font-mono text-xs text-gray-400">
+                    {historyData?.history.length || incidentDetail.review_history?.length || 0}{" "}
+                    records
+                  </span>
+                </div>
+
+                {(historyData?.history || incidentDetail.review_history || []).length === 0 ? (
+                  <div className="rounded border border-gray-800/60 bg-gray-950/40 p-4 text-center text-xs text-gray-400">
+                    No status transitions recorded yet. Incident is in initial OPEN state.
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {(historyData?.history || incidentDetail.review_history || []).map((h, i) => (
+                      <div
+                        key={h.id || i}
+                        className="flex flex-col justify-between gap-1 rounded border border-gray-800/80 bg-gray-950/80 p-3 text-xs sm:flex-row sm:items-center"
+                      >
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-2">
+                            <span className="rounded bg-gray-800 px-1.5 py-0.5 font-mono text-[10px] text-gray-300">
+                              {h.previous_status} &rarr; {h.new_status}
+                            </span>
+                            <span className="font-bold text-gray-200">{h.reviewer}</span>
+                          </div>
+                          {h.resolution_note && (
+                            <div className="text-[11px] italic text-emerald-400">
+                              &ldquo;{h.resolution_note}&rdquo;
+                            </div>
+                          )}
+                        </div>
+                        <div className="font-mono text-[10px] text-gray-500">
+                          {new Date(h.created_at).toLocaleString()}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* 4. INCIDENT STORY & NARRATIVE */}
               <div className="space-y-3 rounded-xl border border-gray-800 bg-gray-900/60 p-5">
                 <div className="flex items-center justify-between">
                   <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-white">
@@ -395,7 +644,7 @@ export function InvestigationPage() {
                 </div>
               </div>
 
-              {/* 3. RISK EVOLUTION & ROOT CAUSE */}
+              {/* 5. RISK EVOLUTION & ROOT CAUSE */}
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {/* Risk Evolution */}
                 <div className="space-y-3 rounded-xl border border-gray-800 bg-gray-900/60 p-4">
@@ -459,7 +708,7 @@ export function InvestigationPage() {
                 </div>
               </div>
 
-              {/* 4. AFFECTED SURFACE & ENGINEERING DNA CONTRAST */}
+              {/* 6. AFFECTED SURFACE & ENGINEERING DNA CONTRAST */}
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {/* Affected Surface */}
                 <div className="space-y-3 rounded-xl border border-gray-800 bg-gray-900/60 p-4">
@@ -508,58 +757,96 @@ export function InvestigationPage() {
                 </div>
               </div>
 
-              {/* 5. EVIDENCE GRAPH 3.0 & NODE INSPECTOR */}
+              {/* 7. EVIDENCE GRAPH 3.0 WITH NAVIGATION CONTROLS */}
               <div className="space-y-4 rounded-xl border border-gray-800 bg-gray-900/60 p-5">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
                   <div>
                     <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-white">
                       <Activity className="h-4 w-4 text-indigo-400" />
                       Evidence Graph 3.0 & Causal Topology
                     </h3>
                     <p className="text-[11px] text-gray-400">
-                      Click any node to inspect telemetry and provenance.
+                      Interactive pan & zoom controls. Click any node to inspect telemetry.
                     </p>
                   </div>
-                  <Badge
-                    variant="outline"
-                    className="border-indigo-500/40 font-mono text-xs text-indigo-300"
-                  >
-                    {incidentDetail.evidence_graph.nodes.length} NODES ·{" "}
-                    {incidentDetail.evidence_graph.edges.length} EDGES
-                  </Badge>
+                  <div className="flex items-center gap-1.5">
+                    {/* Zoom / Pan Navigation toolbar */}
+                    <button
+                      onClick={handleZoomIn}
+                      className="rounded border border-gray-700 bg-gray-800 p-1.5 text-gray-300 hover:bg-gray-700"
+                      title="Zoom In"
+                    >
+                      <ZoomIn className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={handleZoomOut}
+                      className="rounded border border-gray-700 bg-gray-800 p-1.5 text-gray-300 hover:bg-gray-700"
+                      title="Zoom Out"
+                    >
+                      <ZoomOut className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={handleResetView}
+                      className="rounded border border-gray-700 bg-gray-800 p-1.5 text-gray-300 hover:bg-gray-700"
+                      title="Reset View"
+                    >
+                      <RotateCcw className="h-3.5 w-3.5" />
+                    </button>
+                    <Badge
+                      variant="outline"
+                      className="border-indigo-500/40 font-mono text-xs text-indigo-300"
+                    >
+                      {Math.round(graphZoom * 100)}%
+                    </Badge>
+                  </div>
                 </div>
 
-                {/* Interactive Node Flow View */}
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4">
-                  {incidentDetail.evidence_graph.nodes.map((node) => {
-                    const isSelected = selectedNode?.id === node.id;
-                    return (
-                      <div
-                        key={node.id}
-                        onClick={() => setSelectedNode(node)}
-                        className={`relative cursor-pointer rounded-lg border p-3 transition ${
-                          isSelected
-                            ? "border-indigo-400 bg-indigo-950/60 shadow-md"
-                            : "border-gray-800 bg-gray-950 hover:border-gray-700"
-                        }`}
-                      >
-                        <div className="mb-1 flex items-center justify-between font-mono text-[10px] text-gray-400">
-                          <span>
-                            #{node.step_number} {node.kind}
-                          </span>
-                          {node.severity && (
-                            <span className="font-bold text-amber-400">{node.severity}</span>
-                          )}
+                {/* Graph Canvas Container */}
+                <div
+                  onMouseDown={handleMouseDown}
+                  onMouseMove={handleMouseMove}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
+                  className="relative min-h-[160px] cursor-grab overflow-hidden rounded-lg border border-gray-800 bg-gray-950 p-4 active:cursor-grabbing"
+                >
+                  <div
+                    style={{
+                      transform: `translate(${graphPan.x}px, ${graphPan.y}px) scale(${graphZoom})`,
+                      transformOrigin: "top left",
+                      transition: isPanning ? "none" : "transform 0.15s ease-out",
+                    }}
+                    className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4"
+                  >
+                    {incidentDetail.evidence_graph.nodes.map((node) => {
+                      const isSelected = selectedNode?.id === node.id;
+                      return (
+                        <div
+                          key={node.id}
+                          onClick={() => setSelectedNode(node)}
+                          className={`relative cursor-pointer rounded-lg border p-3 transition ${
+                            isSelected
+                              ? "border-indigo-400 bg-indigo-950/60 shadow-md"
+                              : "border-gray-800 bg-gray-900/80 hover:border-gray-700"
+                          }`}
+                        >
+                          <div className="mb-1 flex items-center justify-between font-mono text-[10px] text-gray-400">
+                            <span>
+                              #{node.step_number} {node.kind}
+                            </span>
+                            {node.severity && (
+                              <span className="font-bold text-amber-400">{node.severity}</span>
+                            )}
+                          </div>
+                          <div className="line-clamp-1 text-xs font-bold text-gray-200">
+                            {node.title}
+                          </div>
+                          <div className="mt-0.5 line-clamp-1 text-[11px] text-gray-400">
+                            {node.subtitle}
+                          </div>
                         </div>
-                        <div className="line-clamp-1 text-xs font-bold text-gray-200">
-                          {node.title}
-                        </div>
-                        <div className="mt-0.5 line-clamp-1 text-[11px] text-gray-400">
-                          {node.subtitle}
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {/* Node Inspector Drawer */}
@@ -604,28 +891,6 @@ export function InvestigationPage() {
                   </div>
                 )}
               </div>
-
-              {/* 6. REMEDIATION PLAN */}
-              <div className="space-y-3 rounded-xl border border-gray-800 bg-gray-900/60 p-5">
-                <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                  Prescribed Remediation Steps
-                </h3>
-                <p className="text-xs italic text-gray-300">
-                  {incidentDetail.remediation_guidance}
-                </p>
-                <div className="space-y-1.5 pt-1">
-                  {incidentDetail.remediation_steps.map((step, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-start gap-2.5 rounded border border-gray-800 bg-gray-950 p-2.5 text-xs text-gray-200"
-                    >
-                      <span className="font-mono font-bold text-indigo-400">{idx + 1}.</span>
-                      <span>{step}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </>
           ) : (
             <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-12 text-center text-xs text-gray-400">
@@ -635,22 +900,48 @@ export function InvestigationPage() {
         </div>
       </div>
 
-      {/* ── RESOLUTION NOTE MODAL ────────────────────────────────────────────── */}
+      {/* ── RESOLUTION & REVIEW NOTE MODAL WITH TEMPLATES ──────────────────── */}
       {resolutionModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md space-y-4 rounded-xl border border-gray-800 bg-gray-900 p-5 shadow-2xl">
-            <h3 className="text-base font-bold text-white">Resolve Incident</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg space-y-4 rounded-xl border border-gray-800 bg-gray-900 p-5 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-gray-800 pb-3">
+              <h3 className="text-base font-bold text-white">Update Status to {targetStatus}</h3>
+              <Badge variant="outline" className="border-indigo-500/40 text-xs text-indigo-300">
+                AUDIT TRAIL LOGGED
+              </Badge>
+            </div>
+
             <p className="text-xs text-gray-400">
-              Please enter a resolution note documenting how this security or code incident was
-              resolved.
+              Select a quick resolution template or enter custom audit notes documenting the action.
             </p>
+
+            {/* Quick Templates */}
+            <div className="space-y-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                QUICK RESOLUTION TEMPLATES
+              </span>
+              <div className="max-h-36 space-y-1 overflow-y-auto rounded border border-gray-800 bg-gray-950 p-2">
+                {RESOLUTION_TEMPLATES.map((tmpl, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setResolutionNote(tmpl)}
+                    className="w-full rounded p-1.5 text-left text-xs text-gray-300 transition hover:bg-gray-800 hover:text-white"
+                  >
+                    &bull; {tmpl}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <textarea
               rows={3}
               value={resolutionNote}
               onChange={(e) => setResolutionNote(e.target.value)}
-              placeholder="e.g. Credential revoked, rotated, and moved to environment configuration."
-              className="w-full rounded-lg border border-gray-800 bg-gray-950 p-2.5 text-xs text-gray-200 focus:border-emerald-500 focus:outline-none"
+              placeholder="Enter resolution notes, actions taken, or triage rationale..."
+              className="w-full rounded-lg border border-gray-800 bg-gray-950 p-2.5 text-xs text-gray-200 focus:border-indigo-500 focus:outline-none"
             />
+
             <div className="flex items-center justify-end gap-2 pt-2">
               <button
                 onClick={() => setResolutionModalOpen(false)}
@@ -659,10 +950,14 @@ export function InvestigationPage() {
                 Cancel
               </button>
               <button
-                onClick={() => handleStatusChange("RESOLVED", resolutionNote)}
-                className="rounded bg-emerald-600 px-4 py-1.5 text-xs font-semibold text-white shadow transition hover:bg-emerald-500"
+                onClick={() => handleConfirmStatusChange(resolutionNote)}
+                className={`rounded px-4 py-1.5 text-xs font-semibold text-white shadow transition ${
+                  targetStatus === "RESOLVED"
+                    ? "bg-emerald-600 hover:bg-emerald-500"
+                    : "bg-indigo-600 hover:bg-indigo-500"
+                }`}
               >
-                Confirm Resolution
+                Confirm {targetStatus}
               </button>
             </div>
           </div>

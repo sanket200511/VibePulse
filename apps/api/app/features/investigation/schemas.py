@@ -1,7 +1,7 @@
 """
-Investigation Engine 3.0 Schemas.
+Investigation Engine 3.0 + Collaboration & Resolution Intelligence Schemas.
 
-Defines the unified incident intelligence domain models:
+Defines unified incident intelligence domain models:
 - IncidentStory: narrative derived from real telemetry
 - TimelineStep3: granular, timestamp-backed event sequence
 - RiskEvolution: step-by-step point progression
@@ -9,6 +9,10 @@ Defines the unified incident intelligence domain models:
 - EngineeringDNACorrelation: contrast against normal development focus
 - AffectedSurfaceSummary: grouped subsystem distribution
 - EvidenceGraph3: typed nodes and explainable causal edges
+- ResolutionRecommendation: deterministic rule-based remediation guidance
+- IncidentReviewHistoryItem: audit trail entries
+- IncidentMetrics: resolution velocity and rate
+- ProjectHealthSummary: unified posture and incident health
 - InvestigationIncidentDetail: unified incident payload
 - IncidentReviewRequest: user review lifecycle transitions
 """
@@ -147,6 +151,71 @@ class AffectedSurfaceSummary(BaseModel):
     total_findings: int = 0
 
 
+class ResolutionRecommendation(BaseModel):
+    """
+    Deterministic rule-backed remediation guidance for an observed security finding.
+    """
+
+    rule_id: str
+    title: str
+    why: str
+    recommended_actions: list[str] = Field(default_factory=list)
+    verification_steps: list[str] = Field(default_factory=list)
+
+
+class IncidentReviewHistoryItem(BaseModel):
+    """
+    Durable history item representing a review state transition.
+    """
+
+    id: uuid.UUID
+    incident_id: str
+    previous_status: str
+    new_status: str
+    resolution_note: str | None = None
+    reviewer: str = "Local Developer"
+    created_at: datetime
+
+
+class IncidentReviewHistoryResponse(BaseModel):
+    incident_id: str
+    current_status: str
+    history: list[IncidentReviewHistoryItem] = Field(default_factory=list)
+
+
+class IncidentMetrics(BaseModel):
+    """
+    Real evidence-derived incident metrics.
+    """
+
+    project_id: uuid.UUID
+    open_incidents: int = 0
+    investigating_incidents: int = 0
+    resolved_incidents: int = 0
+    total_incidents: int = 0
+    total_transitions: int = 0
+    resolution_rate_percent: float | None = None
+    avg_resolution_time_seconds: float | None = None
+    status_note: str = "Calculated from PostgreSQL audit history"
+
+
+class ProjectHealthSummary(BaseModel):
+    """
+    Unified project health summary derived from PostgreSQL telemetry.
+    """
+
+    project_id: uuid.UUID
+    project_display_name: str
+    security_posture: str  # "CRITICAL", "HIGH", "MEDIUM", "LOW", "CLEAN"
+    risk_score: int
+    open_incidents: int
+    resolved_incidents: int
+    recent_incident_activity: int
+    most_affected_subsystem: str
+    recurring_rule: str | None = None
+    total_events: int
+
+
 class IncidentReviewRecord(BaseModel):
     status: str = "OPEN"  # "OPEN" | "INVESTIGATING" | "REVIEWED" | "RESOLVED"
     reviewed_by: str | None = None
@@ -198,8 +267,10 @@ class InvestigationIncidentDetail(BaseModel):
     remediation_steps: list[str] = Field(default_factory=list)
     remediation_guidance: str
 
-    # Review workflow state
+    # Collaboration & Resolution Intelligence
+    resolution_recommendations: list[ResolutionRecommendation] = Field(default_factory=list)
     review_record: IncidentReviewRecord
+    review_history: list[IncidentReviewHistoryItem] = Field(default_factory=list)
 
     # Metadata
     created_at: datetime
