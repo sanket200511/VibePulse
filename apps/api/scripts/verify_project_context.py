@@ -72,10 +72,7 @@ async def verify_project_context() -> None:
                 f"    - Security Findings: {sec.total_findings} "
                 f"(Critical: {sec.critical}, High: {sec.high})"
             )
-            print(
-                f"    - Total Events: {act.total_events}, "
-                f"Sessions: {act.total_sessions}"
-            )
+            print(f"    - Total Events: {act.total_events}, Sessions: {act.total_sessions}")
             print(f"    - Git Branch: {refreshed.git_context.branch}")
 
             # Assertions

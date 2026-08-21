@@ -60,9 +60,7 @@ async def run_persistence_test() -> None:
                 "file_extension": ".py",
                 "language": "Python",
                 "git_branch": "main",
-                "metadata": {
-                    "diff_preview": 'SECRET_KEY = "AKIA1111111111111111"'
-                },
+                "metadata": {"diff_preview": 'SECRET_KEY = "AKIA1111111111111111"'},
             },
         )
         assert e2.status_code == 201, f"Event 2 failed: {e2.text}"

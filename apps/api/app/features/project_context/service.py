@@ -2,48 +2,30 @@ import uuid
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.domain.events import AnalyzableEvent
 from app.core.logging import get_logger
 from app.features.analysis.models import EventAnalysis
 from app.features.events.models import DevelopmentEvent
+from app.features.project_context.detectors import (
+    compute_activity_heatmap,
+    detect_architecture_signals,
+    detect_frameworks,
+    detect_git_intelligence,
+    detect_languages,
+    detect_package_managers,
+    detect_technologies,
+    determine_development_focus,
+    rank_file_activity,
+)
 from app.features.project_context.models import ProjectContext
 from app.features.project_context.schemas import ProjectContextRead
 from app.features.projects.models import Project
 from app.features.sessions.models import Session
 
 logger = get_logger(__name__)
-
-
-# Deterministic Extension -> Language Mapping
-EXTENSION_TO_LANGUAGE: dict[str, str] = {
-    ".py": "Python",
-    ".ts": "TypeScript",
-    ".tsx": "TypeScript (React)",
-    ".js": "JavaScript",
-    ".jsx": "JavaScript (React)",
-    ".mjs": "JavaScript",
-    ".cjs": "JavaScript",
-    ".rs": "Rust",
-    ".go": "Go",
-    ".java": "Java",
-    ".cpp": "C++",
-    ".cc": "C++",
-    ".c": "C",
-    ".h": "C/C++ Header",
-    ".css": "CSS",
-    ".scss": "SCSS",
-    ".html": "HTML",
-    ".sql": "SQL",
-    ".json": "JSON",
-    ".yaml": "YAML",
-    ".yml": "YAML",
-    ".toml": "TOML",
-    ".md": "Markdown",
-    ".sh": "Shell",
-    ".ps1": "PowerShell",
-}
 
 # Known Configuration Filename Patterns
 CONFIG_PATTERNS: dict[str, str] = {
@@ -64,30 +46,60 @@ CONFIG_PATTERNS: dict[str, str] = {
     ".env": "Environment Variables",
     ".env.example": "Environment Variables Template",
     "turbo.json": "Turborepo Monorepo Configuration",
+    "Cargo.toml": "Rust Package Manifest",
+    "Cargo.lock": "Rust Lockfile",
 }
+
+
+def _orm_event_to_analyzable(orm: DevelopmentEvent) -> AnalyzableEvent:
+    return AnalyzableEvent(
+        id=orm.id,
+        event_type=orm.event_type,
+        timestamp=orm.timestamp,
+        session_id=orm.session_id,
+        project_root=orm.project_root,
+        file_path=orm.file_path,
+        file_name=orm.file_name,
+        file_extension=orm.file_extension,
+        language=orm.language,
+        git_branch=orm.git_branch,
+        metadata=orm.event_metadata or {},
+    )
 
 
 async def aggregate_project_context(db: AsyncSession, project_id: uuid.UUID) -> dict[str, Any]:
     """
-    Deterministically computes the complete Project Context from stored PostgreSQL
-    evidence (projects, sessions, development_events, event_analyses).
+    Deterministically computes the complete Project Context and Project Intelligence
+    from stored PostgreSQL evidence (projects, sessions, development_events, event_analyses).
+
+    Invariants:
+      - This is a pure projection / materialized calculation over PostgreSQL historical truth.
+      - Can be safely run repeatedly to reconstruct project intelligence without data loss.
     """
     project = await db.get(Project, project_id)
     if not project:
         raise ValueError(f"Project with ID {project_id} not found")
 
-    # 1. Fetch all events for this project (by project_root or matching sessions)
+    # 1. Fetch all historical events for this project
     events_stmt = (
         select(DevelopmentEvent)
         .where(DevelopmentEvent.project_root == project.root_path)
         .order_by(DevelopmentEvent.timestamp.asc())
     )
     events_res = await db.execute(events_stmt)
-    events = events_res.scalars().all()
+    orm_events = events_res.scalars().all()
+    analyzable_events = [_orm_event_to_analyzable(e) for e in orm_events]
 
-    # 2. Fetch all sessions for this project
+    # 2. Fetch all sessions for this project (by project_id or project_root)
     sessions_stmt = (
-        select(Session).where(Session.project_id == project_id).order_by(Session.started_at.asc())
+        select(Session)
+        .where(
+            or_(
+                Session.project_id == project_id,
+                Session.project_root == project.root_path,
+            )
+        )
+        .order_by(Session.started_at.asc())
     )
     sessions_res = await db.execute(sessions_stmt)
     sessions = sessions_res.scalars().all()
@@ -101,222 +113,58 @@ async def aggregate_project_context(db: AsyncSession, project_id: uuid.UUID) -> 
     analyses_res = await db.execute(analyses_stmt)
     analyses = analyses_res.scalars().all()
 
-    # ── AGGREGATE LANGUAGES ──────────────────────────────────────────────────
-    lang_counts: dict[str, int] = {}
+    # ── OBSERVED FILES SET ───────────────────────────────────────────────────
+    observed_files_set: set[str] = set()
     file_hit_counts: dict[str, int] = {}
     file_last_modified: dict[str, datetime] = {}
-    observed_files_set: set[str] = set()
     git_branches: set[str] = set()
 
-    for e in events:
-        # File counting
+    for e in analyzable_events:
         if e.file_path:
             norm_path = e.file_path.replace("\\", "/")
             observed_files_set.add(norm_path)
             file_hit_counts[norm_path] = file_hit_counts.get(norm_path, 0) + 1
-            if norm_path not in file_last_modified or e.timestamp > file_last_modified[norm_path]:
-                file_last_modified[norm_path] = e.timestamp
-
-        # Language attribution
-        lang = e.language
-        if not lang and e.file_extension:
-            lang = EXTENSION_TO_LANGUAGE.get(e.file_extension.lower())
-
-        if lang:
-            # Normalize display
-            lang_clean = lang.replace(" (React)", "")
-            lang_counts[lang_clean] = lang_counts.get(lang_clean, 0) + 1
+            if norm_path not in file_last_modified or (
+                e.timestamp and e.timestamp > file_last_modified[norm_path]
+            ):
+                if e.timestamp:
+                    file_last_modified[norm_path] = e.timestamp
 
         if e.git_branch:
             git_branches.add(e.git_branch)
 
-    total_lang_events = sum(lang_counts.values())
-    languages_data: dict[str, dict[str, Any]] = {}
-    for l_name, l_count in sorted(lang_counts.items(), key=lambda x: -x[1]):
-        pct = round((l_count / total_lang_events) * 100, 1) if total_lang_events > 0 else 0.0
-        languages_data[l_name] = {"count": l_count, "percentage": pct}
+    # Incorporate files recorded in session aggregates
+    for s in sessions:
+        if s.files and isinstance(s.files, dict):
+            for f_path, count in s.files.items():
+                norm_path = f_path.replace("\\", "/")
+                observed_files_set.add(norm_path)
+                file_hit_counts[norm_path] = file_hit_counts.get(norm_path, 0) + count
+        if s.git_branch:
+            git_branches.add(s.git_branch)
 
-    # ── DETECT FRAMEWORKS & TECHNOLOGIES (WITH STRICT PROVENANCE) ────────────
-    frameworks: list[dict[str, Any]] = []
-    technologies: list[dict[str, Any]] = []
-    package_managers: list[dict[str, Any]] = []
-    detected_tech_names: set[str] = set()
+    # ── PURE DETECTORS ───────────────────────────────────────────────────────
+    languages = detect_languages(observed_files_set, analyzable_events)
+    package_managers = detect_package_managers(observed_files_set, project.root_path)
+    frameworks = detect_frameworks(observed_files_set, analyzable_events, project.root_path)
+    technologies = detect_technologies(observed_files_set, analyzable_events, project.root_path)
+    architecture_signals = detect_architecture_signals(
+        observed_files_set, analyzable_events, frameworks, technologies
+    )
+    git_intel = detect_git_intelligence(project.root_path)
+    heatmap_cells = compute_activity_heatmap(analyzable_events)
+    dev_focus = determine_development_focus(analyzable_events, window_days=7)
+    file_rankings = rank_file_activity(analyzable_events, limit=15)
 
-    def add_tech(
-        target_list: list[dict[str, Any]],
-        name: str,
-        category: str,
-        source: str,
-        evidence: str,
-    ) -> None:
-        if name not in detected_tech_names:
-            detected_tech_names.add(name)
-            target_list.append(
-                {
-                    "name": name,
-                    "category": category,
-                    "provenance": {
-                        "source": source,
-                        "evidence": evidence,
-                        "detection_type": "deterministic",
-                    },
-                }
-            )
-
-    for f_path in observed_files_set:
-        f_lower = f_path.lower()
-        base_name = f_path.split("/")[-1]
-
-        # React
-        if f_lower.endswith((".tsx", ".jsx")) or "react" in f_lower:
-            add_tech(
-                frameworks,
-                "React",
-                "Frontend UI Library",
-                f_path,
-                "React TSX/JSX component structure",
-            )
-
-        # FastAPI
-        if "fastapi" in f_lower or f_lower.endswith("main.py") or "app/features" in f_lower:
-            add_tech(
-                frameworks,
-                "FastAPI",
-                "Backend Web Framework",
-                f_path,
-                "FastAPI application entrypoint and feature modules",
-            )
-
-        # TailwindCSS
-        if "tailwind.config" in f_lower:
-            add_tech(
-                frameworks,
-                "TailwindCSS",
-                "CSS Design System",
-                base_name,
-                "Tailwind configuration file",
-            )
-
-        # Alembic
-        if "alembic.ini" in f_lower or "alembic/versions" in f_lower:
-            add_tech(
-                frameworks,
-                "Alembic",
-                "Database Migrations",
-                base_name,
-                "Alembic migration version scripts",
-            )
-
-        # Pytest
-        if "conftest.py" in f_lower or "pytest.ini" in f_lower or "/tests/" in f_lower:
-            add_tech(
-                frameworks,
-                "Pytest",
-                "Testing Framework",
-                base_name,
-                "Pytest configuration and test hierarchy",
-            )
-
-        # TypeScript
-        if f_lower.endswith((".ts", ".tsx")) or "tsconfig.json" in f_lower:
-            add_tech(
-                technologies,
-                "TypeScript",
-                "Programming Language",
-                base_name,
-                "Static typing and TypeScript source files",
-            )
-
-        # Python
-        if f_lower.endswith(".py") or "pyproject.toml" in f_lower:
-            add_tech(
-                technologies,
-                "Python",
-                "Programming Language",
-                base_name,
-                "Python 3 runtime and modules",
-            )
-
-        # PostgreSQL
-        if "postgres" in f_lower or "database.py" in f_lower or f_lower.endswith(".sql"):
-            add_tech(
-                technologies,
-                "PostgreSQL",
-                "Relational Database",
-                f_path,
-                "PostgreSQL schema and database access layer",
-            )
-
-        # Redis
-        if "redis" in f_lower:
-            add_tech(
-                technologies,
-                "Redis",
-                "In-Memory Cache",
-                f_path,
-                "Redis client connection and cache layer",
-            )
-
-        # Docker
-        if "docker" in f_lower:
-            add_tech(
-                technologies,
-                "Docker",
-                "Containerization",
-                base_name,
-                "Docker container definition",
-            )
-
-        # Package Managers
-        if "pnpm-lock.yaml" in f_lower or "pnpm-workspace.yaml" in f_lower:
-            add_tech(
-                package_managers,
-                "pnpm",
-                "Package Manager",
-                base_name,
-                "pnpm lockfile and workspace config",
-            )
-        elif "package-lock.json" in f_lower:
-            add_tech(
-                package_managers,
-                "npm",
-                "Package Manager",
-                base_name,
-                "npm lockfile",
-            )
-        elif "uv.lock" in f_lower or ("pyproject.toml" in f_lower and "uv" in f_lower):
-            add_tech(
-                package_managers,
-                "uv",
-                "Python Package Manager",
-                base_name,
-                "uv project manifest",
-            )
-        elif "requirements.txt" in f_lower or "pipfile" in f_lower:
-            add_tech(
-                package_managers,
-                "pip",
-                "Python Package Manager",
-                base_name,
-                "pip requirements manifest",
-            )
-
-    # ── DETECT CONFIGURATION FILES ───────────────────────────────────────────
+    # ── CONFIGURATION FILES & DIRECTORIES ────────────────────────────────────
     configuration_files: list[dict[str, Any]] = []
     for f_path in observed_files_set:
         base_name = f_path.split("/")[-1]
         if base_name in CONFIG_PATTERNS:
-            configuration_files.append(
-                {
-                    "path": f_path,
-                    "kind": CONFIG_PATTERNS[base_name],
-                }
-            )
+            configuration_files.append({"path": f_path, "kind": CONFIG_PATTERNS[base_name]})
 
-    # ── DETECT DIRECTORIES (SOURCE & TEST) ───────────────────────────────────
     source_dirs: set[str] = set()
     test_dirs: set[str] = set()
-
     for f_path in observed_files_set:
         parts = f_path.split("/")
         if len(parts) > 1:
@@ -337,8 +185,7 @@ async def aggregate_project_context(db: AsyncSession, project_id: uuid.UUID) -> 
 
     # ── IMPORTANT FILES ──────────────────────────────────────────────────────
     important_files: list[dict[str, Any]] = []
-    # Rank by hit count + structural significance
-    for f_path, count in sorted(file_hit_counts.items(), key=lambda x: -x[1]):
+    for f_path, count in sorted(file_hit_counts.items(), key=lambda x: -x[1])[:15]:
         base = f_path.split("/")[-1].lower()
         reason = "Frequently Observed Development Target"
         if "auth" in base or "secret" in base or "security" in base:
@@ -472,8 +319,14 @@ async def aggregate_project_context(db: AsyncSession, project_id: uuid.UUID) -> 
     }
 
     # ── ACTIVITY SUMMARY ─────────────────────────────────────────────────────
-    first_obs = min((e.timestamp for e in events), default=None)
-    latest_obs = max((e.timestamp for e in events), default=None)
+    first_obs = min((e.timestamp for e in analyzable_events if e.timestamp), default=None)
+    latest_obs = max((e.timestamp for e in analyzable_events if e.timestamp), default=None)
+    if not first_obs and sessions:
+        first_obs = min((s.started_at for s in sessions if s.started_at), default=None)
+    if not latest_obs and sessions:
+        latest_obs = max((s.last_event_at for s in sessions if s.last_event_at), default=None)
+
+    total_events_count = len(analyzable_events) or sum(s.event_count for s in sessions)
     top_frequent = [
         {"path": k, "event_count": v}
         for k, v in sorted(file_hit_counts.items(), key=lambda x: -x[1])[:10]
@@ -481,7 +334,7 @@ async def aggregate_project_context(db: AsyncSession, project_id: uuid.UUID) -> 
 
     activity_summary = {
         "total_sessions": len(sessions),
-        "total_events": len(events),
+        "total_events": total_events_count,
         "first_observed_at": first_obs.isoformat() if first_obs else None,
         "latest_observed_at": latest_obs.isoformat() if latest_obs else None,
         "frequently_observed_files": top_frequent,
@@ -503,7 +356,7 @@ async def aggregate_project_context(db: AsyncSession, project_id: uuid.UUID) -> 
     }
 
     git_context = {
-        "branch": next(iter(git_branches)) if git_branches else None,
+        "branch": git_intel.branch or (next(iter(git_branches)) if git_branches else None),
         "tracked_branches": sorted(git_branches),
     }
 
@@ -511,12 +364,12 @@ async def aggregate_project_context(db: AsyncSession, project_id: uuid.UUID) -> 
 
     return {
         "project_id": project_id,
-        "languages": languages_data,
-        "frameworks": frameworks,
-        "technologies": technologies,
-        "package_managers": package_managers,
-        "important_files": important_files[:15],
-        "configuration_files": configuration_files[:10],
+        "languages": {k: v.model_dump(mode="json") for k, v in languages.items()},
+        "frameworks": [f.model_dump(mode="json") for f in frameworks],
+        "technologies": [t.model_dump(mode="json") for t in technologies],
+        "package_managers": [p.model_dump(mode="json") for p in package_managers],
+        "important_files": important_files,
+        "configuration_files": configuration_files,
         "test_directories": sorted(test_dirs),
         "source_directories": sorted(source_dirs),
         "git_context": git_context,
@@ -524,7 +377,12 @@ async def aggregate_project_context(db: AsyncSession, project_id: uuid.UUID) -> 
         "security_summary": security_summary,
         "activity_summary": activity_summary,
         "architecture_summary": architecture_summary,
-        "context_version": 1,
+        "development_focus": dev_focus.model_dump(mode="json"),
+        "activity_heatmap": [c.model_dump(mode="json") for c in heatmap_cells],
+        "file_rankings": [r.model_dump(mode="json") for r in file_rankings],
+        "architecture_signals": [s.model_dump(mode="json") for s in architecture_signals],
+        "git_intelligence": git_intel.model_dump(mode="json"),
+        "context_version": 2,
         "first_observed_at": first_obs,
         "last_analyzed_at": now,
     }
@@ -546,37 +404,15 @@ async def get_or_create_project_context(
     context_row = res.scalar_one_or_none()
 
     if context_row is None:
-        data = await aggregate_project_context(db, project_id)
-        now = datetime.now(tz=UTC)
-        context_row = ProjectContext(
-            project_id=project_id,
-            languages=data["languages"],
-            frameworks=data["frameworks"],
-            technologies=data["technologies"],
-            package_managers=data["package_managers"],
-            important_files=data["important_files"],
-            configuration_files=data["configuration_files"],
-            test_directories=data["test_directories"],
-            source_directories=data["source_directories"],
-            git_context=data["git_context"],
-            development_patterns=data["development_patterns"],
-            security_summary=data["security_summary"],
-            activity_summary=data["activity_summary"],
-            architecture_summary=data["architecture_summary"],
-            context_version=1,
-            first_observed_at=data["first_observed_at"],
-            last_analyzed_at=now,
-        )
-        db.add(context_row)
-        await db.commit()
-        await db.refresh(context_row)
+        return await refresh_project_context(db, project_id)
 
     return _to_read_schema(context_row, project)
 
 
 async def refresh_project_context(db: AsyncSession, project_id: uuid.UUID) -> ProjectContextRead:
     """
-    Recomputes derived Project Context from stored evidence and updates the durable record.
+    Pure projection recomputation from PostgreSQL events and sessions.
+    Updates the materialized ProjectContext row idempotently.
     """
     project = await db.get(Project, project_id)
     if not project:
@@ -589,6 +425,19 @@ async def refresh_project_context(db: AsyncSession, project_id: uuid.UUID) -> Pr
     res = await db.execute(stmt)
     context_row = res.scalar_one_or_none()
 
+    # Package projection-extended fields inside architecture_summary / activity_summary
+    # to maintain backward compatibility with the existing PostgreSQL schema
+    arch_payload = dict(data["architecture_summary"])
+    arch_payload["architecture_signals"] = data["architecture_signals"]
+
+    act_payload = dict(data["activity_summary"])
+    act_payload["activity_heatmap"] = data["activity_heatmap"]
+    act_payload["file_rankings"] = data["file_rankings"]
+    act_payload["development_focus"] = data["development_focus"]
+
+    git_payload = dict(data["git_context"])
+    git_payload["git_intelligence"] = data["git_intelligence"]
+
     if context_row is None:
         context_row = ProjectContext(
             project_id=project_id,
@@ -600,12 +449,12 @@ async def refresh_project_context(db: AsyncSession, project_id: uuid.UUID) -> Pr
             configuration_files=data["configuration_files"],
             test_directories=data["test_directories"],
             source_directories=data["source_directories"],
-            git_context=data["git_context"],
+            git_context=git_payload,
             development_patterns=data["development_patterns"],
             security_summary=data["security_summary"],
-            activity_summary=data["activity_summary"],
-            architecture_summary=data["architecture_summary"],
-            context_version=1,
+            activity_summary=act_payload,
+            architecture_summary=arch_payload,
+            context_version=2,
             first_observed_at=data["first_observed_at"],
             last_analyzed_at=now,
         )
@@ -619,14 +468,15 @@ async def refresh_project_context(db: AsyncSession, project_id: uuid.UUID) -> Pr
         context_row.configuration_files = data["configuration_files"]
         context_row.test_directories = data["test_directories"]
         context_row.source_directories = data["source_directories"]
-        context_row.git_context = data["git_context"]
+        context_row.git_context = git_payload
         context_row.development_patterns = data["development_patterns"]
         context_row.security_summary = data["security_summary"]
-        context_row.activity_summary = data["activity_summary"]
-        context_row.architecture_summary = data["architecture_summary"]
+        context_row.activity_summary = act_payload
+        context_row.architecture_summary = arch_payload
         context_row.first_observed_at = data["first_observed_at"]
         context_row.last_analyzed_at = now
         context_row.updated_at = now
+        context_row.context_version = 2
 
     await db.commit()
     await db.refresh(context_row)
@@ -649,7 +499,6 @@ async def touch_project_context_on_event(
     if not project:
         return
 
-    # Check if context exists
     c_stmt = select(ProjectContext).where(ProjectContext.project_id == project.id)
     c_res = await db.execute(c_stmt)
     context_row = c_res.scalar_one_or_none()
@@ -666,6 +515,16 @@ async def touch_project_context_on_event(
 
 
 def _to_read_schema(row: ProjectContext, project: Project) -> ProjectContextRead:
+    arch = dict(row.architecture_summary or {})
+    act = dict(row.activity_summary or {})
+    git = dict(row.git_context or {})
+
+    arch_signals = arch.get("architecture_signals", [])
+    heatmap = act.get("activity_heatmap", [])
+    rankings = act.get("file_rankings", [])
+    focus = act.get("development_focus", {})
+    git_intel = git.get("git_intelligence", {})
+
     return ProjectContextRead.model_validate(
         {
             "id": row.id,
@@ -685,6 +544,11 @@ def _to_read_schema(row: ProjectContext, project: Project) -> ProjectContextRead
             "security_summary": row.security_summary or {},
             "activity_summary": row.activity_summary or {},
             "architecture_summary": row.architecture_summary or {},
+            "development_focus": focus,
+            "activity_heatmap": heatmap,
+            "file_rankings": rankings,
+            "architecture_signals": arch_signals,
+            "git_intelligence": git_intel,
             "context_version": row.context_version,
             "first_observed_at": row.first_observed_at,
             "last_analyzed_at": row.last_analyzed_at,

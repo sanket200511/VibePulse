@@ -43,7 +43,9 @@ export interface TechnologyDetail {
   provenance?: {
     source: string;
     evidence: string;
-    detection_type: string;
+    classification?: "OBSERVED" | "INFERRED" | "UNKNOWN";
+    confidence_reason?: string;
+    detection_type?: string;
   };
 }
 
@@ -93,12 +95,49 @@ export interface ArchitectureSummaryDetail {
   modules: string[];
 }
 
+export interface ActivityHeatmapCell {
+  day_of_week: number; // 0=Mon..6=Sun
+  hour_of_day: number; // 0..23
+  event_count: number;
+}
+
+export interface FileActivityRanking {
+  file_path: string;
+  event_count: number;
+  event_types_breakdown: Record<string, number>;
+  last_observed_at: string | null;
+}
+
+export interface DevelopmentFocusDetail {
+  focus: string;
+  classification: string;
+  confidence_reason: string;
+  evidence_summary: string[];
+  active_window: string;
+}
+
+export interface ArchitectureSignalDetail {
+  signal: string;
+  classification: string;
+  evidence_files: string[];
+  description: string;
+}
+
+export interface GitIntelligenceDetail {
+  is_git_repository: boolean;
+  branch: string | null;
+  latest_commit_hash: string | null;
+  latest_commit_timestamp: string | null;
+  uncommitted_changes_count: number;
+  provenance: string;
+}
+
 export interface ProjectContext {
   id: string;
   project_id: string;
   project_display_name: string;
   project_root_path: string;
-  languages: Record<string, { count: number; percentage: number }>;
+  languages: Record<string, { count: number; percentage: number; recent_activity_count?: number }>;
   frameworks: TechnologyDetail[];
   technologies: TechnologyDetail[];
   package_managers: TechnologyDetail[];
@@ -114,6 +153,13 @@ export interface ProjectContext {
   security_summary: SecuritySummaryDetail;
   activity_summary: ActivitySummaryDetail;
   architecture_summary: ArchitectureSummaryDetail;
+
+  development_focus?: DevelopmentFocusDetail;
+  activity_heatmap?: ActivityHeatmapCell[];
+  file_rankings?: FileActivityRanking[];
+  architecture_signals?: ArchitectureSignalDetail[];
+  git_intelligence?: GitIntelligenceDetail;
+
   context_version: number;
   first_observed_at: string | null;
   last_analyzed_at: string | null;

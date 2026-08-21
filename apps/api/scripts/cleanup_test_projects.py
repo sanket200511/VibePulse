@@ -222,9 +222,7 @@ async def main() -> None:
         for item in candidates:
             p = item.project
             if item.has_active_session:
-                print(
-                    f"[SKIP] {p.display_name}: Project is active and cannot be removed."
-                )
+                print(f"[SKIP] {p.display_name}: Project is active and cannot be removed.")
                 continue
 
             print(f"Deleting records for: {p.display_name} ({p.id})...")

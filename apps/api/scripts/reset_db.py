@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 async def reset() -> None:
     try:
         from app.core.config import get_settings
+
         settings = get_settings()
     except Exception as e:
         print(f"Error loading configuration: {e}")
