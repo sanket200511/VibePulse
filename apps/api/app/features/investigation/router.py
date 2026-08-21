@@ -1,10 +1,12 @@
 """
-Investigation Engine 3.0 REST Router.
+Investigation Engine 3.0 + Collaboration & Resolution Intelligence REST Router.
 
 Exposes endpoints for:
 - Hybrid full-text & faceted search
 - Detailed unified incident investigation reconstruction
 - Incident review workflow transitions & resolution notes
+- Incident audit history trail
+- Incident metrics & Project Health summary
 - Secret-safe Markdown & AI Handoff exports
 """
 
@@ -17,14 +19,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.features.investigation.schemas import (
+    IncidentMetrics,
+    IncidentReviewHistoryResponse,
     IncidentReviewRecord,
     IncidentReviewRequest,
     InvestigationIncidentDetail,
     InvestigationResponse,
+    ProjectHealthSummary,
 )
 from app.features.investigation.service import (
+    calculate_incident_metrics,
     export_investigation_ai_handoff,
     export_investigation_markdown,
+    generate_project_health_summary,
+    get_incident_review_history,
     reconstruct_incident_investigation,
     search_investigation,
     update_incident_review_status,
@@ -99,6 +107,63 @@ async def session_investigation_search(
     )
 
 
+# ── METRICS & HEALTH SUMMARY ENDPOINTS ──────────────────────────────────────
+
+
+@router.get(
+    "/api/projects/{project_id}/investigations/metrics",
+    response_model=IncidentMetrics,
+)
+@router.get(
+    "/projects/{project_id}/investigations/metrics",
+    response_model=IncidentMetrics,
+)
+async def get_project_incident_metrics(
+    project_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+) -> IncidentMetrics:
+    """
+    Calculates evidence-backed incident metrics for a project from PostgreSQL history.
+    """
+    project = await db.get(Project, project_id)
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project '{project_id}' not found",
+        )
+    return await calculate_incident_metrics(db, project_id)
+
+
+@router.get(
+    "/api/projects/{project_id}/investigations/health-summary",
+    response_model=ProjectHealthSummary,
+)
+@router.get(
+    "/projects/{project_id}/investigations/health-summary",
+    response_model=ProjectHealthSummary,
+)
+async def get_project_health_summary_endpoint(
+    project_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+) -> ProjectHealthSummary:
+    """
+    Returns unified project health summary from telemetry and security posture.
+    """
+    project = await db.get(Project, project_id)
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project '{project_id}' not found",
+        )
+    try:
+        return await generate_project_health_summary(db, project_id)
+    except Exception as err:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate project health summary: {err}",
+        ) from err
+
+
 # ── UNIFIED INCIDENT INVESTIGATION 3.0 ENDPOINTS ─────────────────────────────
 
 
@@ -150,8 +215,8 @@ async def update_incident_review(
     db: AsyncSession = Depends(get_db),
 ) -> IncidentReviewRecord:
     """
-    Updates the user review lifecycle status (OPEN -> INVESTIGATING -> REVIEWED -> RESOLVED)
-    and saves resolution notes into persistent storage.
+    Updates the user review lifecycle status (OPEN -> INVESTIGATING -> REVIEWED -> RESOLVED),
+    creates an immutable audit history record, and broadcasts real-time WebSocket updates.
     """
     project = await db.get(Project, project_id)
     if not project:
@@ -174,6 +239,31 @@ async def update_incident_review(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to update incident review status: {err}",
         ) from err
+
+
+@router.get(
+    "/api/projects/{project_id}/investigations/{incident_id}/history",
+    response_model=IncidentReviewHistoryResponse,
+)
+@router.get(
+    "/projects/{project_id}/investigations/{incident_id}/history",
+    response_model=IncidentReviewHistoryResponse,
+)
+async def get_incident_history_endpoint(
+    project_id: uuid.UUID,
+    incident_id: str,
+    db: AsyncSession = Depends(get_db),
+) -> IncidentReviewHistoryResponse:
+    """
+    Fetches the full historical audit trail of state transitions for an incident.
+    """
+    project = await db.get(Project, project_id)
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project '{project_id}' not found",
+        )
+    return await get_incident_review_history(db, project_id, incident_id)
 
 
 @router.get("/api/projects/{project_id}/investigations/{incident_id}/export")

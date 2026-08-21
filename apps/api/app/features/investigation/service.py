@@ -24,7 +24,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logging import get_logger
 from app.features.investigation.domain import parse_investigation_query
-from app.features.investigation.models import IncidentReviewState
+from app.features.investigation.models import IncidentReviewHistory, IncidentReviewState
 from app.features.investigation.repository import execute_investigation_query
 from app.features.investigation.schemas import (
     AffectedSurfaceItem,
@@ -34,6 +34,9 @@ from app.features.investigation.schemas import (
     EvidenceGraphEdge3,
     EvidenceNode,
     EvidenceStep,
+    IncidentMetrics,
+    IncidentReviewHistoryItem,
+    IncidentReviewHistoryResponse,
     IncidentReviewRecord,
     IncidentReviewRequest,
     IncidentStory,
@@ -43,6 +46,8 @@ from app.features.investigation.schemas import (
     InvestigationResponse,
     InvestigationResult,
     InvestigationSecurityFinding,
+    ProjectHealthSummary,
+    ResolutionRecommendation,
     RiskEvolution,
     RiskEvolutionStep,
     RiskFactor,
@@ -50,12 +55,16 @@ from app.features.investigation.schemas import (
     TimelineStep3,
 )
 from app.features.project_context.export import redact_sensitive_text
+from app.features.project_context.schemas import ProjectContextRead
 from app.features.project_context.service import get_or_create_project_context
 from app.features.projects.models import Project
 from app.features.security_intelligence.correlator import (
     compute_risk_explanation,
 )
-from app.features.security_intelligence.schemas import SecurityFinding
+from app.features.security_intelligence.schemas import (
+    SecurityFinding,
+    SecurityIntelligenceRead,
+)
 from app.features.security_intelligence.service import (
     get_or_create_security_intelligence,
 )
@@ -224,6 +233,44 @@ def generate_incident_story(
         summary=summary,
         narrative_paragraphs=paragraphs,
         provenance="OBSERVED",
+    )
+
+
+def correlate_engineering_dna(
+    proj_context: ProjectContextRead,
+    sec_intel: SecurityIntelligenceRead,
+) -> EngineeringDNACorrelation:
+    """
+    Evaluates incident surface files against baseline project focus directories.
+    """
+    normal_dirs = [d.path for d in getattr(proj_context, "key_directories", [])] or [
+        "src",
+        "app",
+        "packages",
+    ]
+    incident_files = [sf.file_path for sf in getattr(sec_intel, "sensitive_files", [])]
+
+    is_dev = False
+    for f in incident_files:
+        f_norm = f.replace("\\", "/").lower()
+        if any(f_norm.startswith(p) for p in ("config/", "settings/", ".env", "scripts/")):
+            is_dev = True
+            break
+
+    if is_dev:
+        summary = (
+            "Activity touched sensitive configuration/credentials outside primary "
+            "development focus areas."
+        )
+    else:
+        summary = "Activity aligns with standard observed repository development focus."
+
+    return EngineeringDNACorrelation(
+        normal_focus_dirs=normal_dirs,
+        incident_surface_files=incident_files,
+        is_surface_deviation=is_dev,
+        analysis_summary=summary,
+        provenance="OBSERVED" if normal_dirs else "INFERRED",
     )
 
 
@@ -580,6 +627,137 @@ def build_evidence_graph_3(
     return EvidenceGraph3(nodes=nodes, edges=edges)
 
 
+# ── RESOLUTION RECOMMENDATIONS GENERATOR ────────────────────────────────────
+
+
+def build_resolution_recommendations(
+    findings: list[InvestigationSecurityFinding],
+) -> list[ResolutionRecommendation]:
+    """
+    Generates deterministic, evidence-backed resolution and verification steps
+    based on observed security rules.
+    """
+    recommendations: list[ResolutionRecommendation] = []
+    seen_rules: set[str] = set()
+
+    for f in findings:
+        r_id = f.rule_id.upper()
+        if r_id in seen_rules:
+            continue
+        seen_rules.add(r_id)
+
+        if "SEC001" in r_id or "SECRET" in r_id or "KEY" in r_id or "TOKEN" in r_id:
+            recommendations.append(
+                ResolutionRecommendation(
+                    rule_id=f.rule_id,
+                    title="Rotate Exposed Credential & Externalize Secret",
+                    why=(
+                        "Plaintext API keys, passwords, or tokens in source code violate "
+                        "credential safety and expose systems to unauthorized access."
+                    ),
+                    recommended_actions=[
+                        "Revoke and rotate the exposed credential/API key in upstream provider.",
+                        "Move the secret to environment variables (.env) or Secret Manager vault.",
+                        "Remove the hardcoded secret string from the source file.",
+                        "Re-scan the affected file to verify clean state.",
+                    ],
+                    verification_steps=[
+                        "Inspect git diff to confirm no raw secrets remain in tracked files.",
+                        "Verify application correctly reads the secret from environment variables.",
+                    ],
+                )
+            )
+        elif "DEBUG" in r_id:
+            recommendations.append(
+                ResolutionRecommendation(
+                    rule_id=f.rule_id,
+                    title="Disable Insecure Debug Mode",
+                    why=(
+                        "Running with DEBUG = True exposes internal stack traces, "
+                        "environment variables, and interactive consoles."
+                    ),
+                    recommended_actions=[
+                        "Set DEBUG = False in production configuration.",
+                        "Enforce debug settings via environment variables (DEBUG=${DEBUG:-false}).",
+                    ],
+                    verification_steps=[
+                        "Check configuration settings to ensure debug mode is disabled for prod.",
+                    ],
+                )
+            )
+        elif "CORS" in r_id:
+            recommendations.append(
+                ResolutionRecommendation(
+                    rule_id=f.rule_id,
+                    title="Restrict Cross-Origin Resource Sharing (CORS)",
+                    why=(
+                        "Permissive wildcard CORS ('*') allows untrusted origins to send "
+                        "authenticated requests."
+                    ),
+                    recommended_actions=[
+                        "Replace wildcard allow_origins with explicit whitelist of domains.",
+                        "Disable allow_credentials when wildcard origins are present.",
+                    ],
+                    verification_steps=[
+                        "Send preflight OPTIONS request with untrusted Origin to verify drop.",
+                    ],
+                )
+            )
+        elif "EVAL" in r_id:
+            recommendations.append(
+                ResolutionRecommendation(
+                    rule_id=f.rule_id,
+                    title="Replace Dynamic Code Execution",
+                    why=(
+                        "Dynamic code evaluation using eval() or exec() introduces remote code "
+                        "execution risks."
+                    ),
+                    recommended_actions=[
+                        "Replace eval() or exec() with safe parsing utilities (ast.literal_eval).",
+                        "Sanitize and strictly validate all user-supplied input data.",
+                    ],
+                    verification_steps=[
+                        "Verify static analysis passes with zero dynamic execution warnings.",
+                    ],
+                )
+            )
+        elif "OS_SYSTEM" in r_id or "SHELL" in r_id or "COMMAND" in r_id:
+            recommendations.append(
+                ResolutionRecommendation(
+                    rule_id=f.rule_id,
+                    title="Sanitize Shell Command Execution",
+                    why=(
+                        "Invoking shell commands without argument escaping allows command "
+                        "injection attacks."
+                    ),
+                    recommended_actions=[
+                        "Use parameterized subprocess execution (e.g. subprocess.run()).",
+                        "Validate and escape all external arguments.",
+                    ],
+                    verification_steps=[
+                        "Confirm all process executions pass arguments as structured arrays.",
+                    ],
+                )
+            )
+        else:
+            recommendations.append(
+                ResolutionRecommendation(
+                    rule_id=f.rule_id,
+                    title=f"Remediate {f.rule_id} Finding",
+                    why=f.message or "Security Guardian detected a policy violation.",
+                    recommended_actions=[
+                        f.recommendation or "Review and sanitize suspicious code pattern.",
+                        "Re-scan affected file to confirm resolution.",
+                    ],
+                    verification_steps=[
+                        "Run automated test suite and security scan to verify clean state.",
+                    ],
+                )
+            )
+
+    return recommendations
+
+
 # ── CORE INVESTIGATION 3.0 RECONSTRUCTION SERVICE ────────────────────────────
 
 
@@ -604,15 +782,6 @@ async def reconstruct_incident_investigation(
     matched_inc = next(
         (inc for inc in sec_intel.correlated_incidents if inc.incident_id == incident_id), None
     )
-
-    # If not in correlated incidents list, construct from findings or events
-    if not matched_inc:
-        if sec_intel.correlated_incidents:
-            matched_inc = sec_intel.correlated_incidents[0]
-            incident_id = matched_inc.incident_id
-        else:
-            # Synthetic fallback for clean project with single event
-            matched_inc = None
 
     # Determine core attributes
     now = datetime.now(tz=UTC)
@@ -815,16 +984,13 @@ async def reconstruct_incident_investigation(
         burst_detected=burst,
     )
 
-    # 9. Remediation Guidance
+    # 9. Remediation Guidance & Recommendations
+    resolution_recs = build_resolution_recommendations(findings_list)
     rem_steps: list[str] = []
-    if findings_list:
-        rem_steps = [
-            "Revoke and rotate any exposed credentials or secret tokens immediately.",
-            "Remove hardcoded values from code and transition to environment variables.",
-            "Inspect git history to ensure secrets were not committed in prior snapshots.",
-            "Run automated test suite and security scan to verify clean state.",
-        ]
-        guidance = findings_list[0].recommendation or "Review and sanitize dangerous code patterns."
+    if resolution_recs:
+        for rec in resolution_recs:
+            rem_steps.extend(rec.recommended_actions)
+        guidance = resolution_recs[0].why
     else:
         rem_steps = [
             "Review modified files for architectural consistency.",
@@ -844,7 +1010,7 @@ async def reconstruct_incident_investigation(
         remediation_steps=rem_steps,
     )
 
-    # 11. Persisted Review Record
+    # 11. Persisted Review Record & History
     review_stmt = select(IncidentReviewState).where(IncidentReviewState.incident_id == incident_id)
     review_res = await db.execute(review_stmt)
     review_orm = review_res.scalar_one_or_none()
@@ -860,6 +1026,28 @@ async def reconstruct_incident_investigation(
         )
     else:
         review_record = IncidentReviewRecord(status="OPEN")
+
+    hist_stmt = (
+        select(IncidentReviewHistory)
+        .where(
+            IncidentReviewHistory.incident_id == incident_id,
+            IncidentReviewHistory.project_id == project_id,
+        )
+        .order_by(IncidentReviewHistory.created_at.asc())
+    )
+    hist_res = await db.execute(hist_stmt)
+    hist_items = [
+        IncidentReviewHistoryItem(
+            id=h.id,
+            incident_id=h.incident_id,
+            previous_status=h.previous_status,
+            new_status=h.new_status,
+            resolution_note=h.resolution_note,
+            reviewer=h.reviewer,
+            created_at=h.created_at,
+        )
+        for h in hist_res.scalars().all()
+    ]
 
     return InvestigationIncidentDetail(
         investigation_id=f"inv-{incident_id}",
@@ -888,7 +1076,9 @@ async def reconstruct_incident_investigation(
         evidence_graph=evidence_graph,
         remediation_steps=rem_steps,
         remediation_guidance=guidance,
+        resolution_recommendations=resolution_recs,
         review_record=review_record,
+        review_history=hist_items,
         created_at=started_at,
         updated_at=detected_at,
     )
@@ -901,39 +1091,74 @@ async def update_incident_review_status(
     req: IncidentReviewRequest,
 ) -> IncidentReviewRecord:
     """
-    Transitions incident review state (OPEN -> INVESTIGATING -> REVIEWED -> RESOLVED)
-    and persists resolution notes.
+    Transitions incident review state (OPEN -> INVESTIGATING -> REVIEWED -> RESOLVED),
+    creates an immutable audit history record, and broadcasts a real-time WebSocket update.
     """
     now = datetime.now(tz=UTC)
+    target_status = req.status.upper()
+
     stmt = select(IncidentReviewState).where(IncidentReviewState.incident_id == incident_id)
     res = await db.execute(stmt)
     review_orm = res.scalar_one_or_none()
 
+    prev_status = review_orm.status if review_orm else "OPEN"
+    reviewer_name = req.reviewed_by or (review_orm.reviewed_by if review_orm else "Local Developer")
+
+    # 1. Create immutable audit history entry
+    history_entry = IncidentReviewHistory(
+        id=uuid.uuid4(),
+        project_id=project_id,
+        incident_id=incident_id,
+        previous_status=prev_status,
+        new_status=target_status,
+        resolution_note=req.resolution_note,
+        reviewer=reviewer_name,
+        created_at=now,
+    )
+    db.add(history_entry)
+
+    # 2. Update snapshot review state
     if not review_orm:
         review_orm = IncidentReviewState(
             incident_id=incident_id,
             project_id=project_id,
-            status=req.status.upper(),
-            reviewed_by=req.reviewed_by or "Local Developer",
+            status=target_status,
+            reviewed_by=reviewer_name,
             reviewed_at=now,
             resolution_note=req.resolution_note,
-            resolved_at=now if req.status.upper() == "RESOLVED" else None,
+            resolved_at=now if target_status == "RESOLVED" else None,
             created_at=now,
             updated_at=now,
         )
         db.add(review_orm)
     else:
-        review_orm.status = req.status.upper()
-        review_orm.reviewed_by = req.reviewed_by or review_orm.reviewed_by or "Local Developer"
+        review_orm.status = target_status
+        review_orm.reviewed_by = reviewer_name
         review_orm.reviewed_at = now
         if req.resolution_note is not None:
             review_orm.resolution_note = req.resolution_note
-        if req.status.upper() == "RESOLVED":
+        if target_status == "RESOLVED":
             review_orm.resolved_at = now
         review_orm.updated_at = now
 
     await db.commit()
     await db.refresh(review_orm)
+
+    # 3. Real-time WebSocket broadcast for multi-tab synchronization
+    try:
+        from app.features.events.connection_manager import connection_manager
+
+        await connection_manager.broadcast(
+            {
+                "type": "INCIDENT_REVIEW_UPDATED",
+                "project_id": str(project_id),
+                "incident_id": incident_id,
+                "status": target_status,
+                "updated_at": now.isoformat(),
+            }
+        )
+    except Exception as ws_err:
+        logger.warning(f"Failed to broadcast INCIDENT_REVIEW_UPDATED: {ws_err}")
 
     return IncidentReviewRecord(
         status=review_orm.status,
@@ -942,6 +1167,175 @@ async def update_incident_review_status(
         resolution_note=review_orm.resolution_note,
         resolved_at=review_orm.resolved_at,
         updated_at=review_orm.updated_at,
+    )
+
+
+async def get_incident_review_history(
+    db: AsyncSession,
+    project_id: uuid.UUID,
+    incident_id: str,
+) -> IncidentReviewHistoryResponse:
+    """
+    Fetches full immutable audit trail of review status transitions.
+    """
+    state_stmt = select(IncidentReviewState).where(
+        IncidentReviewState.incident_id == incident_id,
+        IncidentReviewState.project_id == project_id,
+    )
+    state_res = await db.execute(state_stmt)
+    state_orm = state_res.scalar_one_or_none()
+    current_status = state_orm.status if state_orm else "OPEN"
+
+    hist_stmt = (
+        select(IncidentReviewHistory)
+        .where(
+            IncidentReviewHistory.incident_id == incident_id,
+            IncidentReviewHistory.project_id == project_id,
+        )
+        .order_by(IncidentReviewHistory.created_at.asc())
+    )
+    hist_res = await db.execute(hist_stmt)
+    history_items = [
+        IncidentReviewHistoryItem(
+            id=h.id,
+            incident_id=h.incident_id,
+            previous_status=h.previous_status,
+            new_status=h.new_status,
+            resolution_note=h.resolution_note,
+            reviewer=h.reviewer,
+            created_at=h.created_at,
+        )
+        for h in hist_res.scalars().all()
+    ]
+
+    return IncidentReviewHistoryResponse(
+        incident_id=incident_id,
+        current_status=current_status,
+        history=history_items,
+    )
+
+
+async def calculate_incident_metrics(
+    db: AsyncSession,
+    project_id: uuid.UUID,
+) -> IncidentMetrics:
+    """
+    Calculates evidence-backed incident metrics from PostgreSQL review states and history.
+    """
+    stmt = select(IncidentReviewState).where(IncidentReviewState.project_id == project_id)
+    res = await db.execute(stmt)
+    records = res.scalars().all()
+
+    open_cnt = sum(1 for r in records if r.status == "OPEN")
+    investigating_cnt = sum(1 for r in records if r.status == "INVESTIGATING")
+    resolved_cnt = sum(1 for r in records if r.status in ("RESOLVED", "REVIEWED"))
+    total = len(records)
+
+    rate = (resolved_cnt / total * 100.0) if total > 0 else None
+
+    # Calculate average resolution time for resolved incidents with history
+    hist_stmt = select(IncidentReviewHistory).where(
+        IncidentReviewHistory.project_id == project_id,
+        IncidentReviewHistory.new_status == "RESOLVED",
+    )
+    hist_res = await db.execute(hist_stmt)
+    resolved_hist = hist_res.scalars().all()
+
+    avg_time = None
+    if resolved_hist:
+        durations = []
+        for rh in resolved_hist:
+            init_stmt = (
+                select(IncidentReviewHistory.created_at)
+                .where(
+                    IncidentReviewHistory.incident_id == rh.incident_id,
+                    IncidentReviewHistory.project_id == project_id,
+                )
+                .order_by(IncidentReviewHistory.created_at.asc())
+                .limit(1)
+            )
+            init_res = await db.execute(init_stmt)
+            first_ts = init_res.scalar_one_or_none()
+            if first_ts and rh.created_at >= first_ts:
+                durations.append((rh.created_at - first_ts).total_seconds())
+        if durations:
+            avg_time = sum(durations) / len(durations)
+
+    # Count all historical transitions
+    all_hist_stmt = select(IncidentReviewHistory).where(
+        IncidentReviewHistory.project_id == project_id
+    )
+    all_hist_res = await db.execute(all_hist_stmt)
+    total_transitions = len(all_hist_res.scalars().all())
+
+    return IncidentMetrics(
+        project_id=project_id,
+        open_incidents=open_cnt,
+        investigating_incidents=investigating_cnt,
+        resolved_incidents=resolved_cnt,
+        total_incidents=total,
+        total_transitions=total_transitions,
+        resolution_rate_percent=round(rate, 1) if rate is not None else None,
+        avg_resolution_time_seconds=round(avg_time, 1) if avg_time is not None else None,
+        status_note=(
+            "Derived from PostgreSQL incident review records"
+            if total > 0 or total_transitions > 0
+            else "Insufficient historical data"
+        ),
+    )
+
+
+async def generate_project_health_summary(
+    db: AsyncSession,
+    project_id: uuid.UUID,
+) -> ProjectHealthSummary:
+    """
+    Generates unified project health summary from PostgreSQL telemetry and security posture.
+    """
+    project = await db.get(Project, project_id)
+    if not project:
+        raise ValueError(f"Project '{project_id}' not found")
+
+    sec_intel = await get_or_create_security_intelligence(db, project_id)
+    metrics = await calculate_incident_metrics(db, project_id)
+
+    # Count recent incident activity
+    now = datetime.now(tz=UTC)
+    week_ago = now - timedelta(days=7)
+    recent_stmt = select(IncidentReviewHistory).where(
+        IncidentReviewHistory.project_id == project_id,
+        IncidentReviewHistory.created_at >= week_ago,
+    )
+    recent_res = await db.execute(recent_stmt)
+    recent_count = len(recent_res.scalars().all())
+
+    # Recurring rule
+    rule_counts: dict[str, int] = {}
+    for f in sec_intel.security_findings:
+        rule_counts[f.rule_id] = rule_counts.get(f.rule_id, 0) + 1
+    most_recurring = max(rule_counts.items(), key=lambda x: x[1])[0] if rule_counts else None
+
+    # Subsystem
+    subsystems: dict[str, int] = {}
+    for sf in sec_intel.sensitive_files:
+        sub = classify_subsystem(sf.file_path)
+        subsystems[sub] = subsystems.get(sub, 0) + 1
+    top_subsystem = (
+        max(subsystems.items(), key=lambda x: x[1])[0] if subsystems else "Core Application"
+    )
+
+    return ProjectHealthSummary(
+        project_id=project_id,
+        project_display_name=project.display_name,
+        security_posture=sec_intel.risk_explanation.risk_level,
+        risk_score=sec_intel.risk_explanation.total_score,
+        open_incidents=metrics.open_incidents,
+        resolved_incidents=metrics.resolved_incidents,
+        recent_incident_activity=recent_count,
+        most_affected_subsystem=top_subsystem,
+        recurring_rule=most_recurring,
+        total_events=sec_intel.security_posture.security_events_count
+        or len(sec_intel.security_findings),
     )
 
 
@@ -1067,11 +1461,40 @@ def export_investigation_markdown(detail: InvestigationIncidentDetail) -> str:
             "",
         ]
     )
-    for i, step in enumerate(detail.remediation_steps, 1):
-        lines.append(f"{i}. {step}")
-    lines.append("")
+    if detail.resolution_recommendations:
+        for rec in detail.resolution_recommendations:
+            lines.append(f"### {rec.title} (`{rec.rule_id}`)")
+            lines.append(f"- **Why**: {rec.why}")
+            lines.append("- **Recommended Actions**:")
+            for act in rec.recommended_actions:
+                lines.append(f"  - [ ] {act}")
+            lines.append("- **Verification Checklist**:")
+            for ver in rec.verification_steps:
+                lines.append(f"  - [ ] {ver}")
+            lines.append("")
+    else:
+        for i, step in enumerate(detail.remediation_steps, 1):
+            lines.append(f"{i}. {step}")
+        lines.append("")
 
-    if detail.review_record.resolution_note:
+    if detail.review_history:
+        lines.extend(
+            [
+                "---",
+                "",
+                "## Incident Review Audit History",
+                "",
+                "| Timestamp | Transition | Reviewer | Resolution Note |",
+                "|---|---|---|---|",
+            ]
+        )
+        for h in detail.review_history:
+            t_str = h.created_at.strftime("%Y-%m-%d %H:%M:%S")
+            note = h.resolution_note or "-"
+            trans = f"{h.previous_status} -> {h.new_status}"
+            lines.append(f"| `{t_str}` | `{trans}` | `{h.reviewer}` | {note} |")
+        lines.append("")
+    elif detail.review_record.resolution_note:
         rev_at = (
             detail.review_record.reviewed_at.isoformat()
             if detail.review_record.reviewed_at
@@ -1143,6 +1566,18 @@ def export_investigation_ai_handoff(detail: InvestigationIncidentDetail) -> str:
     )
     for step in detail.remediation_steps:
         lines.append(f"- {step}")
+
+    if detail.review_history:
+        lines.extend(
+            [
+                "",
+                "## 6. Review & Resolution Audit History",
+            ]
+        )
+        for h in detail.review_history:
+            trans = f"{h.previous_status} -> {h.new_status}"
+            note_str = h.resolution_note or "No notes"
+            lines.append(f"- `{h.created_at.isoformat()}`: `{trans}` by `{h.reviewer}`: {note_str}")
 
     lines.append("")
     raw_md = "\n".join(lines)

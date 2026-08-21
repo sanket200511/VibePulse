@@ -130,6 +130,55 @@ export interface AffectedSurfaceSummary {
   total_findings: number;
 }
 
+export interface ResolutionRecommendation {
+  rule_id: string;
+  title: string;
+  why: string;
+  recommended_actions: string[];
+  verification_steps: string[];
+}
+
+export interface IncidentReviewHistoryItem {
+  id: string;
+  incident_id: string;
+  previous_status: string;
+  new_status: string;
+  resolution_note?: string | null;
+  reviewer: string;
+  created_at: string;
+}
+
+export interface IncidentReviewHistoryResponse {
+  incident_id: string;
+  current_status: string;
+  history: IncidentReviewHistoryItem[];
+}
+
+export interface IncidentMetrics {
+  project_id: string;
+  open_incidents: number;
+  investigating_incidents: number;
+  resolved_incidents: number;
+  total_incidents: number;
+  total_transitions: number;
+  resolution_rate_percent?: number | null;
+  avg_resolution_time_seconds?: number | null;
+  status_note: string;
+}
+
+export interface ProjectHealthSummary {
+  project_id: string;
+  project_display_name: string;
+  security_posture: string;
+  risk_score: number;
+  open_incidents: number;
+  resolved_incidents: number;
+  recent_incident_activity: number;
+  most_affected_subsystem: string;
+  recurring_rule?: string | null;
+  total_events: number;
+}
+
 export interface IncidentReviewRecord {
   status: "OPEN" | "INVESTIGATING" | "REVIEWED" | "RESOLVED" | string;
   reviewed_by?: string | null;
@@ -166,7 +215,9 @@ export interface InvestigationIncidentDetail {
   evidence_graph: EvidenceGraph3;
   remediation_steps: string[];
   remediation_guidance: string;
+  resolution_recommendations: ResolutionRecommendation[];
   review_record: IncidentReviewRecord;
+  review_history: IncidentReviewHistoryItem[];
   created_at: string;
   updated_at: string;
 }
@@ -241,10 +292,24 @@ export function useInvestigation(projectId: string | undefined, queryStr: string
     const wsClient = connectWs({
       url: getWsUrl("/ws/events"),
       onMessage: (rawMsg: unknown) => {
-        const msg = rawMsg as { type: string; event?: DevelopmentEvent; project_root?: string };
-        if (!projectId || msg.event?.project_root === projectId || msg.project_root === projectId) {
+        const msg = rawMsg as {
+          type: string;
+          event?: DevelopmentEvent;
+          project_root?: string;
+          project_id?: string;
+          incident_id?: string;
+        };
+        if (
+          !projectId ||
+          msg.event?.project_root === projectId ||
+          msg.project_root === projectId ||
+          msg.project_id === projectId
+        ) {
           void queryClient.invalidateQueries({ queryKey: ["investigation"] });
           void queryClient.invalidateQueries({ queryKey: ["incident-detail"] });
+          void queryClient.invalidateQueries({ queryKey: ["incident-history"] });
+          void queryClient.invalidateQueries({ queryKey: ["incident-metrics"] });
+          void queryClient.invalidateQueries({ queryKey: ["project-health-summary"] });
         }
       },
     });
@@ -268,6 +333,57 @@ export function useIncidentDetail(projectId: string | undefined, incidentId: str
       return res.json() as Promise<InvestigationIncidentDetail>;
     },
     enabled: !!projectId && !!incidentId,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useIncidentHistory(projectId: string | undefined, incidentId: string | null) {
+  return useQuery<IncidentReviewHistoryResponse>({
+    queryKey: ["incident-history", projectId, incidentId],
+    queryFn: async () => {
+      if (!projectId || !incidentId) throw new Error("Missing parameters");
+      const url = new URL(
+        `/api/projects/${projectId}/investigations/${incidentId}/history`,
+        getApiBaseUrl(),
+      );
+      const res = await fetch(url.toString());
+      if (!res.ok) throw new Error("Failed to fetch incident history");
+      return res.json() as Promise<IncidentReviewHistoryResponse>;
+    },
+    enabled: !!projectId && !!incidentId,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useIncidentMetrics(projectId: string | undefined) {
+  return useQuery<IncidentMetrics>({
+    queryKey: ["incident-metrics", projectId],
+    queryFn: async () => {
+      if (!projectId) throw new Error("Missing projectId");
+      const url = new URL(`/api/projects/${projectId}/investigations/metrics`, getApiBaseUrl());
+      const res = await fetch(url.toString());
+      if (!res.ok) throw new Error("Failed to fetch incident metrics");
+      return res.json() as Promise<IncidentMetrics>;
+    },
+    enabled: !!projectId,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useProjectHealthSummary(projectId: string | undefined) {
+  return useQuery<ProjectHealthSummary>({
+    queryKey: ["project-health-summary", projectId],
+    queryFn: async () => {
+      if (!projectId) throw new Error("Missing projectId");
+      const url = new URL(
+        `/api/projects/${projectId}/investigations/health-summary`,
+        getApiBaseUrl(),
+      );
+      const res = await fetch(url.toString());
+      if (!res.ok) throw new Error("Failed to fetch project health summary");
+      return res.json() as Promise<ProjectHealthSummary>;
+    },
+    enabled: !!projectId,
     refetchOnWindowFocus: false,
   });
 }
@@ -296,6 +412,9 @@ export function useUpdateIncidentReview(projectId: string | undefined, incidentI
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["incident-detail", projectId, incidentId] });
+      void queryClient.invalidateQueries({ queryKey: ["incident-history", projectId, incidentId] });
+      void queryClient.invalidateQueries({ queryKey: ["incident-metrics", projectId] });
+      void queryClient.invalidateQueries({ queryKey: ["project-health-summary", projectId] });
       void queryClient.invalidateQueries({ queryKey: ["investigation"] });
     },
   });
