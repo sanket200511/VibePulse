@@ -136,7 +136,13 @@ function ProjectStoryContent({
                 </div>
               </div>
             </div>
-            <div className="flex items-center justify-end gap-3">
+            <div className="flex flex-wrap items-center justify-end gap-3">
+              <Link
+                to={`/projects/${project.id}/command-center`}
+                className="rounded-lg border border-indigo-500/40 bg-indigo-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-lg transition-colors hover:bg-indigo-500"
+              >
+                ⚡ Command Center
+              </Link>
               <Link
                 to={`/projects/${project.id}/security`}
                 className="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-400 transition-colors hover:bg-red-500/20 hover:text-red-300"
