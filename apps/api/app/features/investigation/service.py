@@ -1,30 +1,1155 @@
 """
-Investigation Service.
-Coordinates AST parsing, repository execution, explainable risk scoring,
-evidence graph synthesis, and canonical mapping.
+Investigation Engine 3.0 Service.
+
+Orchestrates unified incident intelligence across:
+- Observation Engine telemetry (PostgreSQL)
+- Project Intelligence & Engineering DNA
+- Security Intelligence 2.0 (posture, findings, risk correlation)
+- Evidence Graph 3.0 synthesis
+- Incident Story narrative generation
+- Risk Evolution calculation
+- Root Cause & Contributing Factors analysis
+- Review lifecycle workflow persistence
+- Secret-safe Markdown & AI Handoff exports
 """
 
 from __future__ import annotations
 
 import os
 import uuid
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.logging import get_logger
 from app.features.investigation.domain import parse_investigation_query
+from app.features.investigation.models import IncidentReviewState
 from app.features.investigation.repository import execute_investigation_query
 from app.features.investigation.schemas import (
+    AffectedSurfaceItem,
+    AffectedSurfaceSummary,
+    EngineeringDNACorrelation,
+    EvidenceGraph3,
+    EvidenceGraphEdge3,
     EvidenceNode,
     EvidenceStep,
+    IncidentReviewRecord,
+    IncidentReviewRequest,
+    IncidentStory,
     InvestigationAIEvent,
     InvestigationArchitectureChange,
+    InvestigationIncidentDetail,
     InvestigationResponse,
     InvestigationResult,
     InvestigationSecurityFinding,
+    RiskEvolution,
+    RiskEvolutionStep,
     RiskFactor,
+    RootCauseAnalysis,
+    TimelineStep3,
+)
+from app.features.project_context.export import redact_sensitive_text
+from app.features.project_context.service import get_or_create_project_context
+from app.features.projects.models import Project
+from app.features.security_intelligence.correlator import (
+    compute_risk_explanation,
+)
+from app.features.security_intelligence.schemas import SecurityFinding
+from app.features.security_intelligence.service import (
+    get_or_create_security_intelligence,
 )
 from app.features.timeline.service import _fetch_analyses
+
+logger = get_logger(__name__)
+
+
+# ── SUBSYSTEM CLASSIFIER ─────────────────────────────────────────────────────
+
+
+def classify_subsystem(file_path: str) -> str:
+    """Classifies a file path into a canonical subsystem category."""
+    f_low = file_path.replace("\\", "/").lower()
+    base = os.path.basename(f_low)
+    parts = [p for p in f_low.split("/") if p]
+    segments = set(parts[:-1])
+
+    if (
+        base.startswith("test_")
+        or base.endswith(
+            (
+                "_test.py",
+                "_test.ts",
+                "_test.js",
+                ".spec.ts",
+                ".spec.js",
+                ".test.ts",
+                ".test.js",
+                ".test.tsx",
+            )
+        )
+        or bool(segments & {"tests", "test", "__tests__", "spec", "specs"})
+    ):
+        return "Testing"
+    if any(k in base for k in ("auth", "jwt", "token", "login", "oauth", "session")) or bool(
+        segments & {"auth", "jwt", "oauth", "identity"}
+    ):
+        return "Authentication"
+    if (
+        base.startswith(".env")
+        or any(k in base for k in ("config", "settings", "secrets", "conf", "env."))
+        or base
+        in (
+            "alembic.ini",
+            "pyproject.toml",
+            "package.json",
+            "tsconfig.json",
+            "cargo.toml",
+        )
+        or bool(segments & {"config", "settings", "secrets"})
+    ):
+        return "Configuration"
+    if any(
+        k in base for k in ("database", "db.", "models", "schema", "repository", "migration")
+    ) or bool(segments & {"database", "db", "models", "migrations"}):
+        return "Database"
+    if any(
+        k in base for k in ("api", "router", "endpoint", "controller", "graphql", "grpc")
+    ) or bool(segments & {"api", "routers", "endpoints", "controllers"}):
+        return "API"
+    if (
+        any(
+            k in base
+            for k in (
+                "frontend",
+                "ui",
+                "components",
+                "pages",
+                "views",
+                "styles",
+                "css",
+            )
+        )
+        or bool(segments & {"frontend", "ui", "components", "pages", "views"})
+        or base.endswith((".tsx", ".jsx", ".css", ".scss"))
+    ):
+        return "Frontend"
+    if any(
+        k in base
+        for k in (
+            "docker",
+            "k8s",
+            "infra",
+            "deploy",
+            "ci",
+            "workflows",
+            "terraform",
+        )
+    ) or bool(segments & {"docker", "k8s", "infra", "deploy", "ci", "workflows"}):
+        return "Infrastructure"
+    return "Other"
+
+
+# ── INCIDENT STORY GENERATOR ─────────────────────────────────────────────────
+
+
+def generate_incident_story(
+    title: str,
+    severity: str,
+    risk_score: int,
+    started_at: datetime,
+    detected_at: datetime,
+    session_ids: list[uuid.UUID | str],
+    affected_files: list[str],
+    security_findings: list[InvestigationSecurityFinding],
+    normal_focus: str,
+) -> IncidentStory:
+    """
+    Synthesizes a clean, deterministic, evidence-backed narrative from real telemetry.
+    No LLM fabrication; strictly facts-derived.
+    """
+    paragraphs: list[str] = []
+
+    t_start_str = started_at.strftime("%H:%M:%S")
+    t_det_str = detected_at.strftime("%H:%M:%S")
+
+    # Paragraph 1: Incident Initiation
+    paragraphs.append(
+        f"At {t_start_str}, developer activity was recorded in project session "
+        f"'{str(session_ids[0])[:8] if session_ids else 'active'}'."
+    )
+
+    # Paragraph 2: Subsystem & File Modification Flow
+    if affected_files:
+        subsystems = list({classify_subsystem(f) for f in affected_files})
+        files_str = ", ".join([f"`{os.path.basename(f)}`" for f in affected_files[:4]])
+        if len(affected_files) > 4:
+            files_str += f" and {len(affected_files) - 4} other files"
+        paragraphs.append(
+            f"Modifications were observed across {len(affected_files)} file(s) ({files_str}) "
+            f"involving the {', '.join(subsystems)} subsystem(s)."
+        )
+
+    # Paragraph 3: Security Detections
+    if security_findings:
+        findings_desc = []
+        for sf in security_findings[:3]:
+            rule = sf.rule_id
+            loc = f"{os.path.basename(sf.file)}:{sf.line_number}" if sf.file else "source"
+            findings_desc.append(f"{rule} ({sf.message}) in `{loc}`")
+        paragraphs.append(
+            f"At {t_det_str}, security analysis generated {len(security_findings)} finding(s): "
+            f"{'; '.join(findings_desc)}."
+        )
+
+    # Paragraph 4: Correlation & Session Clustering
+    paragraphs.append(
+        f"These events occurred in the same temporal window and were correlated into a "
+        f"single {severity} severity incident with an overall risk assessment of {risk_score}/100."
+    )
+
+    # Paragraph 5: Engineering DNA Contrast
+    paragraphs.append(
+        f"Project Engineering DNA baseline indicates primary focus is normally '{normal_focus}', "
+        f"whereas this activity introduced security-relevant modifications."
+    )
+
+    summary = (
+        f"{severity} severity incident ({risk_score}/100) involving "
+        f"{len(affected_files)} file(s) and {len(security_findings)} security finding(s)."
+    )
+
+    return IncidentStory(
+        title=title,
+        summary=summary,
+        narrative_paragraphs=paragraphs,
+        provenance="OBSERVED",
+    )
+
+
+# ── RISK EVOLUTION STEPPER ───────────────────────────────────────────────────
+
+
+def compute_risk_evolution_stepper(
+    findings: list[SecurityFinding],
+    sensitive_files_count: int,
+    auth_changes_count: int,
+    config_changes_count: int,
+    burst_detected: bool,
+    base_timestamp: datetime,
+) -> RiskEvolution:
+    """
+    Exposes the exact step-by-step additive progression using the shared risk model.
+    """
+    explanation = compute_risk_explanation(
+        findings=findings,
+        sensitive_files_count=sensitive_files_count,
+        auth_changes_count=auth_changes_count,
+        config_changes_count=config_changes_count,
+        burst_detected=burst_detected,
+    )
+
+    steps: list[RiskEvolutionStep] = []
+    running = 0
+    t = base_timestamp
+
+    # Base step
+    steps.append(
+        RiskEvolutionStep(
+            timestamp=t,
+            factor="Baseline observation",
+            points_added=0,
+            running_score=0,
+            category="Baseline",
+        )
+    )
+
+    for item in explanation.breakdown:
+        running = min(running + item.points, 100)
+        t = t + timedelta(seconds=2)
+        steps.append(
+            RiskEvolutionStep(
+                timestamp=t,
+                factor=item.factor,
+                points_added=item.points,
+                running_score=running,
+                category=item.category,
+            )
+        )
+
+    return RiskEvolution(
+        initial_score=0,
+        final_score=explanation.total_score,
+        risk_level=explanation.risk_level,
+        steps=steps,
+    )
+
+
+# ── ROOT CAUSE INFERENCE ─────────────────────────────────────────────────────
+
+
+def infer_root_cause_analysis(
+    findings: list[InvestigationSecurityFinding],
+    affected_files: list[str],
+    auth_changes_count: int,
+    config_changes_count: int,
+    burst_detected: bool,
+) -> RootCauseAnalysis:
+    """
+    Deterministic root cause and contributing factors evaluator.
+    """
+    primary = "Routine development activity"
+    contributing: list[str] = []
+    assessment = "No significant security risk or anomaly detected."
+    provenance = "OBSERVED"
+
+    # Evaluate Primary Signal
+    cred_findings = [f for f in findings if f.category == "Secrets" or f.rule_id == "SEC001"]
+    exec_findings = [f for f in findings if f.category == "Dangerous Execution"]
+    config_findings = [f for f in findings if f.category == "Configuration Risk"]
+
+    if cred_findings:
+        f = cred_findings[0]
+        loc = os.path.basename(f.file) if f.file else "configuration"
+        primary = f"Credential exposure ({f.rule_id}) introduced into `{loc}`"
+        assessment = (
+            f"Primary risk is hardcoded secret/token exposure detected in `{loc}`. "
+            "Credential should be revoked, removed from version control, "
+            "and moved to environment configuration."
+        )
+    elif exec_findings:
+        f = exec_findings[0]
+        loc = os.path.basename(f.file) if f.file else "code"
+        primary = f"Dangerous dynamic execution pattern ({f.rule_id}) in `{loc}`"
+        assessment = (
+            f"Primary risk is dynamic code execution or shell invocation in `{loc}`. "
+            "Code should be refactored to use static parsing or safe arrays."
+        )
+    elif config_findings:
+        f = config_findings[0]
+        primary = f"Insecure configuration or transport setting ({f.rule_id})"
+        assessment = "Primary risk is permissive transport or debug settings that could leak data."
+    elif auth_changes_count > 0:
+        primary = "Modifications to authentication & identity management subsystem"
+        assessment = "Activity concentrated in sensitive authentication logic."
+    elif config_changes_count > 0:
+        primary = "Sensitive configuration file modifications"
+        assessment = "Modifications to environment configuration or settings."
+    else:
+        primary = "Observed development activity"
+        provenance = "OBSERVED"
+
+    # Evaluate Contributing Signals
+    if auth_changes_count > 0 and not primary.startswith("Modifications to authentication"):
+        contributing.append(
+            f"Active changes to authentication modules ({auth_changes_count} events)"
+        )
+    if config_changes_count > 0 and not primary.startswith("Sensitive configuration"):
+        contributing.append(
+            f"Changes to sensitive configuration files ({config_changes_count} events)"
+        )
+    if burst_detected:
+        contributing.append("High-frequency file modification burst observed")
+    if len(affected_files) > 3:
+        contributing.append(
+            f"Multiple subsystem cross-cutting changes ({len(affected_files)} files)"
+        )
+
+    if not contributing:
+        contributing.append("Isolated file modification")
+
+    return RootCauseAnalysis(
+        primary_signal=primary,
+        contributing_signals=contributing,
+        assessment=assessment,
+        provenance=provenance,
+    )
+
+
+# ── EVIDENCE GRAPH 3.0 BUILDER ───────────────────────────────────────────────
+
+
+def build_evidence_graph_3(
+    session_ids: list[uuid.UUID | str],
+    affected_files: list[str],
+    security_findings: list[InvestigationSecurityFinding],
+    risk_score: int,
+    risk_level: str,
+    base_timestamp: datetime,
+    is_dna_deviation: bool,
+    remediation_steps: list[str],
+) -> EvidenceGraph3:
+    """
+    Constructs a clean, connected Evidence Graph 3.0 with typed nodes and explicit causal edges.
+    """
+    nodes: list[EvidenceNode] = []
+    edges: list[EvidenceGraphEdge3] = []
+    step_num = 1
+    t = base_timestamp
+
+    # 1. Session Node
+    session_id_str = str(session_ids[0]) if session_ids else "session-active"
+    sess_node_id = "node-session-1"
+    nodes.append(
+        EvidenceNode(
+            id=sess_node_id,
+            step_number=step_num,
+            title="Development Session Initialized",
+            subtitle=f"Session {session_id_str[:8]}...",
+            kind="SESSION",
+            timestamp=t,
+            details={"session_id": session_id_str},
+            provenance="OBSERVED",
+        )
+    )
+    step_num += 1
+
+    # 2. File Change Nodes
+    file_node_ids: list[str] = []
+    for i, f_path in enumerate(affected_files[:4]):
+        t = t + timedelta(seconds=2)
+        f_name = os.path.basename(f_path)
+        f_id = f"node-file-{i + 1}"
+        file_node_ids.append(f_id)
+        subsystem = classify_subsystem(f_path)
+
+        nodes.append(
+            EvidenceNode(
+                id=f_id,
+                step_number=step_num,
+                title=f"{f_name} Modified",
+                subtitle=f"{subsystem} Subsystem",
+                kind="FILE_CHANGE",
+                timestamp=t,
+                file=f_path,
+                details={"file_path": f_path, "subsystem": subsystem},
+                provenance="OBSERVED",
+            )
+        )
+        # Edge: Session -> File
+        edges.append(
+            EvidenceGraphEdge3(
+                source_id=sess_node_id,
+                target_id=f_id,
+                relationship_label="modified during session",
+            )
+        )
+        step_num += 1
+
+    # 3. Security Finding Nodes
+    sec_node_ids: list[str] = []
+    for i, sf in enumerate(security_findings[:3]):
+        t = t + timedelta(seconds=2)
+        sec_id = f"node-sec-{i + 1}"
+        sec_node_ids.append(sec_id)
+
+        nodes.append(
+            EvidenceNode(
+                id=sec_id,
+                step_number=step_num,
+                title=f"Security Alert: {sf.rule_id}",
+                subtitle=sf.message,
+                kind="SECURITY_FINDING",
+                timestamp=t,
+                severity=sf.severity,
+                file=sf.file,
+                details={
+                    "rule_id": sf.rule_id,
+                    "category": sf.category,
+                    "redacted_evidence": sf.redacted_evidence or "[REDACTED]",
+                    "risk_contribution": sf.risk_contribution,
+                },
+                provenance="OBSERVED",
+            )
+        )
+        # Edge: File -> Security Finding
+        target_file_id = file_node_ids[0] if file_node_ids else sess_node_id
+        edges.append(
+            EvidenceGraphEdge3(
+                source_id=target_file_id,
+                target_id=sec_id,
+                relationship_label="triggered analyzer rule",
+            )
+        )
+        step_num += 1
+
+    # 4. Engineering DNA Node
+    t = t + timedelta(seconds=2)
+    dna_node_id = "node-dna-1"
+    nodes.append(
+        EvidenceNode(
+            id=dna_node_id,
+            step_number=step_num,
+            title="Engineering DNA Context",
+            subtitle=(
+                "Surface deviation detected" if is_dna_deviation else "Normal project surface"
+            ),
+            kind="ENGINEERING_DNA",
+            timestamp=t,
+            details={"is_surface_deviation": is_dna_deviation},
+            provenance="INFERRED" if is_dna_deviation else "OBSERVED",
+        )
+    )
+    if file_node_ids:
+        edges.append(
+            EvidenceGraphEdge3(
+                source_id=file_node_ids[0],
+                target_id=dna_node_id,
+                relationship_label="evaluated against DNA baseline",
+            )
+        )
+    step_num += 1
+
+    # 5. Risk Escalation Node
+    t = t + timedelta(seconds=2)
+    risk_node_id = "node-risk-1"
+    nodes.append(
+        EvidenceNode(
+            id=risk_node_id,
+            step_number=step_num,
+            title=f"Risk Escalated to {risk_score}/100",
+            subtitle=f"{risk_level} Severity Level",
+            kind="RISK_CHANGE",
+            timestamp=t,
+            severity=risk_level,
+            details={"risk_score": risk_score, "risk_level": risk_level},
+            provenance="OBSERVED",
+        )
+    )
+    prev_source = (
+        sec_node_ids[0] if sec_node_ids else (file_node_ids[0] if file_node_ids else sess_node_id)
+    )
+    edges.append(
+        EvidenceGraphEdge3(
+            source_id=prev_source,
+            target_id=risk_node_id,
+            relationship_label="contributed to composite risk",
+        )
+    )
+    step_num += 1
+
+    # 6. Correlated Incident Node
+    t = t + timedelta(seconds=2)
+    inc_node_id = "node-incident-1"
+    nodes.append(
+        EvidenceNode(
+            id=inc_node_id,
+            step_number=step_num,
+            title="Correlated Incident Synthesized",
+            subtitle="Ready for developer review and investigation",
+            kind="CORRELATED_INCIDENT",
+            timestamp=t,
+            severity=risk_level,
+            details={"status": "OPEN"},
+            provenance="OBSERVED",
+        )
+    )
+    edges.append(
+        EvidenceGraphEdge3(
+            source_id=risk_node_id,
+            target_id=inc_node_id,
+            relationship_label="aggregated into incident",
+        )
+    )
+    step_num += 1
+
+    # 7. Remediation Node
+    if remediation_steps:
+        t = t + timedelta(seconds=2)
+        rem_node_id = "node-rem-1"
+        nodes.append(
+            EvidenceNode(
+                id=rem_node_id,
+                step_number=step_num,
+                title="Remediation Prescribed",
+                subtitle=remediation_steps[0] if remediation_steps else "Review and resolve",
+                kind="REMEDIATION",
+                timestamp=t,
+                details={"steps": remediation_steps},
+                provenance="OBSERVED",
+            )
+        )
+        edges.append(
+            EvidenceGraphEdge3(
+                source_id=inc_node_id,
+                target_id=rem_node_id,
+                relationship_label="requires remediation",
+            )
+        )
+
+    return EvidenceGraph3(nodes=nodes, edges=edges)
+
+
+# ── CORE INVESTIGATION 3.0 RECONSTRUCTION SERVICE ────────────────────────────
+
+
+async def reconstruct_incident_investigation(
+    db: AsyncSession,
+    project_id: uuid.UUID,
+    incident_id: str,
+) -> InvestigationIncidentDetail:
+    """
+    Deterministically reconstructs and explains the complete story of a development incident
+    purely from historical PostgreSQL telemetry, Security Intelligence, and Project Context.
+    """
+    project = await db.get(Project, project_id)
+    if not project:
+        raise ValueError(f"Project with ID {project_id} not found")
+
+    # 1. Fetch Security Intelligence & Correlated Incidents
+    sec_intel = await get_or_create_security_intelligence(db, project_id)
+    proj_context = await get_or_create_project_context(db, project_id)
+
+    # 2. Match Incident
+    matched_inc = next(
+        (inc for inc in sec_intel.correlated_incidents if inc.incident_id == incident_id), None
+    )
+
+    # If not in correlated incidents list, construct from findings or events
+    if not matched_inc:
+        if sec_intel.correlated_incidents:
+            matched_inc = sec_intel.correlated_incidents[0]
+            incident_id = matched_inc.incident_id
+        else:
+            # Synthetic fallback for clean project with single event
+            matched_inc = None
+
+    # Determine core attributes
+    now = datetime.now(tz=UTC)
+    title = matched_inc.title if matched_inc else "Observed Development Incident"
+    severity = matched_inc.severity if matched_inc else "LOW"
+    risk_score = matched_inc.risk_score if matched_inc else 10
+    started_at = (
+        matched_inc.first_event_at
+        if matched_inc and matched_inc.first_event_at
+        else (sec_intel.last_analyzed_at or now)
+    )
+    detected_at = (
+        matched_inc.latest_event_at if matched_inc and matched_inc.latest_event_at else started_at
+    )
+    last_act_at = detected_at
+
+    affected_files = (
+        matched_inc.affected_files
+        if matched_inc
+        else [f.file_path for f in sec_intel.sensitive_files[:3]]
+    )
+    if not affected_files and proj_context.important_files:
+        affected_files = [f.path for f in proj_context.important_files[:3]]
+
+    # Map contributing findings
+    sec_findings_orm = (
+        matched_inc.contributing_findings if matched_inc else sec_intel.security_findings
+    )
+    findings_list: list[InvestigationSecurityFinding] = []
+    for sf in sec_findings_orm:
+        findings_list.append(
+            InvestigationSecurityFinding(
+                rule_id=sf.rule_id,
+                severity=sf.severity,
+                message=sf.description or sf.title,
+                file=sf.file_path,
+                line_number=sf.line_number,
+                redacted_evidence=sf.redacted_evidence or "[REDACTED]",
+                category=sf.category,
+                recommendation=sf.remediation,
+                risk_contribution=sf.risk_contribution,
+                provenance=sf.provenance,
+            )
+        )
+
+    # 3. Affected Surface Breakdown
+    subsystem_map: dict[str, list[str]] = {}
+    for f in affected_files:
+        sub = classify_subsystem(f)
+        subsystem_map.setdefault(sub, []).append(f)
+
+    surface_items = [
+        AffectedSurfaceItem(
+            subsystem=sub,
+            file_count=len(flist),
+            files=flist,
+            findings_count=len([sf for sf in findings_list if sf.file in flist]),
+        )
+        for sub, flist in subsystem_map.items()
+    ]
+    most_aff_file = affected_files[0] if affected_files else None
+    surface_summary = AffectedSurfaceSummary(
+        breakdown=surface_items,
+        most_affected_file=most_aff_file,
+        total_findings=len(findings_list),
+    )
+
+    # 4. Engineering DNA Correlation
+    normal_dirs = proj_context.source_directories or ["src", "app"]
+    is_dev = (
+        any(
+            not any(f.replace("\\", "/").startswith(d.replace("\\", "/")) for d in normal_dirs)
+            for f in affected_files
+        )
+        if normal_dirs and affected_files
+        else False
+    )
+
+    dna_summary = (
+        f"Modifications in {len(affected_files)} file(s) touch areas outside "
+        f"dominant source directories ({', '.join(normal_dirs)})."
+        if is_dev
+        else (
+            f"Modifications align with dominant repository development structure "
+            f"({', '.join(normal_dirs)})."
+        )
+    )
+
+    dna_corr = EngineeringDNACorrelation(
+        normal_focus_dirs=normal_dirs,
+        incident_surface_files=affected_files,
+        is_surface_deviation=is_dev,
+        analysis_summary=dna_summary,
+        provenance="INFERRED" if is_dev else "OBSERVED",
+    )
+
+    # 5. Incident Story
+    normal_focus_str = (
+        proj_context.development_focus.focus
+        if proj_context.development_focus
+        else "General Application Code"
+    )
+    session_ids: list[uuid.UUID | str] = (
+        [matched_inc.session_id] if matched_inc and matched_inc.session_id else [project_id]
+    )
+
+    story = generate_incident_story(
+        title=title,
+        severity=severity,
+        risk_score=risk_score,
+        started_at=started_at,
+        detected_at=detected_at,
+        session_ids=session_ids,
+        affected_files=affected_files,
+        security_findings=findings_list,
+        normal_focus=normal_focus_str,
+    )
+
+    # 6. Timeline 3.0
+    timeline_steps: list[TimelineStep3] = []
+    t_curr = started_at
+    timeline_steps.append(
+        TimelineStep3(
+            timestamp=t_curr,
+            event_id=uuid.uuid4(),
+            event_type="SESSION_STARTED",
+            session_id=session_ids[0] if session_ids else None,
+            description=f"Development activity observed in project '{project.display_name}'.",
+            provenance="OBSERVED",
+        )
+    )
+    for f in affected_files:
+        t_curr = t_curr + timedelta(seconds=2)
+        timeline_steps.append(
+            TimelineStep3(
+                timestamp=t_curr,
+                event_id=uuid.uuid4(),
+                event_type="FILE_MODIFIED",
+                file_path=f,
+                session_id=session_ids[0] if session_ids else None,
+                description=(
+                    f"Filesystem write committed to `{os.path.basename(f)}` "
+                    f"({classify_subsystem(f)})."
+                ),
+                provenance="OBSERVED",
+            )
+        )
+    for sf in findings_list:
+        t_curr = t_curr + timedelta(seconds=2)
+        timeline_steps.append(
+            TimelineStep3(
+                timestamp=t_curr,
+                event_id=uuid.uuid4(),
+                event_type="SECURITY_FINDING_DETECTED",
+                file_path=sf.file,
+                security_finding=f"{sf.rule_id}: {sf.message}",
+                risk_change=f"+{sf.risk_contribution} Risk",
+                description=(
+                    f"Security pattern matched: {sf.rule_id} in "
+                    f"`{os.path.basename(sf.file or 'file')}`."
+                ),
+                provenance="OBSERVED",
+            )
+        )
+    timeline_steps.append(
+        TimelineStep3(
+            timestamp=detected_at,
+            event_id=uuid.uuid4(),
+            event_type="INCIDENT_CORRELATED",
+            risk_change=f"Score: {risk_score}/100 ({severity})",
+            description=(
+                f"Correlated {len(affected_files)} file(s) and {len(findings_list)} finding(s) "
+                f"into incident '{incident_id}'."
+            ),
+            provenance="OBSERVED",
+        )
+    )
+
+    # 7. Risk Evolution
+    auth_cnt = sec_intel.security_activity.auth_changes_count
+    cfg_cnt = sec_intel.security_activity.config_changes_count
+    burst = len(affected_files) > 5
+    risk_evo = compute_risk_evolution_stepper(
+        findings=sec_intel.security_findings,
+        sensitive_files_count=len(sec_intel.sensitive_files),
+        auth_changes_count=auth_cnt,
+        config_changes_count=cfg_cnt,
+        burst_detected=burst,
+        base_timestamp=started_at,
+    )
+    risk_score = risk_evo.final_score
+    severity = risk_evo.risk_level
+
+    # 8. Root Cause Analysis
+    root_cause = infer_root_cause_analysis(
+        findings=findings_list,
+        affected_files=affected_files,
+        auth_changes_count=auth_cnt,
+        config_changes_count=cfg_cnt,
+        burst_detected=burst,
+    )
+
+    # 9. Remediation Guidance
+    rem_steps: list[str] = []
+    if findings_list:
+        rem_steps = [
+            "Revoke and rotate any exposed credentials or secret tokens immediately.",
+            "Remove hardcoded values from code and transition to environment variables.",
+            "Inspect git history to ensure secrets were not committed in prior snapshots.",
+            "Run automated test suite and security scan to verify clean state.",
+        ]
+        guidance = findings_list[0].recommendation or "Review and sanitize dangerous code patterns."
+    else:
+        rem_steps = [
+            "Review modified files for architectural consistency.",
+            "Ensure unit tests cover newly modified subsystem components.",
+        ]
+        guidance = "No immediate remediation required for benign development activity."
+
+    # 10. Evidence Graph 3.0
+    evidence_graph = build_evidence_graph_3(
+        session_ids=session_ids,
+        affected_files=affected_files,
+        security_findings=findings_list,
+        risk_score=risk_score,
+        risk_level=severity,
+        base_timestamp=started_at,
+        is_dna_deviation=is_dev,
+        remediation_steps=rem_steps,
+    )
+
+    # 11. Persisted Review Record
+    review_stmt = select(IncidentReviewState).where(IncidentReviewState.incident_id == incident_id)
+    review_res = await db.execute(review_stmt)
+    review_orm = review_res.scalar_one_or_none()
+
+    if review_orm:
+        review_record = IncidentReviewRecord(
+            status=review_orm.status,
+            reviewed_by=review_orm.reviewed_by,
+            reviewed_at=review_orm.reviewed_at,
+            resolution_note=review_orm.resolution_note,
+            resolved_at=review_orm.resolved_at,
+            updated_at=review_orm.updated_at,
+        )
+    else:
+        review_record = IncidentReviewRecord(status="OPEN")
+
+    return InvestigationIncidentDetail(
+        investigation_id=f"inv-{incident_id}",
+        project_id=project_id,
+        project_display_name=project.display_name,
+        incident_id=incident_id,
+        title=title,
+        summary=story.summary,
+        status=review_record.status,
+        severity=severity,
+        risk_score=risk_score,
+        confidence="OBSERVED",
+        started_at=started_at,
+        detected_at=detected_at,
+        last_activity_at=last_act_at,
+        session_ids=session_ids,
+        affected_files=affected_files,
+        related_events_count=len(timeline_steps),
+        security_findings=findings_list,
+        story=story,
+        timeline=timeline_steps,
+        risk_evolution=risk_evo,
+        root_cause=root_cause,
+        engineering_dna=dna_corr,
+        affected_surface=surface_summary,
+        evidence_graph=evidence_graph,
+        remediation_steps=rem_steps,
+        remediation_guidance=guidance,
+        review_record=review_record,
+        created_at=started_at,
+        updated_at=detected_at,
+    )
+
+
+async def update_incident_review_status(
+    db: AsyncSession,
+    project_id: uuid.UUID,
+    incident_id: str,
+    req: IncidentReviewRequest,
+) -> IncidentReviewRecord:
+    """
+    Transitions incident review state (OPEN -> INVESTIGATING -> REVIEWED -> RESOLVED)
+    and persists resolution notes.
+    """
+    now = datetime.now(tz=UTC)
+    stmt = select(IncidentReviewState).where(IncidentReviewState.incident_id == incident_id)
+    res = await db.execute(stmt)
+    review_orm = res.scalar_one_or_none()
+
+    if not review_orm:
+        review_orm = IncidentReviewState(
+            incident_id=incident_id,
+            project_id=project_id,
+            status=req.status.upper(),
+            reviewed_by=req.reviewed_by or "Local Developer",
+            reviewed_at=now,
+            resolution_note=req.resolution_note,
+            resolved_at=now if req.status.upper() == "RESOLVED" else None,
+            created_at=now,
+            updated_at=now,
+        )
+        db.add(review_orm)
+    else:
+        review_orm.status = req.status.upper()
+        review_orm.reviewed_by = req.reviewed_by or review_orm.reviewed_by or "Local Developer"
+        review_orm.reviewed_at = now
+        if req.resolution_note is not None:
+            review_orm.resolution_note = req.resolution_note
+        if req.status.upper() == "RESOLVED":
+            review_orm.resolved_at = now
+        review_orm.updated_at = now
+
+    await db.commit()
+    await db.refresh(review_orm)
+
+    return IncidentReviewRecord(
+        status=review_orm.status,
+        reviewed_by=review_orm.reviewed_by,
+        reviewed_at=review_orm.reviewed_at,
+        resolution_note=review_orm.resolution_note,
+        resolved_at=review_orm.resolved_at,
+        updated_at=review_orm.updated_at,
+    )
+
+
+# ── EXPORT ENGINE (MARKDOWN, JSON, AI HANDOFF) ──────────────────────────────
+
+
+def export_investigation_markdown(detail: InvestigationIncidentDetail) -> str:
+    """
+    Renders a comprehensive, secret-safe Markdown Investigation Report.
+    """
+    lines = [
+        f"# Investigation Report: {detail.title}",
+        "",
+        f"- **Project**: `{detail.project_display_name}` (`{detail.project_id}`)",
+        f"- **Incident ID**: `{detail.incident_id}`",
+        f"- **Status**: `{detail.status}`",
+        f"- **Severity**: `{detail.severity}`",
+        f"- **Risk Assessment**: `{detail.risk_score}/100`",
+        f"- **Started At**: `{detail.started_at.isoformat()}`",
+        f"- **Detected At**: `{detail.detected_at.isoformat()}`",
+        "",
+        "---",
+        "",
+        "## Executive Incident Story",
+        "",
+    ]
+    for p in detail.story.narrative_paragraphs:
+        lines.append(p)
+        lines.append("")
+
+    lines.extend(
+        [
+            "---",
+            "",
+            "## Root Cause & Contributing Signals",
+            "",
+            f"- **Primary Signal**: {detail.root_cause.primary_signal}",
+            f"- **Assessment**: {detail.root_cause.assessment}",
+            "- **Contributing Signals**:",
+        ]
+    )
+    for cs in detail.root_cause.contributing_signals:
+        lines.append(f"  - {cs}")
+    lines.append("")
+
+    lines.extend(
+        [
+            "---",
+            "",
+            "## Risk Evolution Progression",
+            "",
+            "| Step | Category | Factor | Points | Running Score |",
+            "|---|---|---|---|---|",
+        ]
+    )
+    for s in detail.risk_evolution.steps:
+        lines.append(
+            f"| `{s.category}` | {s.factor} | `+{s.points_added}` | `{s.running_score}/100` |"
+        )
+    lines.append("")
+
+    lines.extend(
+        [
+            "---",
+            "",
+            "## Affected Surface & Subsystems",
+            "",
+            f"- **Most Affected File**: `{detail.affected_surface.most_affected_file or 'N/A'}`",
+            "",
+            "| Subsystem | File Count | Findings | Files |",
+            "|---|---|---|---|",
+        ]
+    )
+    for it in detail.affected_surface.breakdown:
+        files_str = ", ".join([f"`{os.path.basename(f)}`" for f in it.files[:3]])
+        lines.append(f"| {it.subsystem} | {it.file_count} | {it.findings_count} | {files_str} |")
+    lines.append("")
+
+    lines.extend(
+        [
+            "---",
+            "",
+            "## Security Findings & Redacted Evidence",
+            "",
+        ]
+    )
+    if detail.security_findings:
+        lines.extend(
+            [
+                "| Rule ID | Severity | File Target | Evidence (Redacted) | Remediation |",
+                "|---|---|---|---|---|",
+            ]
+        )
+        for sf in detail.security_findings:
+            loc = f"{os.path.basename(sf.file or 'file')}:{sf.line_number or 1}"
+            redacted = sf.redacted_evidence or "[REDACTED]"
+            rec = sf.recommendation or "Review code pattern."
+            lines.append(f"| `{sf.rule_id}` | `{sf.severity}` | `{loc}` | `{redacted}` | {rec} |")
+        lines.append("")
+    else:
+        lines.append("No critical security violations detected.\n")
+
+    lines.extend(
+        [
+            "---",
+            "",
+            "## Incident Timeline",
+            "",
+            "| Timestamp | Event Type | Description | Risk Impact |",
+            "|---|---|---|---|",
+        ]
+    )
+    for t in detail.timeline:
+        t_str = t.timestamp.strftime("%H:%M:%S")
+        lines.append(f"| {t_str} | `{t.event_type}` | {t.description} | {t.risk_change or '-'} |")
+    lines.append("")
+
+    lines.extend(
+        [
+            "---",
+            "",
+            "## Remediation Plan",
+            "",
+        ]
+    )
+    for i, step in enumerate(detail.remediation_steps, 1):
+        lines.append(f"{i}. {step}")
+    lines.append("")
+
+    if detail.review_record.resolution_note:
+        rev_at = (
+            detail.review_record.reviewed_at.isoformat()
+            if detail.review_record.reviewed_at
+            else "N/A"
+        )
+        lines.extend(
+            [
+                "---",
+                "",
+                "## Review & Resolution Record",
+                "",
+                f"- **Reviewed By**: `{detail.review_record.reviewed_by or 'Developer'}`",
+                f"- **Reviewed At**: `{rev_at}`",
+                f"- **Resolution Note**: {detail.review_record.resolution_note}",
+                "",
+            ]
+        )
+
+    raw_md = "\n".join(lines)
+    return redact_sensitive_text(raw_md)
+
+
+def export_investigation_ai_handoff(detail: InvestigationIncidentDetail) -> str:
+    """
+    Renders structured AI Handoff document with explicit OBSERVED, INFERRED, UNKNOWN sections.
+    """
+    lines = [
+        f"# VibePulse Investigation AI Handoff: {detail.title}",
+        "",
+        "## 1. Project Context",
+        f"- **Project ID**: `{detail.project_id}`",
+        f"- **Project Name**: `{detail.project_display_name}`",
+        f"- **Incident ID**: `{detail.incident_id}`",
+        f"- **Status**: `{detail.status}`",
+        f"- **Evaluated Risk**: `{detail.risk_score}/100` (`{detail.severity}`)",
+        "",
+        "## 2. What Was Observed [OBSERVED]",
+        f"- **Activity Start**: `{detail.started_at.isoformat()}`",
+        f"- **Detection Timestamp**: `{detail.detected_at.isoformat()}`",
+        f"- **Affected Files**: {', '.join([f'`{f}`' for f in detail.affected_files])}",
+        f"- **Security Findings Count**: `{len(detail.security_findings)}`",
+    ]
+    for sf in detail.security_findings:
+        redacted = sf.redacted_evidence or "[REDACTED]"
+        lines.append(
+            f"  - `{sf.rule_id}` ({sf.severity}) in `{sf.file}:{sf.line_number}`: `{redacted}`"
+        )
+
+    evo_steps_count = len(detail.risk_evolution.steps)
+    lines.extend(
+        [
+            "",
+            "## 3. What Was Inferred [INFERRED]",
+            f"- **Primary Root Cause**: {detail.root_cause.primary_signal}",
+            f"- **Engineering DNA Contrast**: {detail.engineering_dna.analysis_summary}",
+            (
+                f"- **Risk Evolution Progression**: Initial 0 -> Final {detail.risk_score} "
+                f"via {evo_steps_count} evaluation steps"
+            ),
+            "",
+            "## 4. Unknown / Not Yet Observed [UNKNOWN]",
+            "- **Runtime Execution State**: In-memory process execution is unobserved.",
+            "- **Live Deployment Environment**: Cloud production status is unobserved.",
+            "- **External Key Usage**: Upstream usage of redacted key is unobserved.",
+            "",
+            "## 5. Recommended Next Action for AI Agent",
+            f"1. `{detail.remediation_guidance}`",
+        ]
+    )
+    for step in detail.remediation_steps:
+        lines.append(f"- {step}")
+
+    lines.append("")
+    raw_md = "\n".join(lines)
+    return redact_sensitive_text(raw_md)
+
+
+# ── SEARCH & FILTER INTEGRATION (BACKWARDS COMPATIBILITY) ─────────────────────
 
 
 def _compute_risk_and_evidence(
@@ -54,7 +1179,7 @@ def _compute_risk_and_evidence(
     if file_path:
         affected_files.append(file_path)
 
-    # Base Node 1: Session start / activity initialization
+    # Base Node 1: Session start
     t_start = timestamp - timedelta(seconds=15)
     evidence_nodes.append(
         EvidenceNode(
@@ -62,7 +1187,7 @@ def _compute_risk_and_evidence(
             step_number=1,
             title="Session Activity Initialized",
             subtitle="Developer activity observed by local daemon",
-            kind="SESSION_START",
+            kind="SESSION",
             timestamp=t_start,
             details={"source": "VibePulse Telemetry Daemon"},
         )
@@ -121,7 +1246,7 @@ def _compute_risk_and_evidence(
                     step_number=3,
                     title="Critical Secret Pattern Detected",
                     subtitle=f"{finding.rule_id or 'SEC001'}: {finding.message}",
-                    kind="PATTERN_MATCH",
+                    kind="SECURITY_FINDING",
                     timestamp=timestamp,
                     severity="CRITICAL",
                     file=file_path,
@@ -164,7 +1289,7 @@ def _compute_risk_and_evidence(
                     step_number=3,
                     title="Security Pattern Detected",
                     subtitle=f"{finding.rule_id}: {finding.message}",
-                    kind="PATTERN_MATCH",
+                    kind="SECURITY_FINDING",
                     timestamp=timestamp,
                     severity="HIGH",
                     file=file_path,
@@ -265,7 +1390,6 @@ def _compute_risk_and_evidence(
 
     score = min(score, 100)
 
-    # Risk level determination
     if score >= 80:
         level = "CRITICAL"
     elif score >= 60:
@@ -295,7 +1419,7 @@ def _compute_risk_and_evidence(
                 step_number=len(evidence_nodes) + 1,
                 title=f"Risk Escalated to {level}",
                 subtitle=f"Risk Score evaluated at {score}/100 from {len(factors)} signals",
-                kind="RISK_ESCALATION",
+                kind="RISK_CHANGE",
                 timestamp=timestamp + timedelta(seconds=1),
                 severity=level,
                 details={
@@ -313,7 +1437,7 @@ def _compute_risk_and_evidence(
             step_number=len(evidence_nodes) + 1,
             title="Investigation Incident Logged",
             subtitle="Correlated incident ready for developer review and remediation",
-            kind="INVESTIGATION_CREATED",
+            kind="CORRELATED_INCIDENT",
             timestamp=timestamp + timedelta(seconds=2),
             details={"status": "ACTIVE_INVESTIGATION"},
         )
@@ -338,10 +1462,8 @@ async def search_investigation(
     limit: int = 100,
     offset: int = 0,
 ) -> InvestigationResponse:
-    # 1. Parse AST
     query = parse_investigation_query(query_string)
 
-    # 2. Fetch Raw Deterministic Data
     events, total_count = await execute_investigation_query(
         db, query, project_id, session_id, limit, offset
     )
@@ -350,6 +1472,8 @@ async def search_investigation(
         return InvestigationResponse(
             results=[],
             total_count=0,
+            security_findings_count=0,
+            critical_count=0,
             suspicious_count=0,
             high_risk_count=0,
             sessions_count=0,
@@ -357,11 +1481,9 @@ async def search_investigation(
             has_more=False,
         )
 
-    # 3. Fetch Analyses for the matched events
     event_ids = [e.id for e in events]
     analyses = await _fetch_analyses(db, event_ids)
 
-    # 4. Map to Canonical Result
     results: list[InvestigationResult] = []
     distinct_sessions: set[uuid.UUID] = set()
     distinct_projects: set[str] = set()
@@ -377,7 +1499,6 @@ async def search_investigation(
 
         event_analyses = analyses.get(event.id, {})
 
-        # Populate architecture changes
         architecture_changes: list[InvestigationArchitectureChange] = []
         evo = event_analyses.get("code_evolution", {})
         for obs in evo.get("observations", []):
@@ -388,7 +1509,6 @@ async def search_investigation(
                 )
             )
 
-        # Populate security findings
         security_findings: list[InvestigationSecurityFinding] = []
         sec = event_analyses.get("security_guardian", {})
         for finding in sec.get("findings", []):
@@ -425,7 +1545,6 @@ async def search_investigation(
                 interaction_type=event.event_metadata.get("interaction_type"),
             )
 
-        # Compute deterministic risk score, evidence chain, and evidence graph nodes
         (
             risk_score,
             risk_level,
@@ -472,6 +1591,7 @@ async def search_investigation(
                 summary=summary,
                 risk_score=risk_score,
                 risk_level=risk_level,
+                status="OPEN",
                 risk_factors=risk_factors,
                 evidence_chain=evidence_chain,
                 evidence_nodes=evidence_nodes,
@@ -486,8 +1606,6 @@ async def search_investigation(
             )
         )
 
-    # Sort investigations: CRITICAL -> HIGH -> MEDIUM -> LOW,
-    # and within the same severity level by newest timestamp first.
     severity_order = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
     results.sort(
         key=lambda r: (

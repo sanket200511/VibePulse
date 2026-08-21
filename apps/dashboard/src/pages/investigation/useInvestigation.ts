@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 import { getApiBaseUrl, getWsUrl } from "../../lib/api-config";
 import { connectWs } from "../../lib/ws-client";
@@ -19,6 +19,8 @@ export interface InvestigationSecurityFinding {
   redacted_evidence?: string | null;
   category?: string | null;
   recommendation?: string | null;
+  risk_contribution?: number;
+  provenance?: string;
 }
 
 export interface InvestigationAIEvent {
@@ -47,11 +49,126 @@ export interface EvidenceNode {
   step_number: number;
   title: string;
   subtitle: string;
-  kind: "SESSION_START" | "FILE_CHANGE" | "PATTERN_MATCH" | "RISK_ESCALATION" | "INVESTIGATION_CREATED" | string;
+  kind: string;
   timestamp: string;
   severity?: string | null;
   file?: string | null;
   details?: Record<string, unknown>;
+  provenance?: string;
+}
+
+export interface EvidenceGraphEdge3 {
+  source_id: string;
+  target_id: string;
+  relationship_label: string;
+}
+
+export interface EvidenceGraph3 {
+  nodes: EvidenceNode[];
+  edges: EvidenceGraphEdge3[];
+}
+
+export interface IncidentStory {
+  title: string;
+  summary: string;
+  narrative_paragraphs: string[];
+  provenance: string;
+}
+
+export interface TimelineStep3 {
+  timestamp: string;
+  event_id: string;
+  event_type: string;
+  file_path?: string | null;
+  session_id?: string | null;
+  security_finding?: string | null;
+  risk_change?: string | null;
+  description: string;
+  provenance: string;
+}
+
+export interface RiskEvolutionStep {
+  timestamp?: string | null;
+  factor: string;
+  points_added: number;
+  running_score: number;
+  category: string;
+}
+
+export interface RiskEvolution {
+  initial_score: number;
+  final_score: number;
+  risk_level: string;
+  steps: RiskEvolutionStep[];
+}
+
+export interface RootCauseAnalysis {
+  primary_signal: string;
+  contributing_signals: string[];
+  assessment: string;
+  provenance: string;
+}
+
+export interface EngineeringDNACorrelation {
+  normal_focus_dirs: string[];
+  incident_surface_files: string[];
+  is_surface_deviation: boolean;
+  analysis_summary: string;
+  provenance: string;
+}
+
+export interface AffectedSurfaceItem {
+  subsystem: string;
+  file_count: number;
+  files: string[];
+  findings_count: number;
+}
+
+export interface AffectedSurfaceSummary {
+  breakdown: AffectedSurfaceItem[];
+  most_affected_file?: string | null;
+  total_findings: number;
+}
+
+export interface IncidentReviewRecord {
+  status: "OPEN" | "INVESTIGATING" | "REVIEWED" | "RESOLVED" | string;
+  reviewed_by?: string | null;
+  reviewed_at?: string | null;
+  resolution_note?: string | null;
+  resolved_at?: string | null;
+  updated_at?: string | null;
+}
+
+export interface InvestigationIncidentDetail {
+  investigation_id: string;
+  project_id: string;
+  project_display_name: string;
+  incident_id: string;
+  title: string;
+  summary: string;
+  status: "OPEN" | "INVESTIGATING" | "REVIEWED" | "RESOLVED" | string;
+  severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | string;
+  risk_score: number;
+  confidence: string;
+  started_at: string;
+  detected_at: string;
+  last_activity_at: string;
+  session_ids: string[];
+  affected_files: string[];
+  related_events_count: number;
+  security_findings: InvestigationSecurityFinding[];
+  story: IncidentStory;
+  timeline: TimelineStep3[];
+  risk_evolution: RiskEvolution;
+  root_cause: RootCauseAnalysis;
+  engineering_dna: EngineeringDNACorrelation;
+  affected_surface: AffectedSurfaceSummary;
+  evidence_graph: EvidenceGraph3;
+  remediation_steps: string[];
+  remediation_guidance: string;
+  review_record: IncidentReviewRecord;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface InvestigationResult {
@@ -67,6 +184,7 @@ export interface InvestigationResult {
   summary: string;
   risk_score: number;
   risk_level: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | string;
+  status?: string;
   risk_factors: RiskFactor[];
   evidence_chain: EvidenceStep[];
   evidence_nodes: EvidenceNode[];
@@ -92,146 +210,6 @@ export interface InvestigationResponse {
   has_more: boolean;
 }
 
-const DEMO_RESULTS: InvestigationResult[] = [
-  {
-    id: "demo-inv-001",
-    timestamp: new Date().toISOString(),
-    project_root: "D:\\VibePulse-Demo",
-    project_name: "VibePulse-Demo",
-    session_id: "session-demo-001",
-    file_path: "config/settings.py",
-    file_name: "settings.py",
-    language: "Python",
-    event_type: "FILE_MODIFIED",
-    summary: "Security Alert: Hardcoded API Key Detected (SEC001)",
-    risk_score: 87,
-    risk_level: "HIGH",
-    risk_factors: [
-      { label: "Hardcoded credential pattern detected (SEC001)", score: 50, category: "Security" },
-      { label: "Sensitive configuration file modified", score: 20, category: "Configuration" },
-      { label: "Authentication-related file modified", score: 10, category: "Authentication" },
-      { label: "Multiple related changes in short interval", score: 7, category: "Timing" },
-    ],
-    evidence_chain: [
-      {
-        timestamp: new Date(Date.now() - 30000).toISOString(),
-        title: "src/auth.py modified",
-        description: "Authentication verification routines modified",
-        kind: "FILE_CHANGE",
-        file: "src/auth.py",
-      },
-      {
-        timestamp: new Date(Date.now() - 15000).toISOString(),
-        title: "config/settings.py modified",
-        description: "Credentials written to configuration",
-        kind: "FILE_CHANGE",
-        file: "config/settings.py",
-      },
-      {
-        timestamp: new Date(Date.now() - 10000).toISOString(),
-        title: "Hardcoded API Key Detected",
-        description: "SEC001 pattern match on line 12",
-        kind: "PATTERN_MATCH",
-        severity: "HIGH",
-        file: "config/settings.py",
-      },
-      {
-        timestamp: new Date().toISOString(),
-        title: "Risk escalated to HIGH",
-        description: "Composite risk score evaluated at 87/100",
-        kind: "RISK_ESCALATION",
-        severity: "HIGH",
-      },
-    ],
-    evidence_nodes: [
-      {
-        id: "demo-node-1",
-        step_number: 1,
-        title: "Session Activity Initialized",
-        subtitle: "Developer activity observed by local daemon",
-        kind: "SESSION_START",
-        timestamp: new Date(Date.now() - 45000).toISOString(),
-        details: { source: "VibePulse Telemetry Daemon" },
-      },
-      {
-        id: "demo-node-2",
-        step_number: 2,
-        title: "src/auth.py Modified",
-        subtitle: "Authentication logic updated",
-        kind: "FILE_CHANGE",
-        timestamp: new Date(Date.now() - 30000).toISOString(),
-        file: "src/auth.py",
-        details: { event_type: "FILE_MODIFIED", file_path: "src/auth.py" },
-      },
-      {
-        id: "demo-node-3",
-        step_number: 3,
-        title: "config/settings.py Modified",
-        subtitle: "Configuration parameters changed",
-        kind: "FILE_CHANGE",
-        timestamp: new Date(Date.now() - 15000).toISOString(),
-        file: "config/settings.py",
-        details: { event_type: "FILE_MODIFIED", file_path: "config/settings.py" },
-      },
-      {
-        id: "demo-node-4",
-        step_number: 4,
-        title: "Secret Pattern Detected",
-        subtitle: "SEC001: Hardcoded Credential Detected",
-        kind: "PATTERN_MATCH",
-        timestamp: new Date(Date.now() - 10000).toISOString(),
-        severity: "HIGH",
-        file: "config/settings.py",
-        details: {
-          rule_id: "SEC001",
-          pattern: "API_KEY",
-          redacted_evidence: 'API_KEY = "********REDACTED********"',
-          confidence: "HIGH",
-          line_number: 12,
-        },
-      },
-      {
-        id: "demo-node-5",
-        step_number: 5,
-        title: "Risk Escalated: 37 → 87",
-        subtitle: "Risk Score evaluated at 87/100 from 4 signals",
-        kind: "RISK_ESCALATION",
-        timestamp: new Date(Date.now() - 5000).toISOString(),
-        severity: "HIGH",
-        details: { risk_score: 87, risk_level: "HIGH", contributing_factors: 4 },
-      },
-      {
-        id: "demo-node-6",
-        step_number: 6,
-        title: "Investigation Incident Logged",
-        subtitle: "Correlated incident ready for developer review and remediation",
-        kind: "INVESTIGATION_CREATED",
-        timestamp: new Date().toISOString(),
-        details: { status: "ACTIVE_INVESTIGATION" },
-      },
-    ],
-    affected_files: ["config/settings.py", "src/auth.py"],
-    correlated_events_count: 6,
-    recommendation: "Move secret to environment variables or secret management storage before committing.",
-    architecture_changes: [],
-    security_findings: [
-      {
-        rule_id: "SEC001",
-        severity: "HIGH",
-        message: "Hardcoded Secret Detected",
-        file: "config/settings.py",
-        line_number: 12,
-        redacted_evidence: 'API_KEY = "********REDACTED********"',
-        category: "Credentials",
-        recommendation: "Move credentials to environment variables.",
-      },
-    ],
-    ai_event: null,
-    replay_link: "/sessions/session-demo-001/replay",
-    timeline_position: 1,
-  },
-];
-
 export function useInvestigation(projectId: string | undefined, queryStr: string) {
   const { isDemo } = useDemoMode();
   const queryClient = useQueryClient();
@@ -249,14 +227,7 @@ export function useInvestigation(projectId: string | undefined, queryStr: string
       }
       const res = await fetch(url.toString());
       if (!res.ok) {
-        const legacyUrl = new URL(
-          projectId ? `/projects/${projectId}/investigation/search` : "/investigation/search",
-          getApiBaseUrl(),
-        );
-        if (queryStr) legacyUrl.searchParams.set("q", queryStr);
-        const legacyRes = await fetch(legacyUrl.toString());
-        if (!legacyRes.ok) throw new Error("Failed to fetch investigation results");
-        return legacyRes.json() as Promise<InvestigationResponse>;
+        throw new Error("Failed to fetch investigation results");
       }
       return res.json() as Promise<InvestigationResponse>;
     },
@@ -273,38 +244,59 @@ export function useInvestigation(projectId: string | undefined, queryStr: string
         const msg = rawMsg as { type: string; event?: DevelopmentEvent; project_root?: string };
         if (!projectId || msg.event?.project_root === projectId || msg.project_root === projectId) {
           void queryClient.invalidateQueries({ queryKey: ["investigation"] });
+          void queryClient.invalidateQueries({ queryKey: ["incident-detail"] });
         }
       },
     });
     return () => wsClient.close();
   }, [isDemo, projectId, queryClient]);
 
-  if (isDemo) {
-    const filtered = queryStr
-      ? DEMO_RESULTS.filter(
-          (r) =>
-            r.summary.toLowerCase().includes(queryStr.toLowerCase()) ||
-            r.file_path?.toLowerCase().includes(queryStr.toLowerCase()) ||
-            r.security_findings.some((f) =>
-              f.severity.toLowerCase().includes(queryStr.toLowerCase()),
-            ),
-        )
-      : DEMO_RESULTS;
-
-    return {
-      data: {
-        results: filtered,
-        total_count: filtered.length,
-        suspicious_count: 1,
-        high_risk_count: 1,
-        sessions_count: 1,
-        projects_count: 1,
-        has_more: false,
-      } as InvestigationResponse,
-      isLoading: false,
-      isError: false,
-    };
-  }
-
   return query;
+}
+
+export function useIncidentDetail(projectId: string | undefined, incidentId: string | null) {
+  return useQuery<InvestigationIncidentDetail>({
+    queryKey: ["incident-detail", projectId, incidentId],
+    queryFn: async () => {
+      if (!projectId || !incidentId) throw new Error("Missing projectId or incidentId");
+      const url = new URL(
+        `/api/projects/${projectId}/investigations/${incidentId}`,
+        getApiBaseUrl(),
+      );
+      const res = await fetch(url.toString());
+      if (!res.ok) throw new Error("Failed to fetch incident investigation");
+      return res.json() as Promise<InvestigationIncidentDetail>;
+    },
+    enabled: !!projectId && !!incidentId,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useUpdateIncidentReview(projectId: string | undefined, incidentId: string | null) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: {
+      status: string;
+      reviewed_by?: string | undefined;
+      resolution_note?: string | undefined;
+    }) => {
+      if (!projectId || !incidentId) throw new Error("Missing parameters");
+      const url = new URL(
+        `/api/projects/${projectId}/investigations/${incidentId}/review`,
+        getApiBaseUrl(),
+      );
+      const res = await fetch(url.toString(), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error("Failed to update incident review status");
+      return res.json() as Promise<IncidentReviewRecord>;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["incident-detail", projectId, incidentId] });
+      void queryClient.invalidateQueries({ queryKey: ["investigation"] });
+    },
+  });
 }

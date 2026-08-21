@@ -18,6 +18,8 @@ from app.core.config import get_settings
 from app.core.database import Base, get_db, get_session_factory
 from app.features.analysis.models import EventAnalysis  # noqa: F401 - registers on Base
 from app.features.events.models import DevelopmentEvent
+from app.features.investigation.models import IncidentReviewState  # noqa: F401
+from app.features.project_context.models import ProjectContext  # noqa: F401
 from app.features.projects.models import Project
 from app.features.sessions.models import Session
 from app.main import app
