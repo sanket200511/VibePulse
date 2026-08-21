@@ -143,6 +143,12 @@ function ProjectStoryContent({
                 Security Intelligence
               </Link>
               <Link
+                to={`/projects/${project.id}/predictions`}
+                className="rounded-lg border border-purple-500/20 bg-purple-500/10 px-3 py-1.5 text-xs font-semibold text-purple-400 transition-colors hover:bg-purple-500/20 hover:text-purple-300"
+              >
+                Predictive Intelligence
+              </Link>
+              <Link
                 to={`/projects/${project.id}/ai-provenance`}
                 className="rounded-lg border border-indigo-500/20 bg-indigo-500/10 px-3 py-1.5 text-xs font-medium text-indigo-400 transition-colors hover:text-indigo-300"
               >

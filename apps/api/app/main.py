@@ -183,6 +183,11 @@ def create_app() -> FastAPI:
     from app.features.security_intelligence.router import router as security_intelligence_router
 
     app.include_router(security_intelligence_router)
+    from app.features.predictive_intelligence.router import (
+        router as predictive_intelligence_router,
+    )
+
+    app.include_router(predictive_intelligence_router)
 
     return app
 

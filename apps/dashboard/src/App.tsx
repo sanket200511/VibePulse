@@ -13,6 +13,7 @@ import { EngineeringDNAPage } from "./pages/projects/EngineeringDNAPage";
 import { AIProvenancePage } from "./pages/projects/AIProvenancePage";
 import { InvestigationPage } from "./pages/investigation/InvestigationPage";
 import { SecurityCommandCenter } from "./pages/security/SecurityCommandCenter";
+import { PredictionsPage } from "./pages/predictions/PredictionsPage";
 
 /**
  * Application router.
@@ -47,6 +48,7 @@ export default function App() {
           <Route path="/projects/:projectId/security" element={<SecurityCommandCenter />} />
           <Route path="/projects/:projectId/ai-provenance" element={<AIProvenancePage />} />
           <Route path="/projects/:projectId/investigation" element={<InvestigationPage />} />
+          <Route path="/projects/:projectId/predictions" element={<PredictionsPage />} />
           <Route path="/projects/:projectId/files/*" element={<EngineeringDNAPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>

@@ -439,6 +439,59 @@ async def generate_project_context_markdown(db: AsyncSession, project_id: uuid.U
     else:
         lines.append("No critical security investigations or findings recorded.\n")
 
+    # 17. Predictive Engineering Signals
+    from app.features.predictive_intelligence.service import (
+        get_or_create_predictive_intelligence,
+    )
+
+    pred_summary = await get_or_create_predictive_intelligence(db, project_id)
+    drift = pred_summary.engineering_drift
+    drift_str = f"`{drift.previous_focus} -> {drift.current_focus} -> {drift.emerging_focus}`"
+
+    lines.extend(
+        [
+            "## 17. Predictive Engineering Signals",
+            "",
+            f"- **Status**: `{pred_summary.status}` ({pred_summary.status_message})",
+            f"- **Active Forecasts Count**: `{pred_summary.total_predictions}`",
+            f"- **Active Hotspots**: `{pred_summary.active_hotspots_count}`",
+            f"- **Engineering Focus Drift**: {drift_str}",
+            "",
+        ]
+    )
+
+    if pred_summary.forecast_signals:
+        lines.extend(
+            [
+                "### Evidence-Backed Forecasts",
+                "",
+                "| Forecast Signal | Severity | Strength | Score | Horizon | Recommended Action |",
+                "|---|---|---|---|---|---|",
+            ]
+        )
+        for sig in pred_summary.forecast_signals[:5]:
+            lines.append(
+                f"| **{sig.title}** | `{sig.severity}` | `{sig.evidence_strength}` | "
+                f"`{sig.forecast_score}/100` | `{sig.time_horizon}` | {sig.recommended_action} |"
+            )
+        lines.append("")
+
+    if pred_summary.hotspots:
+        lines.extend(
+            [
+                "### Top Engineering Hotspots",
+                "",
+                "| Subsystem | File Target | Hotspot Score | Activity Count | Findings |",
+                "|---|---|---|---|---|",
+            ]
+        )
+        for h in pred_summary.hotspots[:4]:
+            lines.append(
+                f"| **{h.subsystem}** | `{h.file_path}` | `{h.hotspot_score}/100` | "
+                f"`{h.activity_count}` | `{h.findings_count}` |"
+            )
+        lines.append("")
+
     lang_summary_str = ", ".join(lang_names) if lang_names else "General"
     file_count = len(context.important_files)
     src_dir_count = len(context.source_directories)
