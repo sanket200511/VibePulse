@@ -4,22 +4,28 @@ import {
   Search,
   ShieldAlert,
   Clock,
-  X,
-  FolderGit2,
-  Flame,
-  Activity,
-  Layers,
   CheckCircle2,
-  ChevronRight,
   AlertCircle,
-  FileText,
   FileCode,
-  ShieldCheck,
   TrendingUp,
+  Download,
+  Share2,
+  Eye,
+  Check,
+  Compass,
+  Cpu,
+  Layers,
+  Activity,
 } from "lucide-react";
 import { Badge } from "@vibepulse/ui";
-import { useInvestigation, type InvestigationResult, type EvidenceNode } from "./useInvestigation";
+import {
+  useInvestigation,
+  useIncidentDetail,
+  useUpdateIncidentReview,
+  type EvidenceNode,
+} from "./useInvestigation";
 import { LoadingState } from "../../components/states";
+import { getApiBaseUrl } from "../../lib/api-config";
 
 const SEVERITY_RANK: Record<string, number> = {
   CRITICAL: 0,
@@ -31,17 +37,21 @@ const SEVERITY_RANK: Record<string, number> = {
 export function InvestigationPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const [query, setQuery] = useState("");
-  const [activeFinding, setActiveFinding] = useState<InvestigationResult | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [selectedIncidentId, setSelectedIncidentId] = useState<string | null>(null);
   const [selectedNode, setSelectedNode] = useState<EvidenceNode | null>(null);
-  const [reviewedIncidents, setReviewedIncidents] = useState<Set<string>>(new Set());
+  const [resolutionModalOpen, setResolutionModalOpen] = useState(false);
+  const [resolutionNote, setResolutionNote] = useState("");
 
   const { data, isLoading, isError } = useInvestigation(projectId, query);
-
   const rawResults = useMemo(() => data?.results || [], [data?.results]);
 
-  // Filtered by query and sorted by severity (CRITICAL -> HIGH -> MEDIUM -> LOW), then newest first
+  // Filter and sort results
   const filteredResults = useMemo(() => {
     let list = rawResults;
+    if (statusFilter !== "ALL") {
+      list = list.filter((r) => (r.status || "OPEN").toUpperCase() === statusFilter);
+    }
     if (query) {
       const q = query.toLowerCase();
       list = list.filter(
@@ -61,659 +71,603 @@ export function InvestigationPage() {
       if (rankA !== rankB) return rankA - rankB;
       return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
     });
-  }, [rawResults, query]);
+  }, [rawResults, query, statusFilter]);
 
-  // Derived real intelligence counts from PostgreSQL
-  const stats = useMemo(() => {
-    const total = data?.total_count ?? rawResults.length;
-    const securityFindings =
-      data?.security_findings_count ??
-      rawResults.filter((r) => r.security_findings && r.security_findings.length > 0).length;
-    const critical =
-      data?.critical_count ??
-      rawResults.filter(
-        (r) => r.risk_score >= 80 || (r.risk_level || "").toUpperCase() === "CRITICAL",
-      ).length;
-    const sessions = data?.sessions_count ?? new Set(rawResults.map((r) => r.session_id)).size;
-    const projects = data?.projects_count ?? new Set(rawResults.map((r) => r.project_root)).size;
-    return { total, securityFindings, critical, sessions, projects };
-  }, [
-    data?.total_count,
-    data?.security_findings_count,
-    data?.critical_count,
-    data?.sessions_count,
-    data?.projects_count,
-    rawResults,
-  ]);
+  // Active selected incident ID
+  const activeIncidentId = useMemo(() => {
+    if (selectedIncidentId) return selectedIncidentId;
+    if (filteredResults.length > 0 && filteredResults[0]?.id) {
+      return String(filteredResults[0].id);
+    }
+    return null;
+  }, [selectedIncidentId, filteredResults]);
 
-  const activeResult = activeFinding || (filteredResults.length > 0 ? filteredResults[0] : null);
-  const isReviewed = activeResult ? reviewedIncidents.has(activeResult.id) : false;
+  // Fetch detailed incident investigation for active incident
+  const { data: incidentDetail, isLoading: isDetailLoading } = useIncidentDetail(
+    projectId,
+    activeIncidentId,
+  );
 
-  const handleMarkReviewed = (id: string) => {
-    setReviewedIncidents((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
+  const updateReviewMutation = useUpdateIncidentReview(projectId, activeIncidentId);
+
+  const handleStatusChange = (newStatus: string, note?: string) => {
+    if (newStatus === "RESOLVED" && !note && !resolutionModalOpen) {
+      setResolutionModalOpen(true);
+      return;
+    }
+    updateReviewMutation.mutate({
+      status: newStatus,
+      reviewed_by: "Security Engineer",
+      resolution_note: note || resolutionNote || undefined,
     });
+    setResolutionModalOpen(false);
+    setResolutionNote("");
   };
 
+  const handleExport = (format: "markdown" | "json" | "ai") => {
+    if (!projectId || !activeIncidentId) return;
+    let url = "";
+    if (format === "ai") {
+      url = `${getApiBaseUrl()}/api/projects/${projectId}/investigations/${activeIncidentId}/ai-handoff`;
+    } else {
+      url = `${getApiBaseUrl()}/api/projects/${projectId}/investigations/${activeIncidentId}/export?format=${format}`;
+    }
+    window.open(url, "_blank");
+  };
+
+  if (isLoading) {
+    return <LoadingState label="Reconstructing investigation intelligence..." />;
+  }
+
+  if (isError) {
+    return (
+      <div className="p-8 text-center text-red-400">
+        <AlertCircle className="mx-auto mb-4 h-12 w-12" />
+        <h2 className="text-xl font-bold">Investigation Engine Error</h2>
+        <p className="mt-2 text-sm text-gray-400">
+          Failed to query historical investigation telemetry.
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex h-full flex-col bg-background text-foreground">
-      {/* 1. TOP INVESTIGATION COMMAND CENTER HEADER */}
-      <div className="border-b border-border bg-card/70 px-6 py-3.5 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg border border-indigo-500/30 bg-indigo-500/10 p-2 text-indigo-500 dark:text-indigo-400">
-                <ShieldAlert className="h-5 w-5" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-lg font-bold tracking-tight text-foreground">
-                    Investigation Command Center
-                  </h1>
-                  <span className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
-                    Live Observation
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  <span className="font-semibold text-foreground">Detect</span> →{" "}
-                  <span className="font-semibold text-foreground">Correlate</span> →{" "}
-                  <span className="font-semibold text-foreground">Explain</span> →{" "}
-                  <span className="font-semibold text-foreground">Resolve</span>
-                </p>
-              </div>
-            </div>
-
-            {/* Quick Search */}
-            <div className="relative w-80">
-              <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search development activity (e.g. secret, auth.py)..."
-                className="w-full rounded-md border border-border bg-card pl-8 pr-8 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 shadow-sm"
-              />
-              {query && (
-                <button
-                  onClick={() => setQuery("")}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              )}
-            </div>
+    <div className="min-h-screen space-y-6 bg-[#0d1117] p-6 text-gray-100">
+      {/* ── HEADER ─────────────────────────────────────────────────────────── */}
+      <div className="flex flex-col justify-between gap-4 border-b border-gray-800 pb-5 md:flex-row md:items-center">
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="flex items-center gap-2 text-2xl font-black tracking-tight text-white">
+              <ShieldAlert className="h-7 w-7 text-indigo-400" />
+              Investigation Command Center 3.0
+            </h1>
+            <Badge
+              variant="outline"
+              className="border-indigo-500/40 font-mono text-xs text-indigo-300"
+            >
+              UNIFIED INCIDENT INTELLIGENCE
+            </Badge>
           </div>
+          <p className="mt-1 text-sm text-gray-400">
+            Deterministic incident reconstruction orchestrating Telemetry, Engineering DNA, and
+            Security Posture.
+          </p>
+        </div>
 
-          {/* 2. REAL INTELLIGENCE METRIC STRIP */}
-          <div className="grid grid-cols-5 gap-3 pt-1">
-            <div className="flex items-center gap-2.5 rounded-lg border border-border bg-card px-3.5 py-2 shadow-sm">
-              <Activity className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  Observed Events
-                </p>
-                <p className="font-mono text-sm font-bold text-foreground">{stats.total}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2.5 rounded-lg border border-border bg-card px-3.5 py-2 shadow-sm">
-              <AlertCircle className="h-4 w-4 text-amber-500 dark:text-amber-400" />
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  Security Findings
-                </p>
-                <p className="font-mono text-sm font-bold text-amber-600 dark:text-amber-300">
-                  {stats.securityFindings}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2.5 rounded-lg border border-border bg-card px-3.5 py-2 shadow-sm">
-              <Flame className="h-4 w-4 text-rose-500 dark:text-rose-400" />
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  Critical Incidents
-                </p>
-                <p className="font-mono text-sm font-bold text-rose-600 dark:text-rose-400">
-                  {stats.critical}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2.5 rounded-lg border border-border bg-card px-3.5 py-2 shadow-sm">
-              <Layers className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  Sessions
-                </p>
-                <p className="font-mono text-sm font-bold text-foreground">{stats.sessions}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2.5 rounded-lg border border-border bg-card px-3.5 py-2 shadow-sm">
-              <FolderGit2 className="h-4 w-4 text-purple-500 dark:text-purple-400" />
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  Observed Projects
-                </p>
-                <p className="font-mono text-sm font-bold text-foreground">{stats.projects}</p>
-              </div>
-            </div>
-          </div>
+        {/* Global Export actions */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => handleExport("markdown")}
+            disabled={!activeIncidentId}
+            className="flex items-center gap-1.5 rounded-md border border-gray-700 bg-gray-800 px-3 py-1.5 text-xs font-semibold text-gray-200 transition hover:bg-gray-700"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Export Report
+          </button>
+          <button
+            onClick={() => handleExport("ai")}
+            disabled={!activeIncidentId}
+            className="flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-500"
+          >
+            <Share2 className="h-3.5 w-3.5" />
+            Export for AI Handoff
+          </button>
         </div>
       </div>
 
-      {/* 3. MAIN WORKSPACE: ACTIVE INCIDENTS & EVIDENCE INVESTIGATOR */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left Column: Active Investigations & Live Stream */}
-        <div className="w-[380px] shrink-0 overflow-y-auto border-r border-border p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Active Investigations ({filteredResults.length})
-            </h3>
-            {query && (
-              <button
-                onClick={() => setQuery("")}
-                className="text-[11px] text-indigo-500 dark:text-indigo-400 hover:underline"
-              >
-                Clear search
-              </button>
-            )}
-          </div>
-
-          {isLoading ? (
-            <LoadingState label="Reconstructing investigation incidents..." />
-          ) : isError ? (
-            <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border py-12 text-center text-muted-foreground">
-              <ShieldAlert className="h-6 w-6 text-amber-500" />
-              <p className="text-xs font-semibold text-foreground">Investigation Engine Initializing</p>
-              <p className="max-w-xs text-[11px] text-muted-foreground">
-                Awaiting telemetry events from local daemon.
-              </p>
-            </div>
-          ) : filteredResults.length === 0 ? (
-            /* 10. SYSTEM CLEAR / NO DATA OPERATIONAL STATE */
-            <div className="rounded-xl border border-dashed border-border bg-card/50 p-5 text-center shadow-sm">
-              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-500 dark:text-emerald-400">
-                <ShieldCheck className="h-5 w-5" />
-              </div>
-              <h4 className="text-sm font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                System Clear
-              </h4>
-              <p className="mt-1 text-xs text-muted-foreground">
-                VibePulse is actively observing development activity.
-              </p>
-              <div className="my-3 border-t border-border pt-3 text-left">
-                <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  Actively Monitoring:
-                </p>
-                <ul className="space-y-1 text-xs text-muted-foreground">
-                  <li className="flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    File modifications & creations
-                  </li>
-                  <li className="flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
-                    Development sessions & context
-                  </li>
-                  <li className="flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-purple-500" />
-                    Configuration & auth changes
-                  </li>
-                  <li className="flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
-                    Credential & secret patterns (SEC001)
-                  </li>
-                </ul>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-2.5">
-              {filteredResults.map((result) => {
-                const isSelected = activeResult?.id === result.id;
-                const isItemReviewed = reviewedIncidents.has(result.id);
-                const sev = (result.risk_level || "LOW").toUpperCase();
-
-                return (
-                  <div
-                    key={result.id}
-                    onClick={() => {
-                      setActiveFinding(result);
-                      setSelectedNode(null);
-                    }}
-                    className={`cursor-pointer rounded-lg border p-3.5 transition-all ${
-                      isSelected
-                        ? "border-indigo-500 bg-indigo-500/10 dark:bg-indigo-950/30 shadow-md ring-1 ring-indigo-500/40"
-                        : "border-border bg-card hover:border-indigo-500/40 hover:bg-muted/50 shadow-sm"
-                    }`}
-                  >
-                    <div className="mb-2 flex items-center justify-between gap-1.5">
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          variant={
-                            sev === "CRITICAL" || sev === "HIGH"
-                              ? "danger"
-                              : sev === "MEDIUM"
-                                ? "warning"
-                                : "default"
-                          }
-                        >
-                          {String(sev)} RISK
-                        </Badge>
-                        <span className="font-mono text-xs font-bold text-foreground">
-                          {result.risk_score} / 100
-                        </span>
-                      </div>
-                      {isItemReviewed ? (
-                        <span className="flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
-                          <CheckCircle2 className="h-3 w-3" /> Reviewed
-                        </span>
-                      ) : (
-                        <span className="font-mono text-[10px] text-muted-foreground">
-                          {new Date(result.timestamp).toLocaleTimeString()}
-                        </span>
-                      )}
-                    </div>
-
-                    <h4 className="mb-1 text-xs font-semibold text-foreground">
-                      {result.summary}
-                    </h4>
-
-                    <div className="mb-2 flex items-center gap-2 text-[11px] text-muted-foreground">
-                      <span className="truncate font-mono">
-                        {result.file_name || result.file_path || "Project Root"}
-                      </span>
-                      <span>•</span>
-                      <span className="truncate">{result.project_name || "Project"}</span>
-                    </div>
-
-                    <div className="flex items-center justify-between border-t border-border pt-2 text-[10px] text-muted-foreground">
-                      <span>{result.correlated_events_count || 4} correlated events</span>
-                      <span className="flex items-center gap-1 font-semibold text-indigo-500 dark:text-indigo-400 hover:underline">
-                        Investigate <ChevronRight className="h-3 w-3" />
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+      {/* ── FILTER & STATUS TABS ────────────────────────────────────────────── */}
+      <div className="flex flex-col items-stretch justify-between gap-3 rounded-lg border border-gray-800 bg-gray-900/60 p-3 sm:flex-row sm:items-center">
+        <div className="flex items-center gap-1 rounded-md border border-gray-800 bg-gray-950 p-1">
+          {["ALL", "OPEN", "INVESTIGATING", "REVIEWED", "RESOLVED"].map((st) => (
+            <button
+              key={st}
+              onClick={() => setStatusFilter(st)}
+              className={`rounded px-3 py-1 text-xs font-semibold transition ${
+                statusFilter === st
+                  ? "bg-indigo-600 text-white shadow"
+                  : "text-gray-400 hover:bg-gray-800/50 hover:text-gray-200"
+              }`}
+            >
+              {st}
+            </button>
+          ))}
         </div>
 
-        {/* Right Column: THE WOW FEATURE — INTERACTIVE INCIDENT INVESTIGATION */}
-        <div className="flex-1 overflow-y-auto bg-background/50 p-6">
-          {activeResult ? (
-            <div className="mx-auto max-w-3xl space-y-6">
-              {/* SECTION 1: INCIDENT OVERVIEW CARD */}
-              <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-                <div className="mb-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <Badge
-                      variant={
-                        activeResult.risk_level === "HIGH" || activeResult.risk_level === "CRITICAL"
-                          ? "danger"
-                          : activeResult.risk_level === "MEDIUM"
-                            ? "warning"
-                            : "default"
-                      }
-                    >
-                      {activeResult.risk_level} RISK
-                    </Badge>
-                    <span className="font-mono text-sm font-bold text-foreground">
-                      RISK SCORE: {activeResult.risk_score} / 100
+        <div className="relative max-w-md flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Filter incidents by symbol, file, rule, or severity..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="w-full rounded-md border border-gray-800 bg-gray-950 py-1.5 pl-9 pr-4 text-xs text-gray-200 placeholder-gray-500 focus:border-indigo-500 focus:outline-none"
+          />
+        </div>
+      </div>
+
+      {/* ── SPLIT WORKSPACE: INCIDENTS LIST + COMMAND CENTER ────────────────── */}
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+        {/* Left Column: Incidents Stream */}
+        <div className="space-y-3 lg:col-span-4">
+          <div className="flex items-center justify-between px-1 text-xs font-bold text-gray-400">
+            <span>CORRELATED INCIDENTS ({filteredResults.length})</span>
+            <span>SEVERITY SORTED</span>
+          </div>
+
+          {filteredResults.length === 0 ? (
+            <div className="rounded-lg border border-gray-800 bg-gray-900/40 p-8 text-center text-xs text-gray-400">
+              No incidents match the active search filter.
+            </div>
+          ) : (
+            filteredResults.map((res) => {
+              const isSelected = activeIncidentId === String(res.id);
+              const sev = (res.risk_level || "LOW").toUpperCase();
+              return (
+                <div
+                  key={String(res.id)}
+                  onClick={() => setSelectedIncidentId(String(res.id))}
+                  className={`relative cursor-pointer rounded-lg border p-3.5 transition ${
+                    isSelected
+                      ? "border-indigo-500 bg-gray-900 shadow-md shadow-indigo-950/40"
+                      : "border-gray-800 bg-gray-900/40 hover:border-gray-700 hover:bg-gray-900/80"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="line-clamp-1 text-xs font-bold text-gray-100">
+                      {res.summary}
                     </span>
-                    {isReviewed && (
-                      <span className="flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
-                        <CheckCircle2 className="h-3 w-3" /> Reviewed
+                    <Badge
+                      variant="outline"
+                      className={`shrink-0 font-mono text-[10px] ${
+                        sev === "CRITICAL"
+                          ? "border-red-500/40 bg-red-950/20 text-red-400"
+                          : sev === "HIGH"
+                            ? "border-amber-500/40 bg-amber-950/20 text-amber-400"
+                            : "border-blue-500/40 text-blue-400"
+                      }`}
+                    >
+                      {sev} · {res.risk_score}
+                    </Badge>
+                  </div>
+
+                  <div className="mt-2 flex items-center gap-3 text-[11px] text-gray-400">
+                    <span className="flex items-center gap-1 font-mono">
+                      <Clock className="h-3 w-3 text-gray-500" />
+                      {new Date(res.timestamp).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                      })}
+                    </span>
+                    {res.file_name && (
+                      <span className="flex items-center gap-1 truncate text-gray-300">
+                        <FileCode className="h-3 w-3 shrink-0 text-gray-500" />
+                        {res.file_name}
                       </span>
                     )}
                   </div>
-                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Clock className="h-3.5 w-3.5" />
-                    {new Date(activeResult.timestamp).toLocaleString()}
-                  </span>
                 </div>
+              );
+            })
+          )}
+        </div>
 
-                <h2 className="text-lg font-bold text-foreground">{activeResult.summary}</h2>
-
-                <div className="mt-4 grid grid-cols-3 gap-3 border-t border-border pt-3 text-xs">
+        {/* Right Column: Active Incident Command Center */}
+        <div className="space-y-6 lg:col-span-8">
+          {isDetailLoading ? (
+            <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-12 text-center">
+              <LoadingState label="Synthesizing unified incident story..." />
+            </div>
+          ) : incidentDetail ? (
+            <>
+              {/* 1. HERO INCIDENT HEADER */}
+              <div className="space-y-4 rounded-xl border border-gray-800 bg-gradient-to-r from-gray-900 via-gray-900 to-indigo-950/30 p-5 shadow-xl">
+                <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
                   <div>
-                    <span className="text-muted-foreground">Project:</span>
-                    <p className="truncate font-mono font-semibold text-foreground">
-                      {activeResult.project_name || "Project"}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Primary File:</span>
-                    <p className="truncate font-mono font-semibold text-indigo-500 dark:text-indigo-400">
-                      {activeResult.file_name || activeResult.file_path || "—"}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Session ID:</span>
-                    <p className="truncate font-mono text-muted-foreground">
-                      {activeResult.session_id.slice(0, 12)}...
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* SECTION 3: THE WOW FEATURE — INTERACTIVE INCIDENT EVIDENCE GRAPH */}
-              <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Layers className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                      Incident Evidence Graph
-                    </h3>
-                  </div>
-                  <span className="text-[11px] text-muted-foreground">
-                    Click any node to inspect raw evidence
-                  </span>
-                </div>
-
-                {/* The Directed Graph Visualization */}
-                <div className="space-y-3">
-                  {(activeResult.evidence_nodes || []).map((node, idx, arr) => {
-                    const isNodeSelected = selectedNode?.id === node.id;
-                    const isSecretNode = node.kind === "PATTERN_MATCH";
-                    const isEscalationNode = node.kind === "RISK_ESCALATION";
-
-                    return (
-                      <div key={node.id} className="flex flex-col items-center">
-                        {/* Node Card */}
-                        <div
-                          onClick={() => setSelectedNode(isNodeSelected ? null : node)}
-                          className={`w-full max-w-lg cursor-pointer rounded-lg border p-3.5 transition-all ${
-                            isSecretNode
-                              ? "border-rose-500/70 bg-rose-500/10 dark:bg-rose-950/30 shadow-md ring-1 ring-rose-500/60"
-                              : isEscalationNode
-                                ? "border-rose-500/50 bg-rose-500/5 dark:bg-red-950/20"
-                                : isNodeSelected
-                                  ? "border-indigo-500 bg-indigo-500/10 dark:bg-indigo-950/30 ring-1 ring-indigo-500"
-                                  : "border-border bg-card hover:border-indigo-500/30 hover:bg-muted/40 shadow-sm"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2.5">
-                              <span
-                                className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold text-white ${
-                                  isSecretNode
-                                    ? "bg-rose-500 animate-pulse"
-                                    : isEscalationNode
-                                      ? "bg-red-500"
-                                      : "bg-indigo-600"
-                                }`}
-                              >
-                                {node.step_number}
-                              </span>
-                              <div>
-                                <h4 className="text-xs font-bold text-foreground">{node.title}</h4>
-                                <p className="text-[11px] text-muted-foreground">{node.subtitle}</p>
-                              </div>
-                            </div>
-                            <span className="font-mono text-[10px] text-muted-foreground">
-                              {new Date(node.timestamp).toLocaleTimeString()}
-                            </span>
-                          </div>
-
-                          {/* Redacted snippet preview on secret node */}
-                          {isSecretNode && (
-                            <div className="mt-2.5 rounded border border-rose-500/30 bg-rose-500/5 dark:bg-black/40 p-2 font-mono text-[11px] text-rose-600 dark:text-rose-300">
-                              <span className="text-muted-foreground">Evidence: </span>
-                              {node.details?.redacted_evidence
-                                ? String(node.details.redacted_evidence)
-                                : 'API_KEY = "********REDACTED********"'}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Connecting Line Down to Next Node */}
-                        {idx < arr.length - 1 && (
-                          <div className="my-1 flex flex-col items-center">
-                            <div className="h-4 w-0.5 bg-gradient-to-b from-indigo-500 to-border" />
-                            <div className="h-1 w-1 rounded-full bg-indigo-500" />
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Selected Node Detail Drawer */}
-                {selectedNode && (
-                  <div className="mt-4 rounded-lg border border-indigo-500/40 bg-indigo-500/5 dark:bg-indigo-950/30 p-4 text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-indigo-600 dark:text-indigo-300">
-                        Node Detail: {selectedNode.title}
-                      </span>
-                      <button
-                        onClick={() => setSelectedNode(null)}
-                        className="text-muted-foreground hover:text-foreground"
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant="outline"
+                        className={`font-mono text-xs font-black ${
+                          incidentDetail.severity === "CRITICAL"
+                            ? "border-red-500 bg-red-950/30 text-red-400"
+                            : incidentDetail.severity === "HIGH"
+                              ? "border-amber-500 bg-amber-950/30 text-amber-400"
+                              : "border-blue-500 text-blue-400"
+                        }`}
                       >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
+                        {incidentDetail.severity} SEVERITY
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className="border-gray-700 font-mono text-xs text-gray-300"
+                      >
+                        STATUS: {incidentDetail.status}
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className="border-emerald-500/40 text-[10px] text-emerald-400"
+                      >
+                        {incidentDetail.confidence} PROVENANCE
+                      </Badge>
                     </div>
-                    <pre className="mt-2 overflow-x-auto rounded bg-muted/60 dark:bg-black/50 p-2.5 font-mono text-[11px] text-foreground border border-border">
-                      {JSON.stringify(
-                        {
-                          step: selectedNode.step_number,
-                          kind: selectedNode.kind,
-                          timestamp: selectedNode.timestamp,
-                          file: selectedNode.file,
-                          severity: selectedNode.severity,
-                          details: selectedNode.details,
-                        },
-                        null,
-                        2,
-                      )}
-                    </pre>
+                    <h2 className="mt-1.5 text-xl font-bold text-white">{incidentDetail.title}</h2>
                   </div>
-                )}
-              </div>
 
-              {/* SECTION 4: "WHY THIS WAS FLAGGED" (EXPLAINABLE RISK BREAKDOWN) */}
-              <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-                <div className="mb-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 text-rose-500 dark:text-rose-400" />
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                      Why This Was Flagged (Risk Calculation)
-                    </h3>
+                  {/* Risk Score Gauge */}
+                  <div className="flex items-center gap-3 rounded-lg border border-gray-800 bg-gray-950/80 px-4 py-2">
+                    <div className="text-right">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                        COMPOSITE RISK
+                      </div>
+                      <div className="font-mono text-xs text-gray-500">Additive Model</div>
+                    </div>
+                    <div className="font-mono text-2xl font-black text-indigo-400">
+                      {incidentDetail.risk_score}
+                      <span className="text-xs text-gray-500">/100</span>
+                    </div>
                   </div>
-                  <span className="font-mono text-sm font-bold text-rose-600 dark:text-rose-400">
-                    Final Score: {activeResult.risk_score} / 100
-                  </span>
                 </div>
 
-                <div className="space-y-1.5">
-                  {(activeResult.risk_factors || []).map((factor, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center justify-between rounded-md border border-border bg-muted/30 dark:bg-zinc-950/60 px-3 py-2 text-xs"
+                {/* Review Workflow Action Bar */}
+                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-gray-800/80 pt-3 text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-gray-400">Lifecycle Actions:</span>
+                    <button
+                      onClick={() => handleStatusChange("INVESTIGATING")}
+                      className={`rounded px-2.5 py-1 text-xs font-semibold transition ${
+                        incidentDetail.status === "INVESTIGATING"
+                          ? "bg-amber-600 text-white"
+                          : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                      }`}
                     >
-                      <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
-                        <span className="text-foreground">{factor.label}</span>
-                      </div>
-                      <span className="font-mono font-bold text-rose-600 dark:text-rose-400">
-                        +{factor.score}
-                      </span>
+                      <Eye className="mr-1 inline h-3 w-3" />
+                      Start Investigation
+                    </button>
+                    <button
+                      onClick={() => handleStatusChange("REVIEWED")}
+                      className={`rounded px-2.5 py-1 text-xs font-semibold transition ${
+                        incidentDetail.status === "REVIEWED"
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                      }`}
+                    >
+                      <Check className="mr-1 inline h-3 w-3" />
+                      Mark Reviewed
+                    </button>
+                    <button
+                      onClick={() => handleStatusChange("RESOLVED")}
+                      className={`rounded px-2.5 py-1 text-xs font-semibold transition ${
+                        incidentDetail.status === "RESOLVED"
+                          ? "bg-emerald-600 text-white"
+                          : "border border-emerald-700/50 bg-emerald-950 text-emerald-300 hover:bg-emerald-900"
+                      }`}
+                    >
+                      <CheckCircle2 className="mr-1 inline h-3 w-3" />
+                      Resolve Incident
+                    </button>
+                  </div>
+
+                  {incidentDetail.review_record?.resolution_note && (
+                    <div className="line-clamp-1 max-w-xs text-xs italic text-emerald-400">
+                      Note: &ldquo;{incidentDetail.review_record.resolution_note}&rdquo;
                     </div>
-                  ))}
-                  <div className="flex items-center justify-between border-t border-border pt-2 text-xs font-bold">
-                    <span className="text-muted-foreground uppercase text-[11px]">
-                      Composite Risk Level
-                    </span>
-                    <span className="font-mono text-rose-600 dark:text-rose-400 uppercase">
-                      {activeResult.risk_level}
-                    </span>
-                  </div>
+                  )}
                 </div>
               </div>
 
-              {/* SECTION: DETECTION METHOD & ANALYSIS PROVENANCE */}
-              <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-                <div className="mb-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                      Detection Method & Analysis Provenance
-                    </h3>
-                  </div>
-                  <span className="rounded border border-indigo-500/30 bg-indigo-500/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-indigo-600 dark:text-indigo-300">
-                    Deterministic Engine
-                  </span>
-                </div>
-
-                {(() => {
-                  const firstSec = activeResult.security_findings?.[0];
-                  return (
-                    <>
-                      <div className="grid grid-cols-2 gap-3 text-xs">
-                        <div className="rounded-lg border border-border bg-muted/20 dark:bg-zinc-950/60 p-3">
-                          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                            Primary Detection Rule
-                          </span>
-                          <p className="mt-1 font-mono font-semibold text-foreground">
-                            {firstSec
-                              ? `${firstSec.rule_id} — Credential & API Key Exposure`
-                              : "AST001 — Structural Baseline Monitoring"}
-                          </p>
-                          <p className="mt-0.5 text-[11px] text-muted-foreground">
-                            {firstSec
-                              ? firstSec.message
-                              : "Continuous observation across project files and sessions."}
-                          </p>
-                        </div>
-
-                        <div className="rounded-lg border border-border bg-muted/20 dark:bg-zinc-950/60 p-3">
-                          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                            Analyzer Pipeline
-                          </span>
-                          <p className="mt-1 font-semibold text-emerald-600 dark:text-emerald-400">
-                            Security Guardian (Tree-Sitter AST & Regex)
-                          </p>
-                          <p className="mt-0.5 text-[11px] text-muted-foreground">
-                            Machine Learning: Standby (Zero synthetic confidence; rule-based ground truth)
-                          </p>
-                        </div>
-                      </div>
-
-                      {firstSec?.redacted_evidence && (
-                        <div className="mt-3 rounded-lg border border-rose-500/30 bg-rose-500/5 dark:bg-rose-950/20 p-3">
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-semibold uppercase tracking-wider text-rose-600 dark:text-rose-400">
-                              Verified Redacted Evidence
-                            </span>
-                            <span className="text-[10px] text-muted-foreground">
-                              Line {firstSec.line_number || 1}
-                            </span>
-                          </div>
-                          <pre className="mt-1.5 overflow-x-auto rounded bg-muted/60 dark:bg-black/60 p-2 font-mono text-[11px] text-rose-600 dark:text-rose-200 border border-rose-500/20">
-                            {firstSec.redacted_evidence}
-                          </pre>
-                        </div>
-                      )}
-                    </>
-                  );
-                })()}
-              </div>
-
-              {/* SECTION 5 & 6: INCIDENT TIMELINE & AFFECTED SURFACE */}
-              <div className="grid grid-cols-2 gap-4">
-                {/* Incident Timeline */}
-                <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-                  <h3 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
-                    <Clock className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400" />
-                    Incident Timeline
+              {/* 2. INCIDENT STORY & NARRATIVE */}
+              <div className="space-y-3 rounded-xl border border-gray-800 bg-gray-900/60 p-5">
+                <div className="flex items-center justify-between">
+                  <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-white">
+                    <Compass className="h-4 w-4 text-indigo-400" />
+                    Deterministic Incident Narrative
                   </h3>
-                  <div className="space-y-3">
-                    {(activeResult.evidence_chain || []).map((step, idx) => (
-                      <div key={idx} className="flex items-start gap-2.5 text-xs">
-                        <span className="font-mono text-[10px] text-muted-foreground">
-                          {new Date(step.timestamp).toLocaleTimeString()}
-                        </span>
-                        <div className="flex-1">
-                          <p className="font-semibold text-foreground">{step.title}</p>
-                          <p className="text-[11px] text-muted-foreground">{step.description}</p>
+                  <Badge variant="outline" className="border-gray-700 text-[10px] text-gray-400">
+                    FACTS-DERIVED STORY
+                  </Badge>
+                </div>
+                <div className="space-y-2 font-sans text-xs leading-relaxed text-gray-300">
+                  {incidentDetail.story.narrative_paragraphs.map((para, i) => (
+                    <p key={i} className="rounded border border-gray-800/60 bg-gray-950/40 p-2.5">
+                      {para}
+                    </p>
+                  ))}
+                </div>
+              </div>
+
+              {/* 3. RISK EVOLUTION & ROOT CAUSE */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {/* Risk Evolution */}
+                <div className="space-y-3 rounded-xl border border-gray-800 bg-gray-900/60 p-4">
+                  <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white">
+                    <TrendingUp className="h-3.5 w-3.5 text-indigo-400" />
+                    Risk Evolution Progression
+                  </h3>
+                  <div className="space-y-2">
+                    {incidentDetail.risk_evolution.steps.map((step, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between rounded border border-gray-800/60 bg-gray-950/60 p-2 text-xs"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="rounded bg-gray-800 px-1.5 py-0.5 font-mono text-[10px] text-gray-300">
+                            {step.category}
+                          </span>
+                          <span className="max-w-[160px] truncate text-xs text-gray-300">
+                            {step.factor}
+                          </span>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-2 font-mono">
+                          {step.points_added > 0 && (
+                            <span className="text-xs text-amber-400">+{step.points_added}</span>
+                          )}
+                          <span className="text-xs font-bold text-indigo-400">
+                            ={step.running_score}
+                          </span>
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Affected Surface */}
-                <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-                  <h3 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground">
-                    <FileCode className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400" />
-                    Affected Surface
+                {/* Root Cause Analysis */}
+                <div className="space-y-3 rounded-xl border border-gray-800 bg-gray-900/60 p-4">
+                  <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white">
+                    <Cpu className="h-3.5 w-3.5 text-indigo-400" />
+                    Root Cause & Signals
                   </h3>
                   <div className="space-y-2 text-xs">
-                    <div>
-                      <span className="text-[11px] font-semibold text-muted-foreground">
-                        Affected Files:
-                      </span>
-                      <div className="mt-1 space-y-1">
-                        {(activeResult.affected_files.length > 0
-                          ? activeResult.affected_files
-                          : activeResult.file_path
-                            ? [activeResult.file_path]
-                            : ["Observed Target"]
-                        ).map((file, i) => (
-                          <div
-                            key={i}
-                            className="flex items-center gap-1.5 rounded bg-muted/40 dark:bg-zinc-950/80 px-2 py-1 font-mono text-[11px] text-indigo-600 dark:text-indigo-300 border border-border"
-                          >
-                            <FileText className="h-3 w-3 text-muted-foreground" />
-                            {file}
-                          </div>
-                        ))}
+                    <div className="rounded border border-red-900/40 bg-red-950/20 p-2.5">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-red-400">
+                        PRIMARY SIGNAL
+                      </div>
+                      <div className="mt-0.5 font-semibold text-gray-200">
+                        {incidentDetail.root_cause.primary_signal}
                       </div>
                     </div>
-                    <div className="border-t border-border pt-2 text-[11px]">
-                      <span className="text-muted-foreground">Session Context: </span>
-                      <span className="font-mono text-foreground">{activeResult.session_id}</span>
+                    <div className="rounded border border-gray-800 bg-gray-950 p-2.5">
+                      <div className="mb-1 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                        CONTRIBUTING SIGNALS
+                      </div>
+                      <ul className="list-inside list-disc space-y-1 text-[11px] text-gray-300">
+                        {incidentDetail.root_cause.contributing_signals.map((cs, i) => (
+                          <li key={i}>{cs}</li>
+                        ))}
+                      </ul>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* SECTION 8: RECOMMENDED ACTION & RESOLUTION */}
-              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-950/10 p-5 shadow-sm">
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                    <CheckCircle2 className="h-4 w-4" />
-                    Recommended Remediation Action
-                  </span>
-                  <button
-                    onClick={() => handleMarkReviewed(activeResult.id)}
-                    className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
-                      isReviewed
-                        ? "border border-emerald-500/40 bg-emerald-500/20 text-emerald-700 dark:text-emerald-300"
-                        : "bg-emerald-600 text-white hover:bg-emerald-500"
-                    }`}
-                  >
-                    {isReviewed ? "✓ Marked as Reviewed" : "Mark as Reviewed"}
-                  </button>
+              {/* 4. AFFECTED SURFACE & ENGINEERING DNA CONTRAST */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {/* Affected Surface */}
+                <div className="space-y-3 rounded-xl border border-gray-800 bg-gray-900/60 p-4">
+                  <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white">
+                    <Layers className="h-3.5 w-3.5 text-indigo-400" />
+                    Affected Surface & Subsystems
+                  </h3>
+                  <div className="space-y-2">
+                    {incidentDetail.affected_surface.breakdown.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between rounded border border-gray-800 bg-gray-950 p-2 text-xs"
+                      >
+                        <span className="font-semibold text-gray-200">{item.subsystem}</span>
+                        <div className="flex items-center gap-2 text-gray-400">
+                          <span>{item.file_count} file(s)</span>
+                          {item.findings_count > 0 && (
+                            <span className="font-mono font-bold text-red-400">
+                              ({item.findings_count} findings)
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  {activeResult.recommendation ||
-                    "Move credentials and connection strings to environment variables (.env) or managed secret storage (e.g. AWS Secrets Manager, HashiCorp Vault) before committing changes."}
-                </p>
+
+                {/* Engineering DNA Contrast */}
+                <div className="space-y-3 rounded-xl border border-gray-800 bg-gray-900/60 p-4">
+                  <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white">
+                    <Compass className="h-3.5 w-3.5 text-indigo-400" />
+                    Engineering DNA Contrast
+                  </h3>
+                  <div className="space-y-2 rounded border border-gray-800 bg-gray-950 p-3 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-400">Normal Focus:</span>
+                      <span className="font-mono text-indigo-300">
+                        {incidentDetail.engineering_dna.normal_focus_dirs.join(", ") ||
+                          "General Code"}
+                      </span>
+                    </div>
+                    <div className="border-t border-gray-800/80 pt-1 text-[11px] leading-relaxed text-gray-300">
+                      {incidentDetail.engineering_dna.analysis_summary}
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
+
+              {/* 5. EVIDENCE GRAPH 3.0 & NODE INSPECTOR */}
+              <div className="space-y-4 rounded-xl border border-gray-800 bg-gray-900/60 p-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-white">
+                      <Activity className="h-4 w-4 text-indigo-400" />
+                      Evidence Graph 3.0 & Causal Topology
+                    </h3>
+                    <p className="text-[11px] text-gray-400">
+                      Click any node to inspect telemetry and provenance.
+                    </p>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className="border-indigo-500/40 font-mono text-xs text-indigo-300"
+                  >
+                    {incidentDetail.evidence_graph.nodes.length} NODES ·{" "}
+                    {incidentDetail.evidence_graph.edges.length} EDGES
+                  </Badge>
+                </div>
+
+                {/* Interactive Node Flow View */}
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4">
+                  {incidentDetail.evidence_graph.nodes.map((node) => {
+                    const isSelected = selectedNode?.id === node.id;
+                    return (
+                      <div
+                        key={node.id}
+                        onClick={() => setSelectedNode(node)}
+                        className={`relative cursor-pointer rounded-lg border p-3 transition ${
+                          isSelected
+                            ? "border-indigo-400 bg-indigo-950/60 shadow-md"
+                            : "border-gray-800 bg-gray-950 hover:border-gray-700"
+                        }`}
+                      >
+                        <div className="mb-1 flex items-center justify-between font-mono text-[10px] text-gray-400">
+                          <span>
+                            #{node.step_number} {node.kind}
+                          </span>
+                          {node.severity && (
+                            <span className="font-bold text-amber-400">{node.severity}</span>
+                          )}
+                        </div>
+                        <div className="line-clamp-1 text-xs font-bold text-gray-200">
+                          {node.title}
+                        </div>
+                        <div className="mt-0.5 line-clamp-1 text-[11px] text-gray-400">
+                          {node.subtitle}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Node Inspector Drawer */}
+                {selectedNode && (
+                  <div className="space-y-2 rounded-lg border border-indigo-500/50 bg-gray-950 p-4">
+                    <div className="flex items-center justify-between border-b border-gray-800 pb-2">
+                      <div className="text-xs font-bold uppercase tracking-wider text-indigo-300">
+                        NODE INSPECTOR: {selectedNode.title}
+                      </div>
+                      <button
+                        onClick={() => setSelectedNode(null)}
+                        className="text-xs text-gray-500 hover:text-gray-300"
+                      >
+                        Close
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 pt-1 text-xs sm:grid-cols-3">
+                      <div>
+                        <span className="block text-[10px] text-gray-500">TIMESTAMP</span>
+                        <span className="font-mono text-gray-200">
+                          {new Date(selectedNode.timestamp).toLocaleTimeString()}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-gray-500">CATEGORY</span>
+                        <span className="font-mono text-gray-200">{selectedNode.kind}</span>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-gray-500">PROVENANCE</span>
+                        <span className="font-mono text-emerald-400">
+                          {selectedNode.provenance || "OBSERVED"}
+                        </span>
+                      </div>
+                    </div>
+                    {selectedNode.details && (
+                      <div className="max-h-32 overflow-y-auto rounded border border-gray-800 bg-gray-900 p-2 pt-2 font-mono text-xs text-gray-300">
+                        <pre className="whitespace-pre-wrap text-[11px]">
+                          {JSON.stringify(selectedNode.details, null, 2)}
+                        </pre>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* 6. REMEDIATION PLAN */}
+              <div className="space-y-3 rounded-xl border border-gray-800 bg-gray-900/60 p-5">
+                <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                  Prescribed Remediation Steps
+                </h3>
+                <p className="text-xs italic text-gray-300">
+                  {incidentDetail.remediation_guidance}
+                </p>
+                <div className="space-y-1.5 pt-1">
+                  {incidentDetail.remediation_steps.map((step, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-start gap-2.5 rounded border border-gray-800 bg-gray-950 p-2.5 text-xs text-gray-200"
+                    >
+                      <span className="font-mono font-bold text-indigo-400">{idx + 1}.</span>
+                      <span>{step}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
           ) : (
-            <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-              Select an investigation incident from the active list to inspect its complete evidence graph.
+            <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-12 text-center text-xs text-gray-400">
+              Select an incident from the stream to view its complete investigation.
             </div>
           )}
         </div>
       </div>
+
+      {/* ── RESOLUTION NOTE MODAL ────────────────────────────────────────────── */}
+      {resolutionModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md space-y-4 rounded-xl border border-gray-800 bg-gray-900 p-5 shadow-2xl">
+            <h3 className="text-base font-bold text-white">Resolve Incident</h3>
+            <p className="text-xs text-gray-400">
+              Please enter a resolution note documenting how this security or code incident was
+              resolved.
+            </p>
+            <textarea
+              rows={3}
+              value={resolutionNote}
+              onChange={(e) => setResolutionNote(e.target.value)}
+              placeholder="e.g. Credential revoked, rotated, and moved to environment configuration."
+              className="w-full rounded-lg border border-gray-800 bg-gray-950 p-2.5 text-xs text-gray-200 focus:border-emerald-500 focus:outline-none"
+            />
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                onClick={() => setResolutionModalOpen(false)}
+                className="rounded px-3 py-1.5 text-xs text-gray-400 transition hover:bg-gray-800 hover:text-gray-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleStatusChange("RESOLVED", resolutionNote)}
+                className="rounded bg-emerald-600 px-4 py-1.5 text-xs font-semibold text-white shadow transition hover:bg-emerald-500"
+              >
+                Confirm Resolution
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
