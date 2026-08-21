@@ -1,8 +1,7 @@
 """
 Live Security Guardian — detects deterministic security risks.
 
-Findings schema
----------------
+Findings schema:
 {
     "findings": [
         {
@@ -15,9 +14,15 @@ Findings schema
             "timestamp": str,
             "evidence": str,
             "redacted_evidence": str,
-            "severity": str,  # "HIGH", "MEDIUM", "LOW"
+            "severity": str,  # "CRITICAL", "HIGH", "MEDIUM", "LOW"
             "category": str,
             "description": str,
+            "what": str,
+            "why": str,
+            "where": str,
+            "remediation": str,
+            "risk_contribution": int,
+            "provenance": str,  # "OBSERVED"
         }
     ]
 }
@@ -43,6 +48,9 @@ class SecurityRule:
     pattern: re.Pattern
     languages: tuple[str, ...]
     category: str
+    why: str
+    remediation: str
+    risk_contribution: int
 
 
 # ── Canonical Redaction & False-Positive Helpers ─────────────────────────────
@@ -148,6 +156,24 @@ def redact_assignment(before_str: str) -> str:
     return f'{before_clean} "[REDACTED]"'
 
 
+def redact_sensitive_line(line: str) -> str:
+    """Scrub sensitive patterns from any line string."""
+    line = re.sub(
+        r"(api[_-]?key|secret|token|password|passwd|auth[_-]?token)\s*[:=]\s*['\"][^'\"]+['\"]",
+        r'\1 = "[REDACTED]"',
+        line,
+        flags=re.IGNORECASE,
+    )
+    line = re.sub(r"sk-[a-zA-Z0-9_-]{20,}", "sk-[REDACTED]", line)
+    line = re.sub(
+        r"=['\"][A-Za-z0-9/+=]{16,40}['\"]",
+        '="[REDACTED]"',
+        line,
+        flags=re.IGNORECASE,
+    )
+    return line
+
+
 class SecurityAnalyzer:
     """
     Scans file contents for deterministic security patterns.
@@ -155,8 +181,8 @@ class SecurityAnalyzer:
     """
 
     name = "security_guardian"
-    version = 1
-    description = "Detects deterministic security risks (secrets, dangerous functions)."
+    version = 2
+    description = "Detects deterministic security risks (secrets, dangerous functions, config)."
     priority = 55
     enabled = True
 
@@ -217,144 +243,222 @@ class SecurityAnalyzer:
             id="SEC001",
             title="Password / Credential Exposure",
             description=(
-                "Credential-like value detected. Secret is masked to prevent credential leakage."
+                "Credential-like assignment detected. Secret is masked to prevent leakage."
             ),
             severity="HIGH",
             pattern=SEC001_ASSIGNMENT_REGEX,
             languages=("all",),
             category="Secrets",
+            why=(
+                "Hardcoded credentials in source code risk unauthorized system and database access."
+            ),
+            remediation=(
+                "Move credentials to secure environment variables or a secrets manager "
+                "and rotate exposed values immediately."
+            ),
+            risk_contribution=50,
         ),
         SecurityRule(
             id="HARDCODED_OPENAI_KEY",
-            title="Hardcoded OpenAI Key",
-            description="OpenAI API keys should not be hardcoded.",
+            title="Hardcoded OpenAI API Key",
+            description="OpenAI API keys should not be hardcoded in code.",
             severity="HIGH",
             pattern=re.compile(r"(?:sk-[a-zA-Z0-9_-]{30,})"),
             languages=("python", "typescript", "javascript", "all"),
             category="Secrets",
+            why="Exposed API keys allow unauthorized model invocations and billable quota theft.",
+            remediation="Store API key in OPENAI_API_KEY environment variable and rotate key.",
+            risk_contribution=50,
         ),
         SecurityRule(
             id="AWS_SECRET",
-            title="AWS Access Key",
-            description="AWS credentials should not be hardcoded.",
+            title="AWS Access Key / Secret",
+            description="AWS credentials should not be hardcoded in source files.",
             severity="HIGH",
             pattern=re.compile(
                 r"(?i)(?:aws_access_key_id|aws_secret_access_key)\s*=\s*['\"][A-Za-z0-9/+=]{16,40}['\"]"
             ),
             languages=("python", "typescript", "javascript", "all"),
             category="Secrets",
+            why="Exposing cloud provider credentials risks cloud infrastructure compromise.",
+            remediation="Use IAM roles, AWS Secrets Manager, or ~/.aws/credentials.",
+            risk_contribution=50,
         ),
         SecurityRule(
             id="PRIVATE_KEY",
-            title="Private Key",
+            title="Private Cryptographic Key",
             description="Private keys must not be stored in source code.",
             severity="HIGH",
             pattern=re.compile(r"-----BEGIN (?:RSA |EC |DSA |OPENSSH |)PRIVATE KEY-----"),
             languages=("python", "typescript", "javascript", "all"),
             category="Secrets",
+            why="Private key exposure compromises encryption, signatures, and host authentication.",
+            remediation="Move private key to a secure key store or encrypted vault.",
+            risk_contribution=50,
         ),
         SecurityRule(
             id="EVAL_USAGE",
             title="Dangerous Function: eval()",
-            description="eval() can execute arbitrary code.",
-            severity="MEDIUM",
+            description="Dynamic evaluation of code via eval() can execute arbitrary commands.",
+            severity="HIGH",
             pattern=re.compile(r"\beval\s*\("),
             languages=("python", "typescript", "javascript"),
-            category="Injection",
+            category="Dangerous Execution",
+            why=(
+                "eval() allows untrusted input to execute arbitrary code "
+                "with application privileges."
+            ),
+            remediation="Replace dynamic evaluation with explicit parsing or AST interpreters.",
+            risk_contribution=30,
         ),
         SecurityRule(
             id="EXEC_USAGE",
             title="Dangerous Function: exec()",
-            description="exec() can execute arbitrary code.",
-            severity="MEDIUM",
+            description="Dynamic evaluation of code via exec() can execute arbitrary statements.",
+            severity="HIGH",
             pattern=re.compile(r"\bexec\s*\("),
             languages=("python",),
-            category="Injection",
+            category="Dangerous Execution",
+            why="exec() dynamically executes strings as code, leading to remote code execution.",
+            remediation="Refactor code to use explicit dispatch tables or handlers.",
+            risk_contribution=30,
         ),
         SecurityRule(
             id="SUBPROCESS_SHELL_TRUE",
             title="subprocess with shell=True",
-            description="Using shell=True can lead to shell injection vulnerabilities.",
+            description="Using shell=True allows shell injection attacks.",
             severity="HIGH",
             pattern=re.compile(
                 r"\bsubprocess\.(?:Popen|call|run|check_call|check_output)\s*\([^)]*shell\s*=\s*True"
             ),
             languages=("python",),
-            category="Injection",
+            category="Dangerous Execution",
+            why=(
+                "shell=True passes commands through a shell interpreter, "
+                "enabling command injection."
+            ),
+            remediation="Pass command arguments as an array with shell=False.",
+            risk_contribution=30,
         ),
         SecurityRule(
             id="PICKLE_LOADS",
             title="Unsafe Deserialization: pickle",
-            description="Pickle is not secure against erroneous or maliciously constructed data.",
+            description="pickle deserialization can construct arbitrary executable objects.",
             severity="HIGH",
             pattern=re.compile(r"\bpickle\.(?:loads|load)\s*\("),
             languages=("python",),
             category="Deserialization",
+            why="Unpickling untrusted byte streams leads to direct remote code execution.",
+            remediation="Use safe serialization formats such as JSON or Protocol Buffers.",
+            risk_contribution=25,
         ),
         SecurityRule(
             id="YAML_UNSAFE_LOAD",
             title="Unsafe YAML Load",
-            description="Using yaml.load without SafeLoader is unsafe.",
+            description="Using yaml.load without SafeLoader allows arbitrary code execution.",
             severity="HIGH",
             pattern=re.compile(r"\byaml\.load\s*\(\s*[^,]+(?!,\s*Loader=yaml\.SafeLoader)"),
             languages=("python",),
             category="Deserialization",
+            why="PyYAML's default loader can instantiate arbitrary Python objects.",
+            remediation="Use yaml.safe_load() or specify Loader=yaml.SafeLoader.",
+            risk_contribution=25,
         ),
         SecurityRule(
             id="OS_SYSTEM",
-            title="OS System Execution",
-            description="os.system is prone to shell injection.",
-            severity="MEDIUM",
+            title="OS System Command Execution",
+            description="os.system executes shell commands without argument sanitization.",
+            severity="HIGH",
             pattern=re.compile(r"\bos\.system\s*\("),
             languages=("python",),
-            category="Injection",
+            category="Dangerous Execution",
+            why="os.system executes arguments directly in the system shell.",
+            remediation="Use subprocess.run with an argument list and shell=False.",
+            risk_contribution=25,
         ),
         SecurityRule(
             id="MD5_USAGE",
-            title="Weak Crypto: MD5",
-            description="MD5 is considered cryptographically weak.",
+            title="Weak Cryptography: MD5",
+            description="MD5 is cryptographically broken and vulnerable to collision attacks.",
             severity="LOW",
             pattern=re.compile(r"\b(?:hashlib\.)?md5\s*\("),
             languages=("python", "typescript", "javascript"),
             category="Cryptography",
+            why=(
+                "MD5 is vulnerable to practical collision generation and "
+                "should not be used for security."
+            ),
+            remediation="Upgrade to SHA-256 (SHA2) or SHA-3 for secure hashing.",
+            risk_contribution=10,
         ),
         SecurityRule(
             id="SHA1_USAGE",
-            title="Weak Crypto: SHA1",
-            description="SHA1 is considered cryptographically weak.",
+            title="Weak Cryptography: SHA-1",
+            description="SHA-1 has known theoretical and practical collision weaknesses.",
             severity="LOW",
             pattern=re.compile(r"\b(?:hashlib\.)?sha1\s*\("),
             languages=("python", "typescript", "javascript"),
             category="Cryptography",
+            why="SHA-1 is deprecated for digital signatures and integrity protection.",
+            remediation="Upgrade to SHA-256 (hashlib.sha256) or SHA-512.",
+            risk_contribution=10,
         ),
         SecurityRule(
             id="VERIFY_FALSE",
-            title="Disabled TLS Verification",
-            description="Disabling TLS verification enables MITM attacks.",
+            title="Disabled TLS / SSL Verification",
+            description="Disabling TLS certificate verification allows Man-In-The-Middle attacks.",
             severity="HIGH",
             pattern=re.compile(
                 r"\brequests\.(?:get|post|put|delete|patch|request)\s*\([^)]*verify\s*=\s*False"
             ),
             languages=("python",),
-            category="Network",
+            category="Network & Transport",
+            why=(
+                "Disabling certificate validation allows network attackers to "
+                "intercept and tamper with traffic."
+            ),
+            remediation="Ensure verify=True and configure trusted CA certificate bundles.",
+            risk_contribution=25,
         ),
         SecurityRule(
             id="DEBUG_TRUE",
-            title="Debug Mode Enabled",
-            description="Running frameworks in debug mode in production is dangerous.",
+            title="Debug Mode Enabled in Configuration",
+            description="Framework debug mode exposes interactive tracebacks and consoles.",
             severity="MEDIUM",
             pattern=re.compile(r"(?i)debug\s*=\s*True"),
-            languages=("python",),
-            category="Configuration",
+            languages=("python", "typescript", "javascript", "ini", "toml"),
+            category="Configuration Risk",
+            why=(
+                "Debug mode can leak environment variables, source code, and internal system paths."
+            ),
+            remediation="Disable debug mode (DEBUG=False) in staging and production environments.",
+            risk_contribution=15,
+        ),
+        SecurityRule(
+            id="PERMISSIVE_CORS",
+            title="Permissive Wildcard CORS Configuration",
+            description=(
+                "allow_origins=['*'] allows any external domain to make authenticated requests."
+            ),
+            severity="MEDIUM",
+            pattern=re.compile(r"""(?:allow_origins\s*=\s*\[\s*["']\*["']\s*\])"""),
+            languages=("python", "typescript", "javascript"),
+            category="Configuration Risk",
+            why="Wildcard origin allowances permit cross-origin requests from arbitrary websites.",
+            remediation="Specify explicit trusted origin domains rather than wildcard *.",
+            risk_contribution=15,
         ),
         SecurityRule(
             id="TODO_SECURITY",
-            title="Security TODO",
-            description="Found a security-related TODO comment.",
+            title="Unresolved Security TODO",
+            description="Found a security-related TODO marker in source code.",
             severity="LOW",
             pattern=re.compile(r"(?i)#\s*TODO\s*SECURITY|//\s*TODO\s*SECURITY"),
             languages=("python", "typescript", "javascript"),
-            category="Process",
+            category="Process & Debt",
+            why="Security debts and deferred fixes may leave open vulnerabilities in production.",
+            remediation="Review and implement the required security control before release.",
+            risk_contribution=5,
         ),
     ]
 
@@ -428,6 +532,7 @@ class SecurityAnalyzer:
             return None
 
         findings: list[dict[str, object]] = []
+        target_display = event.file_name or event.file_path or ""
 
         for i, line in enumerate(lines):
             line_stripped = line.strip()
@@ -456,7 +561,7 @@ class SecurityAnalyzer:
                             "title": rule.title,
                             "line_number": i + 1,
                             "symbol": redacted,
-                            "file": event.file_name or event.file_path or "",
+                            "file": target_display,
                             "language": lang,
                             "timestamp": event.timestamp.isoformat(),
                             "evidence": redacted,
@@ -464,6 +569,12 @@ class SecurityAnalyzer:
                             "severity": rule.severity,
                             "category": rule.category,
                             "description": rule.description,
+                            "what": f"Credential-like assignment in {target_display}",
+                            "why": rule.why,
+                            "where": f"{target_display}:{i + 1}",
+                            "remediation": rule.remediation,
+                            "risk_contribution": rule.risk_contribution,
+                            "provenance": "OBSERVED",
                         }
                     )
                 else:
@@ -474,28 +585,29 @@ class SecurityAnalyzer:
                         if rule.category == "Secrets":
                             if "sk-" in matched_str:
                                 redacted = re.sub(
-                                    r"sk-[a-zA-Z0-9_-]{30,}", "sk-[REDACTED]", line_stripped
+                                    r"sk-[a-zA-Z0-9_-]{20,}", "sk-[REDACTED]", line_stripped
                                 )
                             elif "aws" in matched_str.lower():
                                 redacted = re.sub(
                                     r"=['\"][A-Za-z0-9/+=]{16,40}['\"]",
                                     '="[REDACTED]"',
                                     line_stripped,
+                                    flags=re.IGNORECASE,
                                 )
                             else:
                                 redacted = "[REDACTED_SECRET]"
                         else:
-                            redacted = line_stripped
-                            if len(redacted) > 100:
-                                redacted = redacted[:97] + "..."
+                            redacted = redact_sensitive_line(line_stripped)
+                            if len(redacted) > 120:
+                                redacted = redacted[:117] + "..."
 
                         findings.append(
                             {
                                 "rule_id": rule.id,
                                 "title": rule.title,
                                 "line_number": i + 1,
-                                "symbol": redacted if rule.category == "Secrets" else matched_str,
-                                "file": event.file_name or event.file_path or "",
+                                "symbol": (redacted if rule.category == "Secrets" else matched_str),
+                                "file": target_display,
                                 "language": lang,
                                 "timestamp": event.timestamp.isoformat(),
                                 "evidence": redacted,
@@ -503,6 +615,12 @@ class SecurityAnalyzer:
                                 "severity": rule.severity,
                                 "category": rule.category,
                                 "description": rule.description,
+                                "what": f"{rule.title} in {target_display}",
+                                "why": rule.why,
+                                "where": f"{target_display}:{i + 1}",
+                                "remediation": rule.remediation,
+                                "risk_contribution": rule.risk_contribution,
+                                "provenance": "OBSERVED",
                             }
                         )
 

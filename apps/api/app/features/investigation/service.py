@@ -94,12 +94,13 @@ def _compute_risk_and_evidence(
     # 1. Security findings contribution
     has_high_sec = False
     for finding in security_findings:
-        if finding.severity.upper() == "HIGH":
+        sev = finding.severity.upper()
+        if sev == "CRITICAL":
             score += 50
             has_high_sec = True
             factors.append(
                 RiskFactor(
-                    label="Hardcoded credential pattern detected (SEC001)",
+                    label=f"Critical credential exposure ({finding.rule_id})",
                     score=50,
                     category="Security",
                 )
@@ -107,7 +108,50 @@ def _compute_risk_and_evidence(
             evidence_steps.append(
                 EvidenceStep(
                     timestamp=timestamp,
-                    title="Suspicious credential pattern detected",
+                    title="Critical security finding detected",
+                    description=(f"{finding.message} in {file_name}:{finding.line_number or 1}"),
+                    kind="PATTERN_MATCH",
+                    severity="CRITICAL",
+                    file=file_path,
+                )
+            )
+            evidence_nodes.append(
+                EvidenceNode(
+                    id="node-sec-pattern",
+                    step_number=3,
+                    title="Critical Secret Pattern Detected",
+                    subtitle=f"{finding.rule_id or 'SEC001'}: {finding.message}",
+                    kind="PATTERN_MATCH",
+                    timestamp=timestamp,
+                    severity="CRITICAL",
+                    file=file_path,
+                    details={
+                        "rule_id": finding.rule_id or "SEC001",
+                        "pattern": "API_KEY / Credentials",
+                        "redacted_evidence": finding.redacted_evidence or "[REDACTED]",
+                        "confidence": "CRITICAL",
+                        "line_number": finding.line_number or 1,
+                    },
+                )
+            )
+            recommendation = (
+                finding.recommendation
+                or "Move hardcoded credentials to environment variables or secret store."
+            )
+        elif sev == "HIGH":
+            score += 40
+            has_high_sec = True
+            factors.append(
+                RiskFactor(
+                    label=f"High risk security finding ({finding.rule_id})",
+                    score=40,
+                    category="Security",
+                )
+            )
+            evidence_steps.append(
+                EvidenceStep(
+                    timestamp=timestamp,
+                    title="High risk security pattern detected",
                     description=(f"{finding.message} in {file_name}:{finding.line_number or 1}"),
                     kind="PATTERN_MATCH",
                     severity="HIGH",
@@ -118,41 +162,35 @@ def _compute_risk_and_evidence(
                 EvidenceNode(
                     id="node-sec-pattern",
                     step_number=3,
-                    title="Secret Pattern Detected",
-                    subtitle=f"{finding.rule_id or 'SEC001'}: {finding.message}",
+                    title="Security Pattern Detected",
+                    subtitle=f"{finding.rule_id}: {finding.message}",
                     kind="PATTERN_MATCH",
                     timestamp=timestamp,
                     severity="HIGH",
                     file=file_path,
                     details={
-                        "rule_id": finding.rule_id or "SEC001",
-                        "pattern": "API_KEY / Credentials",
-                        "redacted_evidence": finding.redacted_evidence
-                        or 'API_KEY = "********REDACTED********"',
-                        "confidence": "HIGH",
+                        "rule_id": finding.rule_id,
+                        "redacted_evidence": finding.redacted_evidence or "[REDACTED]",
                         "line_number": finding.line_number or 1,
                     },
                 )
             )
-            recommendation = (
-                "Move hardcoded credentials and secret tokens to environment variables "
-                "or a secrets manager (e.g. HashiCorp Vault, AWS Secrets Manager)."
-            )
-        elif finding.severity.upper() == "MEDIUM":
-            score += 30
+            recommendation = finding.recommendation or "Review and sanitize dangerous code pattern."
+        elif sev == "MEDIUM":
+            score += 25
             factors.append(
                 RiskFactor(
-                    label="Suspicious code pattern detected",
-                    score=30,
+                    label=f"Suspicious configuration or code pattern ({finding.rule_id})",
+                    score=25,
                     category="Security",
                 )
             )
-        elif finding.severity.upper() == "LOW":
-            score += 15
+        elif sev == "LOW":
+            score += 10
             factors.append(
                 RiskFactor(
-                    label="Code quality / security warning",
-                    score=15,
+                    label=f"Security code quality warning ({finding.rule_id})",
+                    score=10,
                     category="Security",
                 )
             )
@@ -369,7 +407,8 @@ async def search_investigation(
                     line_number=finding.get("line_number"),
                     redacted_evidence=finding.get("redacted_evidence") or finding.get("evidence"),
                     category=finding.get("category") or "Credentials",
-                    recommendation="Move secret to environment/secret storage.",
+                    recommendation=finding.get("remediation")
+                    or "Move secret to environment/secret storage.",
                 )
             )
 

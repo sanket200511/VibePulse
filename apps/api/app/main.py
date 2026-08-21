@@ -180,6 +180,9 @@ def create_app() -> FastAPI:
     from app.features.project_context.router import router as project_context_router
 
     app.include_router(project_context_router)
+    from app.features.security_intelligence.router import router as security_intelligence_router
+
+    app.include_router(security_intelligence_router)
 
     return app
 
