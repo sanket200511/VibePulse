@@ -144,6 +144,12 @@ function ProjectStoryContent({
                 ⚡ Command Center
               </Link>
               <Link
+                to={`/projects/${project.id}/knowledge-graph`}
+                className="rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-3.5 py-1.5 text-xs font-bold text-indigo-300 shadow-sm transition-colors hover:bg-indigo-500/20"
+              >
+                🕸️ Knowledge Graph
+              </Link>
+              <Link
                 to={`/projects/${project.id}/security`}
                 className="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-400 transition-colors hover:bg-red-500/20 hover:text-red-300"
               >

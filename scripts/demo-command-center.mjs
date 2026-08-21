@@ -218,9 +218,31 @@ async function runDemo() {
     }
     await sleep(DELAY_MS);
 
-    // Engineer Resolves
+    // Knowledge Graph & Project Memory 2.0 Drill-Down
     step(
       6,
+      "KNOWLEDGE GRAPH & PROJECT MEMORY 2.0: Connected Semantic Intelligence",
+      "Materializing derived knowledge graph and structured AI memory model",
+    );
+    const kgRes = await request("GET", `/api/projects/${projectId}/knowledge-graph`);
+    console.log(
+      `   [✓] Knowledge Graph Nodes: ${kgRes.data.total_nodes} across ${kgRes.data.subsystems.length} subsystems`,
+    );
+    console.log(
+      `   [✓] Relationships: ${kgRes.data.total_edges} (CONTAINS, BELONGS_TO, AFFECTS, etc.)`,
+    );
+    const memRes = await request("GET", `/api/projects/${projectId}/knowledge-graph/memory`);
+    console.log(
+      `   [✓] Project Memory 2.0: Grade ${memRes.data.health_grade} (${memRes.data.overall_health_score}/100) | Focus: ${memRes.data.current_focus}`,
+    );
+    console.log(
+      `   [✓] Interactive Graph URL: http://localhost:3000/projects/${projectId}/knowledge-graph`,
+    );
+    await sleep(DELAY_MS);
+
+    // Engineer Resolves
+    step(
+      7,
       "RESOLVE & LEARN: Engineer Triage",
       "Engineer externalizes secret into environment variable",
     );
@@ -243,7 +265,7 @@ async function runDemo() {
     await sleep(DELAY_MS);
 
     // Reconstructibility check
-    step(7, "RECONSTRUCTIBILITY AUDIT", "Verifying Result A == Result B from canonical PostgreSQL");
+    step(8, "RECONSTRUCTIBILITY AUDIT", "Verifying Result A == Result B from canonical PostgreSQL");
     const refRes = await request("POST", `/api/projects/${projectId}/health/refresh`);
     console.log(
       `   [✓] Reconstructed Score: ${refRes.data.overall_health_score}/100 ($A \\equiv B$)`,
@@ -251,7 +273,7 @@ async function runDemo() {
     await sleep(DELAY_MS);
 
     banner("DEMONSTRATION COMPLETED SUCCESSFULLY");
-    console.log("All 8 intelligence stages observed, synthesized, and verified in real time.\n");
+    console.log("All 9 intelligence stages observed, synthesized, and verified in real time.\n");
   } finally {
     step(8, "TEARDOWN", "Cleaning up disposable demonstration artifacts");
     try {

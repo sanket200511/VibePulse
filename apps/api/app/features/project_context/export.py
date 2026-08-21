@@ -571,6 +571,36 @@ async def generate_project_context_markdown(db: AsyncSession, project_id: uuid.U
             ),
             "- **Secret Redaction**: 100% verified (`[REDACTED]` masking).",
             "",
+            "## 20. Engineering Knowledge Graph & Project Memory 2.0",
+            "",
+            (
+                "- **Central Principle**: *What Does VibePulse Know About This Project, "
+                "and How Are Its Parts Connected?*"
+            ),
+            (
+                "- **Semantic Entity Nodes**: `Project`, `Subsystem`, `File`, `Technology`, "
+                "`SecurityFinding`, `Incident`, `Prediction`, `Resolution`, `Session`, "
+                "`HealthDimension`."
+            ),
+            (
+                "- **Evidence-Backed Relationships**: `CONTAINS`, `BELONGS_TO`, `MODIFIED_IN`, "
+                "`ASSOCIATED_WITH`, `CONTRIBUTED_TO`, `AFFECTS`, `RESOLVED_BY`, `CONTRIBUTES_TO`, "
+                "`SUPPORTS`, `USED_BY`."
+            ),
+            (
+                "- **File Intelligence**: What has happened to each file (activities, findings, "
+                "incidents, predictions, sessions)."
+            ),
+            (
+                "- **Subsystem Intelligence**: Activity concentration, active findings, open "
+                "incidents, and risk posture per subsystem."
+            ),
+            (
+                "- **Deterministic Search**: Multi-entity semantic traversal across files, "
+                "subsystems, and security rules."
+            ),
+            "- **Deterministic Reconstructibility**: Pure derived projection ($A \\equiv B$).",
+            "",
         ]
     )
 
