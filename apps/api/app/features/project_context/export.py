@@ -341,19 +341,40 @@ async def generate_project_context_markdown(db: AsyncSession, project_id: uuid.U
     sec = context.security_summary
     rules_str = ", ".join([f"`{r}`" for r in sec.top_rules]) if sec.top_rules else "None"
 
+    # Identify sensitive files from important_files and configuration_files
+    sensitive_files = [
+        f.path
+        for f in context.important_files
+        if any(
+            k in f.path.lower()
+            for k in (".env", "settings", "security", "auth", "secrets", "database")
+        )
+    ]
+    sensitive_files_str = (
+        "\n".join([f"- `{sf}`" for sf in sensitive_files[:8]])
+        if sensitive_files
+        else "No sensitive credential or auth files detected."
+    )
+
     lines.extend(
         [
             "---",
             "",
             "## 13. Security Posture",
             "",
-            f"- **Total Security Findings**: `{sec.total_findings}`",
             f"- **Critical Severity**: `{sec.critical}`",
             f"- **High Severity**: `{sec.high}`",
             f"- **Medium Severity**: `{sec.medium}`",
             f"- **Low Severity**: `{sec.low}`",
+            f"- **Total Security Findings**: `{sec.total_findings}`",
             f"- **Top Triggered Rules**: {rules_str}",
             "- **Redaction Guard**: `Enforced` (Raw secrets strictly masked to `[REDACTED]`)",
+            "",
+            "### Security-Sensitive Files",
+            sensitive_files_str,
+            "",
+            "### Dependency Security",
+            "- **Vulnerability Intelligence**: `Not Configured (No advisory DB)`",
             "",
             "## 14. Activity Summary",
             "",

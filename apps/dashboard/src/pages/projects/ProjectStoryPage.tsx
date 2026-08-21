@@ -137,6 +137,12 @@ function ProjectStoryContent({
             </div>
             <div className="flex items-center justify-end gap-3">
               <Link
+                to={`/projects/${project.id}/security`}
+                className="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-400 transition-colors hover:bg-red-500/20 hover:text-red-300"
+              >
+                Security Intelligence
+              </Link>
+              <Link
                 to={`/projects/${project.id}/ai-provenance`}
                 className="rounded-lg border border-indigo-500/20 bg-indigo-500/10 px-3 py-1.5 text-xs font-medium text-indigo-400 transition-colors hover:text-indigo-300"
               >
