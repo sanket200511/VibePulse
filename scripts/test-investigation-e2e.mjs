@@ -73,7 +73,7 @@ async function main() {
     const sessionId = "11111111-2222-3333-4444-555555555555";
     const now = new Date().toISOString();
 
-    const ev1Res = await fetch(`${API_BASE}/api/events`, {
+    const ev1Res = await fetch(`${API_BASE}/events`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -91,7 +91,7 @@ async function main() {
     });
     if (!ev1Res.ok) throw new Error(`Event 1 ingestion failed: ${ev1Res.statusText}`);
 
-    const ev2Res = await fetch(`${API_BASE}/api/events`, {
+    const ev2Res = await fetch(`${API_BASE}/events`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

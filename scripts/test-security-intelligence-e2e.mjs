@@ -126,7 +126,7 @@ async function main() {
     ];
 
     for (const ev of events) {
-      const evRes = await fetch(`${API_BASE}/api/events`, {
+      const evRes = await fetch(`${API_BASE}/events`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(ev),
@@ -231,7 +231,7 @@ async function main() {
 
     // 8. Test PROJECT_CONTEXT.md export secret safety
     console.log("Step 8: Verifying PROJECT_CONTEXT.md Markdown Export Secret Safety...");
-    const ctxRes = await fetch(`${API_BASE}/api/projects/${projectA.id}/context/markdown`);
+    const ctxRes = await fetch(`${API_BASE}/api/projects/${projectA.id}/context/export`);
     if (!ctxRes.ok) throw new Error(`Context export failed: ${ctxRes.status}`);
     const exportMd = await ctxRes.text();
     if (exportMd.includes(TEST_SECRET)) {
