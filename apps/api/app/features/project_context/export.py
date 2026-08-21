@@ -492,6 +492,63 @@ async def generate_project_context_markdown(db: AsyncSession, project_id: uuid.U
             )
         lines.append("")
 
+    # 18. Unified Project Health & Actionable Priorities
+    from app.features.project_health.service import (
+        get_or_create_unified_project_health,
+    )
+
+    proj_health = await get_or_create_unified_project_health(db, project_id)
+    score_display = (
+        f"`{proj_health.overall_health_score}/100` ({proj_health.grade})"
+        if proj_health.overall_health_score is not None
+        else f"`{proj_health.grade}`"
+    )
+
+    lines.extend(
+        [
+            "## 18. Unified Project Health & Actionable Priorities",
+            "",
+            f"- **Overall Health**: {score_display}",
+            (
+                f"- **Security Health**: `{proj_health.security_health.score}/100` "
+                f"({proj_health.security_health.status})"
+            ),
+            (
+                f"- **Engineering Stability**: `{proj_health.engineering_stability.score}/100` "
+                f"({proj_health.engineering_stability.status})"
+            ),
+            (
+                f"- **Incident Health**: `{proj_health.incident_health.score}/100` "
+                f"({proj_health.incident_health.status})"
+            ),
+            (
+                f"- **Resolution Health**: `{proj_health.resolution_health.score}/100` "
+                f"({proj_health.resolution_health.status})"
+            ),
+            (
+                f"- **Predictive Risk Health**: `{proj_health.predictive_risk_health.score}/100` "
+                f"({proj_health.predictive_risk_health.status})"
+            ),
+            "",
+        ]
+    )
+
+    if proj_health.top_priorities:
+        lines.extend(
+            [
+                "### Actionable Priorities (What Should I Do Next?)",
+                "",
+                "| Rank | Priority Item | Severity | Urgency | Subsystem | Recommended Action |",
+                "|---|---|---|---|---|---|",
+            ]
+        )
+        for p in proj_health.top_priorities[:5]:
+            lines.append(
+                f"| `#{p.rank}` | **{p.title}** | `{p.severity}` | `{p.priority_score}/100` | "
+                f"`{p.affected_subsystem}` | {p.recommended_action} |"
+            )
+        lines.append("")
+
     lang_summary_str = ", ".join(lang_names) if lang_names else "General"
     file_count = len(context.important_files)
     src_dir_count = len(context.source_directories)
