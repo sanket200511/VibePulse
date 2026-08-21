@@ -194,6 +194,9 @@ def create_app() -> FastAPI:
     from app.features.evidence.router import router as evidence_router
 
     app.include_router(evidence_router)
+    from app.features.knowledge_graph.router import router as knowledge_graph_router
+
+    app.include_router(knowledge_graph_router)
 
     return app
 

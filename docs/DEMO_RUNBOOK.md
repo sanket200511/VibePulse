@@ -73,16 +73,26 @@ $$\mathbf{OBSERVE \longrightarrow DETECT \longrightarrow INVESTIGATE \longrighta
    - Causal Evidence Chain tracing the exact raw file event to AST detection to health impact.
    - Click `[Why is this #1?]` on Priority #1 to view deterministic urgency scoring.
 
-### Step 6: Engineer Resolves Issue (RESOLVE & LEARN)
+### Step 6: Engineering Knowledge Graph & Project Memory 2.0 ("What Does VibePulse Know?")
+
+1. Click **`[Knowledge Graph]`** in the top navigation or navigate to `/projects/:id/knowledge-graph`.
+2. Observe the interactive semantic graph:
+   - Clustered Subsystems: `Authentication`, `Configuration`, `Database`, `API Routes`.
+   - Explicit Semantic Edges: `CONTAINS`, `BELONGS_TO`, `AFFECTS`, `RESOLVED_BY`, `SUPPORTS`.
+   - File Intelligence: Click on any file node to inspect total activities, AST findings, and related sessions.
+   - Multi-Entity Search: Type `auth` or `jwt` to traverse connected components across files and rules.
+   - Project Memory 2.0 Export: Review Section 20 of `PROJECT_CONTEXT.md` for AI handoffs.
+
+### Step 7: Engineer Resolves Issue (RESOLVE & LEARN)
 
 1. Developer externalizes secret into environment variable.
 2. Human records resolution note in review state audit history.
 3. Project Health score recovers and priority item is cleared.
 
-### Step 7: 100% Deterministic Reconstructibility Proof ($A \equiv B$)
+### Step 8: 100% Deterministic Reconstructibility Proof ($A \equiv B$)
 
-1. Click `[Sync State]` or trigger `POST /api/projects/:id/health/refresh`.
-2. Demonstrate that health scores and priorities match the PostgreSQL ground truth identically.
+1. Click `[Refresh Projection]` or trigger `POST /api/projects/:id/knowledge-graph/refresh`.
+2. Demonstrate that health scores, knowledge graph nodes, and priorities match the PostgreSQL ground truth identically.
 
 ---
 

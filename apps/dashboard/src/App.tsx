@@ -15,6 +15,7 @@ import { InvestigationPage } from "./pages/investigation/InvestigationPage";
 import { SecurityCommandCenter } from "./pages/security/SecurityCommandCenter";
 import { PredictionsPage } from "./pages/predictions/PredictionsPage";
 import { EngineeringCommandCenter } from "./pages/command-center/EngineeringCommandCenter";
+import { KnowledgeGraphPage } from "./pages/knowledge-graph/KnowledgeGraphPage";
 
 /**
  * Application router.
@@ -50,6 +51,7 @@ export default function App() {
             path="/projects/:projectId/command-center"
             element={<EngineeringCommandCenter />}
           />
+          <Route path="/projects/:projectId/knowledge-graph" element={<KnowledgeGraphPage />} />
           <Route path="/projects/:projectId/security" element={<SecurityCommandCenter />} />
           <Route path="/projects/:projectId/ai-provenance" element={<AIProvenancePage />} />
           <Route path="/projects/:projectId/investigation" element={<InvestigationPage />} />

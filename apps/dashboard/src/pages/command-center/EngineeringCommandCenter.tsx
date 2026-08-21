@@ -100,6 +100,13 @@ export function EngineeringCommandCenter() {
               Sync State
             </button>
             <Link
+              to={`/projects/${projectId}/knowledge-graph`}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-3 py-1.5 text-xs font-semibold text-indigo-300 transition hover:bg-indigo-500/20"
+            >
+              <Layers className="h-3.5 w-3.5 text-indigo-400" />
+              Knowledge Graph
+            </Link>
+            <Link
               to={`/projects/${projectId}/investigation`}
               className="border-accent-color/30 bg-accent-color/10 text-accent-color hover:bg-accent-color/20 inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition"
             >
