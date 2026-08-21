@@ -140,11 +140,15 @@ async function runDemo() {
       "DETECT: AST & Security Guardian Triggered",
       "Developer modifies config/settings.py with secrets",
     );
+    const sPath = path.join(tempDir, "src", "config", "settings.py");
+    fs.mkdirSync(path.dirname(sPath), { recursive: true });
+    fs.writeFileSync(sPath, 'DEBUG = True\nSTRIPE_SECRET = "sk_live_99214_REDACTED_SECRET"\n');
+
     for (let i = 0; i < 3; i++) {
       await request("POST", "/events", {
         id: crypto.randomUUID(),
         session_id: sessionId,
-        project_root: tempDir,
+        project_root: regRes.data.root_path,
         timestamp: new Date(now.getTime() - 1000 * 60 * (10 - i * 2)).toISOString(),
         event_type: "FILE_MODIFIED",
         file_path: "src/config/settings.py",
@@ -168,7 +172,7 @@ async function runDemo() {
     await request("POST", "/events", {
       id: crypto.randomUUID(),
       session_id: sessionId,
-      project_root: tempDir,
+      project_root: regRes.data.root_path,
       timestamp: new Date(now.getTime() - 1000 * 60 * 2).toISOString(),
       event_type: "FILE_MODIFIED",
       file_path: "src/config/vault.py",
@@ -193,16 +197,38 @@ async function runDemo() {
     }
     await sleep(DELAY_MS);
 
-    // Engineer Resolves
+    // Trust & Explainability Drill-Down
     step(
       5,
+      "TRUST & EXPLAINABILITY: Why Does VibePulse Believe This?",
+      "Querying causal evidence chain and mathematical score decomposition",
+    );
+    const expRes = await request("GET", `/api/projects/${projectId}/evidence/health/overall`);
+    console.log(`   [✓] Evidence Provenance: [${expRes.data.provenance}]`);
+    console.log(`   [✓] Mathematical Decomposition:`);
+    for (const d of expRes.data.score_decomposition) {
+      console.log(
+        `       • ${d.dimension_name}: ${d.raw_score}/100 × ${(d.weight * 100).toFixed(0)}% = +${d.weighted_contribution}`,
+      );
+    }
+    const secExp = await request("GET", `/api/projects/${projectId}/evidence/security/current`);
+    console.log(`   [✓] Causal Chain for ${secExp.data.title}:`);
+    for (const c of secExp.data.evidence_chain) {
+      console.log(`       ↳ Step ${c.step_number} [${c.stage}]: ${c.title}`);
+    }
+    await sleep(DELAY_MS);
+
+    // Engineer Resolves
+    step(
+      6,
       "RESOLVE & LEARN: Engineer Triage",
       "Engineer externalizes secret into environment variable",
     );
+    fs.writeFileSync(sPath, 'DEBUG = False\nSTRIPE_SECRET = os.environ.get("STRIPE_SECRET")\n');
     await request("POST", "/events", {
       id: crypto.randomUUID(),
       session_id: sessionId,
-      project_root: tempDir,
+      project_root: regRes.data.root_path,
       timestamp: now.toISOString(),
       event_type: "FILE_MODIFIED",
       file_path: "src/config/settings.py",
@@ -217,7 +243,7 @@ async function runDemo() {
     await sleep(DELAY_MS);
 
     // Reconstructibility check
-    step(6, "RECONSTRUCTIBILITY AUDIT", "Verifying Result A == Result B from canonical PostgreSQL");
+    step(7, "RECONSTRUCTIBILITY AUDIT", "Verifying Result A == Result B from canonical PostgreSQL");
     const refRes = await request("POST", `/api/projects/${projectId}/health/refresh`);
     console.log(
       `   [✓] Reconstructed Score: ${refRes.data.overall_health_score}/100 ($A \\equiv B$)`,
@@ -225,9 +251,9 @@ async function runDemo() {
     await sleep(DELAY_MS);
 
     banner("DEMONSTRATION COMPLETED SUCCESSFULLY");
-    console.log("All 7 intelligence stages observed, synthesized, and verified in real time.\n");
+    console.log("All 8 intelligence stages observed, synthesized, and verified in real time.\n");
   } finally {
-    step(7, "TEARDOWN", "Cleaning up disposable demonstration artifacts");
+    step(8, "TEARDOWN", "Cleaning up disposable demonstration artifacts");
     try {
       if (projectId) {
         await request("POST", "/events", {

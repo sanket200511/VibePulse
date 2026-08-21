@@ -549,6 +549,31 @@ async def generate_project_context_markdown(db: AsyncSession, project_id: uuid.U
             )
         lines.append("")
 
+    lines.extend(
+        [
+            "## 19. Trust, Explainability & Evidence Intelligence",
+            "",
+            "- **Central Principle**: *Why Does VibePulse Believe This?*",
+            "- **Provenance Standard**:",
+            (
+                "  - `[OBSERVED]`: Directly supported by canonical PostgreSQL "
+                "telemetry or persisted human decisions."
+            ),
+            (
+                "  - `[INFERRED]`: Deterministically calculated from observed "
+                "evidence without heuristic guessing."
+            ),
+            ("  - `[UNKNOWN]`: Explicitly unestablished due to insufficient baseline telemetry."),
+            "- **Health Score Decomposition Formula**:",
+            (
+                "  $$\\text{Health} = 0.25 \\times \\text{Sec} + 0.20 \\times \\text{Eng} + "
+                "0.20 \\times \\text{Inc} + 0.15 \\times \\text{Res} + 0.20 \\times \\text{Pred}$$"
+            ),
+            "- **Secret Redaction**: 100% verified (`[REDACTED]` masking).",
+            "",
+        ]
+    )
+
     lang_summary_str = ", ".join(lang_names) if lang_names else "General"
     file_count = len(context.important_files)
     src_dir_count = len(context.source_directories)

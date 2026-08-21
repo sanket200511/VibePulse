@@ -63,13 +63,23 @@ $$\mathbf{OBSERVE \longrightarrow DETECT \longrightarrow INVESTIGATE \longrighta
    - Step 3: Health Impact (Dimension score adjustments)
    - Step 4: 1-Click `[Investigate in Engine 3.0]` button leading directly to the Investigation Evidence Graph.
 
-### Step 5: Engineer Resolves Issue (RESOLVE & LEARN)
+### Step 5: Trust & Explainability ("Why Does VibePulse Believe This?")
+
+1. Click the **`[Why This Score?]`** button on the Health scorecard.
+2. The **Evidence Inspector** opens showing:
+   - Provenance tag: `[OBSERVED]`
+   - Mathematical Score Decomposition:
+     $$\text{Security } (25\%) + \text{Engineering } (20\%) + \text{Incident } (20\%) + \text{Resolution } (15\%) + \text{Predictive } (20\%) = \text{Overall}$$
+   - Causal Evidence Chain tracing the exact raw file event to AST detection to health impact.
+   - Click `[Why is this #1?]` on Priority #1 to view deterministic urgency scoring.
+
+### Step 6: Engineer Resolves Issue (RESOLVE & LEARN)
 
 1. Developer externalizes secret into environment variable.
 2. Human records resolution note in review state audit history.
 3. Project Health score recovers and priority item is cleared.
 
-### Step 6: 100% Deterministic Reconstructibility Proof ($A \equiv B$)
+### Step 7: 100% Deterministic Reconstructibility Proof ($A \equiv B$)
 
 1. Click `[Sync State]` or trigger `POST /api/projects/:id/health/refresh`.
 2. Demonstrate that health scores and priorities match the PostgreSQL ground truth identically.

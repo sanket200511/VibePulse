@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Activity,
@@ -10,6 +11,7 @@ import {
   RotateCcw,
   Sparkles,
   HelpCircle,
+  HelpCircle as WhyIcon,
 } from "lucide-react";
 import { Badge } from "@vibepulse/ui";
 import {
@@ -17,6 +19,8 @@ import {
   useRefreshProjectHealth,
   type HealthDimension,
 } from "./useProjectHealth";
+import { EvidenceInspector } from "../evidence/EvidenceInspector";
+import type { EntityType } from "../evidence/types";
 
 function getGradeBadgeColor(grade: string) {
   switch (grade) {
@@ -56,6 +60,12 @@ export function ProjectHealthScorecard({ projectId }: { projectId: string }) {
   const navigate = useNavigate();
   const { data: health, isLoading, isError } = useProjectHealth(projectId);
   const refreshMutation = useRefreshProjectHealth(projectId);
+
+  // Evidence Inspector Modal State
+  const [inspectTarget, setInspectTarget] = useState<{
+    type: EntityType;
+    id: string;
+  } | null>(null);
 
   if (isLoading) {
     return (
@@ -99,16 +109,25 @@ export function ProjectHealthScorecard({ projectId }: { projectId: string }) {
           <p className="mt-1 text-xs text-gray-400">{health.status_message}</p>
         </div>
 
-        <button
-          onClick={() => refreshMutation.mutate()}
-          disabled={refreshMutation.isPending}
-          className="inline-flex items-center gap-1.5 self-start rounded-md border border-gray-700 bg-gray-800/80 px-3 py-1.5 text-xs font-medium text-gray-200 transition hover:bg-gray-700 disabled:opacity-50 sm:self-auto"
-        >
-          <RotateCcw
-            className={`h-3.5 w-3.5 ${refreshMutation.isPending ? "animate-spin text-indigo-400" : ""}`}
-          />
-          Recalculate Health
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setInspectTarget({ type: "health", id: "overall" })}
+            className="inline-flex items-center gap-1.5 rounded-md border border-indigo-500/40 bg-indigo-950/40 px-3 py-1.5 text-xs font-bold text-indigo-300 transition hover:bg-indigo-900/50"
+          >
+            <WhyIcon className="h-3.5 w-3.5" />
+            Why This Score?
+          </button>
+          <button
+            onClick={() => refreshMutation.mutate()}
+            disabled={refreshMutation.isPending}
+            className="inline-flex items-center gap-1.5 rounded-md border border-gray-700 bg-gray-800/80 px-3 py-1.5 text-xs font-medium text-gray-200 transition hover:bg-gray-700 disabled:opacity-50"
+          >
+            <RotateCcw
+              className={`h-3.5 w-3.5 ${refreshMutation.isPending ? "animate-spin text-indigo-400" : ""}`}
+            />
+            Recalculate Health
+          </button>
+        </div>
       </div>
 
       {isInsufficient ? (
@@ -159,9 +178,11 @@ export function ProjectHealthScorecard({ projectId }: { projectId: string }) {
                       {getDimensionIcon(dim.dimension_key)}
                       <span className="text-xs font-bold text-gray-200">{dim.name}</span>
                     </div>
-                    <span className="font-mono text-xs font-black text-indigo-300">
-                      {dim.score}/100
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-black text-indigo-300">
+                        {dim.score}/100
+                      </span>
+                    </div>
                   </div>
 
                   <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-800">
@@ -171,9 +192,17 @@ export function ProjectHealthScorecard({ projectId }: { projectId: string }) {
                     />
                   </div>
 
-                  <p className="truncate text-[10px] text-gray-400" title={dim.explanation}>
-                    {dim.explanation}
-                  </p>
+                  <div className="flex items-center justify-between text-[10px] text-gray-400">
+                    <span className="max-w-[200px] truncate" title={dim.explanation}>
+                      {dim.explanation}
+                    </span>
+                    <button
+                      onClick={() => setInspectTarget({ type: "health", id: dim.dimension_key })}
+                      className="shrink-0 font-bold text-indigo-400 hover:text-indigo-300"
+                    >
+                      Why?
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -244,8 +273,15 @@ export function ProjectHealthScorecard({ projectId }: { projectId: string }) {
                       {item.recommended_action}
                     </div>
 
-                    {item.deep_link_url && (
-                      <div className="pt-1 text-right">
+                    <div className="flex items-center justify-between pt-1">
+                      <button
+                        onClick={() => setInspectTarget({ type: "priority", id: item.priority_id })}
+                        className="text-xs font-bold text-indigo-400 hover:text-indigo-300"
+                      >
+                        Why is this #{item.rank}?
+                      </button>
+
+                      {item.deep_link_url && (
                         <button
                           onClick={() => {
                             if (item.deep_link_url) {
@@ -257,14 +293,24 @@ export function ProjectHealthScorecard({ projectId }: { projectId: string }) {
                           Take Action
                           <ArrowRight className="h-3 w-3" />
                         </button>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
           )}
         </>
+      )}
+
+      {/* ── EVIDENCE INSPECTOR MODAL ────────────────────────────────────────── */}
+      {inspectTarget && (
+        <EvidenceInspector
+          projectId={projectId}
+          entityType={inspectTarget.type}
+          entityId={inspectTarget.id}
+          onClose={() => setInspectTarget(null)}
+        />
       )}
     </div>
   );
