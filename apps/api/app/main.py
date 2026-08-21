@@ -188,6 +188,9 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(predictive_intelligence_router)
+    from app.features.project_health.router import router as project_health_router
+
+    app.include_router(project_health_router)
 
     return app
 

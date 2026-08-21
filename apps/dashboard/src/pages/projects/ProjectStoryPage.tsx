@@ -16,6 +16,7 @@ import type { ProjectIntelligence } from "./types";
 import { TimeMachineProvider, useTimeMachine } from "./TimeMachineContext";
 import { TimelineScrubber } from "./TimelineScrubber";
 import { EvolutionDiff } from "./EvolutionDiff";
+import { ProjectHealthScorecard } from "./ProjectHealthScorecard";
 
 function getSeverityColor(severity: string | undefined) {
   if (severity === "HIGH" || severity === "CRITICAL")
@@ -173,6 +174,11 @@ function ProjectStoryContent({
           </div>
         </div>
       )}
+
+      {/* SPRINT 7: Unified Project Health & Priorities */}
+      <div className="mb-10">
+        <ProjectHealthScorecard projectId={project.id} />
+      </div>
 
       {/* SECTION 6: Project Pulse (Reused) */}
       <div className="mb-12">
