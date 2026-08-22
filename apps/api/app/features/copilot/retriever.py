@@ -44,7 +44,7 @@ from app.features.security_intelligence.service import (
     compute_security_intelligence,
 )
 from app.features.sessions.models import Session
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = get_logger(__name__)
@@ -65,7 +65,7 @@ class RetrievedDomainData:
         sec_intel: SecurityIntelligenceRead,
         pred_intel: PredictiveSummary,
         graph: ProjectKnowledgeGraph,
-        proj_ctx: ProjectContextRead,
+        proj_ctx: ProjectContextRead | None,
         file_intels: dict[str, FileIntelligenceView],
         subsys_intels: dict[str, SubsystemIntelligenceView],
         evidence_explanations: dict[str, EntityExplainabilityResponse],
@@ -100,10 +100,18 @@ async def retrieve_canonical_domain_data(
     if not project:
         raise ValueError(f"Project with ID {project_id} not found")
 
+    norm_root = project.root_path.replace("\\", "/").rstrip("/").lower()
+
     # 1. Fetch raw events
     ev_stmt = (
         select(DevelopmentEvent)
-        .where(DevelopmentEvent.project_root == project.root_path)
+        .where(
+            or_(
+                DevelopmentEvent.project_root == project.root_path,
+                func.lower(func.replace(DevelopmentEvent.project_root, "\\", "/")) == norm_root,
+                func.lower(DevelopmentEvent.project_root).like(f"{norm_root}%"),
+            )
+        )
         .order_by(DevelopmentEvent.timestamp.desc())
         .limit(100)
     )
@@ -117,6 +125,7 @@ async def retrieve_canonical_domain_data(
             or_(
                 Session.project_id == project_id,
                 Session.project_root == project.root_path,
+                func.lower(func.replace(Session.project_root, "\\", "/")) == norm_root,
             )
         )
         .order_by(Session.started_at.desc())

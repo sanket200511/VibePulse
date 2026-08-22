@@ -1,9 +1,9 @@
 """
-Evidence Context Builder.
+Evidence Context Builder (Sprint 12 Hardened).
 
 Synthesizes a normalized, evidence-grounded CopilotEvidenceContext
 with strict tri-state provenance ([OBSERVED], [INFERRED], [UNKNOWN]),
-answerability determination, and complete secret redaction.
+robust Answerability Gate determination, and complete secret redaction.
 """
 
 from __future__ import annotations
@@ -19,9 +19,9 @@ from app.features.copilot.schemas import (
     CopilotIntent,
 )
 
-# Secret redaction pattern for Sprint 11
+# Secret redaction pattern for Sprint 12
 _SECRET_PATTERN = re.compile(
-    r"\b(?:VIBEPULSE_SPRINT\d+_SECRET_\d+|sk_live_[A-Za-z0-9_]+|ghp_[A-Za-z0-9]+|AKIA[A-Z0-9]{16})\b",
+    r"\b(?:VIBEPULSE_SPRINT\d+_SECRET_\d+|sk_live_[A-Za-z0-9_]+|ghp_[A-Za-z0-9]+|AKIA[A-Z0-9]{16}|[A-Za-z0-9+/]{40})\b",
     re.IGNORECASE,
 )
 
@@ -115,19 +115,20 @@ def build_evidence_context(
         )
 
     if priorities:
-        top_p = priorities[0]
-        inferred_facts.append(
-            CopilotFactItem(
-                statement=(
-                    f"Top priority #{top_p.rank}: {top_p.title} "
-                    f"(Severity: {top_p.severity}, Urgency: {top_p.priority_score}/100)."
-                ),
-                provenance="INFERRED",
-                category="PRIORITY",
-                source_reference=top_p.priority_id,
+        for p in priorities[:3]:
+            inferred_facts.append(
+                CopilotFactItem(
+                    statement=(
+                        f"Priority #{p.rank}: {p.title} "
+                        f"(Severity: {p.severity}, Urgency: {p.priority_score}/100). "
+                        f"{p.recommended_action}"
+                    ),
+                    provenance="INFERRED",
+                    category="PRIORITY",
+                    source_reference=p.priority_id,
+                )
             )
-        )
-        evidence_references.append(top_p.priority_id)
+            evidence_references.append(p.priority_id)
 
     # B. Security & AST Findings
     findings = sec.security_findings
@@ -175,7 +176,7 @@ def build_evidence_context(
             )
         )
 
-    # C. Correlated Incidents
+    # C. Correlated Incidents, Causes & Criticality
     incidents = sec.correlated_incidents
     if incidents:
         for inc in incidents[:3]:
@@ -185,7 +186,7 @@ def build_evidence_context(
                 CopilotFactItem(
                     statement=(
                         f"Correlated Incident {inc.incident_id} ({inc.severity}, "
-                        f"status: {effective_status}): {inc.title}"
+                        f"status: {effective_status}, risk: {inc.risk_score}/100): {inc.title}"
                     ),
                     provenance="OBSERVED",
                     category="INCIDENT",
@@ -193,6 +194,20 @@ def build_evidence_context(
                 )
             )
             evidence_references.append(inc.incident_id)
+
+            if intent in ("INCIDENT_CRITICALITY", "INCIDENT_CAUSE"):
+                inferred_facts.append(
+                    CopilotFactItem(
+                        statement=(
+                            f"Incident {inc.incident_id} is ranked {inc.severity} because "
+                            f"it contributes +{inc.risk_score} risk points across "
+                            f"{len(inc.affected_files)} affected files."
+                        ),
+                        provenance="INFERRED",
+                        category="INCIDENT_REASONING",
+                        source_reference=inc.incident_id,
+                    )
+                )
     else:
         observed_facts.append(
             CopilotFactItem(
@@ -236,7 +251,7 @@ def build_evidence_context(
                 CopilotFactItem(
                     statement=(
                         f"Forecast Signal: {ps.title} (Score: {ps.forecast_score}/100, "
-                        f"Evidence: {ps.evidence_strength})."
+                        f"Evidence: {ps.evidence_strength}). Action: {ps.recommended_action}"
                     ),
                     provenance="INFERRED",
                     category="PREDICTION",
@@ -257,7 +272,7 @@ def build_evidence_context(
             )
         )
 
-    # F. Target Entity Deep-Dives
+    # F. Target Entity Deep-Dives (Files & Subsystems)
     for target_file in data.file_intels:
         fi = data.file_intels[target_file]
         observed_facts.append(
@@ -304,7 +319,8 @@ def build_evidence_context(
     if intent == "UNKNOWN":
         answerable = False
         reason = (
-            "The query asks for information outside observed telemetry domain or is underspecified."
+            "The query asks for information outside observed telemetry "
+            "domain (e.g. external market prices, weather, politics, or private communications)."
         )
         strength = "INSUFFICIENT"
     elif intent == "FILE" and target_entities:
@@ -320,7 +336,15 @@ def build_evidence_context(
             answerable = False
             reason = f"File '{target_f}' has no recorded observation events in this project."
             strength = "INSUFFICIENT"
-    elif not events and intent in ("SECURITY", "INCIDENT", "FILE", "SUBSYSTEM", "PREDICTION"):
+    elif not events and intent in (
+        "SECURITY",
+        "INCIDENT",
+        "FILE",
+        "SUBSYSTEM",
+        "PREDICTION",
+        "INCIDENT_CAUSE",
+        "INCIDENT_CRITICALITY",
+    ):
         answerable = False
         reason = "No telemetry events have been recorded for this project yet."
         strength = "INSUFFICIENT"
