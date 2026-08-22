@@ -22,10 +22,14 @@ import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import crypto from "node:crypto";
+import { execSync } from "node:child_process";
 
 const API_BASE = process.env.VIBEPULSE_API_URL || process.env.API_BASE || "http://127.0.0.1:5133";
 const DASHBOARD_BASE = process.env.VIBEPULSE_DASHBOARD_URL || "http://localhost:5134";
 const DELAY_MS = process.env.DEMO_SPEED_MS ? parseInt(process.env.DEMO_SPEED_MS, 10) : 1200;
+const GLOBAL_TIMEOUT_MS = 60000;
+
+let globalWatchdog = null;
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -42,7 +46,7 @@ function step(num, label, detail = "") {
   if (detail) console.log(`   ↳ ${detail}`);
 }
 
-function request(method, pathUrl, body = null) {
+function request(method, pathUrl, body = null, timeoutMs = 5000) {
   return new Promise((resolve, reject) => {
     const url = new URL(pathUrl, API_BASE);
     const req = http.request(
@@ -53,6 +57,7 @@ function request(method, pathUrl, body = null) {
           "Content-Type": "application/json",
           Accept: "application/json, text/markdown, */*",
         },
+        timeout: timeoutMs,
       },
       (res) => {
         let data = "";
@@ -68,6 +73,9 @@ function request(method, pathUrl, body = null) {
         });
       },
     );
+    req.on("timeout", () => {
+      req.destroy(new Error(`HTTP timeout after ${timeoutMs}ms: ${method} ${pathUrl}`));
+    });
     req.on("error", reject);
     if (body) {
       req.write(JSON.stringify(body));
@@ -77,6 +85,11 @@ function request(method, pathUrl, body = null) {
 }
 
 async function runDemo() {
+  globalWatchdog = setTimeout(() => {
+    console.error(`\n❌ ERROR: Demo exceeded watchdog timeout (${GLOBAL_TIMEOUT_MS}ms)`);
+    process.exit(1);
+  }, GLOBAL_TIMEOUT_MS);
+  globalWatchdog.unref();
   banner("VIBEPULSE LIVE ENGINEERING COMMAND CENTER DEMONSTRATION");
   console.log(`Target API: ${API_BASE}`);
   console.log("Starting presentation sequence...");
@@ -348,7 +361,11 @@ async function runDemo() {
   }
 }
 
-runDemo().catch((err) => {
-  console.error("\n[!] Demo error:", err);
-  process.exit(1);
-});
+runDemo()
+  .then(() => {
+    process.exit(0);
+  })
+  .catch((err) => {
+    console.error("\n[!] Demo error:", err);
+    process.exit(1);
+  });

@@ -23,13 +23,14 @@ OBSERVE ──▶ DETECT ──▶ UNDERSTAND ──▶ INVESTIGATE ──▶ RE
 
 | Verification Suite / Check           | Command                                           | Verified Result                      |
 | ------------------------------------ | ------------------------------------------------- | ------------------------------------ |
-| **Backend Pytest**                   | `cd apps/api && uv run pytest`                    | **348 / 348 passed**                 |
+| **Backend Pytest**                   | `cd apps/api && uv run pytest`                    | **349 / 349 passed**                 |
 | **Daemon Vitest**                    | `pnpm --filter @vibepulse/daemon test`            | **130 / 130 passed**                 |
 | **TypeScript Typecheck**             | `pnpm typecheck`                                  | **5 / 5 packages passed (0 errors)** |
 | **Lint / Ruff**                      | `pnpm lint`                                       | **5 / 5 packages passed (0 errors)** |
 | **Seminar Doctor**                   | `node scripts/seminar-doctor.mjs`                 | **ALL CHECKS PASS**                  |
 | **Sprint 12 E2E Acceptance**         | `node scripts/test-sprint12-e2e.mjs`              | **14 / 14 criteria passed**          |
 | **Observation Engine E2E**           | `node scripts/test-observation-e2e.mjs`           | **PASS (Real filesystem mutations)** |
+| **Lifecycle Teardown Hardening**     | `node scripts/test-lifecycle-cleanup.mjs`         | **6 / 6 passed (Net Δ = 0 in <4s)**  |
 | **Final Demo Runner**                | `node scripts/final-demo.mjs`                     | **10 / 10 stages passed**            |
 | **Security Redaction Audit**         | `node scripts/final-security-audit.mjs`           | **100% PASS ([REDACTED] verified)**  |
 | **Deterministic Reconstructibility** | `node scripts/final-reconstructibility-audit.mjs` | **100% PASS ($A \equiv B$)**         |

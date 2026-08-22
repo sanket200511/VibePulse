@@ -10,7 +10,7 @@
 
 VibePulse is in an **active architecture and code freeze**. All intelligence subsystems and verification criteria are complete and validated:
 
-- **Backend Pytest**: 348 / 348 tests passing
+- **Backend Pytest**: 349 / 349 tests passing
 - **Daemon Vitest**: 130 / 130 tests passing
 - **TypeScript Typecheck**: 5 / 5 packages passing (0 errors)
 - **Lint / Ruff**: 5 / 5 packages passing (0 errors)
