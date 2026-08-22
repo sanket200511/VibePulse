@@ -7,6 +7,7 @@ from typing import Any
 from app.core.config import get_settings
 from app.features.analysis.models import EventAnalysis
 from app.features.events.models import DevelopmentEvent
+from app.features.investigation.models import IncidentReviewHistory, IncidentReviewState
 from app.features.project_context.models import ProjectContext
 from app.features.projects.models import Project
 from app.features.sessions.constants import SessionStatus
@@ -95,14 +96,16 @@ async def get_or_create_project(
     return project
 
 
-async def delete_project(db: AsyncSession, project_id: uuid.UUID) -> dict[str, Any] | None:
+async def delete_project(
+    db: AsyncSession, project_id: uuid.UUID, force: bool = False
+) -> dict[str, Any] | None:
     """
     Safely delete a project's observation telemetry, sessions, analyses,
     investigations, and context memory from PostgreSQL in a single atomic transaction.
 
     Safety:
     - NEVER touches or deletes physical files/directories on the filesystem.
-    - Fails with ProjectActiveError (409) if the project has an ACTIVE session.
+    - Fails with ProjectActiveError (409) if the project has an ACTIVE session (unless force=True).
     - Transactional: Rolls back completely on failure.
     - Returns structured counts of removed entities.
     """
@@ -120,21 +123,22 @@ async def delete_project(db: AsyncSession, project_id: uuid.UUID) -> dict[str, A
         == func.lower(func.replace(project.root_path, "\\", "/")),
     )
 
-    # 1. Check for Active Sessions (within idle observation window)
-    now = datetime.now(tz=UTC)
-    idle_cutoff = now - timedelta(seconds=get_settings().session_idle_timeout_seconds)
-    active_stmt = select(Session).where(
-        root_conditions,
-        Session.status == SessionStatus.ACTIVE.value,
-        Session.last_event_at > idle_cutoff,
-    )
-    active_count = len(list((await db.execute(active_stmt)).scalars().all()))
-    if active_count > 0:
-        raise ProjectActiveError(
-            project_name=project.display_name,
-            project_root=project.root_path,
-            active_sessions=active_count,
+    # 1. Check for Active Sessions (within idle observation window) unless force is enabled
+    if not force:
+        now = datetime.now(tz=UTC)
+        idle_cutoff = now - timedelta(seconds=get_settings().session_idle_timeout_seconds)
+        active_stmt = select(Session).where(
+            root_conditions,
+            Session.status == SessionStatus.ACTIVE.value,
+            Session.last_event_at > idle_cutoff,
         )
+        active_count = len(list((await db.execute(active_stmt)).scalars().all()))
+        if active_count > 0:
+            raise ProjectActiveError(
+                project_name=project.display_name,
+                project_root=project.root_path,
+                active_sessions=active_count,
+            )
 
     # 2. Gather session IDs for this project
     sessions_query = select(Session.id).where(root_conditions)
@@ -170,6 +174,12 @@ async def delete_project(db: AsyncSession, project_id: uuid.UUID) -> dict[str, A
         await db.execute(delete(EventAnalysis).where(EventAnalysis.event_id.in_(event_ids)))
         await db.execute(delete(DevelopmentEvent).where(DevelopmentEvent.id.in_(event_ids)))
 
+    await db.execute(
+        delete(IncidentReviewHistory).where(IncidentReviewHistory.project_id == project.id)
+    )
+    await db.execute(
+        delete(IncidentReviewState).where(IncidentReviewState.project_id == project.id)
+    )
     await db.execute(delete(ProjectContext).where(ProjectContext.project_id == project.id))
     if session_ids:
         await db.execute(delete(Session).where(Session.id.in_(session_ids)))

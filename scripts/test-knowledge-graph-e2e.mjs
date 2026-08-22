@@ -319,6 +319,11 @@ async function run() {
     log("ALL SPRINT 10 ACCEPTANCE TESTS COMPLETED SUCCESSFULLY!  ");
     log("=======================================================\n");
   } finally {
+    // Teardown created test projects from PostgreSQL
+    try {
+      if (projAId) await request("DELETE", `/api/projects/${projAId}?force=true`);
+      if (projBId) await request("DELETE", `/api/projects/${projBId}?force=true`);
+    } catch {}
     // Cleanup temporary folders
     try {
       fs.rmSync(tempDirA, { recursive: true, force: true });

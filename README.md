@@ -123,11 +123,14 @@ pnpm dev:status
 
 ## 🧪 Verification & Quality Baselines
 
-- **Backend Pytest**: 348 / 348 passed (`cd apps/api && uv run pytest`)
+- **Backend Pytest**: 349 / 349 passed (`cd apps/api && uv run pytest`)
 - **Daemon Vitest**: 130 / 130 passed (`pnpm --filter @vibepulse/daemon test`)
+- **Total Automated Tests**: 479 / 479 passed
 - **TypeScript Typecheck**: 5 / 5 packages passed (0 errors) (`pnpm typecheck`)
 - **Lint & Ruff**: 5 / 5 packages passed (0 errors) (`pnpm lint`)
 - **Seminar Doctor**: ALL CHECKS PASS (`node scripts/seminar-doctor.mjs`)
+- **Ephemeral Project Lifecycle**: 100% Guaranteed Teardown (`node scripts/test-lifecycle-cleanup.mjs`)
+- **Ephemeral Cleanup Utility**: Dry-run (`pnpm cleanup:ephemeral`) & Confirmed (`pnpm cleanup:ephemeral:confirm`)
 - **Sprint 12 E2E Acceptance Test**: 14 / 14 criteria passed (`node scripts/test-sprint12-e2e.mjs`)
 - **Live Demo Runner**: 10-stage loop passed (`node scripts/final-demo.mjs`)
 - **Security Redaction Audit**: 100% PASS (`node scripts/final-security-audit.mjs`)

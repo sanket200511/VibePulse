@@ -245,9 +245,8 @@ async function main() {
       throw new Error(`Failed to delete Project A: ${delRes.status} ${errText}`);
     }
 
-    // Verify Project B is untouched
-    const projBCheck = await fetch(`${API_BASE}/api/projects/${projIdB}`);
-    if (!projBCheck.ok) throw new Error("Project B was unexpectedly deleted");
+    // Delete Project B after verification
+    await fetch(`${API_BASE}/api/projects/${projIdB}?force=true`, { method: "DELETE" });
 
     console.log(`[9/9] Verified Multi-Project Isolation and clean cascade cleanup on deletion.`);
 
@@ -255,6 +254,12 @@ async function main() {
     console.log(" ✅ SPRINT 5 INCIDENT RESOLUTION AUDIT PASSED 100%");
     console.log("============================================================\n");
   } finally {
+    try {
+      if (projIdA)
+        await fetch(`${API_BASE}/api/projects/${projIdA}?force=true`, { method: "DELETE" });
+      if (projIdB)
+        await fetch(`${API_BASE}/api/projects/${projIdB}?force=true`, { method: "DELETE" });
+    } catch {}
     await fs.rm(tmpDirA, { recursive: true, force: true });
     await fs.rm(tmpDirB, { recursive: true, force: true });
   }

@@ -304,6 +304,63 @@ async def test_delete_active_project_returns_409(
 
 
 @pytest.mark.asyncio
+async def test_delete_project_force_bypasses_active_session_guard(
+    client: httpx.AsyncClient, db_session: AsyncSession
+) -> None:
+    # 1. Create project
+    proj_res = await client.post(
+        "/api/projects",
+        json={"root_path": "/test/force_active_delete", "display_name": "Force-Active-Delete"},
+    )
+    assert proj_res.status_code == 200
+    p_id = uuid.UUID(proj_res.json()["id"])
+
+    # 2. Add an ACTIVE session with events and context
+    sess_id = uuid.uuid4()
+    active_session = Session(
+        id=sess_id,
+        project_id=p_id,
+        project_root="/test/force_active_delete",
+        status=SessionStatus.ACTIVE.value,
+        started_at=datetime.now(UTC),
+        last_event_at=datetime.now(UTC),
+    )
+    db_session.add(active_session)
+    await db_session.flush()
+
+    ev = DevelopmentEvent(
+        id=uuid.uuid4(),
+        session_id=sess_id,
+        project_root="/test/force_active_delete",
+        event_type="FILE_MODIFIED",
+        timestamp=datetime.now(UTC),
+        file_path="/test/force_active_delete/app.py",
+        file_name="app.py",
+        event_metadata={},
+    )
+    db_session.add(ev)
+    await db_session.commit()
+
+    await get_or_create_project_context(db_session, p_id)
+    await db_session.commit()
+
+    # 3. Call DELETE with ?force=true
+    del_res = await client.delete(f"/api/projects/{p_id}?force=true")
+    assert del_res.status_code == 200
+    data = del_res.json()
+    assert data["deleted"] is True
+    assert data["project_id"] == str(p_id)
+    assert data["deleted_counts"]["events"] == 1
+    assert data["deleted_counts"]["sessions"] == 1
+    assert data["deleted_counts"]["context"] == 1
+
+    # 4. Verify in DB
+    db_session.expire_all()
+    assert await db_session.get(Project, p_id) is None
+    assert await db_session.get(Session, sess_id) is None
+
+
+@pytest.mark.asyncio
 async def test_delete_nonexistent_project_returns_404(client: httpx.AsyncClient) -> None:
     random_id = uuid.uuid4()
     del_res = await client.delete(f"/api/projects/{random_id}")

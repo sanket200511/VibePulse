@@ -31,6 +31,8 @@ async function main() {
   const tmpDirB = fs.mkdtempSync(path.join(os.tmpdir(), "vibepulse-sec-b-"));
   const TEST_SECRET = "VIBEPULSE_SECURITY_TEST_SECRET_2026";
 
+  const createdProjectIds = [];
+
   try {
     // 1. Create project files
     fs.writeFileSync(
@@ -71,6 +73,7 @@ async function main() {
     });
     if (!regRes.ok) throw new Error(`Project registration failed: ${regRes.status}`);
     const projectA = await regRes.json();
+    createdProjectIds.push(projectA.id);
     console.log(`✓ Project A registered: ID=${projectA.id}\n`);
 
     // Register Project B for isolation test
@@ -83,6 +86,7 @@ async function main() {
       }),
     });
     const projectB = await regResB.json();
+    createdProjectIds.push(projectB.id);
 
     // 3. Ingest Events for Project A
     console.log("Step 2: Ingesting security-relevant events...");
@@ -244,6 +248,12 @@ async function main() {
     console.log("ALL SPRINT 3 SECURITY INTELLIGENCE 2.0 CHECKS PASSED PERFECTLY!");
     console.log("================================================================================");
   } finally {
+    // Teardown created test projects from PostgreSQL
+    for (const pid of createdProjectIds) {
+      try {
+        await fetch(`${API_BASE}/api/projects/${pid}?force=true`, { method: "DELETE" });
+      } catch {}
+    }
     // Cleanup temporary files
     try {
       fs.rmSync(tmpDir, { recursive: true, force: true });

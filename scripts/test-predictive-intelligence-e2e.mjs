@@ -238,15 +238,8 @@ async function main() {
     // 9. Clean up sessions & projects
     log("Step 9: Cleaning up test projects...");
     try {
-      await request("POST", "/events", {
-        id: crypto.randomUUID(),
-        session_id: crypto.randomUUID(),
-        project_root: tempDirA,
-        timestamp: new Date().toISOString(),
-        event_type: "OBSERVATION_STOPPED",
-      });
-      await request("DELETE", `/api/projects/${projAId}`);
-      await request("DELETE", `/api/projects/${projBId}`);
+      if (projAId) await request("DELETE", `/api/projects/${projAId}?force=true`);
+      if (projBId) await request("DELETE", `/api/projects/${projBId}?force=true`);
       fs.rmSync(tempDirA, { recursive: true, force: true });
       fs.rmSync(tempDirB, { recursive: true, force: true });
       log(" [✓] Cleanup completed.");

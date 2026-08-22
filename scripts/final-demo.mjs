@@ -367,10 +367,12 @@ async function runFinalDemo() {
 
 🎉 FINAL RESULT: VIBEPULSE IS 100% READY FOR ACADEMIC EVALUATION & LIVE VIVA!
 `);
-
-    // Clean up disposable project
-    await request("DELETE", `/api/projects/${projectId}`);
   } finally {
+    if (projectId) {
+      try {
+        await request("DELETE", `/api/projects/${projectId}?force=true`);
+      } catch {}
+    }
     fs.rmSync(tmpRoot, { recursive: true, force: true });
   }
 }

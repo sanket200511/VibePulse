@@ -223,3 +223,28 @@ VibePulse environment is READY.
 - [x] `pnpm dev` starts API, Dashboard, and Daemon exactly once
 - [x] `http://localhost:5134` loads the VibePulse dashboard
 - [x] WebSocket live streams (`/ws/events`, `/ws/sessions`) connect without errors
+
+---
+
+## 9. Project Lifecycle & Hygiene Management
+
+VibePulse establishes a strict distinction between **Persistent Projects** and **Ephemeral Projects**:
+
+- **Persistent Projects** (e.g. `D:\Projects\Dabba`): Persist durably across system restarts, demo runs, and test suites.
+- **Ephemeral Test/Demo Projects**: Created with temporary directory roots during integration tests or live demos. All test and demo scripts execute within `try ... finally` blocks and guarantee deletion via `DELETE /api/projects/:id?force=true`.
+
+### Inspecting Database Project Hygiene (Dry Run)
+
+To inspect registered projects and review ephemeral vs persistent classifications without modifying the database:
+
+```powershell
+pnpm cleanup:ephemeral
+```
+
+### Performing Controlled Ephemeral Cleanup
+
+To safely remove all confirmed ephemeral and disposable projects while strictly protecting persistent projects:
+
+```powershell
+pnpm cleanup:ephemeral:confirm
+```
