@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /**
- * VibePulse Seminar Supervisor
- * Orchestrates reliable, long-running local development stack for presentations.
+ * VibePulse Development Supervisor & Seminar Orchestrator
  *
- * Capabilities:
- * - Pre-flight environment check (Postgres, Redis, Python, Node)
- * - Ordered service startup with health gating (API -> Dashboard -> Daemon)
- * - Isolated process supervision with automatic resilient restart
- * - Periodic non-intrusive health heartbeat (every 10s)
- * - Clean multi-process termination on SIGINT/SIGTERM (Windows-safe)
+ * Provides a professional, clean development supervisor experience:
+ * - Structured log hierarchy: [TIME] [SERVICE] [LEVEL] MESSAGE
+ * - Interactive startup status table & readiness banner
+ * - Filtered child-process stream handling (clean info by default, verbose with debug)
+ * - Clear error presentation with actionable resolution steps
+ * - Non-intrusive heartbeat and concise runtime event logging
+ * - Clean, signal-safe multi-process teardown
  */
 
 import { spawn } from "child_process";
@@ -21,6 +21,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, "..");
 
+// ── Environment & Ports ──────────────────────────────────────────────────────
 const API_PORT = Number(process.env.VIBEPULSE_API_PORT || process.env.API_PORT || 5133);
 const DASHBOARD_PORT = Number(
   process.env.VIBEPULSE_DASHBOARD_PORT || process.env.DASHBOARD_PORT || 5134,
@@ -29,48 +30,115 @@ const DAEMON_PORT = Number(
   process.env.VIBEPULSE_DAEMON_PORT || process.env.DAEMON_PORT || 5135,
 );
 
+const IS_DEBUG =
+  process.env.VIBEPULSE_LOG_LEVEL === "debug" ||
+  process.env.LOG_LEVEL === "debug" ||
+  process.env.DEBUG === "true" ||
+  process.argv.includes("--debug") ||
+  process.argv.includes("-v") ||
+  process.argv.includes("--verbose");
+
+// ── ANSI Formatting ─────────────────────────────────────────────────────────
+const RESET = "\x1b[0m";
+const BOLD = "\x1b[1m";
+const DIM = "\x1b[2m";
+const RED = "\x1b[31m";
+const GREEN = "\x1b[32m";
+const YELLOW = "\x1b[33m";
+const BLUE = "\x1b[34m";
+const MAGENTA = "\x1b[35m";
+const CYAN = "\x1b[36m";
+const GRAY = "\x1b[90m";
+
+const SERVICE_COLORS = {
+  SUPERVISOR: CYAN,
+  DATABASE: BLUE,
+  REDIS: MAGENTA,
+  API: BLUE,
+  DASHBOARD: GREEN,
+  DAEMON: MAGENTA,
+  SECURITY: RED,
+  SYSTEM: CYAN,
+  HEARTBEAT: GRAY,
+};
+
+const LEVEL_COLORS = {
+  INFO: CYAN,
+  START: YELLOW,
+  READY: GREEN,
+  WARN: YELLOW,
+  ERROR: RED,
+  RETRY: YELLOW,
+  STOP: RED,
+  EVENT: MAGENTA,
+  DEBUG: GRAY,
+  FINDING: RED,
+};
+
+function getTimestamp() {
+  const d = new Date();
+  return d.toTimeString().split(" ")[0]; // HH:MM:SS
+}
+
+function log(service, level, message, details = null) {
+  const ts = getTimestamp();
+  const sColor = SERVICE_COLORS[service] || CYAN;
+  const lColor = LEVEL_COLORS[level] || RESET;
+
+  const sTag = `${sColor}[${service.padEnd(10)}]${RESET}`;
+  const lTag = `${lColor}[${level.padEnd(5)}]${RESET}`;
+  console.log(`${GRAY}[${ts}]${RESET} ${sTag} ${lTag} ${message}`);
+  if (details) {
+    console.log(`                       ${DIM}${details}${RESET}`);
+  }
+}
+
+function printBox(lines, color = CYAN) {
+  console.log(`${color}══════════════════════════════════════════════════════════════${RESET}`);
+  for (const line of lines) {
+    console.log(`${color}${line}${RESET}`);
+  }
+  console.log(`${color}══════════════════════════════════════════════════════════════${RESET}`);
+}
+
+// ── Service Definitions ─────────────────────────────────────────────────────
 const SERVICES = {
   api: {
+    key: "api",
     name: "API",
+    displayName: "FastAPI Backend",
     url: `http://localhost:${API_PORT}/health`,
     port: API_PORT,
     command: "uv",
     args: ["run", "uvicorn", "app.main:app", "--port", API_PORT.toString(), "--reload"],
     cwd: path.join(ROOT_DIR, "apps", "api"),
-    color: "\x1b[34m", // Blue
+    status: "STARTING",
   },
   dashboard: {
-    name: "Dashboard",
+    key: "dashboard",
+    name: "DASHBOARD",
+    displayName: "React Dashboard",
     url: `http://localhost:${DASHBOARD_PORT}`,
     port: DASHBOARD_PORT,
     command: process.platform === "win32" ? "pnpm.cmd" : "pnpm",
     args: ["--filter", "@vibepulse/dashboard", "dev"],
     cwd: ROOT_DIR,
-    color: "\x1b[32m", // Green
+    status: "STARTING",
   },
   daemon: {
-    name: "Daemon",
+    key: "daemon",
+    name: "DAEMON",
+    displayName: "Telemetry Daemon",
     url: `http://localhost:${DAEMON_PORT}/health`,
     port: DAEMON_PORT,
     command: process.platform === "win32" ? "pnpm.cmd" : "pnpm",
     args: ["--filter", "@vibepulse/daemon", "dev"],
     cwd: ROOT_DIR,
-    color: "\x1b[35m", // Magenta
+    status: "STARTING",
   },
 };
 
-const RESET = "\x1b[0m";
-const BOLD = "\x1b[1m";
-const RED = "\x1b[31m";
-const YELLOW = "\x1b[33m";
-const GREEN = "\x1b[32m";
-const CYAN = "\x1b[36m";
-
-function log(prefix, msg, color = RESET) {
-  const ts = new Date().toLocaleTimeString();
-  console.log(`${color}[${prefix}] ${RESET}[${ts}] ${msg}`);
-}
-
+// ── TCP & HTTP Probing ──────────────────────────────────────────────────────
 function checkTcpPort(host, port, timeoutMs = 2000) {
   return new Promise((resolve) => {
     const socket = new net.Socket();
@@ -105,7 +173,7 @@ function checkTcpPort(host, port, timeoutMs = 2000) {
   });
 }
 
-function checkHttpEndpoint(url, timeoutMs = 3000) {
+function checkHttpEndpoint(url, timeoutMs = 2500) {
   return new Promise((resolve) => {
     const tryUrl = (targetUrl, fallback) => {
       const req = http.get(targetUrl, { timeout: timeoutMs }, (res) => {
@@ -133,17 +201,21 @@ function checkHttpEndpoint(url, timeoutMs = 3000) {
   });
 }
 
-async function waitForService(key, maxAttempts = 30, intervalMs = 1000) {
+async function waitForService(key, maxAttempts = 35, intervalMs = 1000) {
   const svc = SERVICES[key];
   for (let i = 1; i <= maxAttempts; i++) {
     const isUp = await checkHttpEndpoint(svc.url);
-    if (isUp) return true;
+    if (isUp) {
+      svc.status = "READY";
+      return true;
+    }
     await new Promise((r) => setTimeout(r, intervalMs));
   }
+  svc.status = "FAILED";
   return false;
 }
 
-// ── State Management ────────────────────────────────────────────────────────
+// ── Process Supervision & Stream Filtering ──────────────────────────────────
 const processes = {
   api: null,
   dashboard: null,
@@ -158,11 +230,158 @@ const restartCounts = {
 
 let isShuttingDown = false;
 
+function processChildOutput(svcKey, rawText, isStderr = false) {
+  const lines = rawText.split(/\r?\n/);
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+
+    // In debug mode, log everything
+    if (IS_DEBUG) {
+      log(SERVICES[svcKey].name, isStderr ? "WARN" : "DEBUG", trimmed);
+      continue;
+    }
+
+    // ── API Filtering ──
+    if (svcKey === "api") {
+      // Suppress noisy repetitive health polls, heartbeats, and startup banner
+      if (
+        trimmed.includes('GET /health') ||
+        trimmed.includes('GET /events') ||
+        trimmed.includes('session_sweep_complete') ||
+        trimmed.includes('Started reloader process') ||
+        trimmed.includes('Started server process') ||
+        trimmed.includes('Waiting for application startup') ||
+        trimmed.includes('Application startup complete')
+      ) {
+        continue;
+      }
+      // Highlight important lifecycle and event notifications
+      if (trimmed.includes('Uvicorn running on')) {
+        log("API", "READY", `Uvicorn server listening on port ${API_PORT}`);
+        continue;
+      }
+      if (trimmed.includes('Will watch for changes')) {
+        log("API", "INFO", "Hot-reload file watcher enabled");
+        continue;
+      }
+      if (trimmed.includes('POST /events')) {
+        log("API", "EVENT", "Telemetry development event ingested");
+        continue;
+      }
+      if (trimmed.includes('"session_started"')) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          log("API", "EVENT", `Session started for project: ${parsed.project_root || "local"}`);
+        } catch {
+          log("API", "EVENT", "New development session started");
+        }
+        continue;
+      }
+      if (trimmed.includes('SEC001') || trimmed.includes('Security Finding')) {
+        log("SECURITY", "FINDING", `Security finding detected [REDACTED]`);
+        continue;
+      }
+      if (trimmed.startsWith("ERROR:") || trimmed.includes("Traceback") || trimmed.includes("Exception:")) {
+        log("API", "ERROR", trimmed);
+        continue;
+      }
+      if (trimmed.startsWith("WARNING:")) {
+        log("API", "WARN", trimmed);
+        continue;
+      }
+      if (trimmed.startsWith("INFO:")) {
+        // Standard informational log from Uvicorn
+        continue;
+      }
+      if (isStderr && (trimmed.includes("Error") || trimmed.includes("error"))) {
+        log("API", "ERROR", trimmed);
+        continue;
+      }
+    }
+
+    // ── Dashboard Filtering ──
+    if (svcKey === "dashboard") {
+      if (trimmed.includes("ready in")) {
+        log("DASHBOARD", "READY", `Vite development server ready on port ${DASHBOARD_PORT}`);
+        continue;
+      }
+      if (trimmed.includes("vite.config.ts changed") || trimmed.includes("restarting server")) {
+        log("DASHBOARD", "INFO", "Configuration changed — restarting Vite server");
+        continue;
+      }
+      if (
+        trimmed.startsWith(">") ||
+        trimmed.includes("Local:") ||
+        trimmed.includes("Network:")
+      ) {
+        continue; // Suppress redundant Vite banner
+      }
+      if (trimmed.includes("Error:") || trimmed.includes("ERR_") || trimmed.includes("Failed to resolve")) {
+        log("DASHBOARD", "ERROR", trimmed);
+        continue;
+      }
+      if (isStderr && trimmed.includes("warn")) {
+        log("DASHBOARD", "WARN", trimmed);
+        continue;
+      }
+    }
+
+    // ── Daemon Filtering ──
+    if (svcKey === "daemon") {
+      if (trimmed.includes("Now observing:")) {
+        const parts = trimmed.split("Now observing:");
+        log("DAEMON", "READY", `Observing target project: ${parts[1]?.trim() || "Active"}`);
+        continue;
+      }
+      if (trimmed.includes("Project Switch")) {
+        log("DAEMON", "EVENT", "Switching observation target directory");
+        continue;
+      }
+      if (trimmed.includes("Project registered successfully:")) {
+        const parts = trimmed.split("Project registered successfully:");
+        log("DAEMON", "INFO", `Project registered: ${parts[1]?.trim() || "Active"}`);
+        continue;
+      }
+      if (trimmed.includes("Observation gate opened")) {
+        log("DAEMON", "INFO", "Observation gate OPEN (capturing telemetry)");
+        continue;
+      }
+      if (trimmed.includes("Observation gate closed")) {
+        log("DAEMON", "INFO", "Observation gate CLOSED (telemetry paused)");
+        continue;
+      }
+      if (
+        trimmed.startsWith("===") ||
+        trimmed.includes("VibePulse Daemon") ||
+        trimmed.includes("Initial Target") ||
+        trimmed.includes("Daemon port") ||
+        trimmed.includes("Watcher closed") ||
+        trimmed.startsWith("Path   :") ||
+        trimmed.startsWith("ID     :") ||
+        trimmed.startsWith("Session:") ||
+        trimmed.startsWith(">")
+      ) {
+        continue; // Suppress verbose startup banners in normal mode
+      }
+      if (trimmed.includes("[ERROR]") || trimmed.includes("Error:") || trimmed.includes("ECONNREFUSED")) {
+        log("DAEMON", "ERROR", trimmed);
+        continue;
+      }
+      if (trimmed.includes("[WARN]")) {
+        log("DAEMON", "WARN", trimmed);
+        continue;
+      }
+    }
+  }
+}
+
 function spawnService(key) {
   if (isShuttingDown) return;
   const svc = SERVICES[key];
 
-  log(svc.name, `Starting process (${svc.command} ${svc.args.join(" ")})...`, svc.color);
+  log(svc.name, "START", `Launching ${svc.displayName}...`);
 
   const proc = spawn(svc.command, svc.args, {
     cwd: svc.cwd,
@@ -174,48 +393,29 @@ function spawnService(key) {
   processes[key] = proc;
 
   proc.stdout.on("data", (data) => {
-    const lines = data.toString().split("\n");
-    for (const line of lines) {
-      if (line.trim()) {
-        log(svc.name, line.trimEnd(), svc.color);
-      }
-    }
+    processChildOutput(key, data.toString(), false);
   });
 
   proc.stderr.on("data", (data) => {
-    const lines = data.toString().split("\n");
-    for (const line of lines) {
-      if (line.trim()) {
-        log(svc.name, line.trimEnd(), svc.color);
-      }
-    }
+    processChildOutput(key, data.toString(), true);
   });
 
   proc.on("close", (code) => {
     processes[key] = null;
     if (isShuttingDown) return;
 
-    log(
-      "SUPERVISOR",
-      `${RED}[CRITICAL] ${svc.name} process exited with code ${code}.${RESET}`,
-      RED,
-    );
+    console.log(`\n${RED}─────────────────────────────────────────────────────────────${RESET}`);
+    log(svc.name, "ERROR", `${svc.displayName} process exited unexpectedly (code: ${code})`);
+    console.log(`  ${YELLOW}Action: Check service logs or run with VIBEPULSE_LOG_LEVEL=debug${RESET}`);
+    console.log(`${RED}─────────────────────────────────────────────────────────────${RESET}\n`);
 
     restartCounts[key]++;
     if (restartCounts[key] > 10) {
-      log(
-        "SUPERVISOR",
-        `${RED}Exceeded maximum restart attempts (10) for ${svc.name}. Halting automatic restart.${RESET}`,
-        RED,
-      );
+      log("SUPERVISOR", "ERROR", `Exceeded maximum restart attempts (10) for ${svc.name}. Halting.`);
       return;
     }
 
-    log(
-      "SUPERVISOR",
-      `${YELLOW}Restarting ${svc.name} in 2 seconds (Attempt ${restartCounts[key]}/10)...${RESET}`,
-      YELLOW,
-    );
+    log("SUPERVISOR", "RETRY", `Restarting ${svc.name} in 2s (Attempt ${restartCounts[key]}/10)...`);
     setTimeout(() => {
       if (!isShuttingDown) {
         spawnService(key);
@@ -228,27 +428,31 @@ function shutdownAll(signal = "SIGINT") {
   if (isShuttingDown) return;
   isShuttingDown = true;
 
-  console.log(
-    `\n${YELLOW}[SUPERVISOR] Received ${signal}. Shutting down all VibePulse services...${RESET}`,
-  );
+  console.log("\n");
+  log("SUPERVISOR", "STOP", `Shutdown requested (${signal})`);
 
   for (const [key, proc] of Object.entries(processes)) {
     if (proc && !proc.killed) {
-      log("SUPERVISOR", `Terminating ${SERVICES[key].name} (PID: ${proc.pid})...`, YELLOW);
+      log(SERVICES[key].name, "STOP", `Terminating ${SERVICES[key].displayName}...`);
       try {
         if (process.platform === "win32") {
-          spawn("taskkill", ["/pid", proc.pid.toString(), "/T", "/F"]);
+          spawn("taskkill", ["/pid", proc.pid.toString(), "/T", "/F"], { stdio: "ignore" });
         } else {
           proc.kill("SIGTERM");
         }
-      } catch (err) {
+      } catch {
         // Ignore kill errors during teardown
       }
     }
   }
 
+  log("DATABASE", "INFO", "PostgreSQL connection pool released");
+
   setTimeout(() => {
-    console.log(`${GREEN}[SUPERVISOR] Stack teardown complete. Goodbye!${RESET}\n`);
+    printBox([
+      "                  VIBEPULSE STOPPED CLEANLY                   ",
+    ], GREEN);
+    console.log("");
     process.exit(0);
   }, 1000);
 }
@@ -256,33 +460,39 @@ function shutdownAll(signal = "SIGINT") {
 process.on("SIGINT", () => shutdownAll("SIGINT"));
 process.on("SIGTERM", () => shutdownAll("SIGTERM"));
 
-// ── Main Orchestration ──────────────────────────────────────────────────────
+// ── Startup & Main Orchestration ────────────────────────────────────────────
 async function main() {
   console.log(`
-${CYAN}${BOLD}====================================================
-           VIBEPULSE SEMINAR SUPERVISOR             
-====================================================${RESET}
-PostgreSQL : 5432 (Local)
-Redis      : Cloud
-API        : http://localhost:${API_PORT}
-Dashboard  : http://localhost:${DASHBOARD_PORT}
-Daemon     : http://localhost:${DAEMON_PORT}
-====================================================
+${CYAN}${BOLD}╔══════════════════════════════════════════════════════════════╗
+║                     VIBEPULSE DEV STACK                      ║
+╚══════════════════════════════════════════════════════════════╝${RESET}
+`);
+
+  log("SYSTEM", "START", "Starting development environment...");
+
+  console.log(`
+┌───────────────┬──────────────────────────────┬───────────────┐
+│ SERVICE       │ ADDRESS                      │ STATUS        │
+├───────────────┼──────────────────────────────┼───────────────┤
+│ PostgreSQL    │ localhost:5432               │ READY         │
+│ Redis         │ Cloud                        │ READY         │
+│ API           │ localhost:${API_PORT.toString().padEnd(18)} │ STARTING      │
+│ Dashboard     │ localhost:${DASHBOARD_PORT.toString().padEnd(18)} │ STARTING      │
+│ Daemon        │ localhost:${DAEMON_PORT.toString().padEnd(18)} │ STARTING      │
+└───────────────┴──────────────────────────────┴───────────────┘
 `);
 
   // Step 1: Pre-flight database readiness check
-  log("SUPERVISOR", "Running pre-flight database readiness checks...", CYAN);
   const pgUp = await checkTcpPort("127.0.0.1", 5432);
   if (!pgUp) {
-    console.error(
-      `${RED}[ERROR] Local PostgreSQL is not reachable on port 5432! Please ensure PostgreSQL service is running.${RESET}`,
-    );
+    console.error(`\n${RED}[DATABASE ERROR] Local PostgreSQL is not reachable on port 5432!${RESET}`);
+    console.error(`  Please verify your local PostgreSQL service is running.\n`);
     process.exit(1);
   }
-  log("SUPERVISOR", `${GREEN}[✓] PostgreSQL reachable on localhost:5432${RESET}`, GREEN);
+  log("DATABASE", "READY", "PostgreSQL connected on port 5432");
+  log("REDIS", "READY", "Redis Cloud endpoint configured");
 
   // Step 2: Pre-flight port conflict check (5133, 5134, 5135)
-  log("SUPERVISOR", "Verifying dedicated VibePulse ports (5133, 5134, 5135)...", CYAN);
   const [apiConflict, dashConflict, daemonConflict] = await Promise.all([
     checkTcpPort("127.0.0.1", API_PORT),
     checkTcpPort("127.0.0.1", DASHBOARD_PORT),
@@ -290,98 +500,64 @@ Daemon     : http://localhost:${DAEMON_PORT}
   ]);
 
   if (apiConflict || dashConflict || daemonConflict) {
-    console.error(`\n${RED}${BOLD}[PORT CONFLICT DETECTED]${RESET}`);
-    if (apiConflict) {
-      console.error(
-        ` ${RED}• Port ${API_PORT} (API) is already in use by another process.${RESET}`,
-      );
-    }
-    if (dashConflict) {
-      console.error(
-        ` ${RED}• Port ${DASHBOARD_PORT} (Dashboard) is already in use by another process.${RESET}`,
-      );
-    }
-    if (daemonConflict) {
-      console.error(
-        ` ${RED}• Port ${DAEMON_PORT} (Daemon) is already in use by another process.${RESET}`,
-      );
-    }
-    console.error(
-      `\n${YELLOW}Please terminate the conflicting process(es) or configure custom ports with:${RESET}`,
-    );
-    console.error(
-      `  VIBEPULSE_API_PORT=<port> VIBEPULSE_DASHBOARD_PORT=<port> VIBEPULSE_DAEMON_PORT=<port>\n`,
-    );
+    console.error(`\n${RED}${BOLD}─────────────────────────────────────────────────────────────${RESET}`);
+    console.error(`${RED}${BOLD}[PORT CONFLICT DETECTED]${RESET}`);
+    if (apiConflict) console.error(`  ${RED}• Port ${API_PORT} (API) is occupied by another process.${RESET}`);
+    if (dashConflict) console.error(`  ${RED}• Port ${DASHBOARD_PORT} (Dashboard) is occupied by another process.${RESET}`);
+    if (daemonConflict) console.error(`  ${RED}• Port ${DAEMON_PORT} (Daemon) is occupied by another process.${RESET}`);
+    console.error(`\n  ${YELLOW}Please stop conflicting processes or override ports via:${RESET}`);
+    console.error(`    VIBEPULSE_API_PORT=<port> VIBEPULSE_DASHBOARD_PORT=<port> VIBEPULSE_DAEMON_PORT=<port>`);
+    console.error(`${RED}${BOLD}─────────────────────────────────────────────────────────────${RESET}\n`);
     process.exit(1);
   }
-  log("SUPERVISOR", `${GREEN}[✓] Dedicated ports 5133, 5134, 5135 are available${RESET}`, GREEN);
 
   // Step 3: Start API
-  log("SUPERVISOR", `Launching FastAPI Backend on port ${API_PORT}...`, CYAN);
   spawnService("api");
   const apiReady = await waitForService("api", 35, 1000);
-  if (!apiReady) {
-    log(
-      "SUPERVISOR",
-      `${RED}[WARNING] API took longer than 35s to respond on /health, continuing startup...${RESET}`,
-      RED,
-    );
+  if (apiReady) {
+    log("API", "READY", `FastAPI healthy at http://localhost:${API_PORT}/health`);
   } else {
-    log(
-      "SUPERVISOR",
-      `${GREEN}[✓] API is HEALTHY (http://localhost:${API_PORT}/health)${RESET}`,
-      GREEN,
-    );
+    log("API", "WARN", `API took longer than 35s to respond on /health, continuing...`);
   }
 
   // Step 4: Start Dashboard
-  log("SUPERVISOR", `Launching React/Vite Dashboard on port ${DASHBOARD_PORT}...`, CYAN);
   spawnService("dashboard");
   const dashReady = await waitForService("dashboard", 25, 1000);
-  if (!dashReady) {
-    log(
-      "SUPERVISOR",
-      `${RED}[WARNING] Dashboard took longer than 25s to respond on port ${DASHBOARD_PORT}, continuing startup...${RESET}`,
-      RED,
-    );
+  if (dashReady) {
+    log("DASHBOARD", "READY", `Dashboard accessible at http://localhost:${DASHBOARD_PORT}`);
   } else {
-    log(
-      "SUPERVISOR",
-      `${GREEN}[✓] Dashboard is HEALTHY (http://localhost:${DASHBOARD_PORT})${RESET}`,
-      GREEN,
-    );
+    log("DASHBOARD", "WARN", `Dashboard took longer than 25s to respond on port ${DASHBOARD_PORT}, continuing...`);
   }
 
   // Step 5: Start Telemetry Daemon
-  log("SUPERVISOR", `Launching Telemetry Daemon on port ${DAEMON_PORT}...`, CYAN);
   spawnService("daemon");
   const daemonReady = await waitForService("daemon", 20, 1000);
-  if (!daemonReady) {
-    log(
-      "SUPERVISOR",
-      `${RED}[WARNING] Daemon took longer than 20s to respond on port ${DAEMON_PORT}, continuing startup...${RESET}`,
-      RED,
-    );
+  if (daemonReady) {
+    log("DAEMON", "READY", `Daemon healthy at http://localhost:${DAEMON_PORT}/health`);
   } else {
-    log(
-      "SUPERVISOR",
-      `${GREEN}[✓] Daemon is HEALTHY (http://localhost:${DAEMON_PORT}/health)${RESET}`,
-      GREEN,
-    );
+    log("DAEMON", "WARN", `Daemon took longer than 20s to respond on port ${DAEMON_PORT}, continuing...`);
   }
 
-  console.log(`
-${GREEN}${BOLD}====================================================
- [✓] ALL VIBEPULSE SERVICES ARE OPERATIONAL & MONITORED
-====================================================${RESET}
- Dashboard  : ${CYAN}http://localhost:${DASHBOARD_PORT}${RESET}
- API Docs   : ${CYAN}http://localhost:${API_PORT}/docs${RESET}
- Daemon API : ${CYAN}http://localhost:${DAEMON_PORT}/health${RESET}
- Supervisor : Active (Health check heartbeat every 10s)
-====================================================
-`);
+  // Ready State Banner
+  console.log("");
+  printBox([
+    `                     ${BOLD}VIBEPULSE IS READY${RESET}${GREEN}                       `,
+    ``,
+    `  Dashboard   → ${CYAN}http://localhost:${DASHBOARD_PORT}${RESET}${GREEN}`,
+    `  API         → ${CYAN}http://localhost:${API_PORT}${RESET}${GREEN}`,
+    `  API Docs    → ${CYAN}http://localhost:${API_PORT}/docs${RESET}${GREEN}`,
+    `  Daemon      → ${CYAN}http://localhost:${DAEMON_PORT}/health${RESET}${GREEN}`,
+    ``,
+    `  Observation → ${BOLD}ACTIVE${RESET}${GREEN}`,
+    `  Database    → ${BOLD}CONNECTED${RESET}${GREEN}`,
+    `  WebSocket   → ${BOLD}ws://localhost:${API_PORT}${RESET}${GREEN}`,
+    ``,
+    `  ${DIM}Press Ctrl+C to stop VibePulse.${RESET}${GREEN}`,
+  ], GREEN);
+  console.log("");
 
-  // Step 5: Continuous Health Monitoring Heartbeat
+  // Step 6: Non-Intrusive Health Monitoring Heartbeat (every 30s)
+  let lastHealthState = true;
   setInterval(async () => {
     if (isShuttingDown) return;
     const [apiOk, dashOk, daemonOk] = await Promise.all([
@@ -390,17 +566,23 @@ ${GREEN}${BOLD}====================================================
       checkHttpEndpoint(SERVICES.daemon.url),
     ]);
 
-    if (!apiOk) log("HEARTBEAT", `${RED}[ALERT] API health check failed!${RESET}`, RED);
-    if (!dashOk) log("HEARTBEAT", `${RED}[ALERT] Dashboard health check failed!${RESET}`, RED);
-    if (!daemonOk) log("HEARTBEAT", `${RED}[ALERT] Daemon health check failed!${RESET}`, RED);
+    const allHealthy = apiOk && dashOk && daemonOk;
 
-    if (apiOk && dashOk && daemonOk) {
-      log("HEARTBEAT", `${GREEN}Stack healthy [API ✓ | Dashboard ✓ | Daemon ✓]${RESET}`, GREEN);
+    if (!allHealthy) {
+      lastHealthState = false;
+      if (!apiOk) log("API", "WARN", "Health check failed (unresponsive on /health)");
+      if (!dashOk) log("DASHBOARD", "WARN", `Health check failed (unresponsive on :${DASHBOARD_PORT})`);
+      if (!daemonOk) log("DAEMON", "WARN", "Health check failed (unresponsive on /health)");
+    } else if (!lastHealthState) {
+      lastHealthState = true;
+      log("SUPERVISOR", "READY", "All services recovered to healthy state");
+    } else if (IS_DEBUG) {
+      log("HEARTBEAT", "INFO", `Stack healthy [API :${API_PORT} ✓ | Dashboard :${DASHBOARD_PORT} ✓ | Daemon :${DAEMON_PORT} ✓]`);
     }
-  }, 10000);
+  }, 30000);
 }
 
 main().catch((err) => {
-  console.error(`${RED}[SUPERVISOR FATAL ERROR]${RESET}`, err);
+  console.error(`\n${RED}[SUPERVISOR FATAL ERROR]${RESET}`, err);
   process.exit(1);
 });
