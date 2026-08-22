@@ -12,6 +12,8 @@
   "scripts": {
     "dev": "node scripts/dev-seminar.mjs",
     "dev:seminar": "node scripts/dev-seminar.mjs",
+    "dev:status": "node scripts/status.mjs",
+    "status": "node scripts/status.mjs",
     "seminar:doctor": "node scripts/seminar-doctor.mjs",
     "dev:concurrent": "concurrently -p \"[{name}]\" -n \"api,dashboard,daemon\" -c \"blue,green,magenta\" \"pnpm run dev:api\" \"pnpm run dev:dashboard\" \"pnpm run dev:daemon\"",
     "setup": "node scripts/setup.mjs",
