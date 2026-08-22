@@ -1,13 +1,18 @@
 import fs from "fs";
 import path from "path";
 
-const base = "D:\\VibePulse-Seminar-Demo";
+const base = process.argv[2] || process.env.VIBEPULSE_DEMO_DIR || "D:\\VibePulse-Seminar-Demo";
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function main() {
+  fs.mkdirSync(path.join(base, "src"), { recursive: true });
+  fs.mkdirSync(path.join(base, "config"), { recursive: true });
+  fs.mkdirSync(path.join(base, "tests"), { recursive: true });
+  fs.mkdirSync(path.join(base, "docs"), { recursive: true });
+
   console.log("Starting realistic development telemetry for SecurePay API in " + base);
 
   // 1. Edit src/auth.py

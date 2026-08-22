@@ -147,6 +147,8 @@ $$\text{OBSERVE} \to \text{DETECT} \to \text{UNDERSTAND} \to \text{INVESTIGATE} 
 ## 🔍 10. System Audits & Verification
 
 | Document | Canonical Path | Status | Audience | Scope / Description |
+| **Demo Mode Audit** | [`docs/audits/DEMO_MODE_AUDIT.md`](file:///d:/VibeSync/docs/audits/DEMO_MODE_AUDIT.md) | `CURRENT` | Evaluator, Presenter | Comprehensive audit of demo entry points, project lifecycle, and 10-stage execution truth. |
+| **Demo Mode Final Audit** | [`docs/audits/DEMO_MODE_FINAL_AUDIT.md`](file:///d:/VibeSync/docs/audits/DEMO_MODE_FINAL_AUDIT.md) | `CURRENT` | Evaluator, Presenter | Authoritative comparison of old vs new demo mode, safety proofs, and verification matrices. |
 | **Final Release Acceptance** | [`docs/audits/FINAL_RELEASE_ACCEPTANCE.md`](file:///d:/VibeSync/docs/audits/FINAL_RELEASE_ACCEPTANCE.md) | `CURRENT` | Evaluator, Developer | Final release gate acceptance report, truth reconciliation, and verification matrix. |
 | **Whole Platform Forensic Audit** | [`docs/audits/WHOLE_PLATFORM_FORENSIC_AUDIT.md`](file:///d:/VibeSync/docs/audits/WHOLE_PLATFORM_FORENSIC_AUDIT.md) | `CURRENT` | Evaluator, Developer | Comprehensive whole-platform bug audit, schema validation, and runtime hardening report. |
 | **Final Project Status** | [`docs/audits/FINAL_PROJECT_STATUS.md`](file:///d:/VibeSync/docs/audits/FINAL_PROJECT_STATUS.md) | `CURRENT` | Evaluator | Executive status audit across all 10 intelligence stages and 348/130 verified tests. |
