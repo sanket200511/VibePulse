@@ -9,9 +9,11 @@ import asyncio
 import sys
 
 from app.core.database import AsyncSessionLocal
+from app.features.analysis.models import EventAnalysis
+from app.features.events.models import DevelopmentEvent
 from app.features.projects.models import Project
 from app.features.projects.service import delete_project
-from sqlalchemy import select
+from sqlalchemy import delete, select
 
 
 def classify_project(root_path: str | None, display_name: str | None) -> str:
@@ -97,7 +99,17 @@ async def main() -> None:
                 print(f"  [?] {p.id} | {p.display_name} | Root: {p.root_path}")
             print("-" * 80 + "\n")
 
+        # Detect orphaned events/analyses not belonging to any persistent/valid project
+        valid_roots = [p.root_path for p in persistent]
+        orphan_ev_stmt = select(DevelopmentEvent.id).where(
+            ~DevelopmentEvent.project_root.in_(valid_roots)
+        )
+        orphan_ev_ids = list((await db.execute(orphan_ev_stmt)).scalars().all())
+
         if not is_confirm:
+            if orphan_ev_ids:
+                print(f"ORPHAN TELEMETRY RECORDS: {len(orphan_ev_ids)} unlinked events detected.\n")
+
             print("CANDIDATES FOR CLEANUP (Sample of first 10 ephemeral projects):")
             for p in ephemeral[:10]:
                 print(f"  [-] {p.id} | {p.display_name} | Root: {p.root_path}")
@@ -127,10 +139,19 @@ async def main() -> None:
                 failed_count += 1
                 print(f"  [!] Failed to delete project {p.id}: {e}", file=sys.stderr)
 
+        # Purge any unlinked orphan telemetry
+        orphan_ev_purged = 0
+        if orphan_ev_ids:
+            await db.execute(delete(EventAnalysis).where(EventAnalysis.event_id.in_(orphan_ev_ids)))
+            await db.execute(delete(DevelopmentEvent).where(DevelopmentEvent.id.in_(orphan_ev_ids)))
+            await db.commit()
+            orphan_ev_purged = len(orphan_ev_ids)
+
         print("\n" + "=" * 80)
         print("CLEANUP EXECUTION COMPLETE")
         print(f"  - Ephemeral projects deleted: {deleted_count}")
         print(f"  - Deletion failures:          {failed_count}")
+        print(f"  - Orphan events purged:       {orphan_ev_purged}")
         print(f"  - Persistent projects intact: {len(persistent)}")
         print("=" * 80)
 

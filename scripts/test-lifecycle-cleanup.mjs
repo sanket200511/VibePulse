@@ -8,6 +8,7 @@
  * 3. Force deletion (DELETE /api/projects/:id?force=true) bypasses active session lock and cascades cleanly.
  * 4. Multi-project isolation on deletion: deleting Project A leaves Project B completely intact.
  * 5. Normal DELETE without force=true still protects active observation sessions (HTTP 409).
+ * 6. Guaranteed bounded execution: test never hangs and handles teardown cleanly.
  */
 
 import http from "http";
@@ -15,11 +16,15 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import crypto from "crypto";
-import { spawn } from "child_process";
+import { execSync, spawn } from "child_process";
 
 const API_BASE = process.env.VIBEPULSE_API_URL || "http://localhost:5133";
+const GLOBAL_TIMEOUT_MS = 25000;
 
-function request(method, reqPath, body = null) {
+// Global watchdog timer to guarantee the test never hangs indefinitely
+let globalWatchdog = null;
+
+function request(method, reqPath, body = null, timeoutMs = 5000) {
   return new Promise((resolve, reject) => {
     const url = new URL(reqPath, API_BASE);
     const req = http.request(
@@ -27,6 +32,7 @@ function request(method, reqPath, body = null) {
       {
         method,
         headers: { "Content-Type": "application/json" },
+        timeout: timeoutMs,
       },
       (res) => {
         let raw = "";
@@ -41,7 +47,13 @@ function request(method, reqPath, body = null) {
         });
       },
     );
+
+    req.on("timeout", () => {
+      req.destroy(new Error(`HTTP request timed out after ${timeoutMs}ms: ${method} ${reqPath}`));
+    });
+
     req.on("error", reject);
+
     if (body) {
       req.write(typeof body === "string" ? body : JSON.stringify(body));
     }
@@ -49,9 +61,29 @@ function request(method, reqPath, body = null) {
   });
 }
 
+function killProcessTree(child) {
+  if (!child) return;
+  try {
+    if (process.platform === "win32") {
+      try {
+        execSync(`taskkill /pid ${child.pid} /T /F`, { stdio: "ignore" });
+      } catch {}
+    } else {
+      child.kill("SIGKILL");
+    }
+  } catch {}
+
+  try {
+    if (child.stdout) child.stdout.destroy();
+    if (child.stderr) child.stderr.destroy();
+    if (child.stdin) child.stdin.destroy();
+    child.unref();
+  } catch {}
+}
+
 async function ensureApiServer() {
   try {
-    const res = await request("GET", "/health");
+    const res = await request("GET", "/health", null, 1500);
     if (res.status === 200) {
       console.log("✔ Connected to existing API server on " + API_BASE);
       return null;
@@ -66,10 +98,10 @@ async function ensureApiServer() {
     stdio: "pipe",
   });
 
-  for (let i = 0; i < 30; i++) {
-    await new Promise((r) => setTimeout(r, 1000));
+  for (let i = 0; i < 20; i++) {
+    await new Promise((r) => setTimeout(r, 500));
     try {
-      const res = await request("GET", "/health");
+      const res = await request("GET", "/health", null, 1000);
       if (res.status === 200) {
         console.log("✔ Spawned API server successfully");
         return child;
@@ -77,7 +109,8 @@ async function ensureApiServer() {
     } catch {}
   }
 
-  throw new Error("Failed to start FastAPI server");
+  killProcessTree(child);
+  throw new Error("Failed to start FastAPI server within 10 seconds");
 }
 
 function assert(condition, message) {
@@ -92,7 +125,18 @@ async function run() {
   console.log("     VIBEPULSE PROJECT LIFECYCLE & EPHEMERAL CLEANUP VERIFICATION TEST          ");
   console.log("================================================================================\n");
 
-  const serverProcess = await ensureApiServer();
+  let serverProcess = null;
+
+  globalWatchdog = setTimeout(() => {
+    console.error(
+      `\n❌ ERROR: Lifecycle test exceeded bounded timeout of ${GLOBAL_TIMEOUT_MS}ms! Aborting.`,
+    );
+    if (serverProcess) killProcessTree(serverProcess);
+    process.exit(1);
+  }, GLOBAL_TIMEOUT_MS);
+  globalWatchdog.unref();
+
+  serverProcess = await ensureApiServer();
 
   try {
     // Step 1: Health check
@@ -149,14 +193,20 @@ async function run() {
       const delResForce = await request("DELETE", `/api/projects/${activeProjId}?force=true`);
       assert(delResForce.status === 200, `Expected 200 on force delete, got ${delResForce.status}`);
       assert(delResForce.data?.deleted === true, "Force deletion confirmed");
+      activeProjId = null; // Mark cleaned
       console.log(
         "✔ [4/6] Force DELETE (DELETE /api/projects/:id?force=true) bypassed active lock and cleanly deleted.",
       );
     } finally {
       if (activeProjId) {
         try {
-          await request("DELETE", `/api/projects/${activeProjId}?force=true`);
-        } catch {}
+          const res = await request("DELETE", `/api/projects/${activeProjId}?force=true`);
+          if (res.status !== 200 && res.status !== 404) {
+            console.warn(`[WARN] Cleanup deletion for activeProjId returned status ${res.status}`);
+          }
+        } catch (err) {
+          console.warn(`[WARN] Cleanup deletion error for activeProjId: ${err.message}`);
+        }
       }
       try {
         fs.rmSync(tmpDirActive, { recursive: true, force: true });
@@ -183,6 +233,7 @@ async function run() {
       // Delete Project A
       const delA = await request("DELETE", `/api/projects/${projAId}?force=true`);
       assert(delA.status === 200, "Deleted Project A");
+      projAId = null; // Mark cleaned
 
       // Verify Project B is untouched
       const checkB = await request("GET", `/api/projects/${projBId}`);
@@ -192,10 +243,20 @@ async function run() {
         "✔ [5/6] Multi-project isolation on deletion verified: Project B completely intact.",
       );
     } finally {
-      try {
-        if (projAId) await request("DELETE", `/api/projects/${projAId}?force=true`);
-        if (projBId) await request("DELETE", `/api/projects/${projBId}?force=true`);
-      } catch {}
+      if (projAId) {
+        try {
+          await request("DELETE", `/api/projects/${projAId}?force=true`);
+        } catch (err) {
+          console.warn(`[WARN] Cleanup deletion error for projAId: ${err.message}`);
+        }
+      }
+      if (projBId) {
+        try {
+          await request("DELETE", `/api/projects/${projBId}?force=true`);
+        } catch (err) {
+          console.warn(`[WARN] Cleanup deletion error for projBId: ${err.message}`);
+        }
+      }
       try {
         fs.rmSync(tmpDirA, { recursive: true, force: true });
         fs.rmSync(tmpDirB, { recursive: true, force: true });
@@ -221,9 +282,18 @@ async function run() {
     } finally {
       // Teardown pattern
       if (simErrProjId) {
-        await request("DELETE", `/api/projects/${simErrProjId}?force=true`);
+        try {
+          const res = await request("DELETE", `/api/projects/${simErrProjId}?force=true`);
+          if (res.status !== 200 && res.status !== 404) {
+            console.warn(`[WARN] Cleanup deletion for simErrProjId returned status ${res.status}`);
+          }
+        } catch (err) {
+          console.warn(`[WARN] Cleanup deletion error for simErrProjId: ${err.message}`);
+        }
       }
-      fs.rmSync(tmpDirSimErr, { recursive: true, force: true });
+      try {
+        fs.rmSync(tmpDirSimErr, { recursive: true, force: true });
+      } catch {}
     }
 
     assert(simulatedErrorCaught, "Simulated error was caught");
@@ -249,13 +319,18 @@ async function run() {
       "================================================================================\n",
     );
   } finally {
+    if (globalWatchdog) clearTimeout(globalWatchdog);
     if (serverProcess) {
-      serverProcess.kill();
+      killProcessTree(serverProcess);
     }
   }
 }
 
-run().catch((err) => {
-  console.error("Lifecycle test failed:", err);
-  process.exit(1);
-});
+run()
+  .then(() => {
+    process.exit(0);
+  })
+  .catch((err) => {
+    console.error("\n❌ Lifecycle test failed:", err.message);
+    process.exit(1);
+  });

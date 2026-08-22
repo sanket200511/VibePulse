@@ -27,10 +27,14 @@ import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import crypto from "node:crypto";
-import { spawn } from "node:child_process";
+import { execSync, spawn } from "node:child_process";
 
 const API_BASE = process.env.VIBEPULSE_API_URL || process.env.API_BASE || "http://127.0.0.1:5133";
 const SECRET_TOKEN = "VIBEPULSE_SPRINT12_SECRET_2026";
+const GLOBAL_TIMEOUT_MS = 35000;
+
+let serverProcess = null;
+let globalWatchdog = null;
 
 function log(msg) {
   console.log(`[SPRINT 12 E2E] ${msg}`);
@@ -39,11 +43,12 @@ function log(msg) {
 function assert(condition, message) {
   if (!condition) {
     console.error(`\n❌ SPRINT 12 E2E FAILED: ${message}\n`);
+    cleanup();
     process.exit(1);
   }
 }
 
-async function request(method, pathName, body = null) {
+function request(method, pathName, body = null, timeoutMs = 5000) {
   const url = new URL(pathName, API_BASE);
   const payload = body ? JSON.stringify(body) : null;
 
@@ -60,6 +65,7 @@ async function request(method, pathName, body = null) {
               }
             : {}),
         },
+        timeout: timeoutMs,
       },
       (res) => {
         let data = "";
@@ -75,15 +81,47 @@ async function request(method, pathName, body = null) {
       },
     );
 
+    req.on("timeout", () => {
+      req.destroy(new Error(`HTTP request timed out after ${timeoutMs}ms: ${method} ${pathName}`));
+    });
+
     req.on("error", reject);
     if (payload) req.write(payload);
     req.end();
   });
 }
 
+function killProcessTree(child) {
+  if (!child) return;
+  try {
+    if (process.platform === "win32") {
+      try {
+        execSync(`taskkill /pid ${child.pid} /T /F`, { stdio: "ignore" });
+      } catch {}
+    } else {
+      child.kill("SIGKILL");
+    }
+  } catch {}
+
+  try {
+    if (child.stdout) child.stdout.destroy();
+    if (child.stderr) child.stderr.destroy();
+    if (child.stdin) child.stdin.destroy();
+    child.unref();
+  } catch {}
+}
+
+function cleanup() {
+  if (globalWatchdog) clearTimeout(globalWatchdog);
+  if (serverProcess) {
+    killProcessTree(serverProcess);
+    serverProcess = null;
+  }
+}
+
 async function ensureApiServer() {
   try {
-    const res = await request("GET", "/health");
+    const res = await request("GET", "/health", null, 1500);
     if (res.status === 200) {
       log("✔ Connected to existing API server on " + API_BASE);
       return null;
@@ -100,10 +138,10 @@ async function ensureApiServer() {
     stdio: "pipe",
   });
 
-  for (let i = 0; i < 30; i++) {
-    await new Promise((r) => setTimeout(r, 1000));
+  for (let i = 0; i < 20; i++) {
+    await new Promise((r) => setTimeout(r, 500));
     try {
-      const res = await request("GET", "/health");
+      const res = await request("GET", "/health", null, 1000);
       if (res.status === 200) {
         log("✔ Spawned API server successfully");
         return child;
@@ -113,12 +151,23 @@ async function ensureApiServer() {
     }
   }
 
-  throw new Error("Failed to start FastAPI server");
+  killProcessTree(child);
+  throw new Error("Failed to start FastAPI server within timeout");
 }
 
 async function runSprint12E2E() {
   log("Starting Sprint 12 Productization & End-to-End Intelligence Loop Acceptance Test...");
-  const serverProcess = await ensureApiServer();
+
+  globalWatchdog = setTimeout(() => {
+    console.error(
+      `\n❌ ERROR: Sprint 12 E2E test exceeded bounded timeout of ${GLOBAL_TIMEOUT_MS}ms! Aborting.`,
+    );
+    cleanup();
+    process.exit(1);
+  }, GLOBAL_TIMEOUT_MS);
+  globalWatchdog.unref();
+
+  serverProcess = await ensureApiServer();
 
   const tmpRootA = fs.mkdtempSync(path.join(os.tmpdir(), "vp-s12-projA-"));
   const tmpRootB = fs.mkdtempSync(path.join(os.tmpdir(), "vp-s12-projB-"));
@@ -335,15 +384,31 @@ async function runSprint12E2E() {
     // Clean up Project B
     await request("DELETE", `/api/projects/${projB.id}?force=true`);
   } finally {
-    try {
-      if (projA?.id) await request("DELETE", `/api/projects/${projA.id}?force=true`);
-      if (projB?.id) await request("DELETE", `/api/projects/${projB.id}?force=true`);
-    } catch {}
-    fs.rmSync(tmpRootA, { recursive: true, force: true });
-    fs.rmSync(tmpRootB, { recursive: true, force: true });
-    if (serverProcess) {
-      serverProcess.kill();
+    if (projA?.id) {
+      try {
+        const resA = await request("DELETE", `/api/projects/${projA.id}?force=true`);
+        if (resA.status !== 200 && resA.status !== 404) {
+          console.warn(`[WARN] Project cleanup for ${projA.id} returned status ${resA.status}`);
+        }
+      } catch (err) {
+        console.warn(`[WARN] Project cleanup error for ${projA.id}: ${err.message}`);
+      }
     }
+    if (projB?.id) {
+      try {
+        const resB = await request("DELETE", `/api/projects/${projB.id}?force=true`);
+        if (resB.status !== 200 && resB.status !== 404) {
+          console.warn(`[WARN] Project cleanup for ${projB.id} returned status ${resB.status}`);
+        }
+      } catch (err) {
+        console.warn(`[WARN] Project cleanup error for ${projB.id}: ${err.message}`);
+      }
+    }
+    try {
+      fs.rmSync(tmpRootA, { recursive: true, force: true });
+      fs.rmSync(tmpRootB, { recursive: true, force: true });
+    } catch {}
+    cleanup();
   }
 
   log("\n========================================================");
@@ -351,7 +416,16 @@ async function runSprint12E2E() {
   log("========================================================\n");
 }
 
-runSprint12E2E().catch((err) => {
-  console.error("Sprint 12 E2E execution error:", err);
-  process.exit(1);
-});
+process.on("SIGINT", cleanup);
+process.on("SIGTERM", cleanup);
+process.on("exit", cleanup);
+
+runSprint12E2E()
+  .then(() => {
+    process.exit(0);
+  })
+  .catch((err) => {
+    console.error("Sprint 12 E2E execution error:", err);
+    cleanup();
+    process.exit(1);
+  });

@@ -21,7 +21,7 @@ import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import crypto from "node:crypto";
-import { spawn } from "node:child_process";
+import { execSync, spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -31,14 +31,16 @@ const API_DIR = path.join(ROOT_DIR, "apps", "api");
 
 const API_BASE = process.env.VIBEPULSE_API_URL || process.env.API_BASE || "http://127.0.0.1:5133";
 const SECRET_TOKEN = "VIBEPULSE_SPRINT11_SECRET_2026";
+const GLOBAL_TIMEOUT_MS = 35000;
 
 let serverProcess = null;
+let globalWatchdog = null;
 
 function log(msg) {
   console.log(`[SPRINT 11 E2E] ${msg}`);
 }
 
-function request(method, pathUrl, body = null) {
+function request(method, pathUrl, body = null, timeoutMs = 5000) {
   return new Promise((resolve, reject) => {
     const url = new URL(pathUrl, API_BASE);
     const req = http.request(
@@ -49,6 +51,7 @@ function request(method, pathUrl, body = null) {
           "Content-Type": "application/json",
           Accept: "application/json, text/markdown, */*",
         },
+        timeout: timeoutMs,
       },
       (res) => {
         let data = "";
@@ -64,6 +67,11 @@ function request(method, pathUrl, body = null) {
         });
       },
     );
+
+    req.on("timeout", () => {
+      req.destroy(new Error(`HTTP request timed out after ${timeoutMs}ms: ${method} ${pathUrl}`));
+    });
+
     req.on("error", reject);
     if (body) {
       req.write(JSON.stringify(body));
@@ -79,7 +87,7 @@ function sleep(ms) {
 async function ensureApiRunning() {
   for (let i = 0; i < 3; i++) {
     try {
-      const res = await request("GET", "/health");
+      const res = await request("GET", "/health", null, 1500);
       if (res.status === 200) {
         log("✔ Connected to existing API server on " + API_BASE);
         return;
@@ -103,10 +111,10 @@ async function ensureApiRunning() {
   );
 
   let started = false;
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 20; i++) {
     await sleep(500);
     try {
-      const res = await request("GET", "/health");
+      const res = await request("GET", "/health", null, 1000);
       if (res.status === 200) {
         started = true;
         log("✔ API server successfully spawned and ready");
@@ -118,6 +126,7 @@ async function ensureApiRunning() {
   }
 
   if (!started) {
+    cleanup();
     throw new Error("Failed to start API server within timeout");
   }
 }
@@ -131,15 +140,39 @@ function assert(condition, message) {
 }
 
 function cleanup() {
+  if (globalWatchdog) clearTimeout(globalWatchdog);
   if (serverProcess) {
     log("Shutting down spawned API server...");
-    serverProcess.kill();
+    try {
+      if (process.platform === "win32") {
+        try {
+          execSync(`taskkill /pid ${serverProcess.pid} /T /F`, { stdio: "ignore" });
+        } catch {}
+      } else {
+        serverProcess.kill("SIGKILL");
+      }
+    } catch {}
+    try {
+      if (serverProcess.stdout) serverProcess.stdout.destroy();
+      if (serverProcess.stderr) serverProcess.stderr.destroy();
+      if (serverProcess.stdin) serverProcess.stdin.destroy();
+      serverProcess.unref();
+    } catch {}
     serverProcess = null;
   }
 }
 
 async function run() {
   log("Starting Sprint 11 AI Engineering Copilot Foundation E2E Acceptance Test...");
+
+  globalWatchdog = setTimeout(() => {
+    console.error(
+      `\n❌ ERROR: Copilot E2E test exceeded bounded timeout of ${GLOBAL_TIMEOUT_MS}ms! Aborting.`,
+    );
+    cleanup();
+    process.exit(1);
+  }, GLOBAL_TIMEOUT_MS);
+  globalWatchdog.unref();
 
   await ensureApiRunning();
 
@@ -373,8 +406,13 @@ async function run() {
     // Teardown created test projects from PostgreSQL
     for (const pid of createdProjectIds) {
       try {
-        await request("DELETE", `/api/projects/${pid}?force=true`);
-      } catch {}
+        const res = await request("DELETE", `/api/projects/${pid}?force=true`);
+        if (res.status !== 200 && res.status !== 404) {
+          console.warn(`[WARN] Project cleanup for ${pid} returned status ${res.status}`);
+        }
+      } catch (err) {
+        console.warn(`[WARN] Project cleanup error for ${pid}: ${err.message}`);
+      }
     }
     // Clean up temporary folders
     try {
@@ -396,8 +434,12 @@ process.on("SIGINT", cleanup);
 process.on("SIGTERM", cleanup);
 process.on("exit", cleanup);
 
-run().catch((err) => {
-  console.error("❌ E2E Runner Error:", err);
-  cleanup();
-  process.exit(1);
-});
+run()
+  .then(() => {
+    process.exit(0);
+  })
+  .catch((err) => {
+    console.error("❌ E2E Runner Error:", err);
+    cleanup();
+    process.exit(1);
+  });
