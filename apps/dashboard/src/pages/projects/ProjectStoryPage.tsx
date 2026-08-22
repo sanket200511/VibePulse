@@ -144,6 +144,12 @@ function ProjectStoryContent({
                 ⚡ Command Center
               </Link>
               <Link
+                to={`/projects/${project.id}/copilot`}
+                className="rounded-lg border border-indigo-500/40 bg-indigo-600/30 px-3.5 py-1.5 text-xs font-bold text-indigo-200 shadow-sm transition-colors hover:bg-indigo-600/50"
+              >
+                🤖 AI Copilot
+              </Link>
+              <Link
                 to={`/projects/${project.id}/knowledge-graph`}
                 className="rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-3.5 py-1.5 text-xs font-bold text-indigo-300 shadow-sm transition-colors hover:bg-indigo-500/20"
               >

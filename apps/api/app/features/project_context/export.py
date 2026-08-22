@@ -601,6 +601,29 @@ async def generate_project_context_markdown(db: AsyncSession, project_id: uuid.U
             ),
             "- **Deterministic Reconstructibility**: Pure derived projection ($A \\equiv B$).",
             "",
+            "## 21. AI Engineering Copilot Context",
+            "",
+            (
+                "- **Central Principle**: *Ask VibePulse Anything About This Project "
+                "(Evidence-First, Zero Hallucination)*"
+            ),
+            (
+                "- **Intent Classification**: Deterministic mapping across 12 canonical domains "
+                "(`PROJECT_HEALTH`, `SECURITY`, `INCIDENT`, `FILE`, `SUBSYSTEM`, `PREDICTION`, "
+                "`RESOLUTION`, `KNOWLEDGE_GRAPH`, `ENGINEERING_ACTIVITY`, `EVIDENCE`, "
+                "`PROJECT_OVERVIEW`, `UNKNOWN`)."
+            ),
+            (
+                "- **Tri-State Provenance**: Every statement explicitly tagged as `[OBSERVED]` "
+                "(direct telemetry), `[INFERRED]` (canonical models), or `[UNKNOWN]` "
+                "(unestablished)."
+            ),
+            (
+                "- **Answerability Gate**: Out-of-scope queries return explicit knowns vs "
+                "unknowns without guessing."
+            ),
+            "- **REST Endpoint**: `POST /api/projects/{project_id}/copilot/query`",
+            "",
         ]
     )
 

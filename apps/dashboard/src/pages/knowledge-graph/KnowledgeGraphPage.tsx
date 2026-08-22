@@ -47,7 +47,11 @@ export function KnowledgeGraphPage() {
 
   // Node details hooks
   const selectedFilePath =
-    selectedNode?.node_type === "File" ? selectedNode.metadata.file_path : null;
+    selectedNode?.node_type === "File"
+      ? selectedNode.metadata.file_path
+        ? String(selectedNode.metadata.file_path)
+        : null
+      : null;
   const { data: fileIntel } = useFileIntelligence(projectId, selectedFilePath);
 
   const selectedSubsystemName = selectedNode?.node_type === "Subsystem" ? selectedNode.label : null;
@@ -350,24 +354,25 @@ export function KnowledgeGraphPage() {
                         <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] text-gray-400">
                           {node.node_type === "File" && (
                             <>
-                              <span>{node.metadata.activity_count || 0} events</span>
+                              <span>{String(node.metadata.activity_count ?? 0)} events</span>
                               <span>•</span>
-                              <span>{node.metadata.language}</span>
+                              <span>{String(node.metadata.language ?? "")}</span>
                             </>
                           )}
                           {node.node_type === "SecurityFinding" && (
                             <span className="font-semibold text-rose-400">
-                              +{node.metadata.risk_contribution} risk points
+                              +{String(node.metadata.risk_contribution ?? "")} risk points
                             </span>
                           )}
                           {node.node_type === "Incident" && (
                             <span className="font-semibold text-amber-400">
-                              Risk: {node.metadata.risk_score} ({node.metadata.status})
+                              Risk: {String(node.metadata.risk_score ?? "")} (
+                              {String(node.metadata.status ?? "")})
                             </span>
                           )}
                           {node.node_type === "Prediction" && (
                             <span className="text-purple-400">
-                              {node.metadata.evidence_strength} strength
+                              {String(node.metadata.evidence_strength ?? "")} strength
                             </span>
                           )}
                         </div>
@@ -509,20 +514,20 @@ export function KnowledgeGraphPage() {
                       <div className="flex justify-between">
                         <span className="text-gray-400">Severity:</span>
                         <span className="font-bold text-rose-400">
-                          {selectedNode.metadata.severity}
+                          {String(selectedNode.metadata.severity ?? "")}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-400">Risk Contribution:</span>
                         <span className="font-bold text-white">
-                          +{selectedNode.metadata.risk_contribution}
+                          +{String(selectedNode.metadata.risk_contribution ?? "")}
                         </span>
                       </div>
-                      {selectedNode.metadata.evidence && (
+                      {Boolean(selectedNode.metadata.evidence) && (
                         <div>
                           <div className="text-[10px] text-gray-400">Redacted Evidence:</div>
                           <pre className="mt-1 overflow-x-auto rounded bg-black/60 p-2 font-mono text-[11px] text-gray-300">
-                            {selectedNode.metadata.evidence}
+                            {String(selectedNode.metadata.evidence ?? "")}
                           </pre>
                         </div>
                       )}
@@ -530,7 +535,7 @@ export function KnowledgeGraphPage() {
                         onClick={() =>
                           setInspectTarget({
                             type: "security",
-                            id: selectedNode.metadata.rule_id || "current",
+                            id: String(selectedNode.metadata.rule_id || "current"),
                           })
                         }
                         className="mt-2 w-full rounded bg-rose-500/20 py-1.5 text-center text-xs font-semibold text-rose-300 hover:bg-rose-500/30"
@@ -546,20 +551,20 @@ export function KnowledgeGraphPage() {
                       <div className="flex justify-between">
                         <span className="text-gray-400">Status:</span>
                         <span className="font-bold text-amber-400">
-                          {selectedNode.metadata.status}
+                          {String(selectedNode.metadata.status ?? "")}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-400">Risk Score:</span>
                         <span className="font-bold text-white">
-                          {selectedNode.metadata.risk_score}/100
+                          {String(selectedNode.metadata.risk_score ?? "")}/100
                         </span>
                       </div>
                       <button
                         onClick={() =>
                           setInspectTarget({
                             type: "incident",
-                            id: selectedNode.metadata.incident_id || "latest",
+                            id: String(selectedNode.metadata.incident_id || "latest"),
                           })
                         }
                         className="mt-2 w-full rounded bg-amber-500/20 py-1.5 text-center text-xs font-semibold text-amber-300 hover:bg-amber-500/30"
