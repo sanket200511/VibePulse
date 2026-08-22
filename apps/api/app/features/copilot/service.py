@@ -117,12 +117,7 @@ def _compose_summary(
             open_count = sum(
                 1
                 for inc in incidents
-                if (
-                    data.review_states.get(inc.incident_id).status
-                    if inc.incident_id in data.review_states
-                    else "OPEN"
-                )
-                != "RESOLVED"
+                if getattr(data.review_states.get(inc.incident_id), "status", "OPEN") != "RESOLVED"
             )
             return (
                 f"There are {open_count} active/unresolved incidents. "
