@@ -11,6 +11,7 @@
     <a href="https://github.com/sanket200511/VibePulse/releases"><img src="https://img.shields.io/github/v/release/sanket200511/VibePulse?color=10b981&label=Version" alt="Version" /></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-6366f1.svg" alt="License" /></a>
     <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome" /></a>
+    <a href="docs/DOCUMENTATION_INDEX.md"><img src="https://img.shields.io/badge/Docs-Index-blue.svg" alt="Docs Index" /></a>
   </div>
   <br />
 </div>
@@ -18,7 +19,7 @@
 **VibePulse** is a deterministic, event-driven engineering intelligence and investigation platform. It provides an end-to-end continuous loop from filesystem telemetry to causal root cause investigation, predictive risk forecasting, semantic knowledge graph traversal, and zero-hallucination AI Copilot assistance.
 
 ```
-OBSERVE ──▶ DETECT ──▶ UNDERSTAND ──▶ INVESTIGATE ──▶ RESOLVE ──▶ LEARN ──▶ PREDICT ──▶ ASK ──▶ ACT
+OBSERVE ──▶ DETECT ──▶ UNDERSTAND ──▶ INVESTIGATE ──▶ RESOLVE ──▶ LEARN ──▶ PREDICT ──▶ ASK ──▶ ACT ──▶ MEMORY
 ```
 
 ---
@@ -64,14 +65,15 @@ Deterministic orchestration and retrieval over canonical PostgreSQL telemetry su
 
 ```mermaid
 flowchart TD
-    IDE[Developer Filesystem / IDE] -->|File Events| Daemon[Node.js Observation Daemon]
-    Daemon -->|HTTP /events| API[FastAPI Intelligence Engine]
-    API -->|Persist & Query| DB[(PostgreSQL Canonical Ground Truth)]
-    API -->|WebSocket Stream| UI[React / Vite Command Center]
+    IDE[Developer Filesystem / IDE] -->|File Events| Daemon[Node.js Observation Daemon :5135]
+    Daemon -->|HTTP POST /events| API[FastAPI Intelligence Engine :5133]
+    API -->|Persist & Query| DB[(PostgreSQL Canonical Ground Truth :5432)]
+    API -->|WebSocket Stream| UI[React / Vite Command Center :5134]
 
-    subgraph Intelligence Core
+    subgraph Intelligence Core [FastAPI Intelligence Engine :5133]
         API --> SEC[Security Intelligence 2.0]
         API --> INV[Investigation Engine 3.0]
+        API --> RES[Resolution Intelligence]
         API --> PRED[Predictive Intelligence]
         API --> HEALTH[Unified Project Health]
         API --> KG[Knowledge Graph & Memory 2.0]
@@ -89,26 +91,65 @@ flowchart TD
 
 ---
 
-## 🚀 Getting Started
+## 🔌 Dedicated Port Namespace
+
+| Service                      | Dedicated Port | URL Endpoint                   | Description                                          |
+| ---------------------------- | -------------- | ------------------------------ | ---------------------------------------------------- |
+| **FastAPI Backend (API)**    | **`5133`**     | `http://localhost:5133`        | REST & WebSocket intelligence engine (`5133` = VIBE) |
+| **FastAPI Interactive Docs** | **`5133`**     | `http://localhost:5133/docs`   | OpenAPI / Swagger specification                      |
+| **React Dashboard (UI)**     | **`5134`**     | `http://localhost:5134`        | Vite dev server & Command Center UI                  |
+| **Telemetry Daemon**         | **`5135`**     | `http://localhost:5135/health` | Filesystem watcher & health server                   |
+| **PostgreSQL**               | **`5432`**     | `localhost:5432`               | Canonical source of truth                            |
+
+---
+
+## 🚀 Quick Start
 
 ```bash
 # 1. Install workspace dependencies
 pnpm install
 
-# 2. Setup Python environment and run migrations
+# 2. Setup Python environment and run database migrations
 cd apps/api && uv sync && uv run alembic upgrade head && cd ../..
 
-# 3. Start local seminar demonstration
-pnpm dev:seminar
+# 3. Start local development supervisor (with structured logging)
+pnpm dev
+
+# 4. Check instant runtime stack status
+pnpm dev:status
 ```
 
 ---
 
 ## 🧪 Verification & Quality Baselines
 
-- **Backend Pytest**: 347 / 347 passed
-- **Daemon Vitest**: 130 / 130 passed
-- **TypeScript Typecheck**: 5 / 5 packages passed (0 errors)
-- **Lint & Ruff**: 5 / 5 packages passed (0 errors)
+- **Backend Pytest**: 347 / 347 passed (`cd apps/api && uv run pytest`)
+- **Daemon Vitest**: 130 / 130 passed (`pnpm --filter @vibepulse/daemon test`)
+- **TypeScript Typecheck**: 5 / 5 packages passed (0 errors) (`pnpm typecheck`)
+- **Lint & Ruff**: 5 / 5 packages passed (0 errors) (`pnpm lint`)
+- **Seminar Doctor**: ALL CHECKS PASS (`node scripts/seminar-doctor.mjs`)
 - **Sprint 12 E2E Acceptance Test**: 14 / 14 criteria passed (`node scripts/test-sprint12-e2e.mjs`)
-- **Seminar Demo Runner**: 10-stage loop passed (`node scripts/demo-command-center.mjs`)
+- **Live Demo Runner**: 10-stage loop passed (`node scripts/final-demo.mjs`)
+- **Security Redaction Audit**: 100% PASS (`node scripts/final-security-audit.mjs`)
+- **Deterministic Reconstructibility**: 100% PASS ($A \equiv B$) (`node scripts/final-reconstructibility-audit.mjs`)
+
+---
+
+## 📚 Master Documentation Index
+
+For exhaustive architecture, operational guides, and academic portfolios, refer to the [**Master Documentation Index**](docs/DOCUMENTATION_INDEX.md):
+
+- **Architecture Deep Dive**: [`ARCHITECTURE.md`](ARCHITECTURE.md)
+- **Local Development Guide**: [`LOCAL_DEVELOPMENT.md`](LOCAL_DEVELOPMENT.md)
+- **API Reference**: [`API_REFERENCE.md`](API_REFERENCE.md)
+- **Security & Privacy**: [`SECURITY.md`](SECURITY.md)
+- **Academic Thesis Report**: [`docs/FINAL_PROJECT_REPORT.md`](docs/FINAL_PROJECT_REPORT.md)
+- **Viva Master Sheet**: [`docs/VIVA_MASTER_SHEET.md`](docs/VIVA_MASTER_SHEET.md)
+- **Live Demo Runbook**: [`docs/FINAL_DEMO_RUNBOOK.md`](docs/FINAL_DEMO_RUNBOOK.md)
+
+---
+
+## ⚠️ Current Scope & Limitations (v1.0.0 Architecture Freeze)
+
+- **Single-Host Local Deployment**: Optimized for local-first developer workstations and seminar presentations. Multi-user RBAC and distributed Redis queuing are scheduled for post-freeze v2.0 releases.
+- **Zero In-Memory Drift**: State is recomputed from PostgreSQL; in-memory caching is intentionally omitted to guarantee $A \equiv B$ determinism.

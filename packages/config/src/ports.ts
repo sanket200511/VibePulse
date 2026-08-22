@@ -44,8 +44,6 @@ export function getDashboardUrl(): string {
 
 export function getDaemonUrl(): string {
   return (
-    getEnv("VIBEPULSE_DAEMON_URL") ||
-    getEnv("DAEMON_URL") ||
-    `http://localhost:${getDaemonPort()}`
+    getEnv("VIBEPULSE_DAEMON_URL") || getEnv("DAEMON_URL") || `http://localhost:${getDaemonPort()}`
   );
 }

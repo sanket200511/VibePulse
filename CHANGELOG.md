@@ -6,7 +6,50 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 > **Note on versioning:** The `v0.2.0-session-intelligence` git tag currently points at the events-pipeline commit (`4cf448e`) rather than the commit that actually contains the Analysis Pipeline and Session Engine (`26cf63d`, currently `HEAD`, untagged). The entries below are grouped by what each milestone actually delivered — consistent with `PROJECT_STATUS.md` and `ROADMAP.md` — not by the tag's current git placement. The tag should be moved to `26cf63d` (or a new tag cut) to match this changelog.
 
-## [v1.0.0] - Production Ready Release Candidate (RC2)
+## [v1.4.0] - Sprint 14 Final Truth Audit, Academic Packaging & Dedicated Port Migration
+
+### Added
+
+- **Dedicated Port Namespace**: Migrated all development services to dedicated, clash-free ports: FastAPI (`5133` = VIBE), Dashboard (`5134`), Daemon (`5135`), PostgreSQL (`5432`), Redis (Cloud).
+- **Professional Terminal Supervisor UX (`pnpm dev`)**: Introduced structured log hierarchy (`[TIME] [SERVICE] [LEVEL] MESSAGE`), preflight conflict detection, and sub-second CLI stack inspector (`pnpm dev:status`).
+- **Forensic Truth Audit Verification**: Validated 100% claim-to-code traceability across 347 Backend Pytest and 130 Daemon Vitest test suites.
+- **Academic Defense Portfolio**: Formulated complete B.Tech final thesis report (`FINAL_PROJECT_REPORT.md`), oral viva cheat-sheet (`VIVA_MASTER_SHEET.md`), and presentation deck (`PPT_CONTENT.md`).
+- **Master Documentation Index**: Created authoritative master documentation registry (`docs/DOCUMENTATION_INDEX.md`).
+
+---
+
+## [v1.3.0] - Sprint 13 Demonstration & Academic Readiness
+
+### Added
+
+- **10-Stage Canonical Intelligence Loop**: Verified full lifecycle pipeline ($\text{OBSERVE} \to \text{DETECT} \to \text{UNDERSTAND} \to \text{INVESTIGATE} \to \text{RESOLVE} \to \text{LEARN} \to \text{PREDICT} \to \text{ASK} \to \text{ACT} \to \text{MEMORY}$).
+- **Automated Seminar Demonstrator**: Introduced timed 5-minute presenter runbooks, seminar doctor readiness audit (`scripts/seminar-doctor.mjs`), and 10-stage demo runner (`scripts/final-demo.mjs`).
+- **Empirical Evaluation Benchmarks**: Measured local performance (sub-millisecond AST latency, deterministic reconstructibility $A \equiv B$).
+
+---
+
+## [v1.2.0] - Sprint 12 AI Engineering Copilot Foundation & Productization
+
+### Added
+
+- **Zero-LLM AI Engineering Copilot**: 16 canonical query families with grounded tri-state facts (`[OBSERVED]`, `[INFERRED]`, `[UNKNOWN]`), out-of-scope Answerability Gate, and AST intent classification.
+- **Engineering Knowledge Graph & Project Memory 2.0**: Multi-entity semantic graph traversal (`CONTAINS`, `AFFECTS`, `RESOLVED_BY`) and portable `PROJECT_CONTEXT.md` AI handoff export.
+- **Unified Engineering Command Center**: Single-pane dashboard featuring the Metric Triad (`Overall Health Score`, `Security Risk Score`, `Forecast Strength`) and live WebSocket telemetry.
+- **Safe Project Deletion**: Database-only cascading teardown preserving user code on disk.
+
+---
+
+## [v1.1.0] - Sprints 7-11 Intelligence Core & Causal Investigation
+
+### Added
+
+- **Security Intelligence 2.0**: Tree-Sitter & Python AST analyzers (`SEC001`, `DEBUG_TRUE`) with strict secret masking to `[REDACTED]`.
+- **Investigation Engine 3.0**: Causal Directed Acyclic Graph (DAG) generation and 5-dimension mathematical score decomposition ($W_i \times S_i$).
+- **Incident Resolution Intelligence**: Multi-state triage workflows (`OPEN` $\to$ `INVESTIGATING` $\to$ `REVIEWED` $\to$ `RESOLVED`) and immutable PostgreSQL audit history (`incident_review_states`, `incident_review_history`).
+- **Predictive Engineering Intelligence**: Empirical churn acceleration analysis and regression risk forecasting.
+- **Unified Project Health**: 5-dimension weighted composite scoring model.
+
+---
 
 ### Added
 

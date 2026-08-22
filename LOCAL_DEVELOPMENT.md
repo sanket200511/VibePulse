@@ -8,14 +8,15 @@ This guide documents the canonical local-development architecture, prerequisites
 
 VibePulse is designed to run natively and deterministically on the developer host machine:
 
-| Component | Technology | Canonical Port | Command |
-|---|---|---|---|
-| **PostgreSQL** | Native PostgreSQL (local service) | `localhost:5432` | Windows Service / Native |
-| **FastAPI Backend** | Python 3.12 + FastAPI + Uvicorn | `http://localhost:5133` | `pnpm run dev:api` |
-| **Dashboard** | React + TypeScript + Vite | `http://localhost:5134` | `pnpm run dev:dashboard` |
-| **Daemon** | Node.js + TypeScript + Chokidar | `http://localhost:5135` | `pnpm run dev:daemon` |
+| Component           | Technology                        | Canonical Port          | Command                  |
+| ------------------- | --------------------------------- | ----------------------- | ------------------------ |
+| **PostgreSQL**      | Native PostgreSQL (local service) | `localhost:5432`        | Windows Service / Native |
+| **FastAPI Backend** | Python 3.12 + FastAPI + Uvicorn   | `http://localhost:5133` | `pnpm run dev:api`       |
+| **Dashboard**       | React + TypeScript + Vite         | `http://localhost:5134` | `pnpm run dev:dashboard` |
+| **Daemon**          | Node.js + TypeScript + Chokidar   | `http://localhost:5135` | `pnpm run dev:daemon`    |
 
 > [!NOTE]
+>
 > - The **Dashboard** runs on `http://localhost:5134` and automatically proxies `/api`, `/sessions`, `/events`, `/projects`, `/investigation`, `/health`, and `/ws` to FastAPI on port `5133`.
 > - The **Daemon** pushes development telemetry events to `http://localhost:5133/events` and exposes a local health/control gate on port `5135`.
 > - **Docker is NOT required** for standard local development.
@@ -59,6 +60,7 @@ pnpm setup
 ```
 
 This command executes `scripts/setup.mjs`, which:
+
 1. Verifies `git`, `node`, `pnpm`, and `uv` prerequisites.
 2. Creates `.env` files from `.env.example` in root, `apps/api`, and `apps/daemon` if not already present.
 3. Installs monorepo npm packages (`pnpm install`) and Python virtual environments (`uv sync`).
@@ -75,10 +77,32 @@ To start all services simultaneously with a single command:
 pnpm dev
 ```
 
-This runs the supervisor starting:
-- `[api]` FastAPI on `http://localhost:5133`
-- `[dashboard]` React/Vite dashboard on `http://localhost:5134`
-- `[daemon]` Filesystem observation daemon on port `5135`
+This runs the structured development supervisor providing:
+
+- Structured logs formatted as `[TIME] [SERVICE] [LEVEL] MESSAGE`
+- `[API]` FastAPI backend on `http://localhost:5133`
+- `[DASHBOARD]` React/Vite dashboard on `http://localhost:5134`
+- `[DAEMON]` Filesystem observation daemon on port `5135`
+
+### Checking Instant Stack Status
+
+To inspect the live status of all services in sub-second time without restarting:
+
+```powershell
+pnpm dev:status
+# or
+pnpm status
+```
+
+### Verbose / Debug Mode
+
+To inspect all unfiltered subprocess output:
+
+```powershell
+VIBEPULSE_LOG_LEVEL=debug pnpm dev
+# or
+pnpm dev --debug
+```
 
 ### Starting Individual Services
 
@@ -106,9 +130,11 @@ VibePulse supports dynamic observation of arbitrary developer projects on your f
 
 1. **Option A — Via Environment Variable**:
    In `apps/daemon/.env`, set:
+
    ```env
    WATCH_ROOT=D:\Projects\Animal Disease Prediction
    ```
+
    Restart the daemon (`pnpm run dev:daemon` or `pnpm dev`).
 
 2. **Option B — Via CLI Argument (`--watch` / `-w`)**:
@@ -118,6 +144,7 @@ VibePulse supports dynamic observation of arbitrary developer projects on your f
    ```
 
 ### How Dynamic Project Identity Works:
+
 - **Canonical Identity**: Paths are normalized deterministically across platforms (handling Windows drive letters `D:\`, path separators, and NTFS filesystem casing).
 - **Zero Configuration**: When the daemon starts or when file events occur, the backend automatically creates or reuses the corresponding `Project` and `Session` in PostgreSQL.
 - **Multi-Project Isolation**: Multiple projects and their distinct sessions coexist cleanly in the database. Switching the daemon's observation target preserves prior project history while automatically establishing active observation on the new project.
@@ -133,9 +160,10 @@ pnpm doctor
 ```
 
 Output:
+
 ```
 =========================
-    VibePulse Doctor     
+    VibePulse Doctor
 =========================
 
 [PASS] Node.js
@@ -155,10 +183,12 @@ VibePulse environment is READY.
 ## 7. Troubleshooting Common Issues
 
 ### Issue: `PostgreSQL is not reachable at localhost:5432`
+
 - **Cause**: The local PostgreSQL Windows service is stopped or listening on a non-standard port.
 - **Fix**: Start the PostgreSQL service via Windows Services (`services.msc`) or `net start postgresql-x64-16`.
 
 ### Issue: `Database schema is not initialized (missing tables)`
+
 - **Cause**: Alembic migrations have not been applied to the local database.
 - **Fix**: Run:
   ```powershell
@@ -167,6 +197,7 @@ VibePulse environment is READY.
   ```
 
 ### Issue: Port 5133 / 5134 / 5135 is already in use (`EADDRINUSE` / `WinError 10048`)
+
 - **Cause**: An orphan node/python process is still holding the port.
 - **Fix**: Check and terminate holding processes:
   ```powershell
@@ -175,6 +206,7 @@ VibePulse environment is READY.
   ```
 
 ### Issue: Need a clean slate database reset
+
 - **Warning**: This drops and re-creates all tables in the `vibepulse` database.
 - **Fix**:
   ```powershell

@@ -270,9 +270,7 @@ async function runDemo() {
     });
     console.log(`   [?] Engineer: "What happened to settings.py?"`);
     console.log(`   [✓] Copilot (${copilotQ3.data.intent}): ${copilotQ3.data.summary}`);
-    console.log(
-      `   [✓] Interactive Copilot URL: ${DASHBOARD_BASE}/projects/${projectId}/copilot`,
-    );
+    console.log(`   [✓] Interactive Copilot URL: ${DASHBOARD_BASE}/projects/${projectId}/copilot`);
     await sleep(DELAY_MS);
 
     // Engineer Resolves Issue (RESOLVE & LEARN)

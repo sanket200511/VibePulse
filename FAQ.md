@@ -1,33 +1,66 @@
 # Frequently Asked Questions (FAQ)
 
-## 1. What makes VibePulse different from WakaTime or GitHub Copilot?
+## 1. What makes VibePulse different from WakaTime, SonarQube, or GitHub Copilot?
 
-VibePulse is not an IDE plugin that tracks hours, nor is it an AI that generates code.
+VibePulse is neither a time-tracker nor a code generator:
 
-VibePulse is an **Engineering Search & Investigation Engine**. It sits passively on the filesystem edge, observing what changes and _how_ it changes, then restructures those raw observations into semantic Timelines, Replays, and Engineering DNA summaries.
+- **Unlike WakaTime**: VibePulse doesn't merely count keystroke hours; it constructs causal Directed Acyclic Graphs (DAGs) and semantic Knowledge Graphs from raw filesystem activity.
+- **Unlike SonarQube / Snyk**: VibePulse observes pre-commit, real-time code evolution in the editor before git commits exist, computing live Metric Triad scores and dynamic incident resolutions.
+- **Unlike GitHub Copilot**: VibePulse does not generate or write code. Its AI Engineering Copilot foundation is a zero-hallucination, deterministic intelligence engine providing explainable answers with tri-state provenance (`[OBSERVED]`, `[INFERRED]`, `[UNKNOWN]`) over your local telemetry.
 
-## 2. Does VibePulse send my code to the cloud?
+---
 
-**No.** The VibePulse daemon observes file events (like "File Modified: src/main.ts") locally. It performs lightweight AST parsing directly on your laptop and sends only structured metadata (functions added, classes removed, security TODOs introduced) to your self-hosted backend. The source code itself is never sent to a third-party server.
+## 2. Does VibePulse send my code to the cloud or an external LLM?
 
-## 3. Why FastAPI and Python instead of a pure Node.js stack?
+**No.** The observation daemon runs locally on your machine. AST analysis and security checks run on your local/self-hosted FastAPI backend. No source code, diffs, or prompts are sent to external cloud LLMs (OpenAI, Anthropic, etc.).
 
-Python was explicitly chosen for the API layer due to its unrivaled ecosystem for static analysis (e.g., `tree-sitter` bindings, `ast`) and AI/ML orchestration. Because VibePulse will eventually utilize complex heuristics for AI Provenance, Python provides the strongest foundation for the backend.
+---
 
-FastAPI provides native asynchronous I/O, which is necessary for high-throughput event ingestion and WebSocket fan-out, mitigating Python's traditional concurrency limitations.
+## 3. What are the canonical ports used by VibePulse?
 
-## 4. How does the Replay Engine work if VibePulse doesn't store file contents?
+VibePulse uses a dedicated port namespace to prevent conflicts with standard development services:
 
-VibePulse does not operate like a Git commit or a video recorder. The Replay Engine works by chronologically navigating through the structured `DevelopmentEvent` metadata. When you play a Replay, you are stepping through a highly accurate semantic reconstruction of _what_ structural pieces of your code were modified, when, and in what context (languages, directories), not the literal source code strings themselves.
+- **FastAPI Backend (API)**: `http://localhost:5133` (`5133` = VIBE)
+- **FastAPI Interactive Docs**: `http://localhost:5133/docs`
+- **React Dashboard (UI)**: `http://localhost:5134`
+- **Telemetry Daemon**: `http://localhost:5135/health`
+- **PostgreSQL**: `localhost:5432`
 
-## 5. Can I use VibePulse with multiple developers on a team?
+---
 
-VibePulse v1.0.0 is optimized for single-project or single-developer workspaces. The foundational architecture (Event Pipeline, Session Engine) is complete.
+## 4. How does the Metric Triad work?
 
-Multi-user authentication, team workspaces, and RBAC (Role-Based Access Control) are explicitly scheduled for **Phase 5 (Production Readiness - v1.1.0)**. See the [Roadmap](ROADMAP.md) for details.
+The Command Center displays three complementary indicators:
 
-## 6. How do I fix the "MissingGreenlet" or "IntegrityError" in the tests?
+1. **Overall Health Score** ($0\dots 100$, **Higher = Better**): 5-dimension composite (`Security`, `Engineering Stability`, `Incident Health`, `Resolution Health`, `Predictive Risk`).
+2. **Security Risk Score** (Points, **Higher = Worse**): Sum of unmitigated AST security rules (`SEC001`, `DEBUG_TRUE`).
+3. **Forecast Strength** ($0\dots 100$, **Empirical Baseline**): Statistical confidence tier based on observation history length and commit velocity.
 
-If you are running the API tests and encounter `MissingGreenlet` errors, this usually happens because asynchronous `BackgroundTasks` are outliving the test's isolated database transaction.
+---
 
-VibePulse v1.0.0 includes a deterministic test teardown process in `tests/conftest.py` that waits for all background tasks to drain before destroying the session. Ensure you are running the test suite via the provided `uv run pytest` command and not attempting to run tests in parallel without a database lock.
+## 5. How does the AI Engineering Copilot work without an LLM?
+
+The Copilot uses deterministic intent classification across 16 canonical query families, retrieves grounded records from PostgreSQL, applies AST logic, and formats responses with explicit tri-state provenance:
+
+- `[OBSERVED]`: Directly recorded filesystem telemetry and AST rules.
+- `[INFERRED]`: Deterministically derived health metrics and priority rankings.
+- `[UNKNOWN]`: Explicit observation boundaries (out-of-band deployments, remote CI).
+- **Answerability Gate**: Cleanly rejects out-of-scope queries (market prices, weather, elections, private emails) without hallucination.
+
+---
+
+## 6. How does VibePulse ensure deterministic reconstructibility ($A \equiv B$)?
+
+PostgreSQL 16 is the single canonical source of truth. All metrics, graphs, incident timelines, and summaries are pure deterministic mathematical projections over the immutable `development_events` and `event_analyses` tables. Replaying the event stream produces an exact, bit-for-bit identical state.
+
+---
+
+## 7. How are secrets protected?
+
+AST inspection rules identify credentials and tokens matching sensitive patterns and strictly mask them to `[REDACTED]` prior to database persistence and JSON serialization.
+
+---
+
+## 8. What happens when I delete a project in VibePulse?
+
+Safe Project Deletion guarantees that removing a project cascades deletion strictly to VibePulse's internal PostgreSQL database records. The physical codebase and directory on your hard drive remain 100% untouched.

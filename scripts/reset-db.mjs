@@ -19,7 +19,7 @@ console.log("===============================================\n");
 
 const rl = readline.createInterface({
   input: process.stdin,
-  output: process.stdout
+  output: process.stdout,
 });
 
 rl.question('Type "RESET VIBEPULSE DATABASE" to continue:\n> ', (answer) => {

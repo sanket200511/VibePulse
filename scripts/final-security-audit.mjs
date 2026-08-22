@@ -153,7 +153,9 @@ async function runSecurityAudit() {
     console.table(results);
 
     const allPassed = results.every((r) => r.status === "PASS");
-    console.log(allPassed ? "✅ FORENSIC SECURITY AUDIT: ALL SURFACES VERIFIED SAFE!" : "❌ AUDIT FAILED!");
+    console.log(
+      allPassed ? "✅ FORENSIC SECURITY AUDIT: ALL SURFACES VERIFIED SAFE!" : "❌ AUDIT FAILED!",
+    );
 
     // Clean up projects
     await request("DELETE", `/api/projects/${projA}`);

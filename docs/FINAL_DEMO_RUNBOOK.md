@@ -1,6 +1,6 @@
 # VibePulse — Final Demonstration Runbook & Presentation Guide
 
-**Audience**: Final-Year Project Evaluators, Professors, Academic Examiners, and Technical Judges  
+**Audience**: Final-Year Project Evaluators, Professors, Academic Examiners, and Technical Judges
 **Core Thesis**: _Observe First. Derive Carefully. Never Invent._
 
 ---

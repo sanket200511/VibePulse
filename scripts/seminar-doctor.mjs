@@ -107,7 +107,9 @@ Running exhaustive live readiness audit...
       console.log(`[PASS] ${GREEN}${BOLD}[✓]${RESET} ${label} ${detail ? `(${detail})` : ""}`);
     } else {
       allPassed = false;
-      console.log(`[FAIL] ${RED}${BOLD}[✗]${RESET} ${label} ${detail ? `\n       ↳ ${detail}` : ""}`);
+      console.log(
+        `[FAIL] ${RED}${BOLD}[✗]${RESET} ${label} ${detail ? `\n       ↳ ${detail}` : ""}`,
+      );
     }
   }
 
@@ -126,15 +128,20 @@ Running exhaustive live readiness audit...
   report("PostgreSQL Server (:5432)", pgUp, "localhost:5432");
 
   // Run python doctor test to verify DB migrations and Redis Cloud
-  const pyDoc = runCmd("uv run python -c \"import asyncio; from app.core.database import get_session_factory; from app.core.config import get_settings; s = get_settings(); print('REDIS_CONFIGURED:', bool(s.redis_url)); print('DATABASE_URL:', s.database_url.split('@')[-1])\"", path.join(ROOT_DIR, "apps", "api"));
-  report("PostgreSQL Schema & Redis Cloud", pyDoc.ok, pyDoc.ok ? "Connected & Configured" : pyDoc.error);
+  const pyDoc = runCmd(
+    "uv run python -c \"import asyncio; from app.core.database import get_session_factory; from app.core.config import get_settings; s = get_settings(); print('REDIS_CONFIGURED:', bool(s.redis_url)); print('DATABASE_URL:', s.database_url.split('@')[-1])\"",
+    path.join(ROOT_DIR, "apps", "api"),
+  );
+  report(
+    "PostgreSQL Schema & Redis Cloud",
+    pyDoc.ok,
+    pyDoc.ok ? "Connected & Configured" : pyDoc.error,
+  );
 
   // 3. Service Port Checks
   const apiPort = process.env.VIBEPULSE_API_PORT || process.env.API_PORT || 5133;
-  const dashPort =
-    process.env.VIBEPULSE_DASHBOARD_PORT || process.env.DASHBOARD_PORT || 5134;
-  const daemonPort =
-    process.env.VIBEPULSE_DAEMON_PORT || process.env.DAEMON_PORT || 5135;
+  const dashPort = process.env.VIBEPULSE_DASHBOARD_PORT || process.env.DASHBOARD_PORT || 5134;
+  const daemonPort = process.env.VIBEPULSE_DAEMON_PORT || process.env.DAEMON_PORT || 5135;
 
   const apiUp = await checkHttp(`http://localhost:${apiPort}/health`);
   report(
@@ -158,19 +165,44 @@ Running exhaustive live readiness audit...
   );
 
   // 4. Investigation Engine API Check
-  const invRes = runCmd("uv run python -c \"import asyncio, httpx; from app.main import app; r = asyncio.run(httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url='http://test').get('/api/investigation/search')); print('COUNT:', r.json().get('total_count'))\"", path.join(ROOT_DIR, "apps", "api"));
-  report("Investigation Engine API (/api/investigation/search)", invRes.ok, invRes.ok ? "Deterministic Query Validated" : invRes.error);
+  const invRes = runCmd(
+    "uv run python -c \"import asyncio, httpx; from app.main import app; r = asyncio.run(httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url='http://test').get('/api/investigation/search')); print('COUNT:', r.json().get('total_count'))\"",
+    path.join(ROOT_DIR, "apps", "api"),
+  );
+  report(
+    "Investigation Engine API (/api/investigation/search)",
+    invRes.ok,
+    invRes.ok ? "Deterministic Query Validated" : invRes.error,
+  );
 
   // 5. Secret Analyzer & SEC001 Engine Check
-  const secRes = runCmd("uv run python -c \"from app.features.analysis.analyzers.security import SEC001_ASSIGNMENT_REGEX; m = SEC001_ASSIGNMENT_REGEX.search('API_KEY = \\\"DEMO_KEY\\\"'); assert m is not None; print('Pattern OK')\"", path.join(ROOT_DIR, "apps", "api"));
-  report("Security Guardian AST & SEC001 Regex Engine", secRes.ok, secRes.ok ? "Credentials & Secrets Matcher Verified" : secRes.error);
+  const secRes = runCmd(
+    "uv run python -c \"from app.features.analysis.analyzers.security import SEC001_ASSIGNMENT_REGEX; m = SEC001_ASSIGNMENT_REGEX.search('API_KEY = \\\"DEMO_KEY\\\"'); assert m is not None; print('Pattern OK')\"",
+    path.join(ROOT_DIR, "apps", "api"),
+  );
+  report(
+    "Security Guardian AST & SEC001 Regex Engine",
+    secRes.ok,
+    secRes.ok ? "Credentials & Secrets Matcher Verified" : secRes.error,
+  );
 
   // 6. Project Registration & Persistence Check
-  const projRes = runCmd("uv run python -c \"import asyncio, httpx; from app.main import app; r = asyncio.run(httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url='http://test').get('/api/projects')); assert r.status_code == 200; print('Projects API OK')\"", path.join(ROOT_DIR, "apps", "api"));
-  report("Project Registration & Persistence API (/api/projects)", projRes.ok, projRes.ok ? "Verified Idempotent & Durable" : projRes.error);
+  const projRes = runCmd(
+    "uv run python -c \"import asyncio, httpx; from app.main import app; r = asyncio.run(httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url='http://test').get('/api/projects')); assert r.status_code == 200; print('Projects API OK')\"",
+    path.join(ROOT_DIR, "apps", "api"),
+  );
+  report(
+    "Project Registration & Persistence API (/api/projects)",
+    projRes.ok,
+    projRes.ok ? "Verified Idempotent & Durable" : projRes.error,
+  );
 
   // 7. ML Model Status
-  report("Machine Learning Model Weights", true, "None present in repo; using explainable AST / Tree-Sitter rule engine");
+  report(
+    "Machine Learning Model Weights",
+    true,
+    "None present in repo; using explainable AST / Tree-Sitter rule engine",
+  );
 
   console.log(`
 ${BOLD}====================================================${RESET}`);
@@ -179,7 +211,9 @@ ${BOLD}====================================================${RESET}`);
            VIBEPULSE — READY FOR SEMINAR
 ====================================================${RESET}\n`);
   } else {
-    console.log(`${YELLOW}${BOLD}Overall Status: SOME SERVICES ARE NOT RUNNING. Start with 'pnpm dev:seminar'${RESET}\n`);
+    console.log(
+      `${YELLOW}${BOLD}Overall Status: SOME SERVICES ARE NOT RUNNING. Start with 'pnpm dev:seminar'${RESET}\n`,
+    );
   }
 }
 

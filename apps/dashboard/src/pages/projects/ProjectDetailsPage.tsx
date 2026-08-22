@@ -237,19 +237,19 @@ export function ProjectDetailsPage() {
 
       {/* Danger Zone */}
       <div className="border-border mt-16 rounded-xl border border-red-500/20 bg-red-500/5 p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <h3 className="text-sm font-bold text-red-400">Danger Zone</h3>
-            <p className="text-secondary-text mt-1 text-xs leading-relaxed max-w-xl">
-              Remove this project from VibePulse. Permanently deletes stored telemetry,
-              sessions, investigations, and project memory. Your actual project files and directory
-              will <strong className="text-primary-text">NOT</strong> be deleted.
+            <p className="text-secondary-text mt-1 max-w-xl text-xs leading-relaxed">
+              Remove this project from VibePulse. Permanently deletes stored telemetry, sessions,
+              investigations, and project memory. Your actual project files and directory will{" "}
+              <strong className="text-primary-text">NOT</strong> be deleted.
             </p>
           </div>
           <button
             type="button"
             onClick={() => setIsDeleteModalOpen(true)}
-            className="flex items-center gap-2 self-start sm:self-auto rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs font-semibold text-red-400 transition-all hover:bg-red-500 hover:text-white"
+            className="flex items-center gap-2 self-start rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs font-semibold text-red-400 transition-all hover:bg-red-500 hover:text-white sm:self-auto"
           >
             <Trash2 className="h-3.5 w-3.5" />
             Remove from VibePulse

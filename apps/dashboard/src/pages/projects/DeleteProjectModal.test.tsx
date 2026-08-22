@@ -40,7 +40,9 @@ describe("DeleteProjectModal", () => {
     );
 
     expect(screen.getByText("Remove from VibePulse")).toBeInTheDocument();
-    expect(screen.getByText(/Your physical project directory and source files will/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Your physical project directory and source files will/i),
+    ).toBeInTheDocument();
 
     const deleteBtn = screen.getByRole("button", { name: "Remove Project" });
     expect(deleteBtn).toBeDisabled();
