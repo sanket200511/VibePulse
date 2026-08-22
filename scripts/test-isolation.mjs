@@ -10,9 +10,12 @@ fs.writeFileSync(
 );
 fs.writeFileSync(path.join(secondaryBase, "app.py"), "print('hello secondary')\n");
 
+const API_URL = process.env.VIBEPULSE_API_URL || "http://localhost:5133";
+const DAEMON_URL = process.env.VIBEPULSE_DAEMON_URL || "http://localhost:5135";
+
 async function main() {
   console.log("1. Switching daemon to secondary project...");
-  const switchRes = await fetch("http://localhost:9000/watch", {
+  const switchRes = await fetch(`${DAEMON_URL}/watch`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ root: secondaryBase }),
@@ -26,7 +29,7 @@ async function main() {
   await new Promise((r) => setTimeout(r, 2000));
 
   // Verify secondary project exists separately
-  const listRes = await fetch("http://localhost:8000/api/projects");
+  const listRes = await fetch(`${API_URL}/api/projects`);
   const list = await listRes.json();
   const hasSecondary = list.projects.some((p) => p.root_path === secondaryBase);
   const hasPrimary = list.projects.some((p) => p.root_path === "D:\\VibePulse-Seminar-Demo");
@@ -34,7 +37,7 @@ async function main() {
 
   // Switch daemon back to primary demo project first (so secondary is not active)
   console.log("2. Switching daemon back to primary demo project...");
-  await fetch("http://localhost:9000/watch", {
+  await fetch(`${DAEMON_URL}/watch`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ root: "D:\\VibePulse-Seminar-Demo" }),
@@ -43,7 +46,7 @@ async function main() {
 
   // Now delete secondary project safely via API
   console.log("3. Safely removing secondary project from VibePulse...");
-  const delRes = await fetch(`http://localhost:8000/api/projects/${switchData.project_id}`, {
+  const delRes = await fetch(`${API_URL}/api/projects/${switchData.project_id}`, {
     method: "DELETE",
   });
   const delData = await delRes.json();

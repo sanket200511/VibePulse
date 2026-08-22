@@ -7,10 +7,10 @@ The VibePulse backend exposes a RESTful API and WebSocket endpoints for real-tim
 When running locally, the API is available at:
 
 ```
-http://localhost:8000
+http://localhost:5133
 ```
 
-An interactive Swagger UI is available at `/docs`.
+An interactive Swagger UI is available at `http://localhost:5133/docs`.
 
 ---
 
@@ -127,11 +127,11 @@ Idempotently stops file observation on the daemon.
 
 Real-time streaming is available over WebSockets. Clients should implement exponential backoff reconnection.
 
-### `ws://localhost:8000/ws/events`
+### `ws://localhost:5133/ws/events`
 
 Broadcasts every new `DevelopmentEvent` exactly as it is ingested.
 
-### `ws://localhost:8000/ws/sessions`
+### `ws://localhost:5133/ws/sessions`
 
 Broadcasts full `SessionRead` payloads on state transitions (e.g., `session.started`, `session.updated`, `session.completed`).
 

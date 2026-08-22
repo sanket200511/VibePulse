@@ -8,7 +8,7 @@ Pydantic-settings provides validation and type coercion.
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import AnyHttpUrl, Field
+from pydantic import AliasChoices, AnyHttpUrl, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -24,10 +24,18 @@ class Settings(BaseSettings):
     environment: Literal["development", "staging", "production"] = "development"
     debug: bool = False
     log_level: str = "info"
-    api_port: int = Field(default=8000, ge=1, le=65535)
+    api_port: int = Field(
+        default=5133,
+        ge=1,
+        le=65535,
+        validation_alias=AliasChoices("VIBEPULSE_API_PORT", "API_PORT"),
+    )
 
     # ── Daemon ───────────────────────────────────────────────────────────────
-    daemon_url: str = "http://localhost:9000"
+    daemon_url: str = Field(
+        default="http://localhost:5135",
+        validation_alias=AliasChoices("VIBEPULSE_DAEMON_URL", "DAEMON_URL"),
+    )
 
     # ── Database ─────────────────────────────────────────────────────────────
     database_url: str = "postgresql+asyncpg://vibepulse:vibepulse_dev@localhost:5432/vibepulse"
@@ -39,10 +47,10 @@ class Settings(BaseSettings):
 
     # ── CORS ─────────────────────────────────────────────────────────────────
     cors_origins: list[AnyHttpUrl] = [
+        AnyHttpUrl("http://localhost:5134"),
+        AnyHttpUrl("http://127.0.0.1:5134"),
         AnyHttpUrl("http://localhost:3000"),
-        AnyHttpUrl("http://localhost:5173"),
         AnyHttpUrl("http://127.0.0.1:3000"),
-        AnyHttpUrl("http://127.0.0.1:5173"),
     ]
 
     # ── Session Engine ───────────────────────────────────────────────────────

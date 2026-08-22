@@ -6,7 +6,7 @@ import type {
   GraphSearchResult,
 } from "./types";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:5133";
 
 export function useKnowledgeGraph(projectId?: string) {
   const queryClient = useQueryClient();

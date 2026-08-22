@@ -10,3 +10,12 @@
 
 export { getEnv, requireEnv, parsePort } from "./env";
 export type { EnvConfig } from "./env";
+export {
+  VIBEPULSE_PORTS,
+  getApiPort,
+  getDashboardPort,
+  getDaemonPort,
+  getApiUrl,
+  getDashboardUrl,
+  getDaemonUrl,
+} from "./ports";

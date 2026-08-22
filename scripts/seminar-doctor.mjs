@@ -57,14 +57,29 @@ function checkTcpPort(host, port, timeoutMs = 2000) {
 
 function checkHttp(url, timeoutMs = 3000) {
   return new Promise((resolve) => {
-    const req = http.get(url, { timeout: timeoutMs }, (res) => {
-      resolve(res.statusCode >= 200 && res.statusCode < 400);
-    });
-    req.on("error", () => resolve(false));
-    req.on("timeout", () => {
-      req.destroy();
-      resolve(false);
-    });
+    const tryUrl = (targetUrl, fallback) => {
+      const req = http.get(targetUrl, { timeout: timeoutMs }, (res) => {
+        resolve(res.statusCode >= 200 && res.statusCode < 400);
+      });
+      req.on("error", () => {
+        if (fallback) {
+          tryUrl(fallback, null);
+        } else {
+          resolve(false);
+        }
+      });
+      req.on("timeout", () => {
+        req.destroy();
+        if (fallback) {
+          tryUrl(fallback, null);
+        } else {
+          resolve(false);
+        }
+      });
+    };
+
+    const fallbackUrl = url.includes("localhost") ? url.replace("localhost", "127.0.0.1") : null;
+    tryUrl(url, fallbackUrl);
   });
 }
 
@@ -115,14 +130,32 @@ Running exhaustive live readiness audit...
   report("PostgreSQL Schema & Redis Cloud", pyDoc.ok, pyDoc.ok ? "Connected & Configured" : pyDoc.error);
 
   // 3. Service Port Checks
-  const apiUp = await checkHttp("http://localhost:8000/health");
-  report("FastAPI Backend (:8000)", apiUp, apiUp ? "http://localhost:8000/health reachable" : "Backend not running or offline");
+  const apiPort = process.env.VIBEPULSE_API_PORT || process.env.API_PORT || 5133;
+  const dashPort =
+    process.env.VIBEPULSE_DASHBOARD_PORT || process.env.DASHBOARD_PORT || 5134;
+  const daemonPort =
+    process.env.VIBEPULSE_DAEMON_PORT || process.env.DAEMON_PORT || 5135;
 
-  const dashUp = await checkHttp("http://localhost:3000");
-  report("React/Vite Dashboard (:3000)", dashUp, dashUp ? "http://localhost:3000 reachable" : "Dashboard not running or offline");
+  const apiUp = await checkHttp(`http://localhost:${apiPort}/health`);
+  report(
+    `FastAPI Backend (:${apiPort})`,
+    apiUp,
+    apiUp ? `http://localhost:${apiPort}/health reachable` : "Backend not running or offline",
+  );
 
-  const daemonUp = await checkHttp("http://localhost:9000/health");
-  report("Telemetry Daemon (:9000)", daemonUp, daemonUp ? "http://localhost:9000/health reachable" : "Daemon not running or offline");
+  const dashUp = await checkHttp(`http://localhost:${dashPort}`);
+  report(
+    `React/Vite Dashboard (:${dashPort})`,
+    dashUp,
+    dashUp ? `http://localhost:${dashPort} reachable` : "Dashboard not running or offline",
+  );
+
+  const daemonUp = await checkHttp(`http://localhost:${daemonPort}/health`);
+  report(
+    `Telemetry Daemon (:${daemonPort})`,
+    daemonUp,
+    daemonUp ? `http://localhost:${daemonPort}/health reachable` : "Daemon not running or offline",
+  );
 
   // 4. Investigation Engine API Check
   const invRes = runCmd("uv run python -c \"import asyncio, httpx; from app.main import app; r = asyncio.run(httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url='http://test').get('/api/investigation/search')); print('COUNT:', r.json().get('total_count'))\"", path.join(ROOT_DIR, "apps", "api"));

@@ -19,15 +19,15 @@ describe("project-registrar", () => {
         status: 200,
       } as Response);
 
-      const healthy = await checkApiHealth("http://localhost:8000");
+      const healthy = await checkApiHealth("http://localhost:5133");
       expect(healthy).toBe(true);
-      expect(global.fetch).toHaveBeenCalledWith("http://localhost:8000/health", expect.any(Object));
+      expect(global.fetch).toHaveBeenCalledWith("http://localhost:5133/health", expect.any(Object));
     });
 
     it("returns false when health endpoint fails or times out", async () => {
       global.fetch = vi.fn().mockRejectedValue(new Error("Connection refused"));
 
-      const healthy = await checkApiHealth("http://localhost:8000");
+      const healthy = await checkApiHealth("http://localhost:5133");
       expect(healthy).toBe(false);
     });
   });
@@ -49,14 +49,14 @@ describe("project-registrar", () => {
       } as Response);
 
       const result = await ensureProject(
-        "http://localhost:8000",
+        "http://localhost:5133",
         "C:\\Users\\ASUS\\OneDrive\\Desktop\\OneStopAnalytics_Main",
       );
 
       expect(result.id).toBe(mockProject.id);
       expect(result.display_name).toBe("OneStopAnalytics_Main");
       expect(global.fetch).toHaveBeenCalledWith(
-        "http://localhost:8000/api/projects",
+        "http://localhost:5133/api/projects",
         expect.objectContaining({
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -75,7 +75,7 @@ describe("project-registrar", () => {
         text: async () => "Internal server error",
       } as Response);
 
-      await expect(ensureProject("http://localhost:8000", "/fake/root")).rejects.toThrow(
+      await expect(ensureProject("http://localhost:5133", "/fake/root")).rejects.toThrow(
         "API returned HTTP 500",
       );
     });
@@ -112,7 +112,7 @@ describe("project-registrar", () => {
       });
 
       const res = await ensureProjectWithRetry(
-        "http://localhost:8000",
+        "http://localhost:5133",
         "/repo/retry",
         "RetryProject",
         { maxAttempts: 3, initialDelayMs: 10, maxDelayMs: 20 },
@@ -126,7 +126,7 @@ describe("project-registrar", () => {
       global.fetch = vi.fn().mockRejectedValue(new Error("ECONNREFUSED"));
 
       await expect(
-        ensureProjectWithRetry("http://localhost:8000", "/repo/retry", undefined, {
+        ensureProjectWithRetry("http://localhost:5133", "/repo/retry", undefined, {
           maxAttempts: 2,
           initialDelayMs: 10,
           maxDelayMs: 20,

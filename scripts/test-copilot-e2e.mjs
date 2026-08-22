@@ -29,7 +29,7 @@ const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, "..");
 const API_DIR = path.join(ROOT_DIR, "apps", "api");
 
-const API_BASE = process.env.VIBEPULSE_API_URL || "http://127.0.0.1:8000";
+const API_BASE = process.env.VIBEPULSE_API_URL || process.env.API_BASE || "http://127.0.0.1:5133";
 const SECRET_TOKEN = "VIBEPULSE_SPRINT11_SECRET_2026";
 
 let serverProcess = null;
@@ -91,9 +91,10 @@ async function ensureApiRunning() {
   }
 
   log("Starting API server for E2E testing...");
+  const apiPort = new URL(API_BASE).port || "5133";
   serverProcess = spawn(
     "uv",
-    ["run", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", "8000"],
+    ["run", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", apiPort],
     {
       cwd: API_DIR,
       stdio: "pipe",

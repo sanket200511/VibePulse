@@ -23,7 +23,8 @@ import path from "node:path";
 import os from "node:os";
 import crypto from "node:crypto";
 
-const API_BASE = process.env.VIBEPULSE_API_URL || "http://127.0.0.1:8000";
+const API_BASE = process.env.VIBEPULSE_API_URL || process.env.API_BASE || "http://127.0.0.1:5133";
+const DASHBOARD_BASE = process.env.VIBEPULSE_DASHBOARD_URL || "http://localhost:5134";
 const DELAY_MS = process.env.DEMO_SPEED_MS ? parseInt(process.env.DEMO_SPEED_MS, 10) : 1200;
 
 function sleep(ms) {
@@ -91,7 +92,7 @@ async function runDemo() {
     });
     projectId = regRes.data.id;
     console.log(`   [✓] Project registered. ID: ${projectId}`);
-    console.log(`   [✓] Dashboard URL: http://localhost:3000/projects/${projectId}/command-center`);
+    console.log(`   [✓] Dashboard URL: ${DASHBOARD_BASE}/projects/${projectId}/command-center`);
     await sleep(DELAY_MS);
 
     // Initial State Check
@@ -236,7 +237,7 @@ async function runDemo() {
       `   [✓] Project Memory 2.0: Grade ${memRes.data.health_grade} (${memRes.data.overall_health_score}/100) | Focus: ${memRes.data.current_focus}`,
     );
     console.log(
-      `   [✓] Interactive Graph URL: http://localhost:3000/projects/${projectId}/knowledge-graph`,
+      `   [✓] Interactive Graph URL: ${DASHBOARD_BASE}/projects/${projectId}/knowledge-graph`,
     );
     await sleep(DELAY_MS);
 
@@ -270,7 +271,7 @@ async function runDemo() {
     console.log(`   [?] Engineer: "What happened to settings.py?"`);
     console.log(`   [✓] Copilot (${copilotQ3.data.intent}): ${copilotQ3.data.summary}`);
     console.log(
-      `   [✓] Interactive Copilot URL: http://localhost:3000/projects/${projectId}/copilot`,
+      `   [✓] Interactive Copilot URL: ${DASHBOARD_BASE}/projects/${projectId}/copilot`,
     );
     await sleep(DELAY_MS);
 

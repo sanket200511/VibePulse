@@ -94,7 +94,7 @@ pnpm --filter @vibepulse/dashboard dev
 
 ```bash
 cd apps/api
-uv run uvicorn app.main:app --reload --port 8080
+uv run uvicorn app.main:app --reload --port 5133
 ```
 
 **Terminal 3 (Daemon):**
@@ -105,15 +105,15 @@ pnpm --filter @vibepulse/daemon dev
 
 You should see:
 
-1. **Dashboard**: `http://localhost:3000` (React/Vite)
-2. **API**: `http://localhost:8080` (FastAPI)
-3. **Daemon**: `http://localhost:9000/health` (Node.js observer)
+1. **Dashboard**: `http://localhost:5134` (React/Vite)
+2. **API**: `http://localhost:5133` (FastAPI)
+3. **Daemon**: `http://localhost:5135/health` (Node.js observer)
 
 ---
 
 ## Troubleshooting
 
-### Port 3000 / 8080 is already in use
+### Port 5133 / 5134 / 5135 is already in use
 
 If you encounter `EACCES` or `EADDRINUSE` errors, ensure no other Vite or Uvicorn servers are running.
 

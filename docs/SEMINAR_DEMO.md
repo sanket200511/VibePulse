@@ -15,9 +15,9 @@ node scripts/seminar-doctor.mjs
 [PASS] [✓] Python / uv Toolchain
 [PASS] [✓] PostgreSQL Server (:5432)
 [PASS] [✓] PostgreSQL Schema & Redis Cloud (Connected & Configured)
-[PASS] [✓] FastAPI Backend (:8000)
-[PASS] [✓] React/Vite Dashboard (:3000)
-[PASS] [✓] Telemetry Daemon (:9000)
+[PASS] [✓] FastAPI Backend (:5133)
+[PASS] [✓] React/Vite Dashboard (:5134)
+[PASS] [✓] Telemetry Daemon (:5135)
 [PASS] [✓] Investigation Engine API (/api/investigation/search)
 [PASS] [✓] Security Guardian AST & SEC001 Regex Engine
 [PASS] [✓] Project Registration & Persistence API (/api/projects)
@@ -33,14 +33,14 @@ node scripts/seminar-doctor.mjs
 ```bash
 pnpm dev:seminar
 ```
-*Launches the resilient supervisor with PostgreSQL health gate, backend readiness check, live telemetry daemon, and dashboard on `http://localhost:3000` with automated health-recovery.*
+*Launches the resilient supervisor with PostgreSQL health gate, backend readiness check, live telemetry daemon, and dashboard on `http://localhost:5134` with automated health-recovery.*
 
 ---
 
 ## Timed 5-Minute Demonstration Runbook
 
 ### **00:00 — 00:30 | Workspace Home & Live Observation**
-- **Action**: Open browser at `http://localhost:3000`.
+- **Action**: Open browser at `http://localhost:5134`.
 - **Narration**:
   > *"Judges, VibePulse is a real-time developer observability and security intelligence platform. It runs quietly in the background alongside the developer, observing file mutations, active sessions, and security posture in real time."*
 - **Visuals**:
@@ -79,7 +79,7 @@ pnpm dev:seminar
 ---
 
 ### **02:00 — 03:00 | Investigation Command Center & Dynamic Evidence Graph**
-- **Action**: Navigate to `http://localhost:3000/investigation`.
+- **Action**: Navigate to `http://localhost:5134/investigation`.
 - **Narration**:
   > *"Instead of an ordinary flat log list, VibePulse reconstructs the complete incident as a causal Directed Acyclic Graph."*
 - **Visuals**:
@@ -119,7 +119,7 @@ pnpm dev:seminar
   1. Click **Mark as Reviewed** (badge transitions to green `✓ Reviewed`).
   2. Kill the terminal process running the stack (Ctrl+C).
   3. Start again with `pnpm dev:seminar`.
-  4. Refresh `http://localhost:3000/investigation` and `http://localhost:3000/history`.
+  4. Refresh `http://localhost:5134/investigation` and `http://localhost:5134/history`.
 - **Narration**:
   > *"If the daemon or entire development environment restarts, PostgreSQL remains the durable source of truth. Previous sessions and security investigations are permanently preserved, and a clean new session begins automatically."*
 - **Visuals**:
@@ -137,18 +137,18 @@ pnpm dev:seminar
 ## Fail-Safe Emergency Recovery Steps
 
 1. **If dashboard shows Disconnected**:
-   - Check if daemon is running on `:9000`:
+   - Check if daemon is running on `:5135`:
      ```bash
-     curl http://localhost:9000/health
+     curl http://localhost:5135/health
      ```
 2. **If backend database connection is interrupted**:
    - Confirm PostgreSQL is active on port 5432:
      ```bash
      node scripts/seminar-doctor.mjs
      ```
-3. **If port 3000 or 8000 is occupied by an old orphaned node process**:
-   - Kill lingering background processes:
+3. **If port 5133, 5134 or 5135 is occupied by an old orphaned process**:
+   - Check and release ports with `pnpm doctor` or:
      ```powershell
-     Stop-Process -Name "node", "uvicorn" -Force -ErrorAction SilentlyContinue
+     Get-NetTCPConnection -LocalPort 5133,5134,5135 -ErrorAction SilentlyContinue | Select-Object LocalPort,OwningProcess
      ```
    - Restart cleanly with `pnpm dev:seminar`.

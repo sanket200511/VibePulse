@@ -17,7 +17,7 @@ import path from "node:path";
 import os from "node:os";
 import crypto from "node:crypto";
 
-const API_BASE = process.env.API_BASE || "http://127.0.0.1:8000";
+const API_BASE = process.env.VIBEPULSE_API_URL || process.env.API_BASE || "http://127.0.0.1:5133";
 const SYNTHETIC_SECRET = "VIBEPULSE_AUDIT_SYNTHETIC_KEY_9999";
 const SYNTHETIC_STRIPE = "sk_live_99887766554433221100aabb";
 
