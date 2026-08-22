@@ -522,7 +522,17 @@ def _to_read_schema(row: ProjectContext, project: Project) -> ProjectContextRead
     arch_signals = arch.get("architecture_signals", [])
     heatmap = act.get("activity_heatmap", [])
     rankings = act.get("file_rankings", [])
-    focus = act.get("development_focus", {})
+    focus_raw = act.get("development_focus")
+    if isinstance(focus_raw, dict) and focus_raw.get("focus"):
+        focus = focus_raw
+    else:
+        focus = {
+            "focus": "Insufficient History",
+            "classification": "UNKNOWN",
+            "confidence_reason": "Insufficient observed history to determine focus.",
+            "evidence_summary": [],
+            "active_window": "Initial",
+        }
     git_intel = git.get("git_intelligence", {})
 
     return ProjectContextRead.model_validate(

@@ -112,11 +112,11 @@ class FileActivityRanking(BaseModel):
 class DevelopmentFocusDetail(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    focus: str
-    classification: str = "INFERRED"
-    confidence_reason: str = ""
+    focus: str = "Insufficient History"
+    classification: str = "UNKNOWN"
+    confidence_reason: str = "Insufficient observed history to determine focus."
     evidence_summary: list[str] = Field(default_factory=list)
-    active_window: str = "Last 7 days"
+    active_window: str = "Initial"
 
 
 class ArchitectureSignalDetail(BaseModel):
