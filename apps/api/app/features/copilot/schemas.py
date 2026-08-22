@@ -24,7 +24,10 @@ CopilotIntent = Literal[
     "PROJECT_OVERVIEW",
     "PROJECT_HEALTH",
     "SECURITY",
+    "PRIORITY",
     "INCIDENT",
+    "INCIDENT_CAUSE",
+    "INCIDENT_CRITICALITY",
     "FILE",
     "SUBSYSTEM",
     "PREDICTION",
@@ -32,6 +35,7 @@ CopilotIntent = Literal[
     "KNOWLEDGE_GRAPH",
     "ENGINEERING_ACTIVITY",
     "EVIDENCE",
+    "AI_HANDOFF",
     "UNKNOWN",
 ]
 
@@ -80,6 +84,8 @@ class CopilotRecommendation(BaseModel):
         "REMEDIATE_SECURITY",
         "REVIEW_HOTSPOT",
         "PREVENT_REGRESSION",
+        "REVIEW_PRIORITY",
+        "MITIGATE_PREDICTION",
     ]
     target_entity: str | None = None
     deep_link_url: str | None = None
@@ -158,5 +164,7 @@ class CopilotSuggestion(BaseModel):
         "GENERAL",
     ]
     question: str
+    intent: CopilotIntent | None = None
     rationale: str
+    badge: str | None = None
     priority_level: Literal["HIGH", "MEDIUM", "LOW"] = "MEDIUM"

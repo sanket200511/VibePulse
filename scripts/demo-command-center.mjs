@@ -259,20 +259,26 @@ async function runDemo() {
     );
 
     const copilotQ2 = await request("POST", `/api/projects/${projectId}/copilot/query`, {
+      query: "Why is this incident critical?",
+    });
+    console.log(`   [?] Engineer: "Why is this incident critical?"`);
+    console.log(`   [✓] Copilot (${copilotQ2.data.intent}): ${copilotQ2.data.summary}`);
+
+    const copilotQ3 = await request("POST", `/api/projects/${projectId}/copilot/query`, {
       query: "What happened to settings.py?",
     });
     console.log(`   [?] Engineer: "What happened to settings.py?"`);
-    console.log(`   [✓] Copilot (${copilotQ2.data.intent}): ${copilotQ2.data.summary}`);
+    console.log(`   [✓] Copilot (${copilotQ3.data.intent}): ${copilotQ3.data.summary}`);
     console.log(
       `   [✓] Interactive Copilot URL: http://localhost:3000/projects/${projectId}/copilot`,
     );
     await sleep(DELAY_MS);
 
-    // Engineer Resolves
+    // Engineer Resolves Issue (RESOLVE & LEARN)
     step(
       8,
-      "RESOLVE & LEARN: Engineer Triage",
-      "Engineer externalizes secret into environment variable",
+      "RESOLVE & LEARN: Engineer Triage & Audit History",
+      "Engineer externalizes secret and records resolution audit note",
     );
     fs.writeFileSync(sPath, 'DEBUG = False\nSTRIPE_SECRET = os.environ.get("STRIPE_SECRET")\n');
     await request("POST", "/events", {
@@ -290,6 +296,22 @@ async function runDemo() {
       },
     });
     console.log("   [✓] Remediated source code committed.");
+
+    // Update incident review status in DB
+    const incId = secExp.data?.correlated_incident?.incident_id || "cb6e98a974fb";
+    await request("POST", `/api/projects/${projectId}/investigations/${incId}/review`, {
+      status: "RESOLVED",
+      reviewer: "lead-security-engineer",
+      resolution_note: "Secret externalized to os.environ and verified with AST guardrail",
+    });
+    console.log(`   [✓] Incident ${incId} resolved and audit history recorded.`);
+
+    // Ask Copilot about resolution
+    const copilotQ4 = await request("POST", `/api/projects/${projectId}/copilot/query`, {
+      query: "How was this incident resolved?",
+    });
+    console.log(`   [?] Engineer: "How was this incident resolved?"`);
+    console.log(`   [✓] Copilot (${copilotQ4.data.intent}): ${copilotQ4.data.summary}`);
     await sleep(DELAY_MS);
 
     // Reconstructibility check

@@ -4,7 +4,10 @@ export type CopilotIntent =
   | "PROJECT_OVERVIEW"
   | "PROJECT_HEALTH"
   | "SECURITY"
+  | "PRIORITY"
   | "INCIDENT"
+  | "INCIDENT_CAUSE"
+  | "INCIDENT_CRITICALITY"
   | "FILE"
   | "SUBSYSTEM"
   | "PREDICTION"
@@ -12,6 +15,7 @@ export type CopilotIntent =
   | "KNOWLEDGE_GRAPH"
   | "ENGINEERING_ACTIVITY"
   | "EVIDENCE"
+  | "AI_HANDOFF"
   | "UNKNOWN";
 
 export interface CopilotFactItem {
@@ -50,7 +54,9 @@ export interface CopilotRecommendation {
     | "KNOWLEDGE_GRAPH"
     | "REMEDIATE_SECURITY"
     | "REVIEW_HOTSPOT"
-    | "PREVENT_REGRESSION";
+    | "PREVENT_REGRESSION"
+    | "REVIEW_PRIORITY"
+    | "MITIGATE_PREDICTION";
   target_entity?: string | null;
   deep_link_url?: string | null;
 }
@@ -111,6 +117,8 @@ export interface CopilotSuggestion {
     | "KNOWLEDGE_GRAPH"
     | "GENERAL";
   question: string;
+  intent?: CopilotIntent | null;
   rationale: string;
+  badge?: string | null;
   priority_level: "HIGH" | "MEDIUM" | "LOW";
 }

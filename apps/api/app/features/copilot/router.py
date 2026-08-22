@@ -46,8 +46,7 @@ async def query_copilot_endpoint(
         return await service.query_copilot(
             db,
             project_id,
-            payload.query,
-            include_raw_context=payload.include_raw_context,
+            payload,
         )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e

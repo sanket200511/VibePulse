@@ -1,8 +1,9 @@
 """
-Deterministic Query Classifier.
+Deterministic Query Classifier (Sprint 12 Hardened).
 
-Classifies natural engineering queries into 12 canonical intents and extracts
-target entity tokens (file paths, rule IDs, incident IDs, subsystem names).
+Classifies natural engineering query families into canonical CopilotIntents
+and extracts target entity tokens (file paths, rule IDs, incident IDs, subsystems).
+Strictly identifies out-of-scope questions without hallucination.
 """
 
 from __future__ import annotations
@@ -79,9 +80,25 @@ def classify_query(query: str) -> ClassificationResult:
             if canon not in entities:
                 entities.append(canon)
 
-    # ── DETERMINISTIC INTENT MATCHING RULES ───────────────────────────────────
+    # ── 0. OUT-OF-SCOPE / UNSUPPORTED QUERY DETECTION ─────────────────────────
+    out_of_scope_patterns = (
+        r"\b(?:bitcoin|btc|crypto|ethereum|stock|price|market\s+cap)\b",
+        r"\b(?:weather|temperature|forecast\s+tomorrow|rain|sunny)\b",
+        r"\b(?:election|president|prime\s+minister|vote|politics|democrat|republican)\b",
+        r"\b(?:private\s+email|personal\s+chat|gmail|inbox|ceo\s+of|sports|football|basketball)\b",
+    )
+    for pat in out_of_scope_patterns:
+        if re.search(pat, q_low):
+            return ClassificationResult(
+                intent="UNKNOWN",
+                target_entities=entities,
+                confidence_score=0.0,
+                rationale="Query is outside observed engineering telemetry domain.",
+            )
 
-    # Rule A: Evidence / Explanation ("Why does VibePulse believe this?")
+    # ── 1. CANONICAL INTENT CLASSIFICATION RULES ──────────────────────────────
+
+    # A. Evidence / Explanation ("Why does VibePulse believe this?")
     if any(
         k in q_low
         for k in (
@@ -103,7 +120,62 @@ def classify_query(query: str) -> ClassificationResult:
             rationale="Query asks for causal evidence or score decomposition explanation.",
         )
 
-    # Rule B: Knowledge Graph / Relationships ("What is connected to auth.py?")
+    # B. AI Handoff Generation ("Generate an AI handoff for this project")
+    if any(
+        k in q_low
+        for k in (
+            "generate an ai handoff",
+            "ai handoff",
+            "handoff context",
+            "export context",
+            "generate project context",
+            "handoff guidance",
+        )
+    ):
+        return ClassificationResult(
+            intent="AI_HANDOFF",
+            target_entities=entities,
+            confidence_score=1.0,
+            rationale="Query requests full AI handoff artifact and project memory package.",
+        )
+
+    # C. Incident Criticality & Root Causes ("Why was this incident classified as critical?")
+    if any(
+        k in q_low
+        for k in (
+            "classified as critical",
+            "why is this incident critical",
+            "why critical",
+            "criticality",
+            "severity of incident",
+        )
+    ):
+        return ClassificationResult(
+            intent="INCIDENT_CRITICALITY",
+            target_entities=entities,
+            confidence_score=1.0,
+            rationale="Query asks about incident severity classification and risk calculation.",
+        )
+
+    if any(
+        k in q_low
+        for k in (
+            "what caused this incident",
+            "root cause of incident",
+            "what caused incident",
+            "why was this incident created",
+            "incident created",
+            "cause of incident",
+        )
+    ):
+        return ClassificationResult(
+            intent="INCIDENT_CAUSE",
+            target_entities=entities,
+            confidence_score=1.0,
+            rationale="Query asks for root cause telemetry that triggered incident.",
+        )
+
+    # D. Knowledge Graph / Relationships ("What is connected to auth.py?")
     if any(
         k in q_low
         for k in (
@@ -124,10 +196,12 @@ def classify_query(query: str) -> ClassificationResult:
             rationale="Query asks for relational connections and graph traversal.",
         )
 
-    # Rule C: Predictions / Forecasts ("What might go wrong next?")
+    # E. Predictions / Forecasts ("What should we watch next?", "What might go wrong next?")
     if any(
         k in q_low
         for k in (
+            "what should we watch next",
+            "watch next",
             "what might go wrong",
             "what could become a problem",
             "likely to become a problem",
@@ -147,7 +221,7 @@ def classify_query(query: str) -> ClassificationResult:
             rationale="Query asks for predictive engineering forecasts and future risk.",
         )
 
-    # Rule D: Priorities / Fix first ("What should I fix first?")
+    # F. Priorities / Next Action ("What should I fix first?")
     if any(
         k in q_low
         for k in (
@@ -155,6 +229,7 @@ def classify_query(query: str) -> ClassificationResult:
             "fix first",
             "what to fix first",
             "what should i do next",
+            "what to do next",
             "top priority",
             "priorities",
             "highest priority",
@@ -162,96 +237,18 @@ def classify_query(query: str) -> ClassificationResult:
         )
     ):
         return ClassificationResult(
-            intent="PROJECT_HEALTH",
+            intent="PRIORITY",
             target_entities=entities,
             confidence_score=1.0,
             rationale="Query asks for prioritized remediation guidance.",
         )
 
-    # Rule E: Specific File Query ("What happened to auth.py?")
-    if len(file_matches) > 0 and any(
-        k in q_low
-        for k in (
-            "what happened to",
-            "tell me about",
-            "status of",
-            "changes in",
-            "history of",
-            "who touched",
-            "file",
-        )
-    ):
-        return ClassificationResult(
-            intent="FILE",
-            target_entities=entities,
-            confidence_score=1.0,
-            rationale=f"Query directly targets file entity {file_matches[0]}.",
-        )
-
-    # Rule F: Specific Incident Query ("Why was this incident created?")
-    if len(inc_matches) > 0 or any(
-        k in q_low
-        for k in (
-            "why was this incident created",
-            "incident created",
-            "tell me about incident",
-            "incident details",
-            "correlated incident",
-            "root cause of incident",
-        )
-    ):
-        return ClassificationResult(
-            intent="INCIDENT",
-            target_entities=entities,
-            confidence_score=1.0,
-            rationale="Query focuses on incident correlation and investigation narrative.",
-        )
-
-    # Rule G: Security Query ("What security issues keep recurring?")
-    if len(rule_matches) > 0 or any(
-        k in q_low
-        for k in (
-            "security",
-            "secret",
-            "credential",
-            "vulnerability",
-            "ast rule",
-            "sec001",
-            "recurring security",
-            "security issues",
-            "unmitigated",
-            "attack surface",
-        )
-    ):
-        return ClassificationResult(
-            intent="SECURITY",
-            target_entities=entities,
-            confidence_score=1.0,
-            rationale="Query investigates security posture, findings, or recurring rules.",
-        )
-
-    # Rule H: Subsystem Pressure / Health ("Which subsystem is under pressure?")
+    # G. Resolution & Audit History ("How was this incident resolved?")
     if any(
         k in q_low
         for k in (
-            "which subsystem",
-            "subsystem pressure",
-            "subsystems",
-            "subsystem is under",
-            "subsystem health",
-        )
-    ) or (len(entities) > 0 and entities[0] in subsystem_keywords.values()):
-        return ClassificationResult(
-            intent="SUBSYSTEM",
-            target_entities=entities,
-            confidence_score=0.95,
-            rationale="Query asks about subsystem health and activity pressure.",
-        )
-
-    # Rule I: Resolution / Triage History ("What was resolved recently?")
-    if any(
-        k in q_low
-        for k in (
+            "how was this incident resolved",
+            "how was incident resolved",
             "what was resolved",
             "resolved recently",
             "recent resolutions",
@@ -268,14 +265,106 @@ def classify_query(query: str) -> ClassificationResult:
             rationale="Query asks about incident resolution and triage history.",
         )
 
-    # Rule J: Engineering Activity ("What changed recently?")
+    # H. Active / Unresolved Incidents ("What incidents are currently unresolved?")
+    if (
+        any(
+            k in q_low
+            for k in (
+                "unresolved incidents",
+                "open incidents",
+                "active incidents",
+                "incidents are currently unresolved",
+                "what incidents",
+                "tell me about incident",
+                "incident details",
+            )
+        )
+        or len(inc_matches) > 0
+    ):
+        return ClassificationResult(
+            intent="INCIDENT",
+            target_entities=entities,
+            confidence_score=1.0,
+            rationale="Query focuses on active security incidents and correlation.",
+        )
+
+    # I. Specific File Query ("What happened to auth.py?", "What changed in auth.py?")
+    if len(file_matches) > 0 and any(
+        k in q_low
+        for k in (
+            "what changed in",
+            "what happened to",
+            "tell me about",
+            "status of",
+            "changes in",
+            "history of",
+            "who touched",
+            "file",
+        )
+    ):
+        return ClassificationResult(
+            intent="FILE",
+            target_entities=entities,
+            confidence_score=1.0,
+            rationale=f"Query directly targets file entity {file_matches[0]}.",
+        )
+
+    # J. Security Problems & Recurring Rules ("What security problems do we currently have?")
+    if len(rule_matches) > 0 or any(
+        k in q_low
+        for k in (
+            "security problems",
+            "security issues",
+            "security findings",
+            "keep recurring",
+            "recurring security",
+            "recurring findings",
+            "vulnerability",
+            "secret",
+            "credential",
+            "ast rule",
+            "sec001",
+            "unmitigated",
+            "attack surface",
+            "security posture",
+        )
+    ):
+        return ClassificationResult(
+            intent="SECURITY",
+            target_entities=entities,
+            confidence_score=1.0,
+            rationale="Query investigates security posture, findings, or recurring rules.",
+        )
+
+    # K. Subsystem Pressure / Health ("Which subsystem is under pressure?")
     if any(
         k in q_low
         for k in (
+            "which subsystem",
+            "subsystem pressure",
+            "subsystem is under",
+            "subsystem health",
+            "subsystems",
+        )
+    ) or (len(entities) > 0 and entities[0] in subsystem_keywords.values()):
+        return ClassificationResult(
+            intent="SUBSYSTEM",
+            target_entities=entities,
+            confidence_score=0.95,
+            rationale="Query asks about subsystem health and activity pressure.",
+        )
+
+    # L. Activity / Most active files ("What happened recently?")
+    if any(
+        k in q_low
+        for k in (
+            "what happened recently",
             "what changed recently",
             "recent changes",
-            "what happened recently",
             "recent activity",
+            "most activity",
+            "causing the most activity",
+            "most active files",
             "development activity",
             "sessions",
             "coding velocity",
@@ -288,10 +377,13 @@ def classify_query(query: str) -> ClassificationResult:
             rationale="Query asks for chronological engineering telemetry and sessions.",
         )
 
-    # Rule K: Project Health / Risk ("Why is this project unhealthy?")
+    # M. Project Health ("What is the current health of this project?")
     if any(
         k in q_low
         for k in (
+            "current health",
+            "health of this project",
+            "how healthy",
             "unhealthy",
             "healthy",
             "health score",
@@ -310,10 +402,11 @@ def classify_query(query: str) -> ClassificationResult:
             rationale="Query asks about project health score and risk posture.",
         )
 
-    # Rule L: Project Overview ("What does VibePulse know about this project?")
+    # N. Project Overview ("What do we know about this project?")
     if any(
         k in q_low
         for k in (
+            "what do we know about this project",
             "what does vibepulse know",
             "what do you know",
             "what does vibepulse not know",
