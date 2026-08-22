@@ -1,18 +1,51 @@
+# VibePulse System Architecture Diagram
+
 ```mermaid
-architecture-beta
-    group observer(cloud)[Developer Laptop]
-    service ide(server)[IDE / Filesystem] in observer
-    service daemon(server)[Node.js Daemon] in observer
+flowchart TB
+    subgraph ClientTier ["Client Tier (Browser)"]
+        CC["Engineering Command Center (React/Vite)"]
+        CopilotUI["AI Copilot Mini-Console"]
+        KGViewer["Knowledge Graph Explorer"]
+        EvidenceUI["Universal Evidence Inspector"]
+    end
 
-    group backend(cloud)[VibePulse API Server]
-    service api(server)[FastAPI Backend] in backend
-    service db(database)[PostgreSQL] in backend
+    subgraph DaemonTier ["Observation Tier (Developer Workstation)"]
+        FS["Physical Repository Filesystem"]
+        Watcher["Chokidar File Watcher"]
+        Hasher["SHA-256 Hash & Diff Extractor"]
+        Pub["HTTP Event Publisher"]
+        
+        FS -->|Raw File I/O| Watcher
+        Watcher --> Hasher
+        Hasher --> Pub
+    end
 
-    group client(cloud)[Browser]
-    service ui(server)[React Dashboard] in client
+    subgraph BackendTier ["Intelligence Core (FastAPI / Python 3.12)"]
+        Router["REST & WebSocket Endpoints"]
+        AST["Static AST & Security Engine (Tree-Sitter)"]
+        HealthSvc["Unified Health & Priority Orchestrator"]
+        PredSvc["Predictive Risk & Hotspot Engine"]
+        KGSvc["Knowledge Graph & Memory Engine"]
+        CopilotSvc["Deterministic Copilot Synthesizer"]
+        
+        Router --> AST
+        Router --> HealthSvc
+        Router --> PredSvc
+        Router --> KGSvc
+        Router --> CopilotSvc
+    end
 
-    ide:R --> L:daemon
-    daemon:R --> L:api
-    api:R --> L:db
-    api:B --> T:ui
+    subgraph StorageTier ["Canonical Ground Truth (PostgreSQL 16)"]
+        DB_Events[("development_events")]
+        DB_Sessions[("sessions")]
+        DB_Analyses[("event_analyses")]
+        DB_Reviews[("incident_review_states")]
+        DB_History[("incident_review_history")]
+        DB_Contexts[("project_contexts")]
+        DB_Projects[("projects")]
+    end
+
+    Pub -->|POST /events| Router
+    BackendTier <--> StorageTier
+    CC <-->|WebSocket Stream / REST| Router
 ```
