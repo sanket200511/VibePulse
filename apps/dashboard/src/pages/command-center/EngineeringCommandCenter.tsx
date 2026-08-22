@@ -1,6 +1,16 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Activity, ArrowLeft, RotateCcw, Wifi, WifiOff, Flame, Layers, Search } from "lucide-react";
+import {
+  Activity,
+  ArrowLeft,
+  RotateCcw,
+  Wifi,
+  WifiOff,
+  Flame,
+  Layers,
+  Search,
+  Bot,
+} from "lucide-react";
 import { Badge } from "@vibepulse/ui";
 import { useQuery } from "@tanstack/react-query";
 import { getApiBaseUrl } from "../../lib/api-config";
@@ -99,6 +109,13 @@ export function EngineeringCommandCenter() {
               <RotateCcw className="h-3.5 w-3.5 text-indigo-400" />
               Sync State
             </button>
+            <Link
+              to={`/projects/${projectId}/copilot`}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-500/40 bg-indigo-600/20 px-3 py-1.5 text-xs font-semibold text-indigo-300 shadow-sm transition hover:bg-indigo-600/30"
+            >
+              <Bot className="h-3.5 w-3.5 text-indigo-400" />
+              AI Copilot
+            </Link>
             <Link
               to={`/projects/${projectId}/knowledge-graph`}
               className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-3 py-1.5 text-xs font-semibold text-indigo-300 transition hover:bg-indigo-500/20"

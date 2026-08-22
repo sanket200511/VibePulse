@@ -83,16 +83,28 @@ $$\mathbf{OBSERVE \longrightarrow DETECT \longrightarrow INVESTIGATE \longrighta
    - Multi-Entity Search: Type `auth` or `jwt` to traverse connected components across files and rules.
    - Project Memory 2.0 Export: Review Section 20 of `PROJECT_CONTEXT.md` for AI handoffs.
 
-### Step 7: Engineer Resolves Issue (RESOLVE & LEARN)
+### Step 7: AI Engineering Copilot ("Ask VibePulse Anything — Zero Hallucination")
+
+1. Click **`[AI Copilot]`** in the top navigation or navigate to `/projects/:id/copilot`.
+2. Click dynamic suggestion: _"What should I fix first?"_
+   - Immediate deterministic synthesis of Priority #1.
+   - 3-column factual decomposition: `[OBSERVED]`, `[INFERRED]`, `[UNKNOWN]`.
+   - Click `[Why?]` to open the Universal Evidence Inspector directly from Copilot facts.
+3. Ask custom question: _"What happened to settings.py?"_
+   - File-grounded AST findings and event chronology returned instantly.
+4. Ask out-of-scope question: _"Who is the CEO of Google?"_
+   - Answerability gate triggers (`answerable: false`, `evidence_strength: INSUFFICIENT`), explaining telemetry boundaries without guessing.
+
+### Step 8: Engineer Resolves Issue (RESOLVE & LEARN)
 
 1. Developer externalizes secret into environment variable.
 2. Human records resolution note in review state audit history.
 3. Project Health score recovers and priority item is cleared.
 
-### Step 8: 100% Deterministic Reconstructibility Proof ($A \equiv B$)
+### Step 9: 100% Deterministic Reconstructibility Proof ($A \equiv B$)
 
-1. Click `[Refresh Projection]` or trigger `POST /api/projects/:id/knowledge-graph/refresh`.
-2. Demonstrate that health scores, knowledge graph nodes, and priorities match the PostgreSQL ground truth identically.
+1. Click `[Refresh Projection]` or trigger `POST /api/projects/:id/health/refresh`.
+2. Demonstrate that health scores, knowledge graph nodes, and copilot responses match the PostgreSQL ground truth identically.
 
 ---
 

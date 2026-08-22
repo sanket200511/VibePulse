@@ -240,9 +240,37 @@ async function runDemo() {
     );
     await sleep(DELAY_MS);
 
-    // Engineer Resolves
+    // AI Engineering Copilot Foundation Drill-Down
     step(
       7,
+      "AI ENGINEERING COPILOT: Ask VibePulse Anything (Zero Hallucination)",
+      "Asking grounded engineering queries with tri-state factual decomposition",
+    );
+    const copilotQ1 = await request("POST", `/api/projects/${projectId}/copilot/query`, {
+      query: "What should I fix first?",
+    });
+    console.log(`   [?] Engineer: "What should I fix first?"`);
+    console.log(`   [✓] Copilot (${copilotQ1.data.intent}): ${copilotQ1.data.summary}`);
+    if (copilotQ1.data.recommendations.length > 0) {
+      console.log(`       ↳ Recommendation: ${copilotQ1.data.recommendations[0].title}`);
+    }
+    console.log(
+      `       ↳ Facts: ${copilotQ1.data.observed.length} [OBSERVED], ${copilotQ1.data.inferred.length} [INFERRED], ${copilotQ1.data.unknown.length} [UNKNOWN]`,
+    );
+
+    const copilotQ2 = await request("POST", `/api/projects/${projectId}/copilot/query`, {
+      query: "What happened to settings.py?",
+    });
+    console.log(`   [?] Engineer: "What happened to settings.py?"`);
+    console.log(`   [✓] Copilot (${copilotQ2.data.intent}): ${copilotQ2.data.summary}`);
+    console.log(
+      `   [✓] Interactive Copilot URL: http://localhost:3000/projects/${projectId}/copilot`,
+    );
+    await sleep(DELAY_MS);
+
+    // Engineer Resolves
+    step(
+      8,
       "RESOLVE & LEARN: Engineer Triage",
       "Engineer externalizes secret into environment variable",
     );
@@ -265,7 +293,7 @@ async function runDemo() {
     await sleep(DELAY_MS);
 
     // Reconstructibility check
-    step(8, "RECONSTRUCTIBILITY AUDIT", "Verifying Result A == Result B from canonical PostgreSQL");
+    step(9, "RECONSTRUCTIBILITY AUDIT", "Verifying Result A == Result B from canonical PostgreSQL");
     const refRes = await request("POST", `/api/projects/${projectId}/health/refresh`);
     console.log(
       `   [✓] Reconstructed Score: ${refRes.data.overall_health_score}/100 ($A \\equiv B$)`,
@@ -273,9 +301,9 @@ async function runDemo() {
     await sleep(DELAY_MS);
 
     banner("DEMONSTRATION COMPLETED SUCCESSFULLY");
-    console.log("All 9 intelligence stages observed, synthesized, and verified in real time.\n");
+    console.log("All 10 intelligence stages observed, synthesized, and verified in real time.\n");
   } finally {
-    step(8, "TEARDOWN", "Cleaning up disposable demonstration artifacts");
+    step(10, "TEARDOWN", "Cleaning up disposable demonstration artifacts");
     try {
       if (projectId) {
         await request("POST", "/events", {

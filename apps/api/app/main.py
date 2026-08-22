@@ -197,6 +197,9 @@ def create_app() -> FastAPI:
     from app.features.knowledge_graph.router import router as knowledge_graph_router
 
     app.include_router(knowledge_graph_router)
+    from app.features.copilot.router import router as copilot_router
+
+    app.include_router(copilot_router)
 
     return app
 
