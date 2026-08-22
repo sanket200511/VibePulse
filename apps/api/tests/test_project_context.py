@@ -271,3 +271,29 @@ async def test_export_project_context_markdown(client: AsyncClient):
     # Verify secret is strictly redacted
     assert "ghp_123456789012345678901234567890123456" not in md_text
     assert "[REDACTED]" in md_text
+
+
+@pytest.mark.asyncio
+async def test_project_context_legacy_empty_dict_focus_resilience(client: AsyncClient):
+    """
+    Regression test for production bug:
+    Validates that if PostgreSQL contains an unpopulated or legacy development_focus={},
+    _to_read_schema and ProjectContextRead deserializer gracefully return
+    classification='UNKNOWN' and focus='Insufficient History' instead of raising ValidationError.
+    """
+    root_path = rf"D:\Test-Projects\LegacyFocus-{uuid.uuid4().hex[:8]}"
+    p_res = await client.post(
+        "/api/projects", json={"root_path": root_path, "display_name": "Legacy-Focus-App"}
+    )
+    assert p_res.status_code == 200
+    p_id = p_res.json()["id"]
+
+    # Fetch context (which creates initial row with default values)
+    ctx_res = await client.get(f"/api/projects/{p_id}/context")
+    assert ctx_res.status_code == 200
+    ctx = ctx_res.json()
+
+    assert "development_focus" in ctx
+    assert ctx["development_focus"]["focus"] == "Insufficient History"
+    assert ctx["development_focus"]["classification"] == "UNKNOWN"
+    assert ctx["development_focus"]["confidence_reason"] != ""
