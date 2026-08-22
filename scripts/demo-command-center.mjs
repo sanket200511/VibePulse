@@ -338,7 +338,7 @@ async function runDemo() {
           file_extension: ".py",
           metadata: {},
         });
-        await request("DELETE", `/api/projects/${projectId}`);
+        await request("DELETE", `/api/projects/${projectId}?force=true`);
       }
       fs.rmSync(tempDir, { recursive: true, force: true });
       console.log("   [✓] Demo resources cleanly removed.");

@@ -157,12 +157,12 @@ async function runSecurityAudit() {
       allPassed ? "✅ FORENSIC SECURITY AUDIT: ALL SURFACES VERIFIED SAFE!" : "❌ AUDIT FAILED!",
     );
 
-    // Clean up projects
-    await request("DELETE", `/api/projects/${projA}`);
-    await request("DELETE", `/api/projects/${projB}`);
-
     if (!allPassed) process.exit(1);
   } finally {
+    try {
+      if (projA) await request("DELETE", `/api/projects/${projA}?force=true`);
+      if (projB) await request("DELETE", `/api/projects/${projB}?force=true`);
+    } catch {}
     fs.rmSync(tmpRootA, { recursive: true, force: true });
     fs.rmSync(tmpRootB, { recursive: true, force: true });
   }

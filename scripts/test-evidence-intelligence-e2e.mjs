@@ -236,10 +236,10 @@ async function run() {
     log("Step 9: Cleaning up test projects...");
     try {
       if (projAId) {
-        await request("DELETE", `/api/projects/${projAId}`);
+        await request("DELETE", `/api/projects/${projAId}?force=true`);
       }
       if (projBId) {
-        await request("DELETE", `/api/projects/${projBId}`);
+        await request("DELETE", `/api/projects/${projBId}?force=true`);
       }
     } catch {
       // Best effort cleanup

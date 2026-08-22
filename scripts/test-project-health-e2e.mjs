@@ -299,16 +299,10 @@ async function run() {
     log("Step 10: Cleaning up test projects...");
     try {
       if (projAId) {
-        await request("POST", "/events", {
-          id: crypto.randomUUID(),
-          project_root: tempDirA,
-          event_type: "OBSERVATION_STOPPED",
-          file_path: "src/auth/login.py",
-        });
-        await request("DELETE", `/api/projects/${projAId}`);
+        await request("DELETE", `/api/projects/${projAId}?force=true`);
       }
       if (projBId) {
-        await request("DELETE", `/api/projects/${projBId}`);
+        await request("DELETE", `/api/projects/${projBId}?force=true`);
       }
     } catch {
       // Best effort cleanup

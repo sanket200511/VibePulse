@@ -145,10 +145,12 @@ async function benchmark() {
         Status: r.latencyMs < 500 ? "⚡ FAST (<500ms)" : "OK",
       })),
     );
-
-    // Teardown
-    await request("DELETE", `/api/projects/${projectId}`);
   } finally {
+    if (projectId) {
+      try {
+        await request("DELETE", `/api/projects/${projectId}?force=true`);
+      } catch {}
+    }
     fs.rmSync(tmpRoot, { recursive: true, force: true });
   }
 }

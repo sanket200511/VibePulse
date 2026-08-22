@@ -139,10 +139,13 @@ async function runReconstructibilityAudit() {
         ? "✅ RECONSTRUCTIBILITY AUDIT ($A ≡ B): 100% DETERMINISTIC MATCH!"
         : "❌ AUDIT FAILED!",
     );
-
-    await request("DELETE", `/api/projects/${projectId}`);
     if (!allMatched) process.exit(1);
   } finally {
+    if (projectId) {
+      try {
+        await request("DELETE", `/api/projects/${projectId}?force=true`);
+      } catch {}
+    }
     fs.rmSync(tmpRoot, { recursive: true, force: true });
   }
 }

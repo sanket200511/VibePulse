@@ -256,12 +256,22 @@ async def run_verification():
             print(
                 "[PASS] Zero raw secret leakage in PROJECT_CONTEXT.md export verified.\n"
             )
-
-            # Clean up DB rows
-            await client.delete(f"/api/projects/{project_a_id}")
-            await client.delete(f"/api/projects/{project_b_id}")
-
     finally:
+        transport = httpx.ASGITransport(app=app)
+        async with httpx.AsyncClient(
+            transport=transport, base_url="http://testserver"
+        ) as cleanup_client:
+            try:
+                if project_a_id:
+                    await cleanup_client.delete(
+                        f"/api/projects/{project_a_id}?force=true"
+                    )
+                if project_b_id:
+                    await cleanup_client.delete(
+                        f"/api/projects/{project_b_id}?force=true"
+                    )
+            except Exception:
+                pass
         shutil.rmtree(tmp_dir, ignore_errors=True)
         shutil.rmtree(tmp_dir_b, ignore_errors=True)
 

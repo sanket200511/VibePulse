@@ -333,8 +333,12 @@ async function runSprint12E2E() {
     );
 
     // Clean up Project B
-    await request("DELETE", `/api/projects/${projB.id}`);
+    await request("DELETE", `/api/projects/${projB.id}?force=true`);
   } finally {
+    try {
+      if (projA?.id) await request("DELETE", `/api/projects/${projA.id}?force=true`);
+      if (projB?.id) await request("DELETE", `/api/projects/${projB.id}?force=true`);
+    } catch {}
     fs.rmSync(tmpRootA, { recursive: true, force: true });
     fs.rmSync(tmpRootB, { recursive: true, force: true });
     if (serverProcess) {

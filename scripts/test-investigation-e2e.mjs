@@ -218,8 +218,12 @@ async function main() {
 
     console.log("\n============================================================");
     console.log(" SPRINT 4 INVESTIGATION ENGINE 3.0 ACCEPTANCE COMPLETE: PASS");
-    console.log("============================================================\n");
   } finally {
+    if (projectId) {
+      try {
+        await fetch(`${API_BASE}/api/projects/${projectId}?force=true`, { method: "DELETE" });
+      } catch {}
+    }
     await fs.rm(tmpDir, { recursive: true, force: true });
   }
 }

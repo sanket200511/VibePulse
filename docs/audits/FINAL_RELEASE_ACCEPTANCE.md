@@ -67,9 +67,17 @@ The runtime deserialization failure on `GET /api/projects/{id}/context` was test
 
 ## 5. Backend Verification (`apps/api`)
 
-- **Pytest Suite**: **348 / 348 tests passed** (including new `test_project_context_legacy_empty_dict_focus_resilience` regression test).
+- **Pytest Suite**: **349 / 349 tests passed** (including `test_project_context_legacy_empty_dict_focus_resilience` and `test_delete_project_force_bypasses_active_session_guard`).
 - **Static Typecheck**: `uv run pyright app/` passed with 0 errors, 0 warnings.
 - **Linting**: `uv run ruff check app/` passed with 0 errors.
+
+### Project Lifecycle & Ephemeral Project Hygiene Fix
+
+- **Root Cause Eliminated**: Integration test scripts and demo runners creating transient test directories now execute strictly within `try ... finally` blocks and call `DELETE /api/projects/:id?force=true`.
+- **Force Parameter Implemented**: `delete_project(db, project_id, force=True)` safely bypasses the active observation lock during test teardown and cascades all child telemetry records atomically.
+- **Persistent Project Protection**: Dedicated persistent workspaces (e.g. `D:\Projects\Dabba`) are strictly preserved and safeguarded against accidental deletion.
+- **Automated Cleanup CLI**: `pnpm cleanup:ephemeral` (dry-run) and `pnpm cleanup:ephemeral:confirm` (controlled execution) provide permanent hygiene tooling.
+- **Net Delta Invariant**: Standard dev stack startup (`pnpm dev`) and E2E tests maintain a net project creation delta of $\Delta = 0$.
 
 ---
 

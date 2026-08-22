@@ -70,6 +70,10 @@ async def get_project(project_id: uuid.UUID, db: AsyncSession = Depends(get_db))
 )
 async def delete_project_endpoint(
     project_id: uuid.UUID,
+    force: bool = Query(
+        default=False,
+        description="Force deletion of project and active sessions for ephemeral cleanup",
+    ),
     db: AsyncSession = Depends(get_db),
 ) -> ProjectDeleteResponse:
     """
@@ -77,7 +81,7 @@ async def delete_project_endpoint(
     investigations, and context memory from PostgreSQL without touching the filesystem.
     """
     try:
-        result = await delete_project(db, project_id)
+        result = await delete_project(db, project_id, force=force)
     except ProjectActiveError as exc:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
