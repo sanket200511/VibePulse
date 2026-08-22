@@ -46,10 +46,10 @@
 ### 5. DOCUMENTATION & ACADEMIC ARTIFACTS
 
 - [x] [README.md](file:///d:/VibeSync/README.md): Architecture overview and getting started.
-- [x] [POST_SPRINT12_AUDIT.md](file:///d:/VibeSync/docs/POST_SPRINT12_AUDIT.md): Complete repository audit.
-- [x] [FINAL_PROJECT_STATUS.md](file:///d:/VibeSync/docs/FINAL_PROJECT_STATUS.md): Executive status and implementation matrix.
-- [x] [EVALUATION.md](file:///d:/VibeSync/docs/EVALUATION.md): Measured latency benchmarks and test metrics.
-- [x] [RESEARCH_CONTRIBUTION.md](file:///d:/VibeSync/docs/RESEARCH_CONTRIBUTION.md): 18-section academic treatise.
-- [x] [FINAL_DEMO_RUNBOOK.md](file:///d:/VibeSync/docs/FINAL_DEMO_RUNBOOK.md): 5, 10, and 15-minute presentation scripts.
-- [x] [VIVA_PREPARATION.md](file:///d:/VibeSync/docs/VIVA_PREPARATION.md): 25 concise examiner Q&A defense answers.
+- [x] [POST_SPRINT12_AUDIT.md](file:///d:/VibeSync/docs/audits/POST_SPRINT12_AUDIT.md): Complete repository audit.
+- [x] [FINAL_PROJECT_STATUS.md](file:///d:/VibeSync/docs/audits/FINAL_PROJECT_STATUS.md): Executive status and implementation matrix.
+- [x] [EVALUATION.md](file:///d:/VibeSync/docs/academic/EVALUATION.md): Measured latency benchmarks and test metrics.
+- [x] [RESEARCH_CONTRIBUTION.md](file:///d:/VibeSync/docs/academic/RESEARCH_CONTRIBUTION.md): 18-section academic treatise.
+- [x] [FINAL_DEMO_RUNBOOK.md](file:///d:/VibeSync/docs/demos/FINAL_DEMO_RUNBOOK.md): 5, 10, and 15-minute presentation scripts.
+- [x] [VIVA_PREPARATION.md](file:///d:/VibeSync/docs/academic/VIVA_PREPARATION.md): 25 concise examiner Q&A defense answers.
 - [x] [System Architecture Diagrams](file:///d:/VibeSync/docs/diagrams/): Complete Mermaid diagrams.

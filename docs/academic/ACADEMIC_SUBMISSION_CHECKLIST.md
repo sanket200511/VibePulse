@@ -44,12 +44,12 @@
 
 ### 5. ACADEMIC DOCUMENTATION
 
-- [x] [FINAL_PROJECT_REPORT.md](file:///d:/VibeSync/docs/FINAL_PROJECT_REPORT.md): 37-section B.Tech final-year technical report.
-- [x] [VIVA_MASTER_SHEET.md](file:///d:/VibeSync/docs/VIVA_MASTER_SHEET.md): Verbal introductions, category Q&A, and 35 trick defense answers.
-- [x] [FINAL_DEMO_SCRIPT.md](file:///d:/VibeSync/docs/FINAL_DEMO_SCRIPT.md): 5, 10, and 15-minute word-for-word presentation scripts.
-- [x] [PPT_CONTENT.md](file:///d:/VibeSync/docs/PPT_CONTENT.md): 18 presentation slide layouts and speaker cues.
-- [x] [SCORING_REFERENCE.md](file:///d:/VibeSync/docs/SCORING_REFERENCE.md): Canonical mathematical formulas.
-- [x] [KNOWLEDGE_GRAPH_REFERENCE.md](file:///d:/VibeSync/docs/KNOWLEDGE_GRAPH_REFERENCE.md): Graph nodes and edges reference.
-- [x] [FINAL_DEFENSE_CLAIMS.md](file:///d:/VibeSync/docs/FINAL_DEFENSE_CLAIMS.md): Categorized claims & verified evidence.
-- [x] [SPRINT_14_TRUTH_AUDIT.md](file:///d:/VibeSync/docs/SPRINT_14_TRUTH_AUDIT.md): Forensic claim-to-code audit.
+- [x] [FINAL_PROJECT_REPORT.md](file:///d:/VibeSync/docs/academic/FINAL_PROJECT_REPORT.md): 37-section B.Tech final-year technical report.
+- [x] [VIVA_MASTER_SHEET.md](file:///d:/VibeSync/docs/academic/VIVA_MASTER_SHEET.md): Verbal introductions, category Q&A, and 35 trick defense answers.
+- [x] [FINAL_DEMO_SCRIPT.md](file:///d:/VibeSync/docs/demos/FINAL_DEMO_SCRIPT.md): 5, 10, and 15-minute word-for-word presentation scripts.
+- [x] [PPT_CONTENT.md](file:///d:/VibeSync/docs/demos/PPT_CONTENT.md): 18 presentation slide layouts and speaker cues.
+- [x] [SCORING_REFERENCE.md](file:///d:/VibeSync/docs/subsystems/security-intelligence/SCORING_REFERENCE.md): Canonical mathematical formulas.
+- [x] [KNOWLEDGE_GRAPH_REFERENCE.md](file:///d:/VibeSync/docs/subsystems/knowledge-graph/KNOWLEDGE_GRAPH_REFERENCE.md): Graph nodes and edges reference.
+- [x] [FINAL_DEFENSE_CLAIMS.md](file:///d:/VibeSync/docs/academic/FINAL_DEFENSE_CLAIMS.md): Categorized claims & verified evidence.
+- [x] [SPRINT_14_TRUTH_AUDIT.md](file:///d:/VibeSync/docs/history/sprints/sprint-14/SPRINT_14_TRUTH_AUDIT.md): Forensic claim-to-code audit.
 - [x] [Architecture Diagrams](file:///d:/VibeSync/docs/diagrams/): Complete Mermaid figures.

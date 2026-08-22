@@ -15,18 +15,17 @@ To prevent documentation drift and maintain strict technical accuracy, all repos
 │                            AUTHORITY HIERARCHY                              │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │  Level 1: PRIMARY ENTRY POINTS       README.md, docs/DOCUMENTATION_INDEX.md │
-│  Level 2: CURRENT / AUTHORITATIVE    ARCHITECTURE.md, PROJECT_STATUS.md,   │
-│                                      ENGINEERING.md, SECURITY.md            │
-│  Level 3: OPERATIONAL MANUALS        LOCAL_DEVELOPMENT.md, INSTALLATION.md, │
-│                                      API_REFERENCE.md, DEPLOYMENT.md        │
-│  Level 4: SUBSYSTEM DEEP DIVES       docs/SECURITY_INTELLIGENCE.md,         │
-│                                      docs/INVESTIGATION_ENGINE_3.md, etc.   │
-│  Level 5: ACADEMIC & DEFENSE         docs/FINAL_PROJECT_REPORT.md,          │
-│                                      docs/RESEARCH_CONTRIBUTION.md, etc.    │
-│  Level 6: DEMONSTRATION & RUNBOOKS   docs/FINAL_DEMO_RUNBOOK.md,            │
-│                                      docs/SEMINAR_DEMO.md, DEMO.md          │
-│  Level 7: HISTORICAL SNAPSHOTS       docs/SPRINT_14_TRUTH_AUDIT.md,         │
-│                                      docs/adr/*, Sprint Reports             │
+│  Level 2: CURRENT / AUTHORITATIVE    docs/architecture/ARCHITECTURE.md,     │
+│                                      docs/overview/PROJECT_STATUS.md,       │
+│                                      SECURITY.md, CHANGELOG.md              │
+│  Level 3: OPERATIONAL MANUALS        docs/development/LOCAL_DEVELOPMENT.md, │
+│                                      docs/development/INSTALLATION.md,      │
+│                                      docs/api/API_REFERENCE.md,             │
+│                                      docs/operations/DEPLOYMENT.md          │
+│  Level 4: SUBSYSTEM DEEP DIVES       docs/subsystems/**                     │
+│  Level 5: ACADEMIC & DEFENSE         docs/academic/**                       │
+│  Level 6: DEMONSTRATION & RUNBOOKS   docs/demos/**                          │
+│  Level 7: AUDITS & HISTORICAL        docs/audits/**, docs/history/sprints/**│
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -34,87 +33,144 @@ To prevent documentation drift and maintain strict technical accuracy, all repos
 
 ## 📍 1. Primary Entry Points (Start Here)
 
-| Document                                                                         | Authority                  | Scope / Description                                                                                        |
-| -------------------------------------------------------------------------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| [`README.md`](file:///d:/VibeSync/README.md)                                     | **Tier 1 (Authoritative)** | Executive project summary, architecture blueprint, metric triad, quickstart, and core guarantees.          |
-| [`docs/DOCUMENTATION_INDEX.md`](file:///d:/VibeSync/docs/DOCUMENTATION_INDEX.md) | **Tier 1 (Authoritative)** | This document. Master inventory, classification, and sitemap of all project documents.                     |
-| [`PROJECT_STATUS.md`](file:///d:/VibeSync/PROJECT_STATUS.md)                     | **Tier 2 (Authoritative)** | Live engineering status, verified test baselines (347 backend / 130 daemon tests), and sprint completions. |
-| [`ARCHITECTURE.md`](file:///d:/VibeSync/ARCHITECTURE.md)                         | **Tier 2 (Authoritative)** | Comprehensive system architecture, data flow, PostgreSQL ground truth model, and intelligence pipeline.    |
+| Document              | Canonical Path                                                                   | Status    | Audience | Scope / Description                                                                               |
+| --------------------- | -------------------------------------------------------------------------------- | --------- | -------- | ------------------------------------------------------------------------------------------------- |
+| **Root README**       | [`README.md`](file:///d:/VibeSync/README.md)                                     | `CURRENT` | All      | Executive project summary, architecture blueprint, metric triad, quickstart, and core guarantees. |
+| **Master Docs Index** | [`docs/DOCUMENTATION_INDEX.md`](file:///d:/VibeSync/docs/DOCUMENTATION_INDEX.md) | `CURRENT` | All      | This document. Master inventory, classification, and sitemap of all project documents.            |
+| **Docs Overview**     | [`docs/README.md`](file:///d:/VibeSync/docs/README.md)                           | `CURRENT` | All      | Quick navigational overview of the entire `docs/` tree.                                           |
 
 ---
 
-## ⚙️ 2. Operational & Developer Guides
+## 🔭 2. Project Overview
 
-| Document                                                           | Authority                  | Scope / Description                                                                                                                         |
-| ------------------------------------------------------------------ | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`LOCAL_DEVELOPMENT.md`](file:///d:/VibeSync/LOCAL_DEVELOPMENT.md) | **Tier 3 (Authoritative)** | Local environment setup, dedicated port configuration (`5133`/`5134`/`5135`), supervisor (`pnpm dev`), and diagnostics (`pnpm dev:status`). |
-| [`INSTALLATION.md`](file:///d:/VibeSync/INSTALLATION.md)           | **Tier 3 (Authoritative)** | Prerequisites (Python 3.12, Node.js 22, pnpm 9, PostgreSQL 16), dependency sync, and database migration guide.                              |
-| [`API_REFERENCE.md`](file:///d:/VibeSync/API_REFERENCE.md)         | **Tier 3 (Authoritative)** | REST & WebSocket endpoint contracts across Projects, Sessions, Events, Health, Investigations, KG, and Copilot.                             |
-| [`SECURITY.md`](file:///d:/VibeSync/SECURITY.md)                   | **Tier 3 (Authoritative)** | Privacy guarantees, AST secret redaction policy (`[REDACTED]`), tenant isolation, and safe project deletion invariants.                     |
-| [`DEPLOYMENT.md`](file:///d:/VibeSync/DEPLOYMENT.md)               | **Tier 3 (Authoritative)** | Containerized deployment reference via Docker & Compose (`docker-compose.yml`).                                                             |
-| [`CONTRIBUTING.md`](file:///d:/VibeSync/CONTRIBUTING.md)           | **Tier 3 (Authoritative)** | Monorepo coding conventions, pull request workflows, typecheck/lint rules, and testing standards.                                           |
-| [`FAQ.md`](file:///d:/VibeSync/FAQ.md)                             | **Tier 3 (Authoritative)** | Frequently asked questions regarding zero-LLM architecture, AST parsing, privacy, and deterministic replay.                                 |
-| [`CHANGELOG.md`](file:///d:/VibeSync/CHANGELOG.md)                 | **Tier 3 (Authoritative)** | Historical milestone progression from Observation Engine to Copilot Foundation and Academic Packaging.                                      |
+| Document           | Canonical Path                                                                           | Status    | Audience             | Scope / Description                                                                                        |
+| ------------------ | ---------------------------------------------------------------------------------------- | --------- | -------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **Project Vision** | [`docs/overview/VISION.md`](file:///d:/VibeSync/docs/overview/VISION.md)                 | `CURRENT` | All                  | Strategic purpose, developer observability paradigm for AI coding, and long-term vision.                   |
+| **Project Status** | [`docs/overview/PROJECT_STATUS.md`](file:///d:/VibeSync/docs/overview/PROJECT_STATUS.md) | `CURRENT` | Evaluator, Developer | Live engineering status, verified test baselines (347 backend / 130 daemon tests), and sprint completions. |
+| **Current Sprint** | [`docs/overview/CURRENT_SPRINT.md`](file:///d:/VibeSync/docs/overview/CURRENT_SPRINT.md) | `CURRENT` | Evaluator, Developer | Active architecture freeze and final academic packaging state.                                             |
+| **Roadmap**        | [`docs/overview/ROADMAP.md`](file:///d:/VibeSync/docs/overview/ROADMAP.md)               | `CURRENT` | Evaluator, Developer | Milestone progression (Phases 1–12 completed) and post-v1.0 horizons.                                      |
+| **FAQ**            | [`docs/overview/FAQ.md`](file:///d:/VibeSync/docs/overview/FAQ.md)                       | `CURRENT` | All                  | Frequently asked questions on zero-LLM architecture, AST parsing, privacy, and determinism.                |
 
 ---
 
-## 🧠 3. Subsystem Deep Dives (Intelligence Pipeline)
+## 🏗️ 3. Architecture & System Design
 
-The canonical intelligence pipeline is:
+| Document                    | Canonical Path                                                                                                                               | Status      | Audience             | Scope / Description                                                                                     |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | -------------------- | ------------------------------------------------------------------------------------------------------- |
+| **System Architecture**     | [`docs/architecture/ARCHITECTURE.md`](file:///d:/VibeSync/docs/architecture/ARCHITECTURE.md)                                                 | `CURRENT`   | Architect, Developer | Comprehensive system architecture, data flow, PostgreSQL ground truth model, and intelligence pipeline. |
+| **System Design**           | [`docs/architecture/SYSTEM_DESIGN.md`](file:///d:/VibeSync/docs/architecture/SYSTEM_DESIGN.md)                                               | `CURRENT`   | Architect, Developer | Operational node topology, sequence diagrams, and scalability considerations.                           |
+| **Design Philosophy**       | [`docs/architecture/DESIGN.md`](file:///d:/VibeSync/docs/architecture/DESIGN.md)                                                             | `CURRENT`   | Designer, Developer  | Engineering philosophy and core UI/UX architecture principles.                                          |
+| **VibePulse 2.0 Blueprint** | [`docs/architecture/VIBEPULSE_2.0_ARCHITECTURE_BLUEPRINT.md`](file:///d:/VibeSync/docs/architecture/VIBEPULSE_2.0_ARCHITECTURE_BLUEPRINT.md) | `REFERENCE` | Architect            | Deep architectural blueprint for the intelligence layers.                                               |
+
+---
+
+## 💻 4. Development Guides
+
+| Document               | Canonical Path                                                                                       | Status    | Audience    | Scope / Description                                                                                        |
+| ---------------------- | ---------------------------------------------------------------------------------------------------- | --------- | ----------- | ---------------------------------------------------------------------------------------------------------- |
+| **Engineering Guide**  | [`docs/development/ENGINEERING.md`](file:///d:/VibeSync/docs/development/ENGINEERING.md)             | `CURRENT` | Developer   | Coding standards, TypeScript/Python conventions, SOLID principles, and git workflows.                      |
+| **Local Development**  | [`docs/development/LOCAL_DEVELOPMENT.md`](file:///d:/VibeSync/docs/development/LOCAL_DEVELOPMENT.md) | `CURRENT` | Developer   | Native local environment setup, dedicated port configuration (`5133`/`5134`/`5135`), and supervisor usage. |
+| **Installation Guide** | [`docs/development/INSTALLATION.md`](file:///d:/VibeSync/docs/development/INSTALLATION.md)           | `CURRENT` | Developer   | Prerequisites (Node 22, Python 3.12, PostgreSQL 16, pnpm 9), dependencies, and migrations.                 |
+| **Contributing Guide** | [`CONTRIBUTING.md`](file:///d:/VibeSync/CONTRIBUTING.md)                                             | `CURRENT` | Contributor | Open-source contribution rules, pull request guidelines, and issue reporting.                              |
+
+---
+
+## ⚙️ 5. Operations & Security
+
+| Document             | Canonical Path                                                                                                                                       | Status      | Audience          | Scope / Description                                                                                  |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | ----------------- | ---------------------------------------------------------------------------------------------------- |
+| **Deployment Guide** | [`docs/operations/DEPLOYMENT.md`](file:///d:/VibeSync/docs/operations/DEPLOYMENT.md)                                                                 | `CURRENT`   | DevOps, Developer | Docker Compose containerized deployment specification and environment configs.                       |
+| **Security Policy**  | [`SECURITY.md`](file:///d:/VibeSync/SECURITY.md)                                                                                                     | `CURRENT`   | All               | Privacy guarantees, AST secret redaction policy (`[REDACTED]`), tenant isolation, and safe deletion. |
+| **Known Issues**     | [`docs/known-issues/windows-asyncpg-backgroundtasks-teardown.md`](file:///d:/VibeSync/docs/known-issues/windows-asyncpg-backgroundtasks-teardown.md) | `REFERENCE` | Developer         | Documented Windows asyncpg task teardown solution.                                                   |
+
+---
+
+## 🔌 6. API Reference
+
+| Document          | Canonical Path                                                               | Status    | Audience  | Scope / Description                                                                                             |
+| ----------------- | ---------------------------------------------------------------------------- | --------- | --------- | --------------------------------------------------------------------------------------------------------------- |
+| **API Reference** | [`docs/api/API_REFERENCE.md`](file:///d:/VibeSync/docs/api/API_REFERENCE.md) | `CURRENT` | Developer | REST & WebSocket endpoint contracts across Projects, Sessions, Events, Health, Investigations, KG, and Copilot. |
+
+---
+
+## 🧠 7. Subsystems (Canonical Intelligence Pipeline)
+
+The canonical pipeline is:
 $$\text{OBSERVE} \to \text{DETECT} \to \text{UNDERSTAND} \to \text{INVESTIGATE} \to \text{RESOLVE} \to \text{LEARN} \to \text{PREDICT} \to \text{ASK} \to \text{ACT} \to \text{MEMORY}$$
 
-| Subsystem                           | Authoritative Guide                                                                                                                                                     | Key Capabilities & Artifacts                                                                                                          |
-| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| **1. Observation Engine**           | [`docs/adr/0012-daemon-event-pipeline.md`](file:///d:/VibeSync/docs/adr/0012-daemon-event-pipeline.md)                                                                  | Node.js telemetry daemon (`:5135`), Chokidar debouncing, gate control, and project registration.                                      |
-| **2. Project Intelligence & DNA**   | [`docs/PROJECT_INTELLIGENCE.md`](file:///d:/VibeSync/docs/PROJECT_INTELLIGENCE.md)                                                                                      | Multi-session aggregation, developer activity timelines, file modification trends, and DNA classification.                            |
-| **3. Security Intelligence 2.0**    | [`docs/SECURITY_INTELLIGENCE.md`](file:///d:/VibeSync/docs/SECURITY_INTELLIGENCE.md)                                                                                    | Tree-Sitter AST inspection, deterministic credential scanning (`SEC001`, `DEBUG_TRUE`), and automatic secret masking (`[REDACTED]`).  |
-| **4. Investigation Engine 3.0**     | [`docs/INVESTIGATION_ENGINE_3.md`](file:///d:/VibeSync/docs/INVESTIGATION_ENGINE_3.md)                                                                                  | Causal DAG reconstruction, incident prioritization, root-cause derivation, and mathematical score decomposition.                      |
-| **5. Resolution Intelligence**      | [`docs/INCIDENT_RESOLUTION.md`](file:///d:/VibeSync/docs/INCIDENT_RESOLUTION.md)                                                                                        | Multi-state review workflow (`TRIAGED`, `INVESTIGATING`, `MITIGATING`, `RESOLVED`, `FALSE_POSITIVE`) and durable audit trails.        |
-| **6. Predictive Intelligence**      | [`docs/PREDICTIVE_INTELLIGENCE.md`](file:///d:/VibeSync/docs/PREDICTIVE_INTELLIGENCE.md)                                                                                | Churn acceleration analysis, hotspot identification, and regression risk forecasting.                                                 |
-| **7. Unified Project Health**       | [`docs/PROJECT_HEALTH.md`](file:///d:/VibeSync/docs/PROJECT_HEALTH.md) & [`docs/SCORING_REFERENCE.md`](file:///d:/VibeSync/docs/SCORING_REFERENCE.md)                   | 5-dimension composite health score ($0\dots 100$, Higher=Better) and Metric Triad formulation.                                        |
-| **8. Knowledge Graph & Memory 2.0** | [`docs/KNOWLEDGE_GRAPH.md`](file:///d:/VibeSync/docs/KNOWLEDGE_GRAPH.md) & [`docs/KNOWLEDGE_GRAPH_REFERENCE.md`](file:///d:/VibeSync/docs/KNOWLEDGE_GRAPH_REFERENCE.md) | Semantic multi-entity graph traversal (`CONTAINS`, `AFFECTS`, `RESOLVED_BY`), and portable `PROJECT_CONTEXT.md` AI handoff export.    |
-| **9. AI Engineering Copilot**       | [`docs/COPILOT.md`](file:///d:/VibeSync/docs/COPILOT.md)                                                                                                                | 16 canonical query families, tri-state provenance (`[OBSERVED]`, `[INFERRED]`, `[UNKNOWN]`), Answerability Gate, zero-LLM dependency. |
-| **10. Unified Command Center**      | [`docs/COMMAND_CENTER.md`](file:///d:/VibeSync/docs/COMMAND_CENTER.md)                                                                                                  | Central cockpit, live WebSocket telemetry stream, Metric Triad cards, and embedded Copilot console.                                   |
+| Subsystem                   | Canonical Path                                                                                                                                                 | Status      | Scope / Description                                                                         |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------- |
+| **Observation**             | [`docs/subsystems/observation/LIVE_OBSERVABILITY.md`](file:///d:/VibeSync/docs/subsystems/observation/LIVE_OBSERVABILITY.md)                                   | `CURRENT`   | Filesystem watcher, Chokidar debouncing, gate control, and event ingestion.                 |
+| **Project Context Memory**  | [`docs/subsystems/project-context/PROJECT_CONTEXT.md`](file:///d:/VibeSync/docs/subsystems/project-context/PROJECT_CONTEXT.md)                                 | `CURRENT`   | Durable context memory, tech stack detectors, and portable AI context export.               |
+| **Project Intelligence**    | [`docs/subsystems/project-intelligence/PROJECT_INTELLIGENCE.md`](file:///d:/VibeSync/docs/subsystems/project-intelligence/PROJECT_INTELLIGENCE.md)             | `CURRENT`   | Multi-session aggregation, developer activity timelines, and project read models.           |
+| **Engineering DNA**         | [`docs/subsystems/engineering-dna/ENGINEERING_DNA.md`](file:///d:/VibeSync/docs/subsystems/engineering-dna/ENGINEERING_DNA.md)                                 | `CURRENT`   | Structural code evolution and AST-based syntactic extraction.                               |
+| **Security Intelligence**   | [`docs/subsystems/security-intelligence/SECURITY_INTELLIGENCE.md`](file:///d:/VibeSync/docs/subsystems/security-intelligence/SECURITY_INTELLIGENCE.md)         | `CURRENT`   | AST static rules (`SEC001`, `DEBUG_TRUE`), secret masking, and risk scoring.                |
+| **Scoring Reference**       | [`docs/subsystems/security-intelligence/SCORING_REFERENCE.md`](file:///d:/VibeSync/docs/subsystems/security-intelligence/SCORING_REFERENCE.md)                 | `REFERENCE` | Exact mathematical formulas for weights, deductions, and health metrics.                    |
+| **Investigation Engine**    | [`docs/subsystems/investigation/INVESTIGATION_ENGINE_3.md`](file:///d:/VibeSync/docs/subsystems/investigation/INVESTIGATION_ENGINE_3.md)                       | `CURRENT`   | Causal DAG reconstruction, incident prioritization, and score decomposition.                |
+| **Evidence Intelligence**   | [`docs/subsystems/investigation/EVIDENCE_INTELLIGENCE.md`](file:///d:/VibeSync/docs/subsystems/investigation/EVIDENCE_INTELLIGENCE.md)                         | `CURRENT`   | Universal Evidence Inspector, node graph generation, and point breakdown.                   |
+| **Resolution Intelligence** | [`docs/subsystems/resolution/INCIDENT_RESOLUTION.md`](file:///d:/VibeSync/docs/subsystems/resolution/INCIDENT_RESOLUTION.md)                                   | `CURRENT`   | Review lifecycle workflow (`OPEN` $\to$ `RESOLVED`) and immutable PostgreSQL audit history. |
+| **Predictive Intelligence** | [`docs/subsystems/predictive-intelligence/PREDICTIVE_INTELLIGENCE.md`](file:///d:/VibeSync/docs/subsystems/predictive-intelligence/PREDICTIVE_INTELLIGENCE.md) | `CURRENT`   | Empirical code churn acceleration, directory hotspots, and regression forecasts.            |
+| **Unified Project Health**  | [`docs/subsystems/unified-health/PROJECT_HEALTH.md`](file:///d:/VibeSync/docs/subsystems/unified-health/PROJECT_HEALTH.md)                                     | `CURRENT`   | 5-dimension composite health score ($0\dots 100$) and Metric Triad cards.                   |
+| **Knowledge Graph**         | [`docs/subsystems/knowledge-graph/KNOWLEDGE_GRAPH.md`](file:///d:/VibeSync/docs/subsystems/knowledge-graph/KNOWLEDGE_GRAPH.md)                                 | `CURRENT`   | Semantic multi-entity graph traversal (`CONTAINS`, `AFFECTS`, `RESOLVED_BY`).               |
+| **KG Reference**            | [`docs/subsystems/knowledge-graph/KNOWLEDGE_GRAPH_REFERENCE.md`](file:///d:/VibeSync/docs/subsystems/knowledge-graph/KNOWLEDGE_GRAPH_REFERENCE.md)             | `REFERENCE` | Graph schema, node definitions, and edge taxonomies.                                        |
+| **AI Copilot**              | [`docs/subsystems/copilot/COPILOT.md`](file:///d:/VibeSync/docs/subsystems/copilot/COPILOT.md)                                                                 | `CURRENT`   | 16 canonical query families, tri-state provenance, Answerability Gate (Zero LLM).           |
+| **Command Center**          | [`docs/subsystems/copilot/COMMAND_CENTER.md`](file:///d:/VibeSync/docs/subsystems/copilot/COMMAND_CENTER.md)                                                   | `CURRENT`   | Unified engineering cockpit, live WebSocket telemetry, and embedded Copilot mini-console.   |
 
 ---
 
-## 🎓 4. Academic & Submission Portfolio
+## 🎬 8. Demonstrations & Presentation Materials
 
-| Document                                                                                             | Scope / Evaluation Purpose                                                                                                               |
-| ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| [`docs/FINAL_PROJECT_REPORT.md`](file:///d:/VibeSync/docs/FINAL_PROJECT_REPORT.md)                   | Comprehensive B.Tech Final Project Report covering Abstract, Literature Review, Methodology, Architecture, Evaluation, and Viva Defense. |
-| [`docs/RESEARCH_CONTRIBUTION.md`](file:///d:/VibeSync/docs/RESEARCH_CONTRIBUTION.md)                 | Academic research contribution, formal problem formulation, mathematical models, and comparative empirical analysis.                     |
-| [`docs/VIVA_MASTER_SHEET.md`](file:///d:/VibeSync/docs/VIVA_MASTER_SHEET.md)                         | Complete oral defense master cheat-sheet containing technical defenses for external evaluators and professors.                           |
-| [`docs/VIVA_PREPARATION.md`](file:///d:/VIVA_PREPARATION.md)                                         | 30+ categorized Viva Q&A scenarios covering determinism, privacy, scalability, scoring formulas, and failure modes.                      |
-| [`docs/EVALUATION.md`](file:///d:/VibeSync/docs/EVALUATION.md)                                       | Empirical benchmarks (sub-millisecond AST latency, determinism verification, memory footprint, recovery latency).                        |
-| [`docs/PPT_CONTENT.md`](file:///d:/VibeSync/docs/PPT_CONTENT.md)                                     | Word-for-word presentation slide deck content with speaking notes and diagram placements.                                                |
-| [`docs/FINAL_DEFENSE_CLAIMS.md`](file:///d:/VibeSync/docs/FINAL_DEFENSE_CLAIMS.md)                   | Traceable verification matrix connecting academic defense claims directly to source code and tests.                                      |
-| [`docs/ACADEMIC_SUBMISSION_CHECKLIST.md`](file:///d:/VibeSync/docs/ACADEMIC_SUBMISSION_CHECKLIST.md) | Final verification checklist ensuring 100% submission compliance.                                                                        |
+| Document                 | Canonical Path                                                                             | Status    | Audience  | Scope / Description                                                                                            |
+| ------------------------ | ------------------------------------------------------------------------------------------ | --------- | --------- | -------------------------------------------------------------------------------------------------------------- |
+| **Seminar Demo Runbook** | [`docs/demos/SEMINAR_DEMO.md`](file:///d:/VibeSync/docs/demos/SEMINAR_DEMO.md)             | `CURRENT` | Presenter | Complete seminar demonstration script with pre-flight checklist, timed presenter runbook, and fail-safe steps. |
+| **Final Demo Runbook**   | [`docs/demos/FINAL_DEMO_RUNBOOK.md`](file:///d:/VibeSync/docs/demos/FINAL_DEMO_RUNBOOK.md) | `CURRENT` | Presenter | Minute-by-minute execution runbook for 5-minute, 10-minute, and 15-minute viva demonstrations.                 |
+| **Final Demo Script**    | [`docs/demos/FINAL_DEMO_SCRIPT.md`](file:///d:/VibeSync/docs/demos/FINAL_DEMO_SCRIPT.md)   | `CURRENT` | Presenter | Word-for-word spoken presenter script with exact mouse click actions, visual cues, and recovery steps.         |
+| **General Demo Guide**   | [`docs/demos/DEMO.md`](file:///d:/VibeSync/docs/demos/DEMO.md)                             | `CURRENT` | Presenter | Exhaustive end-to-end interactive demonstration guide across all 10 intelligence stages.                       |
+| **Presentation Deck**    | [`docs/demos/PPT_CONTENT.md`](file:///d:/VibeSync/docs/demos/PPT_CONTENT.md)               | `CURRENT` | Presenter | Word-for-word presentation slide deck content with speaking notes and diagram placements.                      |
 
 ---
 
-## 🎬 5. Demonstration & Presentation Material
+## 🎓 9. Academic & Submission Portfolio
 
-| Document                                                                       | Description                                                                                                                    |
-| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
-| [`docs/SEMINAR_DEMO.md`](file:///d:/VibeSync/docs/SEMINAR_DEMO.md)             | Complete seminar demonstration script with pre-flight checklist, timed 5-minute presenter runbook, and fail-safe instructions. |
-| [`docs/FINAL_DEMO_RUNBOOK.md`](file:///d:/VibeSync/docs/FINAL_DEMO_RUNBOOK.md) | Minute-by-minute execution runbook for 5-minute, 10-minute, and 15-minute viva live demonstrations.                            |
-| [`docs/FINAL_DEMO_SCRIPT.md`](file:///d:/VibeSync/docs/FINAL_DEMO_SCRIPT.md)   | Word-for-word spoken presenter script with exact mouse click actions, visual cues, and recovery steps.                         |
-| [`DEMO.md`](file:///d:/VibeSync/DEMO.md)                                       | Exhaustive end-to-end interactive demonstration guide across all 10 intelligence stages.                                       |
+| Document                  | Canonical Path                                                                                                         | Status    | Audience              | Scope / Description                                                                                                                      |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------- | --------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **Final Thesis Report**   | [`docs/academic/FINAL_PROJECT_REPORT.md`](file:///d:/VibeSync/docs/academic/FINAL_PROJECT_REPORT.md)                   | `CURRENT` | Examiner, Professor   | Comprehensive B.Tech Final Project Report covering Abstract, Literature Review, Methodology, Architecture, Evaluation, and Viva Defense. |
+| **Viva Master Sheet**     | [`docs/academic/VIVA_MASTER_SHEET.md`](file:///d:/VibeSync/docs/academic/VIVA_MASTER_SHEET.md)                         | `CURRENT` | Examiner, Presenter   | Complete oral defense master cheat-sheet containing technical defenses for external evaluators and professors.                           |
+| **Viva Preparation**      | [`docs/academic/VIVA_PREPARATION.md`](file:///d:/VibeSync/docs/academic/VIVA_PREPARATION.md)                           | `CURRENT` | Examiner, Presenter   | 30+ categorized Viva Q&A scenarios covering determinism, privacy, scalability, scoring formulas, and failure modes.                      |
+| **Research Contribution** | [`docs/academic/RESEARCH_CONTRIBUTION.md`](file:///d:/VibeSync/docs/academic/RESEARCH_CONTRIBUTION.md)                 | `CURRENT` | Researcher            | Formal problem formulation, mathematical models, and comparative empirical analysis.                                                     |
+| **Empirical Evaluation**  | [`docs/academic/EVALUATION.md`](file:///d:/VibeSync/docs/academic/EVALUATION.md)                                       | `CURRENT` | Evaluator, Researcher | Empirical benchmarks (sub-millisecond AST latency, determinism verification, memory footprint, recovery latency).                        |
+| **Defense Claims Matrix** | [`docs/academic/FINAL_DEFENSE_CLAIMS.md`](file:///d:/VibeSync/docs/academic/FINAL_DEFENSE_CLAIMS.md)                   | `CURRENT` | Examiner              | Traceable verification matrix connecting academic defense claims directly to source code and tests.                                      |
+| **Submission Checklist**  | [`docs/academic/ACADEMIC_SUBMISSION_CHECKLIST.md`](file:///d:/VibeSync/docs/academic/ACADEMIC_SUBMISSION_CHECKLIST.md) | `CURRENT` | Examiner              | Final verification checklist ensuring 100% submission compliance.                                                                        |
 
 ---
 
-## 📜 6. Historical Snapshots & Architecture Decision Records (ADRs)
+## 🔍 10. System Audits & Verification
 
-_These documents represent historical milestones, sprint retrospectives, and developmental checkpoints. They are preserved intact for forensic lineage._
+| Document                 | Canonical Path                                                                                                   | Status       | Audience  | Scope / Description                                                                  |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------- | ------------ | --------- | ------------------------------------------------------------------------------------ |
+| **Final Project Status** | [`docs/audits/FINAL_PROJECT_STATUS.md`](file:///d:/VibeSync/docs/audits/FINAL_PROJECT_STATUS.md)                 | `CURRENT`    | Evaluator | Executive status audit across all 10 intelligence stages and 347/130 verified tests. |
+| **Full System Audit**    | [`docs/audits/FULL_SYSTEM_AUDIT.md`](file:///d:/VibeSync/docs/audits/FULL_SYSTEM_AUDIT.md)                       | `HISTORICAL` | Evaluator | Post-Sprint-4 system integration and reliability audit.                              |
+| **Whole System Audit**   | [`docs/audits/WHOLE_SYSTEM_READINESS_AUDIT.md`](file:///d:/VibeSync/docs/audits/WHOLE_SYSTEM_READINESS_AUDIT.md) | `HISTORICAL` | Evaluator | Whole-system presentation readiness review.                                          |
+| **Post-Sprint 12 Audit** | [`docs/audits/POST_SPRINT12_AUDIT.md`](file:///d:/VibeSync/docs/audits/POST_SPRINT12_AUDIT.md)                   | `HISTORICAL` | Evaluator | Post-Sprint 12 stabilization and freeze audit.                                       |
+| **Release Audit**        | [`docs/audits/GITHUB_RELEASE_AUDIT.md`](file:///d:/VibeSync/docs/audits/GITHUB_RELEASE_AUDIT.md)                 | `HISTORICAL` | Developer | Release hygiene and repository packaging review.                                     |
 
-- **Architecture Decision Records**: [`docs/adr/0001-monorepo-strategy.md`](file:///d:/VibeSync/docs/adr/0001-monorepo-strategy.md) through [`docs/adr/0012-daemon-event-pipeline.md`](file:///d:/VibeSync/docs/adr/0012-daemon-event-pipeline.md).
-- **Sprint Retrospectives & Audits**:
-  - [`docs/SPRINT_14_TRUTH_AUDIT.md`](file:///d:/VibeSync/docs/SPRINT_14_TRUTH_AUDIT.md): Sprint 14 forensic audit verifying claims against implementation.
-  - [`docs/POST_SPRINT12_AUDIT.md`](file:///d:/VibeSync/docs/POST_SPRINT12_AUDIT.md): Post-Sprint 12 stabilization and freeze audit.
-  - [`docs/FULL_SYSTEM_AUDIT.md`](file:///d:/VibeSync/docs/FULL_SYSTEM_AUDIT.md): Sprint 11 full system audit.
-  - [`docs/SPRINT_12_PRODUCTIZATION.md`](file:///d:/VibeSync/docs/SPRINT_12_PRODUCTIZATION.md): Sprint 12 acceptance criteria results.
-  - [`docs/known-issues/windows-asyncpg-backgroundtasks-teardown.md`](file:///d:/VibeSync/docs/known-issues/windows-asyncpg-backgroundtasks-teardown.md): Documented Windows asyncpg teardown solution.
+---
+
+## 📜 11. Architecture Decision Records (ADRs) & Historical Sprints
+
+### Architecture Decision Records (`docs/adr/`)
+
+- [`0001-monorepo-strategy.md`](file:///d:/VibeSync/docs/adr/0001-monorepo-strategy.md) through [`0012-daemon-event-pipeline.md`](file:///d:/VibeSync/docs/adr/0012-daemon-event-pipeline.md)
+
+### Historical Sprint Records (`docs/history/sprints/`)
+
+- **Sprint 6**: [`docs/history/sprints/sprint-06/PREDICTIVE_INTELLIGENCE_PLAN.md`](file:///d:/VibeSync/docs/history/sprints/sprint-06/PREDICTIVE_INTELLIGENCE_PLAN.md)
+- **Sprint 7**: [`docs/history/sprints/sprint-07/SPRINT_7_UNIFIED_HEALTH_PLAN.md`](file:///d:/VibeSync/docs/history/sprints/sprint-07/SPRINT_7_UNIFIED_HEALTH_PLAN.md)
+- **Sprint 10**: [`docs/history/sprints/sprint-10/KNOWLEDGE_GRAPH_PLAN.md`](file:///d:/VibeSync/docs/history/sprints/sprint-10/KNOWLEDGE_GRAPH_PLAN.md)
+- **Sprint 11**: [`docs/history/sprints/sprint-11/COPILOT_PLAN.md`](file:///d:/VibeSync/docs/history/sprints/sprint-11/COPILOT_PLAN.md)
+- **Sprint 12**: [`docs/history/sprints/sprint-12/SPRINT_12_PRODUCTIZATION.md`](file:///d:/VibeSync/docs/history/sprints/sprint-12/SPRINT_12_PRODUCTIZATION.md), [`SPRINT_12_PRODUCTIZATION_PLAN.md`](file:///d:/VibeSync/docs/history/sprints/sprint-12/SPRINT_12_PRODUCTIZATION_PLAN.md)
+- **Sprint 13**: [`docs/history/sprints/sprint-13/SPRINT_13_FINAL_READINESS_PLAN.md`](file:///d:/VibeSync/docs/history/sprints/sprint-13/SPRINT_13_FINAL_READINESS_PLAN.md)
+- **Sprint 14**: [`docs/history/sprints/sprint-14/SPRINT_14_TRUTH_AUDIT.md`](file:///d:/VibeSync/docs/history/sprints/sprint-14/SPRINT_14_TRUTH_AUDIT.md)
 
 ---
 

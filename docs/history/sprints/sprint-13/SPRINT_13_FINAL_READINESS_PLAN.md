@@ -32,13 +32,13 @@ $$\text{OBSERVE} \longrightarrow \text{DETECT} \longrightarrow \text{UNDERSTAND}
 - 10-stage presentation sequence with clean ASCII status board.
 - Persistence and reconstructibility audit ($A \equiv B$).
 
-### B. Empirical Evaluation Metrics (`docs/EVALUATION.md`)
+### B. Empirical Evaluation Metrics (`docs/academic/EVALUATION.md`)
 
 - Measured local performance latencies (Project registration 12.62ms, Event AST analysis 14.05ms, Health 77.18ms, Security 2.64ms, Predictions 9.08ms, Graph 17.55ms, Copilot 62.87ms, Context export 111.65ms).
 - Test reliability and quality baselines (347 pytest, 130 vitest, 5/5 typecheck, 5/5 lint).
 - Security, privacy, isolation, and safe project deletion metrics.
 
-### C. Academic Research Contribution (`docs/RESEARCH_CONTRIBUTION.md`)
+### C. Academic Research Contribution (`docs/academic/RESEARCH_CONTRIBUTION.md`)
 
 - 18 academic sections structured for final-year thesis / viva report.
 - Grounded claims emphasizing deterministic telemetry projection over non-deterministic LLM hallucination.
@@ -47,15 +47,15 @@ $$\text{OBSERVE} \longrightarrow \text{DETECT} \longrightarrow \text{UNDERSTAND}
 
 - Mermaid diagram assets covering: System Architecture, Data Flow, Intelligence Pipeline, Security Analysis, Investigation Flow, Knowledge Graph Model, Copilot Architecture, Reconstructibility ($A \equiv B$), and Closed-Loop Feedback.
 
-### E. Final Demo Runbook & Verbal Script (`docs/FINAL_DEMO_RUNBOOK.md`)
+### E. Final Demo Runbook & Verbal Script (`docs/demos/FINAL_DEMO_RUNBOOK.md`)
 
 - Pre-demo setup checklist.
 - 5-minute, 10-minute, and 15-minute presentation guides with exact `"What to say"` speaker notes for each screen.
 
-### F. Examiner & Judge Viva Preparation (`docs/VIVA_PREPARATION.md`)
+### F. Examiner & Judge Viva Preparation (`docs/academic/VIVA_PREPARATION.md`)
 
 - 25 comprehensive defense answers addressing telemetry, database invariants, zero-hallucination design, security redaction, and comparisons with Git/IDEs.
 
-### G. Final Master Checklist (`docs/FINAL_CHECKLIST.md`)
+### G. Final Master Checklist (`docs/academic/FINAL_CHECKLIST.md`)
 
 - Complete verification checklist across Software, Intelligence, Security, Quality, Demo, and Documentation.

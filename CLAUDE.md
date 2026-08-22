@@ -104,10 +104,14 @@ pnpm install
 cd apps/api && uv sync && uv run alembic upgrade head
 cd ../..
 
-# Start in 3 terminals:
-# Terminal 1 (Dashboard): pnpm --filter @vibepulse/dashboard dev
-# Terminal 2 (API): cd apps/api && uv run uvicorn app.main:app --reload --port 8080
-# Terminal 3 (Daemon): pnpm --filter @vibepulse/daemon dev```
+# Start all services via supervisor:
+pnpm dev
+
+# Or start independently in 3 terminals:
+# Terminal 1 (Dashboard): pnpm --filter @vibepulse/dashboard dev # :5134
+# Terminal 2 (API): cd apps/api && uv run uvicorn app.main:app --reload --port 5133
+# Terminal 3 (Daemon): pnpm --filter @vibepulse/daemon dev # :5135
+```
 
 ---
 
