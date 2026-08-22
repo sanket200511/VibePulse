@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import {
+  ArrowLeft,
   Search,
   ShieldAlert,
   Clock,
@@ -36,6 +37,7 @@ import {
 } from "./useInvestigation";
 import { LoadingState } from "../../components/states";
 import { getApiBaseUrl } from "../../lib/api-config";
+import { Breadcrumbs } from "../../components/layout/Breadcrumbs";
 
 const SEVERITY_RANK: Record<string, number> = {
   CRITICAL: 0,
@@ -176,10 +178,10 @@ export function InvestigationPage() {
 
   if (isError) {
     return (
-      <div className="p-8 text-center text-red-400">
-        <AlertCircle className="mx-auto mb-4 h-12 w-12" />
+      <div className="bg-background text-foreground flex flex-1 flex-col items-center justify-center p-8 text-center text-rose-400">
+        <AlertCircle className="mb-4 h-12 w-12" />
         <h2 className="text-xl font-bold">Investigation Engine Error</h2>
-        <p className="mt-2 text-sm text-gray-400">
+        <p className="text-secondary-text mt-2 text-sm">
           Failed to query historical investigation telemetry.
         </p>
       </div>
@@ -187,46 +189,69 @@ export function InvestigationPage() {
   }
 
   return (
-    <div className="min-h-screen space-y-6 bg-[#0d1117] p-6 text-gray-100">
-      {/* ── HEADER ─────────────────────────────────────────────────────────── */}
-      <div className="flex flex-col justify-between gap-4 border-b border-gray-800 pb-5 md:flex-row md:items-center">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="flex items-center gap-2 text-2xl font-black tracking-tight text-white">
-              <ShieldAlert className="h-7 w-7 text-indigo-400" />
-              Investigation Command Center 3.0
-            </h1>
-            <Badge
-              variant="outline"
-              className="border-indigo-500/40 font-mono text-xs text-indigo-300"
-            >
-              INCIDENT COLLABORATION & RESOLUTION
-            </Badge>
-          </div>
-          <p className="mt-1 text-sm text-gray-400">
-            Unified incident reconstruction, live multi-tab collaboration, audit trail, and
-            evidence-backed resolution intelligence.
-          </p>
+    <div className="animate-fade-in-up bg-background text-foreground flex flex-1 flex-col space-y-6 p-6 md:p-8">
+      {/* ── BREADCRUMB HEADER ─────────────────────────────────────────────────── */}
+      <div>
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <Breadcrumbs
+            items={
+              projectId
+                ? [
+                    { label: "Projects", to: "/projects" },
+                    { label: "Project Story", to: `/projects/${projectId}` },
+                    { label: "Investigation Engine" },
+                  ]
+                : [{ label: "Investigation Engine" }]
+            }
+          />
+          <Link
+            to={projectId ? `/projects/${projectId}` : "/projects"}
+            className="text-secondary-text hover:text-primary-text inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            {projectId ? "Back to Project Story" : "Back to Projects"}
+          </Link>
         </div>
 
-        {/* Global Export actions */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => handleExport("markdown")}
-            disabled={!activeIncidentId}
-            className="flex items-center gap-1.5 rounded-md border border-gray-700 bg-gray-800 px-3 py-1.5 text-xs font-semibold text-gray-200 transition hover:bg-gray-700 disabled:opacity-50"
-          >
-            <Download className="h-3.5 w-3.5" />
-            Export Report
-          </button>
-          <button
-            onClick={() => handleExport("ai")}
-            disabled={!activeIncidentId}
-            className="flex items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-500 disabled:opacity-50"
-          >
-            <Share2 className="h-3.5 w-3.5" />
-            Export for AI Handoff
-          </button>
+        <div className="border-border flex flex-col justify-between gap-4 border-b pb-5 md:flex-row md:items-center">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-primary-text flex items-center gap-2 text-2xl font-extrabold tracking-tight md:text-3xl">
+                <ShieldAlert className="h-7 w-7 text-indigo-400" />
+                Investigation Command Center 3.0
+              </h1>
+              <Badge
+                variant="outline"
+                className="border-indigo-500/40 font-mono text-xs text-indigo-300"
+              >
+                INCIDENT COLLABORATION & RESOLUTION
+              </Badge>
+            </div>
+            <p className="text-secondary-text mt-1 text-xs md:text-sm">
+              Unified incident reconstruction, live multi-tab collaboration, audit trail, and
+              evidence-backed resolution intelligence.
+            </p>
+          </div>
+
+          {/* Global Export actions */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleExport("markdown")}
+              disabled={!activeIncidentId}
+              className="bg-card hover:bg-card-subtle border-border text-primary-text inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-2 text-xs font-semibold shadow-sm transition disabled:opacity-50"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Export Report
+            </button>
+            <button
+              onClick={() => handleExport("ai")}
+              disabled={!activeIncidentId}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-500 disabled:opacity-50"
+            >
+              <Share2 className="h-3.5 w-3.5" />
+              Export for AI Handoff
+            </button>
+          </div>
         </div>
       </div>
 
@@ -344,9 +369,33 @@ export function InvestigationPage() {
           </div>
 
           {filteredResults.length === 0 ? (
-            <div className="rounded-lg border border-gray-800 bg-gray-900/40 p-8 text-center text-xs text-gray-400">
-              No incidents match the active search filter.
-            </div>
+            rawResults.length === 0 ? (
+              <div className="bg-card border-border flex flex-col items-center justify-center rounded-xl border p-8 text-center">
+                <CheckCircle2 className="mb-2 h-8 w-8 text-emerald-500" />
+                <h4 className="text-primary-text text-sm font-bold">No Incidents Recorded</h4>
+                <p className="text-secondary-text mt-1 text-xs">
+                  No security violations or structural anomalies have been detected for this
+                  workspace.
+                </p>
+              </div>
+            ) : (
+              <div className="bg-card border-border flex flex-col items-center justify-center rounded-xl border p-8 text-center">
+                <Search className="text-muted-foreground mb-2 h-8 w-8" />
+                <h4 className="text-primary-text text-sm font-bold">No Matching Incidents</h4>
+                <p className="text-secondary-text mt-1 text-xs">
+                  No incidents match the active search query or status filter.
+                </p>
+                <button
+                  onClick={() => {
+                    setQuery("");
+                    setStatusFilter("ALL");
+                  }}
+                  className="bg-card hover:bg-card-subtle border-border text-primary-text mt-3 inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold shadow-sm transition"
+                >
+                  <RotateCcw className="h-3 w-3" /> Clear Filters
+                </button>
+              </div>
+            )
           ) : (
             filteredResults.map((res) => {
               const isSelected = activeIncidentId === String(res.id);
@@ -893,8 +942,13 @@ export function InvestigationPage() {
               </div>
             </>
           ) : (
-            <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-12 text-center text-xs text-gray-400">
-              Select an incident from the stream to view its complete investigation.
+            <div className="bg-card border-border flex flex-col items-center justify-center rounded-xl border p-12 text-center shadow-sm">
+              <ShieldAlert className="mb-3 h-10 w-10 text-indigo-400/80" />
+              <h3 className="text-primary-text text-base font-bold">Incident Command Center</h3>
+              <p className="text-secondary-text mt-1.5 max-w-md text-xs leading-relaxed">
+                Select an incident from the stream to inspect its deterministic causal DAG, event
+                timeline, affected code symbols, and execute resolution workflows.
+              </p>
             </div>
           )}
         </div>

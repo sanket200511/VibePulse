@@ -63,7 +63,8 @@ export function WorkspaceHomePage() {
                   VibePulse Engineering Observability Platform
                 </p>
                 <p className="text-secondary-text mt-0.5 text-xs">
-                  Using local mock telemetry to demonstrate VibePulse.
+                  Using disposable demonstration telemetry to showcase continuous engineering
+                  intelligence.
                 </p>
               </div>
             </div>

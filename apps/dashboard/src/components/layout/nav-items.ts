@@ -1,4 +1,4 @@
-import { FolderKanban, History, Home, Search } from "lucide-react";
+import { FolderKanban, History, Home } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 /**
@@ -21,6 +21,5 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { label: "Workspace Home", to: "/", icon: Home, end: true },
   { label: "Projects", to: "/projects", icon: FolderKanban },
-  { label: "Investigation", to: "/investigation", icon: Search },
   { label: "History", to: "/history", icon: History },
 ];

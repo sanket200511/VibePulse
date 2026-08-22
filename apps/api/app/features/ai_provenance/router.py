@@ -20,9 +20,15 @@ router = APIRouter(tags=["ai_provenance"])
 
 
 @router.get(
-    "/sessions/{session_id}/ai-provenance",
+    "/api/sessions/{session_id}/ai-provenance",
     response_model=AIProvenanceResponse,
     summary="Get AI Provenance for a Session",
+)
+@router.get(
+    "/sessions/{session_id}/ai-provenance",
+    response_model=AIProvenanceResponse,
+    summary="Get AI Provenance for a Session (legacy alias)",
+    include_in_schema=False,
 )
 async def read_session_ai_provenance(
     session_id: uuid.UUID,
@@ -38,9 +44,15 @@ async def read_session_ai_provenance(
 
 
 @router.get(
-    "/projects/{project_id}/ai-provenance",
+    "/api/projects/{project_id}/ai-provenance",
     response_model=AIProvenanceResponse,
     summary="Get AI Provenance for a Project",
+)
+@router.get(
+    "/projects/{project_id}/ai-provenance",
+    response_model=AIProvenanceResponse,
+    summary="Get AI Provenance for a Project (legacy alias)",
+    include_in_schema=False,
 )
 async def read_project_ai_provenance(
     project_id: uuid.UUID,

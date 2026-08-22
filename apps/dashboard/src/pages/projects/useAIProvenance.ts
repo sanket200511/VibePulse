@@ -47,7 +47,9 @@ export function useProjectAIProvenance(projectId?: string) {
     queryKey,
     queryFn: async () => {
       if (!projectId) throw new Error("No project ID");
-      const res = await fetch(`${getApiBaseUrl()}/projects/${projectId}/ai-provenance`);
+      const res = await fetch(
+        new URL(`/api/projects/${projectId}/ai-provenance`, getApiBaseUrl()).toString(),
+      );
       if (!res.ok) throw new Error("Failed to fetch AI provenance");
       return res.json() as Promise<AIProvenanceResponse>;
     },
@@ -112,7 +114,9 @@ export function useSessionAIProvenance(sessionId?: string) {
     queryKey,
     queryFn: async () => {
       if (!sessionId) throw new Error("No session ID");
-      const res = await fetch(`${getApiBaseUrl()}/sessions/${sessionId}/ai-provenance`);
+      const res = await fetch(
+        new URL(`/api/sessions/${sessionId}/ai-provenance`, getApiBaseUrl()).toString(),
+      );
       if (!res.ok) throw new Error("Failed to fetch AI provenance");
       return res.json() as Promise<AIProvenanceResponse>;
     },

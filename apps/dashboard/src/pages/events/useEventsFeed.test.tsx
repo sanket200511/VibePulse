@@ -65,7 +65,9 @@ describe("useEventsFeed", () => {
       FakeWebSocket.latest().emitMessage(JSON.stringify(makeEvent("live-1")));
     });
 
-    expect(result.current.events.map((event) => event.id)).toEqual(["live-1", "initial-1"]);
+    await waitFor(() => {
+      expect(result.current.events.map((event) => event.id)).toEqual(["live-1", "initial-1"]);
+    });
   });
 
   it("deduplicates events already seen, whether from the initial load or the socket", async () => {
@@ -75,7 +77,7 @@ describe("useEventsFeed", () => {
     act(() => {
       FakeWebSocket.latest().emitMessage(JSON.stringify(makeEvent("initial-1")));
     });
-    expect(result.current.events).toHaveLength(1);
+    await waitFor(() => expect(result.current.events).toHaveLength(1));
 
     act(() => {
       FakeWebSocket.latest().emitMessage(JSON.stringify(makeEvent("live-1")));
@@ -83,7 +85,9 @@ describe("useEventsFeed", () => {
     act(() => {
       FakeWebSocket.latest().emitMessage(JSON.stringify(makeEvent("live-1")));
     });
-    expect(result.current.events.filter((event) => event.id === "live-1")).toHaveLength(1);
+    await waitFor(() => {
+      expect(result.current.events.filter((event) => event.id === "live-1")).toHaveLength(1);
+    });
   });
 
   it("caps the feed at 200 events, dropping the oldest first", async () => {
@@ -96,11 +100,13 @@ describe("useEventsFeed", () => {
       }
     });
 
-    expect(result.current.events).toHaveLength(200);
-    // The very first live event pushed the original "initial-1" out of the window.
-    expect(result.current.events.some((event) => event.id === "initial-1")).toBe(false);
-    // Most recent event stays at the front.
-    expect(result.current.events[0]?.id).toBe("live-199");
+    await waitFor(() => {
+      expect(result.current.events).toHaveLength(200);
+      // The very first live event pushed the original "initial-1" out of the window.
+      expect(result.current.events.some((event) => event.id === "initial-1")).toBe(false);
+      // Most recent event stays at the front.
+      expect(result.current.events[0]?.id).toBe("live-199");
+    });
   });
 
   it("ignores malformed WebSocket payloads without crashing or changing the feed", async () => {

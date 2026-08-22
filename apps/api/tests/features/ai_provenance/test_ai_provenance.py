@@ -43,7 +43,14 @@ async def test_ai_provenance_endpoint(client: AsyncClient, db_session: AsyncSess
     response = await client.get(f"/sessions/{session.id}/ai-provenance")
     assert response.status_code == 200
 
-    data = response.json()
+    api_response = await client.get(f"/api/sessions/{session.id}/ai-provenance")
+    assert api_response.status_code == 200
+
+    # Also test project-level endpoint
+    proj_response = await client.get(f"/api/projects/{session.project_id}/ai-provenance")
+    assert proj_response.status_code == 200
+
+    data = api_response.json()
     assert data["stats"]["total_interactions"] == 1
     assert data["stats"]["total_tools_executed"] == 1
     assert data["stats"]["providers_used"] == ["Cursor"]

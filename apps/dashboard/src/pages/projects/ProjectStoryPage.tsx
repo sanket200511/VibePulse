@@ -1,11 +1,22 @@
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getApiBaseUrl } from "../../lib/api-config";
-import { useDemoMode } from "../../demo/config";
 import { ErrorState } from "../../components/states";
 import { ProjectIntelligencePanel } from "./ProjectIntelligencePanel";
 import { useProjectArchitectureTimeline } from "./useProjectArchitectureTimeline";
-import { ArrowLeft, ShieldAlert, Layers, CheckCircle2 } from "lucide-react";
+import {
+  ShieldAlert,
+  Layers,
+  CheckCircle2,
+  Activity,
+  Bot,
+  Cpu,
+  Database,
+  Download,
+  Search,
+  Share2,
+  Sparkles,
+} from "lucide-react";
 import { TimelineCard } from "../../components/timeline";
 import { mapArchitectureTimelineToViewModel } from "../../lib/events/mappers";
 import { formatRelativeTime } from "../../lib/relative-time";
@@ -17,6 +28,7 @@ import { TimeMachineProvider, useTimeMachine } from "./TimeMachineContext";
 import { TimelineScrubber } from "./TimelineScrubber";
 import { EvolutionDiff } from "./EvolutionDiff";
 import { ProjectHealthScorecard } from "./ProjectHealthScorecard";
+import { Breadcrumbs } from "../../components/layout/Breadcrumbs";
 
 function getSeverityColor(severity: string | undefined) {
   if (severity === "HIGH" || severity === "CRITICAL")
@@ -84,101 +96,235 @@ function ProjectStoryContent({
   ).length;
 
   return (
-    <div className="animate-fade-in-up bg-background flex flex-1 flex-col p-8">
-      {/* SECTION 1: HERO */}
-      <div data-tour="engineering-story-header" className="mb-10">
-        <Link
-          to="/projects"
-          className="text-secondary-text hover:text-primary-text mb-6 inline-flex items-center gap-2 text-sm font-medium transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Projects
-        </Link>
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-primary-text mb-2 text-4xl font-extrabold tracking-tight">
-              {project.display_name} Engineering Story
-            </h1>
-            <p className="text-secondary-text font-mono text-sm">{project.root_path}</p>
-          </div>
+    <div className="animate-fade-in-up bg-background flex flex-1 flex-col p-6 md:p-8">
+      {/* SECTION 1: HERO & STRUCTURED HIERARCHY */}
+      <div data-tour="engineering-story-header" className="mb-8 space-y-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <Breadcrumbs
+            items={[{ label: "Projects", to: "/projects" }, { label: project.display_name }]}
+          />
 
           {/* Mode Switcher */}
           <div
             data-tour="live-observability-indicator"
-            className="bg-muted-color/30 flex rounded-xl p-1"
+            className="bg-card border-border flex self-start rounded-lg border p-0.5 shadow-sm sm:self-auto"
           >
             <button
               onClick={() => setMode("LIVE")}
-              className={`rounded-lg px-4 py-2 text-sm font-bold uppercase tracking-wider transition-colors ${mode === "LIVE" ? "bg-card text-primary-text shadow-sm" : "text-muted-foreground hover:text-primary-text"}`}
+              className={`rounded-md px-3 py-1 text-xs font-bold uppercase tracking-wider transition-colors ${
+                mode === "LIVE"
+                  ? "bg-accent-color text-background shadow-sm"
+                  : "text-secondary-text hover:text-primary-text"
+              }`}
             >
-              Live
+              Live Stream
             </button>
             <button
               onClick={() => setMode("TIME_TRAVEL")}
-              className={`rounded-lg px-4 py-2 text-sm font-bold uppercase tracking-wider transition-colors ${mode === "TIME_TRAVEL" ? "bg-accent-color text-background shadow-sm" : "text-muted-foreground hover:text-primary-text"}`}
+              className={`rounded-md px-3 py-1 text-xs font-bold uppercase tracking-wider transition-colors ${
+                mode === "TIME_TRAVEL"
+                  ? "bg-accent-color text-background shadow-sm"
+                  : "text-secondary-text hover:text-primary-text"
+              }`}
             >
               Time Machine
             </button>
           </div>
+        </div>
 
-          <div className="flex flex-col gap-4">
-            <div className="flex gap-4">
-              <div className="bg-card border-border rounded-xl border p-4 text-center shadow-sm">
-                <div className="text-primary-text text-2xl font-bold">{totalFindings}</div>
-                <div className="text-secondary-text text-[10px] font-semibold uppercase tracking-wider">
-                  Security Issues
-                </div>
-              </div>
-              <div className="bg-card border-border rounded-xl border p-4 text-center shadow-sm">
-                <div className="text-primary-text text-2xl font-bold">{totalArchitecture}</div>
-                <div className="text-secondary-text text-[10px] font-semibold uppercase tracking-wider">
-                  Arch Changes
-                </div>
+        <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-start">
+          <div className="space-y-1.5">
+            <h1 className="text-primary-text text-3xl font-extrabold tracking-tight md:text-4xl">
+              {project.display_name} Engineering Story
+            </h1>
+            <p className="text-secondary-text font-mono text-xs md:text-sm">{project.root_path}</p>
+          </div>
+
+          {/* Quick Metrics Header */}
+          <div className="flex items-center gap-3">
+            <div className="bg-card border-border min-w-[120px] rounded-xl border p-3.5 text-center shadow-sm">
+              <div className="text-primary-text font-mono text-2xl font-bold">{totalFindings}</div>
+              <div className="text-secondary-text text-[10px] font-bold uppercase tracking-wider">
+                Security Issues
               </div>
             </div>
-            <div className="flex flex-wrap items-center justify-end gap-3">
-              <Link
-                to={`/projects/${project.id}/command-center`}
-                className="rounded-lg border border-indigo-500/40 bg-indigo-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-lg transition-colors hover:bg-indigo-500"
-              >
-                ⚡ Command Center
-              </Link>
-              <Link
-                to={`/projects/${project.id}/copilot`}
-                className="rounded-lg border border-indigo-500/40 bg-indigo-600/30 px-3.5 py-1.5 text-xs font-bold text-indigo-200 shadow-sm transition-colors hover:bg-indigo-600/50"
-              >
-                🤖 AI Copilot
-              </Link>
-              <Link
-                to={`/projects/${project.id}/knowledge-graph`}
-                className="rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-3.5 py-1.5 text-xs font-bold text-indigo-300 shadow-sm transition-colors hover:bg-indigo-500/20"
-              >
-                🕸️ Knowledge Graph
-              </Link>
+            <div className="bg-card border-border min-w-[120px] rounded-xl border p-3.5 text-center shadow-sm">
+              <div className="text-primary-text font-mono text-2xl font-bold">
+                {totalArchitecture}
+              </div>
+              <div className="text-secondary-text text-[10px] font-bold uppercase tracking-wider">
+                Arch Changes
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── STRUCTURED CAPABILITY HIERARCHY ──────────────────────────────── */}
+        <div className="space-y-4">
+          {/* Primary Action: Engineering Command Center */}
+          <div className="bg-card border-border flex flex-col items-start justify-between gap-4 rounded-2xl border p-5 shadow-sm transition-all md:flex-row md:items-center">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="rounded-full border border-indigo-500/30 bg-indigo-500/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-indigo-400">
+                  PRIMARY COCKPIT
+                </span>
+                <h2 className="text-primary-text text-base font-bold">
+                  Engineering Command Center
+                </h2>
+              </div>
+              <p className="text-secondary-text text-xs">
+                Real-time multi-panel engineering cockpit with AST cascade, live sessions stream,
+                and active alerts.
+              </p>
+            </div>
+            <Link
+              to={`/projects/${project.id}/command-center`}
+              className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-bold text-white shadow-md transition-all hover:bg-indigo-500 md:w-auto"
+            >
+              <Activity className="h-4 w-4" />
+              Launch Command Center
+            </Link>
+          </div>
+
+          {/* Secondary Intelligence Group: 6 Core Intelligence Hubs */}
+          <div className="space-y-2">
+            <div className="text-secondary-text px-1 text-[11px] font-bold uppercase tracking-wider">
+              Specialized Intelligence Hub
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
               <Link
                 to={`/projects/${project.id}/security`}
-                className="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-400 transition-colors hover:bg-red-500/20 hover:text-red-300"
+                className="bg-card hover:bg-card-subtle border-border group flex flex-col gap-2 rounded-xl border p-3.5 shadow-sm transition hover:border-rose-500/40"
               >
-                Security Intelligence
+                <div className="flex items-center justify-between">
+                  <ShieldAlert className="h-4 w-4 text-rose-400 transition-transform group-hover:scale-110" />
+                  <span className="text-muted-foreground font-mono text-[9px] uppercase">
+                    Security
+                  </span>
+                </div>
+                <div>
+                  <div className="text-primary-text text-xs font-bold">Security Center</div>
+                  <div className="text-secondary-text line-clamp-1 text-[11px]">
+                    AST secret & vuln guardian
+                  </div>
+                </div>
               </Link>
-              <Link
-                to={`/projects/${project.id}/predictions`}
-                className="rounded-lg border border-purple-500/20 bg-purple-500/10 px-3 py-1.5 text-xs font-semibold text-purple-400 transition-colors hover:bg-purple-500/20 hover:text-purple-300"
-              >
-                Predictive Intelligence
-              </Link>
-              <Link
-                to={`/projects/${project.id}/ai-provenance`}
-                className="rounded-lg border border-indigo-500/20 bg-indigo-500/10 px-3 py-1.5 text-xs font-medium text-indigo-400 transition-colors hover:text-indigo-300"
-              >
-                AI Provenance
-              </Link>
+
               <Link
                 to={`/projects/${project.id}/investigation`}
-                className="text-accent-color hover:text-accent-color/80 bg-accent-color/10 border-accent-color/20 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors"
+                className="bg-card hover:bg-card-subtle border-border group flex flex-col gap-2 rounded-xl border p-3.5 shadow-sm transition hover:border-amber-500/40"
               >
-                Search Events
+                <div className="flex items-center justify-between">
+                  <Search className="h-4 w-4 text-amber-400 transition-transform group-hover:scale-110" />
+                  <span className="text-muted-foreground font-mono text-[9px] uppercase">
+                    Forensics
+                  </span>
+                </div>
+                <div>
+                  <div className="text-primary-text text-xs font-bold">Investigation</div>
+                  <div className="text-secondary-text line-clamp-1 text-[11px]">
+                    Incident DAG & resolution
+                  </div>
+                </div>
               </Link>
+
+              <Link
+                to={`/projects/${project.id}/predictions`}
+                className="bg-card hover:bg-card-subtle border-border group flex flex-col gap-2 rounded-xl border p-3.5 shadow-sm transition hover:border-purple-500/40"
+              >
+                <div className="flex items-center justify-between">
+                  <Sparkles className="h-4 w-4 text-purple-400 transition-transform group-hover:scale-110" />
+                  <span className="text-muted-foreground font-mono text-[9px] uppercase">
+                    Forecasting
+                  </span>
+                </div>
+                <div>
+                  <div className="text-primary-text text-xs font-bold">Predictive Center</div>
+                  <div className="text-secondary-text line-clamp-1 text-[11px]">
+                    Telemetry-backed drift
+                  </div>
+                </div>
+              </Link>
+
+              <Link
+                to={`/projects/${project.id}/knowledge-graph`}
+                className="bg-card hover:bg-card-subtle border-border group flex flex-col gap-2 rounded-xl border p-3.5 shadow-sm transition hover:border-cyan-500/40"
+              >
+                <div className="flex items-center justify-between">
+                  <Share2 className="h-4 w-4 text-cyan-400 transition-transform group-hover:scale-110" />
+                  <span className="text-muted-foreground font-mono text-[9px] uppercase">
+                    Topology
+                  </span>
+                </div>
+                <div>
+                  <div className="text-primary-text text-xs font-bold">Knowledge Graph</div>
+                  <div className="text-secondary-text line-clamp-1 text-[11px]">
+                    Codebase relationship DAG
+                  </div>
+                </div>
+              </Link>
+
+              <Link
+                to={`/projects/${project.id}/copilot`}
+                className="bg-card hover:bg-card-subtle border-border group flex flex-col gap-2 rounded-xl border p-3.5 shadow-sm transition hover:border-indigo-500/40"
+              >
+                <div className="flex items-center justify-between">
+                  <Bot className="h-4 w-4 text-indigo-400 transition-transform group-hover:scale-110" />
+                  <span className="text-muted-foreground font-mono text-[9px] uppercase">
+                    AI Grounding
+                  </span>
+                </div>
+                <div>
+                  <div className="text-primary-text text-xs font-bold">AI Copilot</div>
+                  <div className="text-secondary-text line-clamp-1 text-[11px]">
+                    Evidence-first codebase Q&A
+                  </div>
+                </div>
+              </Link>
+
+              <Link
+                to={`/projects/${project.id}/ai-provenance`}
+                className="bg-card hover:bg-card-subtle border-border group flex flex-col gap-2 rounded-xl border p-3.5 shadow-sm transition hover:border-emerald-500/40"
+              >
+                <div className="flex items-center justify-between">
+                  <Cpu className="h-4 w-4 text-emerald-400 transition-transform group-hover:scale-110" />
+                  <span className="text-muted-foreground font-mono text-[9px] uppercase">
+                    Attribution
+                  </span>
+                </div>
+                <div>
+                  <div className="text-primary-text text-xs font-bold">AI Provenance</div>
+                  <div className="text-secondary-text line-clamp-1 text-[11px]">
+                    Deterministic AI tool ledger
+                  </div>
+                </div>
+              </Link>
+            </div>
+          </div>
+
+          {/* Tertiary / Memory & Utilities */}
+          <div className="bg-card/60 border-border flex flex-wrap items-center justify-between gap-3 rounded-xl border p-3 px-4 text-xs">
+            <div className="text-secondary-text flex flex-wrap items-center gap-4">
+              <span className="text-primary-text font-semibold">Memory & Utilities:</span>
+              <a
+                href="#project-memory"
+                className="hover:text-primary-text inline-flex items-center gap-1 transition"
+              >
+                <Database className="h-3.5 w-3.5 text-indigo-400" />
+                Project Memory
+              </a>
+              <a
+                href={`${getApiBaseUrl()}/api/projects/${project.id}/context/export`}
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-primary-text inline-flex items-center gap-1 transition"
+              >
+                <Download className="text-secondary-text h-3.5 w-3.5" />
+                Export Markdown Context
+              </a>
+            </div>
+            <div className="text-muted-foreground font-mono text-[11px]">
+              Deterministic AST Engine Active
             </div>
           </div>
         </div>
@@ -368,7 +514,6 @@ function ProjectStoryContent({
 
 export function ProjectStoryPage() {
   const { projectId } = useParams<{ projectId: string }>();
-  const { isDemo } = useDemoMode();
 
   const projectQuery = useQuery({
     queryKey: ["project", projectId],
@@ -379,7 +524,7 @@ export function ProjectStoryPage() {
       if (!response.ok) throw new Error("Project not found");
       return response.json();
     },
-    enabled: !isDemo && !!projectId,
+    enabled: !!projectId,
   });
 
   const intelligenceQuery = useQuery({
@@ -391,7 +536,7 @@ export function ProjectStoryPage() {
       if (!response.ok) throw new Error("Failed to load intelligence");
       return response.json();
     },
-    enabled: !isDemo && !!projectId,
+    enabled: !!projectId,
   });
 
   const sessionsQuery = useQuery({
@@ -406,7 +551,7 @@ export function ProjectStoryPage() {
       if (!response.ok) throw new Error("Failed to load sessions");
       return response.json() as Promise<{ sessions: Session[] }>;
     },
-    enabled: !isDemo && !!projectId,
+    enabled: !!projectId,
   });
 
   const { timeline, isLoading: isTimelineLoading } = useProjectArchitectureTimeline(projectId!);

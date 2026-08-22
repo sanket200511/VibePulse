@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import {
+  ArrowLeft,
   BrainCircuit,
   TrendingUp,
   Flame,
@@ -16,6 +17,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 import { Badge } from "@vibepulse/ui";
+import { Breadcrumbs } from "../../components/layout/Breadcrumbs";
 import {
   usePredictiveSummary,
   useRefreshPredictions,
@@ -37,10 +39,10 @@ export function PredictionsPage() {
 
   if (isError || !summary) {
     return (
-      <div className="min-h-screen bg-[#0d1117] p-8 text-center text-red-400">
-        <AlertTriangle className="mx-auto mb-4 h-12 w-12" />
+      <div className="bg-background text-foreground flex flex-1 flex-col items-center justify-center p-8 text-center text-rose-400">
+        <AlertTriangle className="mb-4 h-12 w-12" />
         <h2 className="text-xl font-bold">Predictive Intelligence Offline</h2>
-        <p className="mt-2 text-sm text-gray-400">
+        <p className="text-secondary-text mt-2 text-sm">
           Failed to query historical predictive telemetry for this project.
         </p>
       </div>
@@ -50,53 +52,72 @@ export function PredictionsPage() {
   const isInsufficient = summary.status === "INSUFFICIENT_EVIDENCE";
 
   return (
-    <div className="min-h-screen space-y-6 bg-[#0d1117] p-6 text-gray-100">
-      {/* ── HEADER ─────────────────────────────────────────────────────────── */}
-      <div className="flex flex-col justify-between gap-4 border-b border-gray-800 pb-5 md:flex-row md:items-center">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="flex items-center gap-2 text-2xl font-black tracking-tight text-white">
-              <BrainCircuit className="h-7 w-7 text-indigo-400" />
-              Predictive Engineering Center
-            </h1>
-            <Badge
-              variant="outline"
-              className="border-indigo-500/40 font-mono text-xs text-indigo-300"
-            >
-              EVIDENCE-BACKED FORECASTING
-            </Badge>
-          </div>
-          <p className="mt-1 text-sm text-gray-400">
-            Deterministic, evidence-backed forecasts derived strictly from observed project
-            telemetry and engineering patterns.
-          </p>
+    <div className="animate-fade-in-up bg-background text-foreground flex flex-1 flex-col space-y-6 p-6 md:p-8">
+      {/* ── BREADCRUMB HEADER ─────────────────────────────────────────────────── */}
+      <div>
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <Breadcrumbs
+            items={[
+              { label: "Projects", to: "/projects" },
+              { label: "Project Story", to: `/projects/${projectId}` },
+              { label: "Predictive Intelligence" },
+            ]}
+          />
+          <Link
+            to={`/projects/${projectId}`}
+            className="text-secondary-text hover:text-primary-text inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to Project Story
+          </Link>
         </div>
 
-        {/* Global actions */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => refreshMutation.mutate()}
-            disabled={refreshMutation.isPending}
-            className="flex items-center gap-1.5 rounded-md border border-gray-700 bg-gray-800 px-3.5 py-1.5 text-xs font-semibold text-gray-200 transition hover:bg-gray-700 disabled:opacity-50"
-          >
-            <RotateCcw
-              className={`h-3.5 w-3.5 ${refreshMutation.isPending ? "animate-spin text-indigo-400" : ""}`}
-            />
-            Recalculate Projections
-          </button>
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-primary-text flex items-center gap-2 text-2xl font-extrabold tracking-tight md:text-3xl">
+                <BrainCircuit className="h-7 w-7 text-indigo-400" />
+                Predictive Engineering Center
+              </h1>
+              <Badge
+                variant="outline"
+                className="border-indigo-500/40 font-mono text-xs text-indigo-300"
+              >
+                EVIDENCE-BACKED FORECASTING
+              </Badge>
+            </div>
+            <p className="text-secondary-text mt-1 text-xs md:text-sm">
+              Deterministic, evidence-backed forecasts derived strictly from observed project
+              telemetry and engineering patterns.
+            </p>
+          </div>
+
+          {/* Global actions */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => refreshMutation.mutate()}
+              disabled={refreshMutation.isPending}
+              className="bg-card hover:bg-card-subtle border-border text-primary-text inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-2 text-xs font-semibold shadow-sm transition disabled:opacity-50"
+            >
+              <RotateCcw
+                className={`h-3.5 w-3.5 ${refreshMutation.isPending ? "animate-spin text-indigo-400" : ""}`}
+              />
+              Recalculate Projections
+            </button>
+          </div>
         </div>
       </div>
 
       {/* ── METRIC OVERVIEW CARDS ───────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-lg border border-gray-800 bg-gray-900/60 p-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="bg-card border-border rounded-xl border p-5 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+            <span className="text-secondary-text text-[10px] font-bold uppercase tracking-wider">
               FORECAST SIGNALS
             </span>
             <Sparkles className="h-4 w-4 text-indigo-400" />
           </div>
-          <div className="mt-2 flex items-baseline gap-2 font-mono text-2xl font-black text-white">
+          <div className="text-primary-text mt-2 flex items-baseline gap-2 font-mono text-2xl font-black">
             {summary.total_predictions}
             <span className="text-xs font-semibold text-amber-400">
               ({summary.critical_count} Critical, {summary.high_count} High)
@@ -104,9 +125,9 @@ export function PredictionsPage() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-gray-800 bg-gray-900/60 p-4">
+        <div className="bg-card border-border rounded-xl border p-5 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+            <span className="text-secondary-text text-[10px] font-bold uppercase tracking-wider">
               ACTIVE HOTSPOTS
             </span>
             <Flame className="h-4 w-4 text-rose-400" />
@@ -116,9 +137,9 @@ export function PredictionsPage() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-gray-800 bg-gray-900/60 p-4">
+        <div className="bg-card border-border rounded-xl border p-5 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+            <span className="text-secondary-text text-[10px] font-bold uppercase tracking-wider">
               RECURRING RISKS
             </span>
             <TrendingUp className="h-4 w-4 text-amber-400" />
@@ -128,14 +149,14 @@ export function PredictionsPage() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-gray-800 bg-gray-900/60 p-4">
+        <div className="bg-card border-border rounded-xl border p-5 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+            <span className="text-secondary-text text-[10px] font-bold uppercase tracking-wider">
               CURRENT FOCUS
             </span>
             <Compass className="h-4 w-4 text-emerald-400" />
           </div>
-          <div className="mt-2 truncate font-mono text-base font-bold text-emerald-400">
+          <div className="text-primary-text mt-2 truncate font-mono text-base font-bold text-emerald-400">
             {summary.engineering_drift.current_focus}
           </div>
         </div>
@@ -143,13 +164,17 @@ export function PredictionsPage() {
 
       {/* ── INSUFFICIENT EVIDENCE STATE OR FORECAST CENTER ──────────────────── */}
       {isInsufficient ? (
-        <div className="rounded-xl border border-dashed border-gray-800 bg-gray-900/40 p-12 text-center">
-          <HelpCircle className="mx-auto mb-3 h-10 w-10 text-indigo-400/80" />
-          <h3 className="text-base font-bold text-white">Insufficient Historical Telemetry</h3>
-          <p className="mx-auto mt-1 max-w-md text-xs text-gray-400">{summary.status_message}</p>
-          <div className="mt-4 inline-flex items-center gap-2 rounded-md border border-gray-800 bg-gray-950 px-3 py-1.5 text-xs text-gray-400">
+        <div className="bg-card border-border rounded-xl border border-dashed p-12 text-center">
+          <HelpCircle className="text-accent-color/80 mx-auto mb-3 h-10 w-10" />
+          <h3 className="text-primary-text text-base font-bold">
+            Insufficient Historical Telemetry
+          </h3>
+          <p className="text-secondary-text mx-auto mt-1 max-w-md text-xs">
+            {summary.status_message}
+          </p>
+          <div className="bg-card-subtle border-border text-secondary-text mt-4 inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs">
             <span>Minimum requirements:</span>
-            <Badge variant="outline" className="text-[10px] text-gray-300">
+            <Badge variant="outline" className="text-primary-text text-[10px]">
               2+ telemetry events or recorded sessions
             </Badge>
           </div>
@@ -174,7 +199,7 @@ export function PredictionsPage() {
             </div>
 
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-              {summary.forecast_signals.map((sig) => (
+              {(summary.forecast_signals || []).map((sig) => (
                 <div
                   key={sig.prediction_id}
                   className="space-y-3 rounded-lg border border-gray-800 bg-gray-950/90 p-4 transition hover:border-gray-700"
@@ -280,13 +305,13 @@ export function PredictionsPage() {
                 <span className="text-[10px] text-gray-400">BY ACTIVITY & FINDINGS</span>
               </div>
 
-              {summary.hotspots.length === 0 ? (
+              {!summary.hotspots || summary.hotspots.length === 0 ? (
                 <div className="p-6 text-center text-xs text-gray-500">
                   No active hotspots detected.
                 </div>
               ) : (
                 <div className="space-y-2.5">
-                  {summary.hotspots.map((h, i) => (
+                  {(summary.hotspots || []).map((h, i) => (
                     <div
                       key={i}
                       className="space-y-1.5 rounded-lg border border-gray-800 bg-gray-950 p-3 text-xs"
@@ -381,13 +406,13 @@ export function PredictionsPage() {
               </div>
 
               {/* Recurring Risks Summary */}
-              {summary.recurring_risks.length > 0 && (
+              {(summary.recurring_risks || []).length > 0 && (
                 <div className="space-y-2">
                   <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
                     RECURRING ENGINEERING RISKS
                   </div>
                   <div className="space-y-1.5">
-                    {summary.recurring_risks.map((r, idx) => (
+                    {(summary.recurring_risks || []).map((r, idx) => (
                       <div
                         key={idx}
                         className="flex items-center justify-between rounded border border-gray-800 bg-gray-950 p-2.5 text-xs"
@@ -408,7 +433,7 @@ export function PredictionsPage() {
           </div>
 
           {/* ── HISTORICAL TREND VISUALIZER (ROLLING 7 DAYS) ──────────────────── */}
-          {summary.trends.length > 0 && (
+          {(summary.trends || []).length > 0 && (
             <div className="space-y-3 rounded-xl border border-gray-800 bg-gray-900/60 p-5">
               <div className="flex items-center justify-between">
                 <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white">
@@ -419,7 +444,7 @@ export function PredictionsPage() {
               </div>
 
               <div className="grid grid-cols-7 gap-2 pt-2">
-                {summary.trends.map((t, idx) => (
+                {(summary.trends || []).map((t, idx) => (
                   <div
                     key={idx}
                     className="flex flex-col items-center rounded border border-gray-800 bg-gray-950 p-3 text-center"

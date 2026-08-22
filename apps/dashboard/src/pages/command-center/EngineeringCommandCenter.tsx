@@ -30,6 +30,7 @@ import { EvidenceInspector } from "../evidence/EvidenceInspector";
 import { useCopilot } from "../copilot/useCopilot";
 import { useKnowledgeGraph } from "../knowledge-graph/useKnowledgeGraph";
 import type { EntityType } from "../evidence/types";
+import { Breadcrumbs } from "../../components/layout/Breadcrumbs";
 
 export function EngineeringCommandCenter() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -98,19 +99,28 @@ export function EngineeringCommandCenter() {
   return (
     <div className="animate-fade-in-up bg-background flex flex-1 flex-col space-y-8 p-8">
       {/* ── HEADER ─────────────────────────────────────────────────────────── */}
-      <div>
-        <Link
-          to={`/projects/${projectId}`}
-          className="mb-4 inline-flex items-center gap-1.5 text-xs font-semibold text-gray-400 transition hover:text-white"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Back to Project Story
-        </Link>
+      <div className="space-y-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <Breadcrumbs
+            items={[
+              { label: "Projects", to: "/projects" },
+              { label: project?.display_name || "Project Story", to: `/projects/${projectId}` },
+              { label: "Engineering Command Center" },
+            ]}
+          />
+          <Link
+            to={`/projects/${projectId}`}
+            className="text-secondary-text hover:text-primary-text inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to Project Story
+          </Link>
+        </div>
 
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="flex items-center gap-2.5 text-3xl font-extrabold tracking-tight text-white">
+              <h1 className="text-primary-text flex items-center gap-2.5 text-3xl font-extrabold tracking-tight">
                 <Activity className="h-7 w-7 text-indigo-400" />
                 {project?.display_name || "Engineering"} Command Center
               </h1>
@@ -135,7 +145,7 @@ export function EngineeringCommandCenter() {
                 )}
               </Badge>
             </div>
-            <p className="mt-1 font-mono text-xs text-gray-400">{project?.root_path}</p>
+            <p className="text-secondary-text mt-1 font-mono text-xs">{project?.root_path}</p>
           </div>
 
           <div className="flex items-center gap-2.5">

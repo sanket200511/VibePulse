@@ -172,6 +172,9 @@ async function runSprint12E2E() {
   const tmpRootA = fs.mkdtempSync(path.join(os.tmpdir(), "vp-s12-projA-"));
   const tmpRootB = fs.mkdtempSync(path.join(os.tmpdir(), "vp-s12-projB-"));
 
+  let projA = null;
+  let projB = null;
+
   try {
     // ── STEP 1: CREATE PROJECTS ──────────────────────────────────────────────
     const projARes = await request("POST", "/api/projects", {
@@ -179,14 +182,14 @@ async function runSprint12E2E() {
       root_path: tmpRootA,
     });
     assert(projARes.status === 200 || projARes.status === 201, "Created Project A");
-    const projA = projARes.data;
+    projA = projARes.data;
 
     const projBRes = await request("POST", "/api/projects", {
       display_name: "Sprint 12 Inventory (Project B)",
       root_path: tmpRootB,
     });
     assert(projBRes.status === 200 || projBRes.status === 201, "Created Project B");
-    const projB = projBRes.data;
+    projB = projBRes.data;
     log(`✔ Registered isolated test projects: A (${projA.id}) and B (${projB.id})`);
 
     // ── STEP 2: INGEST TELEMETRY & TRIGGER SECURITY ANALYZER ─────────────────
