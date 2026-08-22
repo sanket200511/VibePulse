@@ -33,8 +33,7 @@ async function main(): Promise<void> {
   // ── Configuration ─────────────────────────────────────────────────────────
   const config = loadConfig();
   const rawWatchRoot = process.env["WATCH_ROOT"] ?? process.cwd();
-  const apiUrl =
-    getEnv("VIBEPULSE_API_URL") ?? getEnv("API_URL") ?? "http://localhost:5133";
+  const apiUrl = getEnv("VIBEPULSE_API_URL") ?? getEnv("API_URL") ?? "http://localhost:5133";
 
   logger.info("=========================================");
   logger.info("           VibePulse Daemon              ");
@@ -135,10 +134,16 @@ async function main(): Promise<void> {
   process.on("SIGINT", () => void shutdown("SIGINT"));
   process.on("SIGTERM", () => void shutdown("SIGTERM"));
   process.on("unhandledRejection", (reason: unknown) => {
-    logger.error("[Daemon Resilient Supervisor] Unhandled rejection intercepted (process kept alive):", reason);
+    logger.error(
+      "[Daemon Resilient Supervisor] Unhandled rejection intercepted (process kept alive):",
+      reason,
+    );
   });
   process.on("uncaughtException", (error: Error) => {
-    logger.error("[Daemon Resilient Supervisor] Uncaught exception intercepted (process kept alive):", error);
+    logger.error(
+      "[Daemon Resilient Supervisor] Uncaught exception intercepted (process kept alive):",
+      error,
+    );
   });
 }
 

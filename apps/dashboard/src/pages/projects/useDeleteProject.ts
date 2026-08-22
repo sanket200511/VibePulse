@@ -41,7 +41,9 @@ export function useDeleteProject(options?: { onSuccess?: () => void }) {
         const errorJson = await response.json().catch(() => null);
         if (response.status === 409 && errorJson?.detail) {
           const detail = errorJson.detail as DeleteProjectError;
-          const err = new Error(detail.message || "Project is currently active and cannot be deleted.");
+          const err = new Error(
+            detail.message || "Project is currently active and cannot be deleted.",
+          );
           (err as unknown as { isConflict: boolean; detail: DeleteProjectError }).isConflict = true;
           (err as unknown as { isConflict: boolean; detail: DeleteProjectError }).detail = detail;
           throw err;

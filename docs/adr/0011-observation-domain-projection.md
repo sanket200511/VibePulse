@@ -25,11 +25,11 @@ We will model "Observation" as a projection over the `development_events` table 
 
 Creating a dedicated `observation_sessions` table with foreign keys forces a rigid persistence boundary. It would require us to retroactively assign `observation_id`s to incoming events. If an event arrived late, or if a daemon crashed without writing a "STOP" row, we would have dangling foreign keys or ambiguous ownership.
 
-By injecting `OBSERVATION_STARTED` and `OBSERVATION_STOPPED` directly into the `DevelopmentEvent` log, we maintain a **single immutable source of truth**. 
+By injecting `OBSERVATION_STARTED` and `OBSERVATION_STOPPED` directly into the `DevelopmentEvent` log, we maintain a **single immutable source of truth**.
 
 ### Preserving the Projection-First Philosophy
 
-VibePulse is intentionally built around derivations rather than complex state mutations (ADRs 0006-0009). 
+VibePulse is intentionally built around derivations rather than complex state mutations (ADRs 0006-0009).
 - **Timeline Engine:** Can inherently render "Start/Stop" blocks perfectly because they are just regular events that occurred chronologically between file edits. No JOINs required.
 - **Replay & Reflection:** Can determine exact observation bounds simply by querying the event log between these markers. They don't need to "sync" state between an `observation_sessions` table and the `development_events` table.
 - **Health:** Health metrics naturally scope to the active observation windows by filtering out events that occurred outside of a `STARTED`/`STOPPED` pair.

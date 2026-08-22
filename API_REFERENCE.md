@@ -1,147 +1,130 @@
 # VibePulse API Reference
 
-The VibePulse backend exposes a RESTful API and WebSocket endpoints for real-time telemetry. The API is built with FastAPI and strictly typed using Pydantic.
-
-## Base URL
-
-When running locally, the API is available at:
-
-```
-http://localhost:5133
-```
-
-An interactive Swagger UI is available at `http://localhost:5133/docs`.
+**Status**: Authoritative API Reference
+**Base URL**: `http://localhost:5133`
+**Interactive OpenAPI Docs**: `http://localhost:5133/docs`
 
 ---
 
-## 1. Events API
+## 1. Projects API
+
+### `POST /api/projects`
+
+Ensures or registers a project workspace on disk. Idempotent.
+
+- **Request**: `{"root_path": "D:\\Projects\\App", "display_name": "App"}`
+- **Response**: `200 OK` with `ProjectRead` object.
+
+### `GET /api/projects`
+
+Lists all registered project workspaces with active session count and status.
+
+### `GET /api/projects/{project_id}`
+
+Retrieves a specific project by UUID.
+
+### `DELETE /api/projects/{project_id}`
+
+Safely deletes a project from VibePulse. Cascades deletion strictly to internal database records; physical files on disk remain untouched.
+
+---
+
+## 2. Telemetry Ingestion & Sessions
 
 ### `POST /events`
 
-Publishes a new development event from the daemon.
-
-**Request Body:**
-
-```json
-{
-  "session_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-  "project_root": "/Users/dev/my-project",
-  "file_path": "src/main.ts",
-  "file_name": "main.ts",
-  "event_type": "FILE_MODIFIED",
-  "language": "typescript",
-  "git_branch": "main",
-  "timestamp": "2026-08-06T15:00:00Z",
-  "daemon_seq": 42
-}
-```
-
-**Response (201 Created or 200 OK):**
-Returns the persisted `DevelopmentEvent`. Deduplication occurs implicitly on `(session_id, file_path, event_type, timestamp)`.
+Ingests raw development events from the telemetry daemon (`5135`). Deduplicated on `(session_id, file_path, event_type, timestamp)`.
 
 ### `GET /events`
 
-Retrieves a paginated list of recent events.
-
-**Query Parameters:**
-
-- `limit` (int, default: 200)
-
-**Response:**
-Returns a list of `DevelopmentEventRead` objects, ordered by newest first.
-
----
-
-## 2. Sessions API
+Retrieves recent development events, newest first.
 
 ### `GET /sessions`
 
-Retrieves recent development sessions.
-
-**Query Parameters:**
-
-- `limit` (int, default: 50)
-
-**Response:**
-Returns a list of `SessionRead` objects.
+Retrieves development sessions (`ACTIVE`, `IDLE`, `COMPLETED`).
 
 ### `GET /sessions/current`
 
-Returns the currently `ACTIVE` or `IDLE` session.
-
-**Response (200 OK or 404 Not Found):**
-
-```json
-{
-  "id": "123e4567-e89b-12d3-a456-426614174000",
-  "project_root": "/Users/dev/my-project",
-  "status": "ACTIVE",
-  "event_count": 150,
-  "started_at": "2026-08-06T14:30:00Z"
-}
-```
-
-### `GET /sessions/{session_id}`
-
-Retrieves a specific session by its UUID.
+Retrieves the currently active session.
 
 ---
 
-## 3. Telemetry & Analytics
+## 3. Security Intelligence 2.0
 
-### `GET /sessions/{session_id}/timeline`
+### `GET /api/projects/{project_id}/security`
 
-Generates a chronological timeline projection for a specific session.
-
-**Response:**
-Returns a `SessionTimeline` object containing structural markers (`SESSION_START`, `IDLE_GAP`) and grouped file modification insights.
-
-### `GET /sessions/{session_id}/replay`
-
-Reconstructs the session timeline into replayable semantic chapters (`WORK`, `IDLE`, `COMPLETED`).
-
-### `GET /sessions/{session_id}/health`
-
-Computes the Health Engine score for a completed session.
-_Note: Returns `409 Conflict` if the session is still active._
-
-### `GET /sessions/{session_id}/profile`
-
-Builds the Developer Intelligence Profile (Insights) for a session.
+Computes the security posture and AST rule findings (`SEC001`, `DEBUG_TRUE`, credential leaks). All sensitive tokens are masked to `[REDACTED]`.
 
 ---
 
-## 4. Observation Control (Daemon Proxy)
+## 4. Investigation & Incident Resolution 3.0
 
-### `POST /projects/{project_root}/observation/start`
+### `GET /api/investigation/search`
 
-Idempotently starts file observation on the daemon.
+Faceted search over correlated incidents across all observed projects.
 
-### `POST /projects/{project_root}/observation/stop`
+### `GET /api/projects/{project_id}/investigations/{incident_id}`
 
-Idempotently stops file observation on the daemon.
+Retrieves the causal DAG evidence graph, score breakdown ($W_i \times S_i$), and root cause narrative for an incident.
+
+### `POST /api/projects/{project_id}/investigations/{incident_id}/review`
+
+Updates the review state (`OPEN` $\to$ `INVESTIGATING` $\to$ `MITIGATING` $\to$ `REVIEWED` $\to$ `RESOLVED` $\to$ `FALSE_POSITIVE`) with reviewer attribution and triage notes.
+
+### `GET /api/projects/{project_id}/investigations/{incident_id}/history`
+
+Fetches the immutable lifecycle transition audit history for an incident.
 
 ---
 
-## 5. WebSockets
+## 5. Unified Project Health & Metric Triad
 
-Real-time streaming is available over WebSockets. Clients should implement exponential backoff reconnection.
+### `GET /api/projects/{project_id}/health`
 
-### `ws://localhost:5133/ws/events`
+Returns the Metric Triad (`Overall Health Score`, `Security Risk Score`, `Forecast Strength`), 5-dimension score breakdown, and prioritized action recommendations.
 
-Broadcasts every new `DevelopmentEvent` exactly as it is ingested.
+### `POST /api/projects/{project_id}/health/refresh`
 
-### `ws://localhost:5133/ws/sessions`
+Deterministically recomputes health state from current PostgreSQL ground truth.
 
-Broadcasts full `SessionRead` payloads on state transitions (e.g., `session.started`, `session.updated`, `session.completed`).
+---
 
-```json
-{
-  "type": "session.updated",
-  "session": {
-    "id": "...",
-    "status": "ACTIVE",
-    "event_count": 42
-  }
-}
-```
+## 6. Predictive Engineering Intelligence
+
+### `GET /api/projects/{project_id}/predictions`
+
+Returns time-series code churn velocity trends, modification acceleration slope, directory focus drift, and regression risk forecasts.
+
+---
+
+## 7. Engineering Knowledge Graph & Project Memory 2.0
+
+### `GET /api/projects/{project_id}/knowledge-graph`
+
+Materializes the semantic multi-entity graph (`FILE`, `SUBSYSTEM`, `SECURITY_RULE`, `INCIDENT`, `SESSION`).
+
+### `GET /api/projects/{project_id}/knowledge-graph/search?q={query}`
+
+Multi-entity deterministic graph search across files, rules, and subsystems.
+
+### `GET /api/projects/{project_id}/context/export`
+
+Exports portable `PROJECT_CONTEXT.md` containing ground truth state for AI agent handoffs.
+
+---
+
+## 8. AI Engineering Copilot Foundation
+
+### `POST /api/projects/{project_id}/copilot/query`
+
+Evaluates natural engineering queries across 16 canonical query families with grounded tri-state facts (`[OBSERVED]`, `[INFERRED]`, `[UNKNOWN]`) and Answerability Gate.
+
+- **Request**: `{"query": "What is the health of this project?"}`
+- **Response**: `{"query_family": "PROJECT_HEALTH", "provenance": "INFERRED", "answer": "...", "confidence": 1.0}`
+
+---
+
+## 9. Real-Time WebSockets
+
+- `ws://localhost:5133/ws/events`: Live raw event broadcast stream.
+- `ws://localhost:5133/ws/sessions`: Live session state transition broadcast stream.

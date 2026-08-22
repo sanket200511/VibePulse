@@ -106,7 +106,9 @@ async function runReconstructibilityAudit() {
         subsystem: "Knowledge Graph Nodes",
         stateA: `${kgA.data.total_nodes} nodes, ${kgA.data.total_edges} edges`,
         stateB: `${kgB.data.total_nodes} nodes, ${kgB.data.total_edges} edges`,
-        match: kgA.data.total_nodes === kgB.data.total_nodes && kgA.data.total_edges === kgB.data.total_edges,
+        match:
+          kgA.data.total_nodes === kgB.data.total_nodes &&
+          kgA.data.total_edges === kgB.data.total_edges,
       },
       {
         subsystem: "Copilot Synthesis Narrative",
@@ -124,14 +126,19 @@ async function runReconstructibilityAudit() {
         subsystem: "Engineering Stability Dimension",
         stateA: `${healthA.data.engineering_stability.score}/100`,
         stateB: `${healthB.data.engineering_stability.score}/100`,
-        match: healthA.data.engineering_stability.score === healthB.data.engineering_stability.score,
+        match:
+          healthA.data.engineering_stability.score === healthB.data.engineering_stability.score,
       },
     ];
 
     console.table(results);
 
     const allMatched = results.every((r) => r.match);
-    console.log(allMatched ? "✅ RECONSTRUCTIBILITY AUDIT ($A ≡ B): 100% DETERMINISTIC MATCH!" : "❌ AUDIT FAILED!");
+    console.log(
+      allMatched
+        ? "✅ RECONSTRUCTIBILITY AUDIT ($A ≡ B): 100% DETERMINISTIC MATCH!"
+        : "❌ AUDIT FAILED!",
+    );
 
     await request("DELETE", `/api/projects/${projectId}`);
     if (!allMatched) process.exit(1);

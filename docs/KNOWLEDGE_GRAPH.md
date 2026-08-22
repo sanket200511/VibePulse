@@ -1,6 +1,6 @@
 # Engineering Knowledge Graph & Project Memory 2.0
 
-> **Sprint 10 Deliverable — VibePulse Observability Platform**  
+> **Sprint 10 Deliverable — VibePulse Observability Platform**
 > _Central Principle: "What Does VibePulse Know About This Project, and How Are Its Parts Connected?"_
 
 ---

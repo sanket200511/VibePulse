@@ -1,42 +1,58 @@
-# Security Policy
+# VibePulse — Security & Privacy Architecture Policy
 
-VibePulse is designed to observe sensitive intellectual property (source code). We take the security of this platform extremely seriously.
+**Status**: Authoritative Security Policy
+**Classification**: Local-First, Zero-Exfiltration, Privacy-by-Design
 
-## Supported Versions
+---
 
-Only the most recent major version is currently supported for security updates.
+## 🔒 Core Privacy & Security Guarantees
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.0.x   | :white_check_mark: |
-| 0.x.x   | :x:                |
+VibePulse is designed from the ground up to observe proprietary intellectual property without compromising developer privacy or risking source code exfiltration:
 
-## Architecture Security Guarantees
+### 1. Zero Code Exfiltration
 
-- **No Code Exfiltration**: The VibePulse daemon does not upload source code to third-party services. All processing (AST extraction, Git context) happens strictly on the local machine and your self-hosted backend.
-- **Read-Only Daemon**: The Node.js watcher operates in read-only mode and has no mechanism to write, modify, or delete files in the observed workspace.
-- **Idempotent Storage**: Duplicate payloads are discarded natively by the database, preventing flood attacks from misconfigured daemons.
+- The VibePulse observation daemon operates strictly on your local machine and communicates solely with your configured FastAPI backend (`http://localhost:5133`).
+- Zero telemetry, code snippets, or developer activity is transmitted to third-party cloud LLM APIs or external servers.
 
-## Reporting a Vulnerability
+### 2. AST Secret Redaction by Design
 
-If you discover a security vulnerability, please do NOT report it by opening a public GitHub issue.
+- The static AST inspection engine actively scans for credentials, API keys, passwords, and tokens matching security rule patterns (e.g. `SEC001`).
+- All captured secret tokens are masked to `[REDACTED]` in memory **before** persistence into PostgreSQL and before JSON serialization to the UI or Copilot responses.
+- Verified across all endpoints: Security Intelligence API, Copilot Retrieval, Knowledge Graph, and `PROJECT_CONTEXT.md` exports.
 
-Instead, please send an email to `security@vibepulse.dev` (or the repository maintainer directly).
+### 3. Read-Only Observation Boundary
 
-We will acknowledge receipt within 48 hours and provide a timeline for triage and resolution.
+- The telemetry daemon (`apps/daemon`) operates strictly in read-only observation mode.
+- The daemon does not possess filesystem write capabilities; it cannot mutate, overwrite, or delete code files in the observed workspace.
 
-### What to include in your report:
+### 4. Multi-Project Tenant Isolation
 
-- A detailed description of the vulnerability.
-- Steps to reproduce the issue (including any necessary payloads or environment configuration).
-- Potential impact and risk assessment.
+- All database records (`sessions`, `development_events`, `event_analyses`, `incident_review_states`) are strictly scoped by `project_id`.
+- Queries, causal graphs, knowledge graphs, and Copilot context for Project A are 100% isolated from Project B.
 
-### Out of Scope
+### 5. Safe Project Deletion Invariant
 
-The following are currently out of scope for security reports:
+- Deleting a project through the VibePulse UI or API cascades deletion exclusively to database telemetry records.
+- The physical directory and source code files on the developer's disk remain completely untouched.
 
-- Lack of authentication/authorization in `v1.0.0`. (This is a known, documented limitation for internal-only deployments, scheduled to be fixed in `v1.1.0`).
-- Vulnerabilities that require full access to the developer's local machine or the PostgreSQL database.
-- Denial of Service (DoS) attacks requiring massive compute resources.
+---
 
-Thank you for helping keep VibePulse secure!
+## 🛡️ Supported Versions
+
+| Version / Branch         | Supported          | Security Policy                                              |
+| ------------------------ | ------------------ | ------------------------------------------------------------ |
+| `v1.0.0-freeze` (master) | :white_check_mark: | Active support for local-first seminar & academic deployment |
+| `< 1.0.0`                | :x:                | Historical developmental versions                            |
+
+---
+
+## 🚨 Vulnerability Reporting
+
+If you identify a security or privacy vulnerability, please do NOT create a public GitHub issue.
+
+Please report findings to the repository maintainer or email `security@vibepulse.dev`. We acknowledge reports within 48 hours and provide remediation timelines.
+
+### Scope & Known Constraints
+
+- **Local Dev Deployment**: In `v1.0.0`, API and Dashboard run locally within developer network boundaries without token-based authentication. Authentication and RBAC are scheduled for `v2.0` multi-tenant updates.
+- **Physical Host Access**: Scenarios assuming root/administrator access to the underlying machine or raw PostgreSQL server are out of scope.

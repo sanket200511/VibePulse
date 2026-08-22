@@ -168,7 +168,7 @@ Never hide it. Always prominent.
 
 AI findings should read like a senior engineer, not a marketing bot.
 
-✅ `Hardcoded API key detected in src/config.ts line 42. Exposure risk: HIGH.`  
+✅ `Hardcoded API key detected in src/config.ts line 42. Exposure risk: HIGH.`
 ❌ `Potential issue found in your code.`
 
 Every AI message includes:

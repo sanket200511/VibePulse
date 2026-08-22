@@ -5,7 +5,8 @@
 ---
 
 ## 1. Provably Verified Claims
-*Claims backed by direct source code, unit tests, integration tests, and automated E2E scripts:*
+
+_Claims backed by direct source code, unit tests, integration tests, and automated E2E scripts:_
 
 1. **Continuous Filesystem Observation**: Automatically captures uncommitted file modifications, language categorization, and diff chunks without requiring manual developer input.
 2. **Static AST Risk Detection**: Extracts `SEC001` (hardcoded credentials) and `DEBUG_TRUE` violations via Tree-Sitter & Python AST.
@@ -22,7 +23,8 @@
 ---
 
 ## 2. Empirically Measured Claims
-*Claims measured locally under benchmark conditions:*
+
+_Claims measured locally under benchmark conditions:_
 
 - **Project Registration**: Mean latency of $12.62\text{ ms}$.
 - **Event Ingestion & AST Analysis**: Mean latency of $14.05\text{ ms}$.
@@ -36,7 +38,8 @@
 ---
 
 ## 3. Architectural Guarantees
-*Guarantees enforced by system design:*
+
+_Guarantees enforced by system design:_
 
 - **PostgreSQL Ground Truth**: Relational persistence ensures ACID durability for all events and audit history.
 - **Zero Third-Party LLM Dependency**: Pure deterministic retrieval eliminates hallucinations, API token costs, and remote code leakage.
@@ -45,7 +48,8 @@
 ---
 
 ## 4. Current Limitations
-*Explicit system boundaries:*
+
+_Explicit system boundaries:_
 
 - Scoped to local workstation development telemetry and static AST rules.
 - Remote CI/CD runners and cloud infrastructure changes are outside local observation boundaries (`[UNKNOWN]`).

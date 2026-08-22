@@ -60,37 +60,39 @@
 
 ## 3. Database Schema (`project_contexts`)
 
-| Column | Type | Description |
-|---|---|---|
-| `id` | `UUID` (PK) | Unique identifier for the context record. |
-| `project_id` | `UUID` (FK, Unique, Indexed) | References `projects.id` with `CASCADE` delete. |
-| `languages` | `JSONB` | Distribution of languages by event count and percentage. |
-| `frameworks` | `JSONB` | Array of detected frameworks with evidence provenance. |
-| `technologies` | `JSONB` | Array of detected runtimes, databases, and tooling. |
-| `package_managers` | `JSONB` | Detected dependency management tooling. |
-| `important_files` | `JSONB` | Top observed files sorted by frequency and semantic role. |
-| `configuration_files` | `JSONB` | Key configuration and manifest artifacts. |
-| `test_directories` | `JSONB` | Discovered test suites and directory paths. |
-| `source_directories` | `JSONB` | Discovered application source roots. |
-| `git_context` | `JSONB` | Active git branch and tracked branches. |
-| `development_patterns` | `JSONB` | Identified engineering focus areas (Auth, API, UI, DB, QA). |
-| `security_summary` | `JSONB` | Cumulative risk counts and top triggered security rules. |
-| `activity_summary` | `JSONB` | Total sessions, events, and observation windows. |
-| `architecture_summary`| `JSONB` | Monorepo/workspace classification and modular topology. |
-| `context_version` | `Integer` | Schema/aggregation version (default `1`). |
-| `first_observed_at` | `DateTime(TZ)` | Earliest recorded telemetry timestamp. |
-| `last_analyzed_at` | `DateTime(TZ)` | Timestamp of most recent context re-aggregation. |
-| `created_at` | `DateTime(TZ)` | Record creation timestamp. |
-| `updated_at` | `DateTime(TZ)` | Record update timestamp. |
+| Column                 | Type                         | Description                                                 |
+| ---------------------- | ---------------------------- | ----------------------------------------------------------- |
+| `id`                   | `UUID` (PK)                  | Unique identifier for the context record.                   |
+| `project_id`           | `UUID` (FK, Unique, Indexed) | References `projects.id` with `CASCADE` delete.             |
+| `languages`            | `JSONB`                      | Distribution of languages by event count and percentage.    |
+| `frameworks`           | `JSONB`                      | Array of detected frameworks with evidence provenance.      |
+| `technologies`         | `JSONB`                      | Array of detected runtimes, databases, and tooling.         |
+| `package_managers`     | `JSONB`                      | Detected dependency management tooling.                     |
+| `important_files`      | `JSONB`                      | Top observed files sorted by frequency and semantic role.   |
+| `configuration_files`  | `JSONB`                      | Key configuration and manifest artifacts.                   |
+| `test_directories`     | `JSONB`                      | Discovered test suites and directory paths.                 |
+| `source_directories`   | `JSONB`                      | Discovered application source roots.                        |
+| `git_context`          | `JSONB`                      | Active git branch and tracked branches.                     |
+| `development_patterns` | `JSONB`                      | Identified engineering focus areas (Auth, API, UI, DB, QA). |
+| `security_summary`     | `JSONB`                      | Cumulative risk counts and top triggered security rules.    |
+| `activity_summary`     | `JSONB`                      | Total sessions, events, and observation windows.            |
+| `architecture_summary` | `JSONB`                      | Monorepo/workspace classification and modular topology.     |
+| `context_version`      | `Integer`                    | Schema/aggregation version (default `1`).                   |
+| `first_observed_at`    | `DateTime(TZ)`               | Earliest recorded telemetry timestamp.                      |
+| `last_analyzed_at`     | `DateTime(TZ)`               | Timestamp of most recent context re-aggregation.            |
+| `created_at`           | `DateTime(TZ)`               | Record creation timestamp.                                  |
+| `updated_at`           | `DateTime(TZ)`               | Record update timestamp.                                    |
 
 ---
 
 ## 4. API Endpoints
 
 ### `GET /api/projects/{project_id}/context`
+
 Retrieves or lazily initializes the durable Project Context for the specified project.
 
 ### `POST /api/projects/{project_id}/context/refresh`
+
 Forces an immediate re-aggregation of all project telemetry, persisting the updated intelligence state into PostgreSQL.
 
 ---
@@ -98,6 +100,7 @@ Forces an immediate re-aggregation of all project telemetry, persisting the upda
 ## 5. UI Integration
 
 The **Project Context Memory** interface is rendered directly inside the Project Details view (`/projects/:id`), featuring:
+
 - **Durable Intelligence Badge**: Shows PostgreSQL persistence state and last updated timestamp.
 - **Language Breakdown**: Real distribution bars derived from observed file events.
 - **Detected Frameworks & Tools**: Cards detailing name, category, and deterministic evidence provenance.

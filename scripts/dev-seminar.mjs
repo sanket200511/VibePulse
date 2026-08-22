@@ -26,9 +26,7 @@ const API_PORT = Number(process.env.VIBEPULSE_API_PORT || process.env.API_PORT |
 const DASHBOARD_PORT = Number(
   process.env.VIBEPULSE_DASHBOARD_PORT || process.env.DASHBOARD_PORT || 5134,
 );
-const DAEMON_PORT = Number(
-  process.env.VIBEPULSE_DAEMON_PORT || process.env.DAEMON_PORT || 5135,
-);
+const DAEMON_PORT = Number(process.env.VIBEPULSE_DAEMON_PORT || process.env.DAEMON_PORT || 5135);
 
 const IS_DEBUG =
   process.env.VIBEPULSE_LOG_LEVEL === "debug" ||
@@ -247,26 +245,26 @@ function processChildOutput(svcKey, rawText, isStderr = false) {
     if (svcKey === "api") {
       // Suppress noisy repetitive health polls, heartbeats, and startup banner
       if (
-        trimmed.includes('GET /health') ||
-        trimmed.includes('GET /events') ||
-        trimmed.includes('session_sweep_complete') ||
-        trimmed.includes('Started reloader process') ||
-        trimmed.includes('Started server process') ||
-        trimmed.includes('Waiting for application startup') ||
-        trimmed.includes('Application startup complete')
+        trimmed.includes("GET /health") ||
+        trimmed.includes("GET /events") ||
+        trimmed.includes("session_sweep_complete") ||
+        trimmed.includes("Started reloader process") ||
+        trimmed.includes("Started server process") ||
+        trimmed.includes("Waiting for application startup") ||
+        trimmed.includes("Application startup complete")
       ) {
         continue;
       }
       // Highlight important lifecycle and event notifications
-      if (trimmed.includes('Uvicorn running on')) {
+      if (trimmed.includes("Uvicorn running on")) {
         log("API", "READY", `Uvicorn server listening on port ${API_PORT}`);
         continue;
       }
-      if (trimmed.includes('Will watch for changes')) {
+      if (trimmed.includes("Will watch for changes")) {
         log("API", "INFO", "Hot-reload file watcher enabled");
         continue;
       }
-      if (trimmed.includes('POST /events')) {
+      if (trimmed.includes("POST /events")) {
         log("API", "EVENT", "Telemetry development event ingested");
         continue;
       }
@@ -279,11 +277,15 @@ function processChildOutput(svcKey, rawText, isStderr = false) {
         }
         continue;
       }
-      if (trimmed.includes('SEC001') || trimmed.includes('Security Finding')) {
+      if (trimmed.includes("SEC001") || trimmed.includes("Security Finding")) {
         log("SECURITY", "FINDING", `Security finding detected [REDACTED]`);
         continue;
       }
-      if (trimmed.startsWith("ERROR:") || trimmed.includes("Traceback") || trimmed.includes("Exception:")) {
+      if (
+        trimmed.startsWith("ERROR:") ||
+        trimmed.includes("Traceback") ||
+        trimmed.includes("Exception:")
+      ) {
         log("API", "ERROR", trimmed);
         continue;
       }
@@ -311,14 +313,14 @@ function processChildOutput(svcKey, rawText, isStderr = false) {
         log("DASHBOARD", "INFO", "Configuration changed — restarting Vite server");
         continue;
       }
-      if (
-        trimmed.startsWith(">") ||
-        trimmed.includes("Local:") ||
-        trimmed.includes("Network:")
-      ) {
+      if (trimmed.startsWith(">") || trimmed.includes("Local:") || trimmed.includes("Network:")) {
         continue; // Suppress redundant Vite banner
       }
-      if (trimmed.includes("Error:") || trimmed.includes("ERR_") || trimmed.includes("Failed to resolve")) {
+      if (
+        trimmed.includes("Error:") ||
+        trimmed.includes("ERR_") ||
+        trimmed.includes("Failed to resolve")
+      ) {
         log("DASHBOARD", "ERROR", trimmed);
         continue;
       }
@@ -365,7 +367,11 @@ function processChildOutput(svcKey, rawText, isStderr = false) {
       ) {
         continue; // Suppress verbose startup banners in normal mode
       }
-      if (trimmed.includes("[ERROR]") || trimmed.includes("Error:") || trimmed.includes("ECONNREFUSED")) {
+      if (
+        trimmed.includes("[ERROR]") ||
+        trimmed.includes("Error:") ||
+        trimmed.includes("ECONNREFUSED")
+      ) {
         log("DAEMON", "ERROR", trimmed);
         continue;
       }
@@ -406,16 +412,26 @@ function spawnService(key) {
 
     console.log(`\n${RED}─────────────────────────────────────────────────────────────${RESET}`);
     log(svc.name, "ERROR", `${svc.displayName} process exited unexpectedly (code: ${code})`);
-    console.log(`  ${YELLOW}Action: Check service logs or run with VIBEPULSE_LOG_LEVEL=debug${RESET}`);
+    console.log(
+      `  ${YELLOW}Action: Check service logs or run with VIBEPULSE_LOG_LEVEL=debug${RESET}`,
+    );
     console.log(`${RED}─────────────────────────────────────────────────────────────${RESET}\n`);
 
     restartCounts[key]++;
     if (restartCounts[key] > 10) {
-      log("SUPERVISOR", "ERROR", `Exceeded maximum restart attempts (10) for ${svc.name}. Halting.`);
+      log(
+        "SUPERVISOR",
+        "ERROR",
+        `Exceeded maximum restart attempts (10) for ${svc.name}. Halting.`,
+      );
       return;
     }
 
-    log("SUPERVISOR", "RETRY", `Restarting ${svc.name} in 2s (Attempt ${restartCounts[key]}/10)...`);
+    log(
+      "SUPERVISOR",
+      "RETRY",
+      `Restarting ${svc.name} in 2s (Attempt ${restartCounts[key]}/10)...`,
+    );
     setTimeout(() => {
       if (!isShuttingDown) {
         spawnService(key);
@@ -449,9 +465,7 @@ function shutdownAll(signal = "SIGINT") {
   log("DATABASE", "INFO", "PostgreSQL connection pool released");
 
   setTimeout(() => {
-    printBox([
-      "                  VIBEPULSE STOPPED CLEANLY                   ",
-    ], GREEN);
+    printBox(["                  VIBEPULSE STOPPED CLEANLY                   "], GREEN);
     console.log("");
     process.exit(0);
   }, 1000);
@@ -485,7 +499,9 @@ ${CYAN}${BOLD}╔═════════════════════
   // Step 1: Pre-flight database readiness check
   const pgUp = await checkTcpPort("127.0.0.1", 5432);
   if (!pgUp) {
-    console.error(`\n${RED}[DATABASE ERROR] Local PostgreSQL is not reachable on port 5432!${RESET}`);
+    console.error(
+      `\n${RED}[DATABASE ERROR] Local PostgreSQL is not reachable on port 5432!${RESET}`,
+    );
     console.error(`  Please verify your local PostgreSQL service is running.\n`);
     process.exit(1);
   }
@@ -500,14 +516,27 @@ ${CYAN}${BOLD}╔═════════════════════
   ]);
 
   if (apiConflict || dashConflict || daemonConflict) {
-    console.error(`\n${RED}${BOLD}─────────────────────────────────────────────────────────────${RESET}`);
+    console.error(
+      `\n${RED}${BOLD}─────────────────────────────────────────────────────────────${RESET}`,
+    );
     console.error(`${RED}${BOLD}[PORT CONFLICT DETECTED]${RESET}`);
-    if (apiConflict) console.error(`  ${RED}• Port ${API_PORT} (API) is occupied by another process.${RESET}`);
-    if (dashConflict) console.error(`  ${RED}• Port ${DASHBOARD_PORT} (Dashboard) is occupied by another process.${RESET}`);
-    if (daemonConflict) console.error(`  ${RED}• Port ${DAEMON_PORT} (Daemon) is occupied by another process.${RESET}`);
+    if (apiConflict)
+      console.error(`  ${RED}• Port ${API_PORT} (API) is occupied by another process.${RESET}`);
+    if (dashConflict)
+      console.error(
+        `  ${RED}• Port ${DASHBOARD_PORT} (Dashboard) is occupied by another process.${RESET}`,
+      );
+    if (daemonConflict)
+      console.error(
+        `  ${RED}• Port ${DAEMON_PORT} (Daemon) is occupied by another process.${RESET}`,
+      );
     console.error(`\n  ${YELLOW}Please stop conflicting processes or override ports via:${RESET}`);
-    console.error(`    VIBEPULSE_API_PORT=<port> VIBEPULSE_DASHBOARD_PORT=<port> VIBEPULSE_DAEMON_PORT=<port>`);
-    console.error(`${RED}${BOLD}─────────────────────────────────────────────────────────────${RESET}\n`);
+    console.error(
+      `    VIBEPULSE_API_PORT=<port> VIBEPULSE_DASHBOARD_PORT=<port> VIBEPULSE_DAEMON_PORT=<port>`,
+    );
+    console.error(
+      `${RED}${BOLD}─────────────────────────────────────────────────────────────${RESET}\n`,
+    );
     process.exit(1);
   }
 
@@ -526,7 +555,11 @@ ${CYAN}${BOLD}╔═════════════════════
   if (dashReady) {
     log("DASHBOARD", "READY", `Dashboard accessible at http://localhost:${DASHBOARD_PORT}`);
   } else {
-    log("DASHBOARD", "WARN", `Dashboard took longer than 25s to respond on port ${DASHBOARD_PORT}, continuing...`);
+    log(
+      "DASHBOARD",
+      "WARN",
+      `Dashboard took longer than 25s to respond on port ${DASHBOARD_PORT}, continuing...`,
+    );
   }
 
   // Step 5: Start Telemetry Daemon
@@ -535,25 +568,32 @@ ${CYAN}${BOLD}╔═════════════════════
   if (daemonReady) {
     log("DAEMON", "READY", `Daemon healthy at http://localhost:${DAEMON_PORT}/health`);
   } else {
-    log("DAEMON", "WARN", `Daemon took longer than 20s to respond on port ${DAEMON_PORT}, continuing...`);
+    log(
+      "DAEMON",
+      "WARN",
+      `Daemon took longer than 20s to respond on port ${DAEMON_PORT}, continuing...`,
+    );
   }
 
   // Ready State Banner
   console.log("");
-  printBox([
-    `                     ${BOLD}VIBEPULSE IS READY${RESET}${GREEN}                       `,
-    ``,
-    `  Dashboard   → ${CYAN}http://localhost:${DASHBOARD_PORT}${RESET}${GREEN}`,
-    `  API         → ${CYAN}http://localhost:${API_PORT}${RESET}${GREEN}`,
-    `  API Docs    → ${CYAN}http://localhost:${API_PORT}/docs${RESET}${GREEN}`,
-    `  Daemon      → ${CYAN}http://localhost:${DAEMON_PORT}/health${RESET}${GREEN}`,
-    ``,
-    `  Observation → ${BOLD}ACTIVE${RESET}${GREEN}`,
-    `  Database    → ${BOLD}CONNECTED${RESET}${GREEN}`,
-    `  WebSocket   → ${BOLD}ws://localhost:${API_PORT}${RESET}${GREEN}`,
-    ``,
-    `  ${DIM}Press Ctrl+C to stop VibePulse.${RESET}${GREEN}`,
-  ], GREEN);
+  printBox(
+    [
+      `                     ${BOLD}VIBEPULSE IS READY${RESET}${GREEN}                       `,
+      ``,
+      `  Dashboard   → ${CYAN}http://localhost:${DASHBOARD_PORT}${RESET}${GREEN}`,
+      `  API         → ${CYAN}http://localhost:${API_PORT}${RESET}${GREEN}`,
+      `  API Docs    → ${CYAN}http://localhost:${API_PORT}/docs${RESET}${GREEN}`,
+      `  Daemon      → ${CYAN}http://localhost:${DAEMON_PORT}/health${RESET}${GREEN}`,
+      ``,
+      `  Observation → ${BOLD}ACTIVE${RESET}${GREEN}`,
+      `  Database    → ${BOLD}CONNECTED${RESET}${GREEN}`,
+      `  WebSocket   → ${BOLD}ws://localhost:${API_PORT}${RESET}${GREEN}`,
+      ``,
+      `  ${DIM}Press Ctrl+C to stop VibePulse.${RESET}${GREEN}`,
+    ],
+    GREEN,
+  );
   console.log("");
 
   // Step 6: Non-Intrusive Health Monitoring Heartbeat (every 30s)
@@ -571,13 +611,18 @@ ${CYAN}${BOLD}╔═════════════════════
     if (!allHealthy) {
       lastHealthState = false;
       if (!apiOk) log("API", "WARN", "Health check failed (unresponsive on /health)");
-      if (!dashOk) log("DASHBOARD", "WARN", `Health check failed (unresponsive on :${DASHBOARD_PORT})`);
+      if (!dashOk)
+        log("DASHBOARD", "WARN", `Health check failed (unresponsive on :${DASHBOARD_PORT})`);
       if (!daemonOk) log("DAEMON", "WARN", "Health check failed (unresponsive on /health)");
     } else if (!lastHealthState) {
       lastHealthState = true;
       log("SUPERVISOR", "READY", "All services recovered to healthy state");
     } else if (IS_DEBUG) {
-      log("HEARTBEAT", "INFO", `Stack healthy [API :${API_PORT} ✓ | Dashboard :${DASHBOARD_PORT} ✓ | Daemon :${DAEMON_PORT} ✓]`);
+      log(
+        "HEARTBEAT",
+        "INFO",
+        `Stack healthy [API :${API_PORT} ✓ | Dashboard :${DASHBOARD_PORT} ✓ | Daemon :${DAEMON_PORT} ✓]`,
+      );
     }
   }, 30000);
 }

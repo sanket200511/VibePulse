@@ -8,7 +8,10 @@ const rootDir = path.resolve(__dirname, "..");
 
 function runCmd(cmd, cwd = rootDir) {
   try {
-    return { stdout: execSync(cmd, { cwd, stdio: "pipe", encoding: "utf-8" }).trim(), success: true };
+    return {
+      stdout: execSync(cmd, { cwd, stdio: "pipe", encoding: "utf-8" }).trim(),
+      success: true,
+    };
   } catch (e) {
     return { stdout: e.stdout ? e.stdout.toString().trim() : "", success: false };
   }
@@ -47,7 +50,10 @@ allPassed &= check("Python", () => {
 });
 allPassed &= check("uv", () => {
   const res = runCmd("uv --version");
-  return { pass: res.success, reason: "uv is not installed. See https://docs.astral.sh/uv/getting-started/installation/" };
+  return {
+    pass: res.success,
+    reason: "uv is not installed. See https://docs.astral.sh/uv/getting-started/installation/",
+  };
 });
 
 // ── Configuration ──
@@ -65,21 +71,38 @@ allPassed &= check("PostgreSQL Status & Schema", () => {
   const apiDir = path.join(rootDir, "apps", "api");
   const res = runCmd("uv run python scripts/check_db.py", apiDir);
   const out = res.stdout;
-  
+
   if (out === "PASS_HEALTHY") {
     return { pass: true };
   } else if (out === "FAIL_CONFIG") {
     return { pass: false, reason: "FastAPI config could not be loaded." };
   } else if (out === "FAIL_CREDENTIALS") {
-    return { pass: false, reason: "PostgreSQL running on localhost:5432 but credentials in apps/api/.env are wrong." };
+    return {
+      pass: false,
+      reason: "PostgreSQL running on localhost:5432 but credentials in apps/api/.env are wrong.",
+    };
   } else if (out === "FAIL_DB_NOT_EXIST") {
-    return { pass: false, reason: "PostgreSQL reachable on localhost:5432 but database 'vibepulse' does not exist." };
+    return {
+      pass: false,
+      reason: "PostgreSQL reachable on localhost:5432 but database 'vibepulse' does not exist.",
+    };
   } else if (out === "FAIL_CONNECTION") {
-    return { pass: false, reason: "PostgreSQL is not reachable on localhost:5432. Please start the local PostgreSQL service." };
+    return {
+      pass: false,
+      reason:
+        "PostgreSQL is not reachable on localhost:5432. Please start the local PostgreSQL service.",
+    };
   } else if (out === "FAIL_SCHEMA_MISSING") {
-    return { pass: false, reason: "PostgreSQL reachable but schema is not initialized (missing tables). Run `pnpm setup`." };
+    return {
+      pass: false,
+      reason:
+        "PostgreSQL reachable but schema is not initialized (missing tables). Run `pnpm setup`.",
+    };
   } else if (out === "FAIL_MIGRATIONS_PENDING") {
-    return { pass: false, reason: "Database exists but migrations are pending. Run `uv run alembic upgrade head`." };
+    return {
+      pass: false,
+      reason: "Database exists but migrations are pending. Run `uv run alembic upgrade head`.",
+    };
   } else {
     return { pass: false, reason: "Database health check failed with output:\n       " + out };
   }

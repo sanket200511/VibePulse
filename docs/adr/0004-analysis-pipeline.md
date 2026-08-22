@@ -1,7 +1,7 @@
 # ADR 0004 – Analysis Pipeline Architecture
 
-**Status:** Accepted  
-**Date:** 2026-07-04  
+**Status:** Accepted
+**Date:** 2026-07-04
 **Sprint:** 2
 
 ---

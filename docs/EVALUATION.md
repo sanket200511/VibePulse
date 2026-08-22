@@ -1,7 +1,7 @@
 # VibePulse — Empirical System Evaluation
 
-**Evaluation Status**: EXPERIMENTALLY MEASURED & VERIFIED  
-**Evaluation Scope**: Deterministic Performance, Test Pyramid, Security Invariants, and Reconstructibility ($A \equiv B$)  
+**Evaluation Status**: EXPERIMENTALLY MEASURED & VERIFIED
+**Evaluation Scope**: Deterministic Performance, Test Pyramid, Security Invariants, and Reconstructibility ($A \equiv B$)
 **Environment**: Local Development Baseline (Windows, Node v22, Python 3.12, PostgreSQL 16)
 
 ---

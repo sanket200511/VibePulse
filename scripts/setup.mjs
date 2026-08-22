@@ -8,7 +8,10 @@ const rootDir = path.resolve(__dirname, "..");
 
 function runCmd(cmd, cwd = rootDir) {
   try {
-    return { stdout: execSync(cmd, { cwd, stdio: "pipe", encoding: "utf-8" }).trim(), success: true };
+    return {
+      stdout: execSync(cmd, { cwd, stdio: "pipe", encoding: "utf-8" }).trim(),
+      success: true,
+    };
   } catch (e) {
     return { stdout: e.stdout ? e.stdout.toString().trim() : "", success: false };
   }
@@ -40,7 +43,7 @@ console.log("Configuring environments...");
 const envPaths = [
   { dir: ".", name: "Root" },
   { dir: "apps/api", name: "API" },
-  { dir: "apps/daemon", name: "Daemon" }
+  { dir: "apps/daemon", name: "Daemon" },
 ];
 
 for (const ep of envPaths) {
