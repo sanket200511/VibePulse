@@ -10,16 +10,16 @@
 
 The following latency metrics were measured deterministically using `scripts/measure_performance.mjs` across isolated project sandboxes:
 
-| Operation | Measured Mean Latency | Target SLA | Assessment |
-|---|---|---|---|
-| **Project Registration** (`POST /api/projects`) | **12.62 ms** | $< 500\text{ ms}$ | ⚡ Sub-20ms instant registration |
-| **Event Ingestion & AST Analysis** (`POST /events`) | **14.05 ms** | $< 500\text{ ms}$ | ⚡ Real-time AST parsing & diff capture |
-| **Unified Health Calculation** (`GET /api/projects/:id/health`) | **77.18 ms** | $< 500\text{ ms}$ | ⚡ 5-dimension mathematical composite ($W_i \times S_i$) |
-| **Security Intelligence Projection** (`GET /api/projects/:id/security`) | **2.64 ms** | $< 500\text{ ms}$ | ⚡ Instantaneous AST projection over stored events |
-| **Predictive Intelligence** (`GET /api/projects/:id/predictions`) | **9.08 ms** | $< 500\text{ ms}$ | ⚡ Rapid linear regression churn forecast |
-| **Knowledge Graph Traversal** (`GET /api/projects/:id/knowledge-graph`) | **17.55 ms** | $< 500\text{ ms}$ | ⚡ Multi-entity semantic graph projection |
-| **AI Copilot Synthesis** (`POST /api/projects/:id/copilot/query`) | **62.87 ms** | $< 500\text{ ms}$ | ⚡ Pure deterministic retrieval & provenance tagging |
-| **Full Project Context Export** (`GET /api/projects/:id/context/export`) | **111.65 ms** | $< 500\text{ ms}$ | ⚡ Full 22-section markdown generation & redaction |
+| Operation                                                                | Measured Mean Latency | Target SLA        | Assessment                                               |
+| ------------------------------------------------------------------------ | --------------------- | ----------------- | -------------------------------------------------------- |
+| **Project Registration** (`POST /api/projects`)                          | **12.62 ms**          | $< 500\text{ ms}$ | ⚡ Sub-20ms instant registration                         |
+| **Event Ingestion & AST Analysis** (`POST /events`)                      | **14.05 ms**          | $< 500\text{ ms}$ | ⚡ Real-time AST parsing & diff capture                  |
+| **Unified Health Calculation** (`GET /api/projects/:id/health`)          | **77.18 ms**          | $< 500\text{ ms}$ | ⚡ 5-dimension mathematical composite ($W_i \times S_i$) |
+| **Security Intelligence Projection** (`GET /api/projects/:id/security`)  | **2.64 ms**           | $< 500\text{ ms}$ | ⚡ Instantaneous AST projection over stored events       |
+| **Predictive Intelligence** (`GET /api/projects/:id/predictions`)        | **9.08 ms**           | $< 500\text{ ms}$ | ⚡ Rapid linear regression churn forecast                |
+| **Knowledge Graph Traversal** (`GET /api/projects/:id/knowledge-graph`)  | **17.55 ms**          | $< 500\text{ ms}$ | ⚡ Multi-entity semantic graph projection                |
+| **AI Copilot Synthesis** (`POST /api/projects/:id/copilot/query`)        | **62.87 ms**          | $< 500\text{ ms}$ | ⚡ Pure deterministic retrieval & provenance tagging     |
+| **Full Project Context Export** (`GET /api/projects/:id/context/export`) | **111.65 ms**         | $< 500\text{ ms}$ | ⚡ Full 22-section markdown generation & redaction       |
 
 > [!NOTE]
 > All measurements were taken on a standard local development machine against a local PostgreSQL 16 instance. No cloud network hops or remote LLM API latency bottlenecks are present.
@@ -42,14 +42,14 @@ VibePulse enforces a strict multi-tier testing pyramid:
                   └────────────────────────┘
 ```
 
-| Test Suite | Framework | Total Tests | Pass Rate |
-|---|---|---|---|
-| **Backend Intelligence Suite** | `pytest` / `pytest-asyncio` | **347** | **100% (347 / 347)** |
-| **Daemon Observation Suite** | `vitest` | **130** | **100% (130 / 130)** |
-| **Full Workspace Typecheck** | `tsc` + `pyright` (5 packages) | **5 packages** | **100% (0 errors)** |
-| **Full Workspace Linting** | `eslint` + `ruff` (5 packages) | **5 packages** | **100% (0 errors)** |
-| **Sprint 12 E2E Acceptance** | Node.js E2E Test Runner | **14 criteria** | **100% (14 / 14)** |
-| **Full System Demo Runner** | `scripts/final-demo.mjs` | **10 stages** | **100% (10 / 10)** |
+| Test Suite                     | Framework                      | Total Tests     | Pass Rate            |
+| ------------------------------ | ------------------------------ | --------------- | -------------------- |
+| **Backend Intelligence Suite** | `pytest` / `pytest-asyncio`    | **347**         | **100% (347 / 347)** |
+| **Daemon Observation Suite**   | `vitest`                       | **130**         | **100% (130 / 130)** |
+| **Full Workspace Typecheck**   | `tsc` + `pyright` (5 packages) | **5 packages**  | **100% (0 errors)**  |
+| **Full Workspace Linting**     | `eslint` + `ruff` (5 packages) | **5 packages**  | **100% (0 errors)**  |
+| **Sprint 12 E2E Acceptance**   | Node.js E2E Test Runner        | **14 criteria** | **100% (14 / 14)**   |
+| **Full System Demo Runner**    | `scripts/final-demo.mjs`       | **10 stages**   | **100% (10 / 10)**   |
 
 ---
 
