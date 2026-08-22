@@ -14,7 +14,7 @@ flowchart TB
         Watcher["Chokidar File Watcher"]
         Hasher["SHA-256 Hash & Diff Extractor"]
         Pub["HTTP Event Publisher"]
-        
+
         FS -->|Raw File I/O| Watcher
         Watcher --> Hasher
         Hasher --> Pub
@@ -27,7 +27,7 @@ flowchart TB
         PredSvc["Predictive Risk & Hotspot Engine"]
         KGSvc["Knowledge Graph & Memory Engine"]
         CopilotSvc["Deterministic Copilot Synthesizer"]
-        
+
         Router --> AST
         Router --> HealthSvc
         Router --> PredSvc
