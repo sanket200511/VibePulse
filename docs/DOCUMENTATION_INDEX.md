@@ -46,7 +46,7 @@ To prevent documentation drift and maintain strict technical accuracy, all repos
 | Document           | Canonical Path                                                                           | Status    | Audience             | Scope / Description                                                                                        |
 | ------------------ | ---------------------------------------------------------------------------------------- | --------- | -------------------- | ---------------------------------------------------------------------------------------------------------- |
 | **Project Vision** | [`docs/overview/VISION.md`](file:///d:/VibeSync/docs/overview/VISION.md)                 | `CURRENT` | All                  | Strategic purpose, developer observability paradigm for AI coding, and long-term vision.                   |
-| **Project Status** | [`docs/overview/PROJECT_STATUS.md`](file:///d:/VibeSync/docs/overview/PROJECT_STATUS.md) | `CURRENT` | Evaluator, Developer | Live engineering status, verified test baselines (347 backend / 130 daemon tests), and sprint completions. |
+| **Project Status** | [`docs/overview/PROJECT_STATUS.md`](file:///d:/VibeSync/docs/overview/PROJECT_STATUS.md) | `CURRENT` | Evaluator, Developer | Live engineering status, verified test baselines (348 backend / 130 daemon tests), and sprint completions. |
 | **Current Sprint** | [`docs/overview/CURRENT_SPRINT.md`](file:///d:/VibeSync/docs/overview/CURRENT_SPRINT.md) | `CURRENT` | Evaluator, Developer | Active architecture freeze and final academic packaging state.                                             |
 | **Roadmap**        | [`docs/overview/ROADMAP.md`](file:///d:/VibeSync/docs/overview/ROADMAP.md)               | `CURRENT` | Evaluator, Developer | Milestone progression (Phases 1–12 completed) and post-v1.0 horizons.                                      |
 | **FAQ**            | [`docs/overview/FAQ.md`](file:///d:/VibeSync/docs/overview/FAQ.md)                       | `CURRENT` | All                  | Frequently asked questions on zero-LLM architecture, AST parsing, privacy, and determinism.                |
@@ -146,14 +146,14 @@ $$\text{OBSERVE} \to \text{DETECT} \to \text{UNDERSTAND} \to \text{INVESTIGATE} 
 
 ## 🔍 10. System Audits & Verification
 
-| Document                          | Canonical Path                                                                                                     | Status       | Audience             | Scope / Description                                                                      |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------ | -------------------- | ---------------------------------------------------------------------------------------- |
-| **Whole Platform Forensic Audit** | [`docs/audits/WHOLE_PLATFORM_FORENSIC_AUDIT.md`](file:///d:/VibeSync/docs/audits/WHOLE_PLATFORM_FORENSIC_AUDIT.md) | `CURRENT`    | Evaluator, Developer | Comprehensive whole-platform bug audit, schema validation, and runtime hardening report. |
-| **Final Project Status**          | [`docs/audits/FINAL_PROJECT_STATUS.md`](file:///d:/VibeSync/docs/audits/FINAL_PROJECT_STATUS.md)                   | `CURRENT`    | Evaluator            | Executive status audit across all 10 intelligence stages and 348/130 verified tests.     |
-| **Full System Audit**             | [`docs/audits/FULL_SYSTEM_AUDIT.md`](file:///d:/VibeSync/docs/audits/FULL_SYSTEM_AUDIT.md)                         | `HISTORICAL` | Evaluator            | Post-Sprint-4 system integration and reliability audit.                                  |
-| **Whole System Audit**            | [`docs/audits/WHOLE_SYSTEM_READINESS_AUDIT.md`](file:///d:/VibeSync/docs/audits/WHOLE_SYSTEM_READINESS_AUDIT.md)   | `HISTORICAL` | Evaluator            | Whole-system presentation readiness review.                                              |
-| **Post-Sprint 12 Audit**          | [`docs/audits/POST_SPRINT12_AUDIT.md`](file:///d:/VibeSync/docs/audits/POST_SPRINT12_AUDIT.md)                     | `HISTORICAL` | Evaluator            | Post-Sprint 12 stabilization and freeze audit.                                           |
-| **Release Audit**                 | [`docs/audits/GITHUB_RELEASE_AUDIT.md`](file:///d:/VibeSync/docs/audits/GITHUB_RELEASE_AUDIT.md)                   | `HISTORICAL` | Developer            | Release hygiene and repository packaging review.                                         |
+| Document | Canonical Path | Status | Audience | Scope / Description |
+| **Final Release Acceptance** | [`docs/audits/FINAL_RELEASE_ACCEPTANCE.md`](file:///d:/VibeSync/docs/audits/FINAL_RELEASE_ACCEPTANCE.md) | `CURRENT` | Evaluator, Developer | Final release gate acceptance report, truth reconciliation, and verification matrix. |
+| **Whole Platform Forensic Audit** | [`docs/audits/WHOLE_PLATFORM_FORENSIC_AUDIT.md`](file:///d:/VibeSync/docs/audits/WHOLE_PLATFORM_FORENSIC_AUDIT.md) | `CURRENT` | Evaluator, Developer | Comprehensive whole-platform bug audit, schema validation, and runtime hardening report. |
+| **Final Project Status** | [`docs/audits/FINAL_PROJECT_STATUS.md`](file:///d:/VibeSync/docs/audits/FINAL_PROJECT_STATUS.md) | `CURRENT` | Evaluator | Executive status audit across all 10 intelligence stages and 348/130 verified tests. |
+| **Full System Audit** | [`docs/audits/FULL_SYSTEM_AUDIT.md`](file:///d:/VibeSync/docs/audits/FULL_SYSTEM_AUDIT.md) | `HISTORICAL` | Evaluator | Post-Sprint-4 system integration and reliability audit. |
+| **Whole System Audit** | [`docs/audits/WHOLE_SYSTEM_READINESS_AUDIT.md`](file:///d:/VibeSync/docs/audits/WHOLE_SYSTEM_READINESS_AUDIT.md) | `HISTORICAL` | Evaluator | Whole-system presentation readiness review. |
+| **Post-Sprint 12 Audit** | [`docs/audits/POST_SPRINT12_AUDIT.md`](file:///d:/VibeSync/docs/audits/POST_SPRINT12_AUDIT.md) | `HISTORICAL` | Evaluator | Post-Sprint 12 stabilization and freeze audit. |
+| **Release Audit** | [`docs/audits/GITHUB_RELEASE_AUDIT.md`](file:///d:/VibeSync/docs/audits/GITHUB_RELEASE_AUDIT.md) | `HISTORICAL` | Developer | Release hygiene and repository packaging review. |
 
 ---
 

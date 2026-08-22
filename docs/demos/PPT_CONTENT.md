@@ -172,7 +172,7 @@
 ### Slide 15: Empirical Results & Performance Benchmarks
 
 - **Bullets**:
-  - **Test Pyramid**: 347/347 Pytest, 130/130 Vitest, 5/5 Typecheck, 5/5 Lint.
+  - **Test Pyramid**: 348/348 Pytest, 130/130 Vitest, 5/5 Typecheck, 5/5 Lint.
   - **Local Latencies**:
     - Registration: $12.62\text{ ms}$ | AST Ingestion: $14.05\text{ ms}$
     - Health Calculation: $77.18\text{ ms}$ | Security Projection: $2.64\text{ ms}$
@@ -180,7 +180,7 @@
     - Copilot Synthesis: $62.87\text{ ms}$ | Context Export: $111.65\text{ ms}$
   - _(All measured on local development workstation)_
 - **What to Say**:
-  > _"All core intelligence operations execute in under 115ms locally, backed by a 100% passing test pyramid across 477 automated tests."_
+  > _"All core intelligence operations execute in under 115ms locally, backed by a 100% passing test pyramid across 478 automated tests."_
 
 ---
 
