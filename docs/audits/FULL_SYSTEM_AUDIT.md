@@ -1,7 +1,7 @@
 # VibePulse Full System Audit
 
 > **Status**: Historical Snapshot (Sprint 4 Baseline)
-> **Superseded by**: [`docs/audits/FINAL_PROJECT_STATUS.md`](FINAL_PROJECT_STATUS.md) & [`docs/history/sprints/sprint-14/SPRINT_14_TRUTH_AUDIT.md`](SPRINT_14_TRUTH_AUDIT.md)
+> **Superseded by**: [`docs/audits/FINAL_PROJECT_STATUS.md`](FINAL_PROJECT_STATUS.md) & [`docs/history/sprints/sprint-14/SPRINT_14_TRUTH_AUDIT.md`](../history/sprints/sprint-14/SPRINT_14_TRUTH_AUDIT.md)
 
 **Post-Sprint-4 Integration, Reliability & Architecture Review**
 **Scope:** Sprints 1–4 Monorepo Baseline

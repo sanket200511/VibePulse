@@ -36,7 +36,7 @@
 
 ### 4. QUALITY & TEST BASELINE
 
-- [x] **Backend Pytest**: 347 / 347 passed (`uv run pytest`).
+- [x] **Backend Pytest**: 348 / 348 passed (`uv run pytest`).
 - [x] **Daemon Vitest**: 130 / 130 passed (`pnpm --filter @vibepulse/daemon test`).
 - [x] **TypeScript Typecheck**: 5 / 5 packages passed with 0 errors (`pnpm typecheck`).
 - [x] **Lint & Ruff**: 5 / 5 packages passed with 0 errors (`pnpm lint`).

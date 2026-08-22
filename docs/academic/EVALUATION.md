@@ -44,7 +44,7 @@ VibePulse enforces a strict multi-tier testing pyramid:
 
 | Test Suite                     | Framework                      | Total Tests     | Pass Rate            |
 | ------------------------------ | ------------------------------ | --------------- | -------------------- |
-| **Backend Intelligence Suite** | `pytest` / `pytest-asyncio`    | **347**         | **100% (347 / 347)** |
+| **Backend Intelligence Suite** | `pytest` / `pytest-asyncio`    | **348**         | **100% (348 / 348)** |
 | **Daemon Observation Suite**   | `vitest`                       | **130**         | **100% (130 / 130)** |
 | **Full Workspace Typecheck**   | `tsc` + `pyright` (5 packages) | **5 packages**  | **100% (0 errors)**  |
 | **Full Workspace Linting**     | `eslint` + `ruff` (5 packages) | **5 packages**  | **100% (0 errors)**  |

@@ -123,7 +123,7 @@ pnpm dev:status
 
 ## 🧪 Verification & Quality Baselines
 
-- **Backend Pytest**: 347 / 347 passed (`cd apps/api && uv run pytest`)
+- **Backend Pytest**: 348 / 348 passed (`cd apps/api && uv run pytest`)
 - **Daemon Vitest**: 130 / 130 passed (`pnpm --filter @vibepulse/daemon test`)
 - **TypeScript Typecheck**: 5 / 5 packages passed (0 errors) (`pnpm typecheck`)
 - **Lint & Ruff**: 5 / 5 packages passed (0 errors) (`pnpm lint`)

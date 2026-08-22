@@ -150,6 +150,6 @@ All intelligence is derived from 7 canonical tables in PostgreSQL:
 ## 7. Quality & Verification Invariants
 
 - **Determinism**: State is 100% reconstructible ($A \equiv B$).
-- **Test Suite**: 347 Backend Pytest + 130 Daemon Vitest tests passing.
+- **Test Suite**: 348 Backend Pytest + 130 Daemon Vitest tests passing.
 - **Multi-Project Isolation**: Tenant telemetry is completely partitioned by `project_id`.
 - **Safe Lifecycle**: Project deletion removes only VibePulse telemetry database records; source code on disk is never modified or deleted.

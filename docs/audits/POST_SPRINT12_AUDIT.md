@@ -1,6 +1,9 @@
 # VibePulse — Post-Sprint 12 Stabilization & Architecture Audit
 
-**Document Status**: ARCHITECTURE AUDIT & STABILIZATION BASELINE
+> **Status**: Historical Snapshot (Post-Sprint 12 Stabilization Baseline)
+> **Superseded by**: [`docs/audits/FINAL_PROJECT_STATUS.md`](FINAL_PROJECT_STATUS.md) & [`docs/audits/FINAL_RELEASE_ACCEPTANCE.md`](FINAL_RELEASE_ACCEPTANCE.md)
+
+**Document Status**: ARCHITECTURE AUDIT & STABILIZATION BASELINE (HISTORICAL)
 **Sprint Phase**: Post-Sprint 12 Stabilization & Finalization
 **Repository**: `VibePulse` Monorepo
 **Target Invariant**: PostgreSQL Historical Telemetry as Single Canonical Ground Truth ($A \equiv B$)

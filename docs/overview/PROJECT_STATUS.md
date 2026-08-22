@@ -23,7 +23,7 @@ OBSERVE ──▶ DETECT ──▶ UNDERSTAND ──▶ INVESTIGATE ──▶ RE
 
 | Verification Suite / Check           | Command                                           | Verified Result                      |
 | ------------------------------------ | ------------------------------------------------- | ------------------------------------ |
-| **Backend Pytest**                   | `cd apps/api && uv run pytest`                    | **347 / 347 passed**                 |
+| **Backend Pytest**                   | `cd apps/api && uv run pytest`                    | **348 / 348 passed**                 |
 | **Daemon Vitest**                    | `pnpm --filter @vibepulse/daemon test`            | **130 / 130 passed**                 |
 | **TypeScript Typecheck**             | `pnpm typecheck`                                  | **5 / 5 packages passed (0 errors)** |
 | **Lint / Ruff**                      | `pnpm lint`                                       | **5 / 5 packages passed (0 errors)** |

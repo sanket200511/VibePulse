@@ -1,7 +1,7 @@
 # VibePulse Whole-System Readiness Audit
 
 > **Status**: Historical Snapshot (Early Developmental Readiness Review)
-> **Superseded by**: [`docs/audits/FINAL_PROJECT_STATUS.md`](../FINAL_PROJECT_STATUS.md) & [`docs/history/sprints/sprint-14/SPRINT_14_TRUTH_AUDIT.md`](../SPRINT_14_TRUTH_AUDIT.md)
+> **Superseded by**: [`docs/audits/FINAL_PROJECT_STATUS.md`](FINAL_PROJECT_STATUS.md) & [`docs/history/sprints/sprint-14/SPRINT_14_TRUTH_AUDIT.md`](../history/sprints/sprint-14/SPRINT_14_TRUTH_AUDIT.md)
 
 **PRESENTATION READY WITH FIXES**
 

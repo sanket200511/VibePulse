@@ -26,7 +26,7 @@
 > 5. _In Stage 7 (Predict), linear regression models evaluate churn velocity and subsystem hotspots._
 > 6. _In Stage 8 (Ask), our Copilot handles 16 canonical query domains with an Answerability Gate that rejects out-of-scope queries like Bitcoin prices without guessing._
 > 7. _In Stages 9 & 10 (Act & Memory), code fixes trigger closed-loop health score recovery, and the system exports a portable 22-section `PROJECT_CONTEXT.md`._
->    _Across 347 backend tests and 130 daemon tests, we have proven that intelligence states can be cleared and deterministically reconstructed from PostgreSQL historical events ($A \equiv B$)."_
+>    _Across 348 backend tests and 130 daemon tests, we have proven that intelligence states can be cleared and deterministically reconstructed from PostgreSQL historical events ($A \equiv B$)."_
 
 ---
 
