@@ -10,10 +10,11 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3000,
+    host: true,
+    port: Number(process.env.VIBEPULSE_DASHBOARD_PORT || process.env.DASHBOARD_PORT || 5134),
     proxy: {
       "/api": {
-        target: "http://localhost:8000",
+        target: process.env.VIBEPULSE_API_URL || process.env.VITE_API_URL || "http://localhost:5133",
         changeOrigin: true,
         configure: (proxy) => {
           proxy.on("error", (_err, _req, res) => {
@@ -25,7 +26,7 @@ export default defineConfig({
         },
       },
       "/sessions": {
-        target: "http://localhost:8000",
+        target: process.env.VIBEPULSE_API_URL || process.env.VITE_API_URL || "http://localhost:5133",
         changeOrigin: true,
         configure: (proxy) => {
           proxy.on("error", (_err, _req, res) => {
@@ -37,7 +38,7 @@ export default defineConfig({
         },
       },
       "/events": {
-        target: "http://localhost:8000",
+        target: process.env.VIBEPULSE_API_URL || process.env.VITE_API_URL || "http://localhost:5133",
         changeOrigin: true,
         configure: (proxy) => {
           proxy.on("error", (_err, _req, res) => {
@@ -49,7 +50,7 @@ export default defineConfig({
         },
       },
       "/investigation/search": {
-        target: "http://localhost:8000",
+        target: process.env.VIBEPULSE_API_URL || process.env.VITE_API_URL || "http://localhost:5133",
         changeOrigin: true,
         configure: (proxy) => {
           proxy.on("error", (_err, _req, res) => {
@@ -61,7 +62,7 @@ export default defineConfig({
         },
       },
       "^/projects/[^/]+/investigation/search": {
-        target: "http://localhost:8000",
+        target: process.env.VIBEPULSE_API_URL || process.env.VITE_API_URL || "http://localhost:5133",
         changeOrigin: true,
         configure: (proxy) => {
           proxy.on("error", (_err, _req, res) => {
@@ -73,7 +74,7 @@ export default defineConfig({
         },
       },
       "/health": {
-        target: "http://localhost:8000",
+        target: process.env.VIBEPULSE_API_URL || process.env.VITE_API_URL || "http://localhost:5133",
         changeOrigin: true,
         configure: (proxy) => {
           proxy.on("error", (_err, _req, res) => {
@@ -85,7 +86,10 @@ export default defineConfig({
         },
       },
       "/ws": {
-        target: "ws://localhost:8000",
+        target: (process.env.VIBEPULSE_API_URL || process.env.VITE_API_URL || "http://localhost:5133").replace(
+          /^http/,
+          "ws",
+        ),
         ws: true,
         changeOrigin: true,
         configure: (proxy) => {

@@ -8,11 +8,11 @@
 
 ### 1. SOFTWARE & INFRASTRUCTURE
 
-- [x] **FastAPI Backend**: Operational on port `8000` with zero startup errors.
-- [x] **React / Vite Dashboard**: Dark mode UI operational on port `3000`.
-- [x] **Node.js Observation Daemon**: Operational on port `9000` with chokidar file watcher.
+- [x] **FastAPI Backend**: Operational on port `5133` with zero startup errors.
+- [x] **React / Vite Dashboard**: Dark mode UI operational on port `5134`.
+- [x] **Node.js Observation Daemon**: Operational on port `5135` with chokidar file watcher.
 - [x] **PostgreSQL Database**: Port `5432` with all 8 Alembic migrations (`0001` through `0008`) applied.
-- [x] **WebSocket Live Stream**: Real-time event and incident broadcast functional.
+- [x] **WebSocket Live Stream**: Real-time event and incident broadcast functional (`ws://localhost:5133`).
 
 ### 2. INTELLIGENCE PIPELINE
 

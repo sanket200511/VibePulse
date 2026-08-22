@@ -29,7 +29,7 @@ import os from "node:os";
 import crypto from "node:crypto";
 import { spawn } from "node:child_process";
 
-const API_BASE = process.env.API_BASE || "http://127.0.0.1:8000";
+const API_BASE = process.env.VIBEPULSE_API_URL || process.env.API_BASE || "http://127.0.0.1:5133";
 const SECRET_TOKEN = "VIBEPULSE_SPRINT12_SECRET_2026";
 
 function log(msg) {
@@ -93,7 +93,8 @@ async function ensureApiServer() {
   }
 
   log("Starting local FastAPI test instance...");
-  const child = spawn("uv", ["run", "uvicorn", "app.main:app", "--port", "8000"], {
+  const apiPort = new URL(API_BASE).port || "5133";
+  const child = spawn("uv", ["run", "uvicorn", "app.main:app", "--port", apiPort], {
     cwd: path.resolve(process.cwd(), "apps/api"),
     shell: true,
     stdio: "pipe",

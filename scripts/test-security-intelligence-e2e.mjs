@@ -19,7 +19,7 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 
-const API_BASE = process.env.API_BASE_URL || "http://localhost:8000";
+const API_BASE = process.env.VIBEPULSE_API_URL || process.env.API_BASE_URL || "http://localhost:5133";
 
 async function main() {
   console.log("================================================================================");

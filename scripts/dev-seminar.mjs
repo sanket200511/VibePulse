@@ -21,20 +21,28 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, "..");
 
+const API_PORT = Number(process.env.VIBEPULSE_API_PORT || process.env.API_PORT || 5133);
+const DASHBOARD_PORT = Number(
+  process.env.VIBEPULSE_DASHBOARD_PORT || process.env.DASHBOARD_PORT || 5134,
+);
+const DAEMON_PORT = Number(
+  process.env.VIBEPULSE_DAEMON_PORT || process.env.DAEMON_PORT || 5135,
+);
+
 const SERVICES = {
   api: {
     name: "API",
-    url: "http://localhost:8000/health",
-    port: 8000,
+    url: `http://localhost:${API_PORT}/health`,
+    port: API_PORT,
     command: "uv",
-    args: ["run", "uvicorn", "app.main:app", "--port", "8000", "--reload"],
+    args: ["run", "uvicorn", "app.main:app", "--port", API_PORT.toString(), "--reload"],
     cwd: path.join(ROOT_DIR, "apps", "api"),
     color: "\x1b[34m", // Blue
   },
   dashboard: {
     name: "Dashboard",
-    url: "http://localhost:3000",
-    port: 3000,
+    url: `http://localhost:${DASHBOARD_PORT}`,
+    port: DASHBOARD_PORT,
     command: process.platform === "win32" ? "pnpm.cmd" : "pnpm",
     args: ["--filter", "@vibepulse/dashboard", "dev"],
     cwd: ROOT_DIR,
@@ -42,8 +50,8 @@ const SERVICES = {
   },
   daemon: {
     name: "Daemon",
-    url: "http://localhost:9000/health",
-    port: 9000,
+    url: `http://localhost:${DAEMON_PORT}/health`,
+    port: DAEMON_PORT,
     command: process.platform === "win32" ? "pnpm.cmd" : "pnpm",
     args: ["--filter", "@vibepulse/daemon", "dev"],
     cwd: ROOT_DIR,
@@ -99,14 +107,29 @@ function checkTcpPort(host, port, timeoutMs = 2000) {
 
 function checkHttpEndpoint(url, timeoutMs = 3000) {
   return new Promise((resolve) => {
-    const req = http.get(url, { timeout: timeoutMs }, (res) => {
-      resolve(res.statusCode >= 200 && res.statusCode < 400);
-    });
-    req.on("error", () => resolve(false));
-    req.on("timeout", () => {
-      req.destroy();
-      resolve(false);
-    });
+    const tryUrl = (targetUrl, fallback) => {
+      const req = http.get(targetUrl, { timeout: timeoutMs }, (res) => {
+        resolve(res.statusCode >= 200 && res.statusCode < 400);
+      });
+      req.on("error", () => {
+        if (fallback) {
+          tryUrl(fallback, null);
+        } else {
+          resolve(false);
+        }
+      });
+      req.on("timeout", () => {
+        req.destroy();
+        if (fallback) {
+          tryUrl(fallback, null);
+        } else {
+          resolve(false);
+        }
+      });
+    };
+
+    const fallbackUrl = url.includes("localhost") ? url.replace("localhost", "127.0.0.1") : null;
+    tryUrl(url, fallbackUrl);
   });
 }
 
@@ -241,13 +264,13 @@ ${CYAN}${BOLD}====================================================
 ====================================================${RESET}
 PostgreSQL : 5432 (Local)
 Redis      : Cloud
-API        : http://localhost:8000
-Dashboard  : http://localhost:3000
-Daemon     : http://localhost:9000
+API        : http://localhost:${API_PORT}
+Dashboard  : http://localhost:${DASHBOARD_PORT}
+Daemon     : http://localhost:${DAEMON_PORT}
 ====================================================
 `);
 
-  // Step 1: Pre-flight checks
+  // Step 1: Pre-flight database readiness check
   log("SUPERVISOR", "Running pre-flight database readiness checks...", CYAN);
   const pgUp = await checkTcpPort("127.0.0.1", 5432);
   if (!pgUp) {
@@ -258,8 +281,43 @@ Daemon     : http://localhost:9000
   }
   log("SUPERVISOR", `${GREEN}[✓] PostgreSQL reachable on localhost:5432${RESET}`, GREEN);
 
-  // Step 2: Start API
-  log("SUPERVISOR", "Launching FastAPI Backend on port 8000...", CYAN);
+  // Step 2: Pre-flight port conflict check (5133, 5134, 5135)
+  log("SUPERVISOR", "Verifying dedicated VibePulse ports (5133, 5134, 5135)...", CYAN);
+  const [apiConflict, dashConflict, daemonConflict] = await Promise.all([
+    checkTcpPort("127.0.0.1", API_PORT),
+    checkTcpPort("127.0.0.1", DASHBOARD_PORT),
+    checkTcpPort("127.0.0.1", DAEMON_PORT),
+  ]);
+
+  if (apiConflict || dashConflict || daemonConflict) {
+    console.error(`\n${RED}${BOLD}[PORT CONFLICT DETECTED]${RESET}`);
+    if (apiConflict) {
+      console.error(
+        ` ${RED}• Port ${API_PORT} (API) is already in use by another process.${RESET}`,
+      );
+    }
+    if (dashConflict) {
+      console.error(
+        ` ${RED}• Port ${DASHBOARD_PORT} (Dashboard) is already in use by another process.${RESET}`,
+      );
+    }
+    if (daemonConflict) {
+      console.error(
+        ` ${RED}• Port ${DAEMON_PORT} (Daemon) is already in use by another process.${RESET}`,
+      );
+    }
+    console.error(
+      `\n${YELLOW}Please terminate the conflicting process(es) or configure custom ports with:${RESET}`,
+    );
+    console.error(
+      `  VIBEPULSE_API_PORT=<port> VIBEPULSE_DASHBOARD_PORT=<port> VIBEPULSE_DAEMON_PORT=<port>\n`,
+    );
+    process.exit(1);
+  }
+  log("SUPERVISOR", `${GREEN}[✓] Dedicated ports 5133, 5134, 5135 are available${RESET}`, GREEN);
+
+  // Step 3: Start API
+  log("SUPERVISOR", `Launching FastAPI Backend on port ${API_PORT}...`, CYAN);
   spawnService("api");
   const apiReady = await waitForService("api", 35, 1000);
   if (!apiReady) {
@@ -269,37 +327,45 @@ Daemon     : http://localhost:9000
       RED,
     );
   } else {
-    log("SUPERVISOR", `${GREEN}[✓] API is HEALTHY (http://localhost:8000/health)${RESET}`, GREEN);
+    log(
+      "SUPERVISOR",
+      `${GREEN}[✓] API is HEALTHY (http://localhost:${API_PORT}/health)${RESET}`,
+      GREEN,
+    );
   }
 
-  // Step 3: Start Dashboard
-  log("SUPERVISOR", "Launching React/Vite Dashboard on port 3000...", CYAN);
+  // Step 4: Start Dashboard
+  log("SUPERVISOR", `Launching React/Vite Dashboard on port ${DASHBOARD_PORT}...`, CYAN);
   spawnService("dashboard");
   const dashReady = await waitForService("dashboard", 25, 1000);
   if (!dashReady) {
     log(
       "SUPERVISOR",
-      `${RED}[WARNING] Dashboard took longer than 25s to respond on port 3000, continuing startup...${RESET}`,
+      `${RED}[WARNING] Dashboard took longer than 25s to respond on port ${DASHBOARD_PORT}, continuing startup...${RESET}`,
       RED,
     );
   } else {
-    log("SUPERVISOR", `${GREEN}[✓] Dashboard is HEALTHY (http://localhost:3000)${RESET}`, GREEN);
+    log(
+      "SUPERVISOR",
+      `${GREEN}[✓] Dashboard is HEALTHY (http://localhost:${DASHBOARD_PORT})${RESET}`,
+      GREEN,
+    );
   }
 
-  // Step 4: Start Telemetry Daemon
-  log("SUPERVISOR", "Launching Telemetry Daemon on port 9000...", CYAN);
+  // Step 5: Start Telemetry Daemon
+  log("SUPERVISOR", `Launching Telemetry Daemon on port ${DAEMON_PORT}...`, CYAN);
   spawnService("daemon");
   const daemonReady = await waitForService("daemon", 20, 1000);
   if (!daemonReady) {
     log(
       "SUPERVISOR",
-      `${RED}[WARNING] Daemon took longer than 20s to respond on port 9000, continuing startup...${RESET}`,
+      `${RED}[WARNING] Daemon took longer than 20s to respond on port ${DAEMON_PORT}, continuing startup...${RESET}`,
       RED,
     );
   } else {
     log(
       "SUPERVISOR",
-      `${GREEN}[✓] Daemon is HEALTHY (http://localhost:9000/health)${RESET}`,
+      `${GREEN}[✓] Daemon is HEALTHY (http://localhost:${DAEMON_PORT}/health)${RESET}`,
       GREEN,
     );
   }
@@ -308,9 +374,9 @@ Daemon     : http://localhost:9000
 ${GREEN}${BOLD}====================================================
  [✓] ALL VIBEPULSE SERVICES ARE OPERATIONAL & MONITORED
 ====================================================${RESET}
- Dashboard  : ${CYAN}http://localhost:3000${RESET}
- API Docs   : ${CYAN}http://localhost:8000/docs${RESET}
- Daemon API : ${CYAN}http://localhost:9000/health${RESET}
+ Dashboard  : ${CYAN}http://localhost:${DASHBOARD_PORT}${RESET}
+ API Docs   : ${CYAN}http://localhost:${API_PORT}/docs${RESET}
+ Daemon API : ${CYAN}http://localhost:${DAEMON_PORT}/health${RESET}
  Supervisor : Active (Health check heartbeat every 10s)
 ====================================================
 `);

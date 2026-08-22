@@ -9,7 +9,7 @@ import path from "node:path";
 import os from "node:os";
 import crypto from "node:crypto";
 
-const API_BASE = process.env.API_BASE || "http://127.0.0.1:8000";
+const API_BASE = process.env.VIBEPULSE_API_URL || process.env.API_BASE || "http://127.0.0.1:5133";
 
 async function request(method, pathName, body = null) {
   const url = new URL(pathName, API_BASE);

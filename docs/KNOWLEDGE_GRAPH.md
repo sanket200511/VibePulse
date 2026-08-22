@@ -95,7 +95,7 @@ This data is integrated into Section 20 of `PROJECT_CONTEXT.md` on `/api/project
 ## 5. Frontend Dashboard
 
 The Knowledge Graph UI is available at:
-`http://localhost:3000/projects/:projectId/knowledge-graph`
+`http://localhost:5134/projects/:projectId/knowledge-graph`
 
 Features:
 

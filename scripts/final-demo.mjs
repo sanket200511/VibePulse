@@ -21,7 +21,7 @@ import path from "node:path";
 import os from "node:os";
 import crypto from "node:crypto";
 
-const API_BASE = process.env.API_BASE || "http://127.0.0.1:8000";
+const API_BASE = process.env.VIBEPULSE_API_URL || process.env.API_BASE || "http://127.0.0.1:5133";
 const SECRET_TOKEN = "VIBEPULSE_DEMO_SECRET_TOKEN_2026";
 const DELAY_MS = Number(process.env.DEMO_SPEED_MS || "200");
 

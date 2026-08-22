@@ -10,9 +10,9 @@ This demo shows a live audience — professors, hackathon judges, or GitHub visi
 
 ## Demo Flow
 
-1. Start the backend: `cd apps/api && uv run uvicorn app.main:app --reload --port 8080`
-2. Confirm the API is healthy: open `http://localhost:8080/health`
-3. Start the dashboard: `pnpm --filter @vibepulse/dashboard dev` → open `http://localhost:3000`
+1. Start the backend: `cd apps/api && uv run uvicorn app.main:app --reload --port 5133`
+2. Confirm the API is healthy: open `http://localhost:5133/health`
+3. Start the dashboard: `pnpm --filter @vibepulse/dashboard dev` → open `http://localhost:5134`
 4. Start the daemon against a sample project: `pnpm --filter @vibepulse/daemon dev` (point it at a throwaway repo, not VibePulse itself)
 5. Open the sample project in an editor alongside the dashboard
 6. Modify a few files — create one, edit one, delete one — across at least two languages (e.g. a `.py` and a `.ts` file)
@@ -274,9 +274,9 @@ Below Replay, the Session Health section asks a different question than any pane
 Before presenting, verify:
 
 - [ ] Local PostgreSQL is running on port 5432 and REDIS_URL is configured
-- [ ] API backend has been started (`uv run uvicorn app.main:app --reload --port 8080`)
-- [ ] `GET http://localhost:8080/health` returns a healthy response
-- [ ] Dashboard is running and reachable at `http://localhost:3000`
+- [ ] API backend has been started (`uv run uvicorn app.main:app --reload --port 5133`)
+- [ ] `GET http://localhost:5133/health` returns a healthy response
+- [ ] Dashboard is running and reachable at `http://localhost:5134`
 - [ ] Daemon is running and pointed at a throwaway sample project — **not** the VibePulse repository itself
 - [ ] The sample project is open in an editor, visible on screen alongside the dashboard
 - [ ] The sample project has no uncommitted changes from a previous rehearsal (clean starting state)

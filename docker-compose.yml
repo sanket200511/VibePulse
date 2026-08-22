@@ -90,16 +90,16 @@ services:
       DEBUG: "true"
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-vibepulse}:${POSTGRES_PASSWORD:-vibepulse_dev}@postgres:5432/${POSTGRES_DB:-vibepulse}
       REDIS_URL: redis://redis:6379/0
-      CORS_ORIGINS: '["http://localhost:3000","http://localhost:5173","http://127.0.0.1:3000","http://127.0.0.1:5173"]'
+      CORS_ORIGINS: '["http://localhost:5134","http://127.0.0.1:5134","http://localhost:3000","http://127.0.0.1:3000"]'
     ports:
-      - "${API_PORT:-8080}:8080"
+      - "${API_PORT:-5133}:5133"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:5133/health"]
       interval: 15s
       timeout: 5s
       retries: 5

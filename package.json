@@ -18,7 +18,7 @@
     "doctor": "node scripts/doctor.mjs",
     "db:reset": "node scripts/reset-db.mjs",
     "verify": "turbo run typecheck lint test",
-    "dev:api": "cd apps/api && uv run uvicorn app.main:app --port 8000 --reload",
+    "dev:api": "cd apps/api && uv run uvicorn app.main:app --port 5133 --reload",
     "dev:dashboard": "pnpm --filter @vibepulse/dashboard dev",
     "dev:daemon": "pnpm --filter @vibepulse/daemon dev",
     "dev:ui": "pnpm --filter @vibepulse/dashboard dev",

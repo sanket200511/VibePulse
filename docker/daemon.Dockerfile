@@ -38,5 +38,5 @@ COPY --from=builder /repo/apps/daemon/node_modules ./node_modules
 
 ENV NODE_ENV=production
 
-EXPOSE 9000
+EXPOSE 5135
 CMD ["node", "dist/index.js"]

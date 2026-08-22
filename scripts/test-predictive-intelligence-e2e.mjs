@@ -17,7 +17,7 @@ import path from "node:path";
 import os from "node:os";
 import crypto from "node:crypto";
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = process.env.VIBEPULSE_API_URL || "http://localhost:5133";
 const SECRET_TOKEN = "VIBEPULSE_SPRINT6_SECRET_2026";
 
 function log(msg) {
