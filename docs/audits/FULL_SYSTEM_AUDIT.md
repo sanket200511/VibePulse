@@ -1,7 +1,7 @@
 # VibePulse Full System Audit
 
 > **Status**: Historical Snapshot (Sprint 4 Baseline)
-> **Superseded by**: [`docs/FINAL_PROJECT_STATUS.md`](FINAL_PROJECT_STATUS.md) & [`docs/SPRINT_14_TRUTH_AUDIT.md`](SPRINT_14_TRUTH_AUDIT.md)
+> **Superseded by**: [`docs/audits/FINAL_PROJECT_STATUS.md`](FINAL_PROJECT_STATUS.md) & [`docs/history/sprints/sprint-14/SPRINT_14_TRUTH_AUDIT.md`](SPRINT_14_TRUTH_AUDIT.md)
 
 **Post-Sprint-4 Integration, Reliability & Architecture Review**
 **Scope:** Sprints 1–4 Monorepo Baseline
@@ -317,9 +317,9 @@ Tested end-to-end telemetry sequence:
 ## 21. Documentation Audit
 
 - `README.md`: Up to date.
-- `docs/INVESTIGATION_ENGINE_3.md`: Up to date and complete.
-- `docs/SECURITY_INTELLIGENCE.md`: Matches Sprint 3 implementation.
-- `docs/PROJECT_CONTEXT.md`: Matches Sprint 2 context memory specifications.
+- `docs/subsystems/investigation/INVESTIGATION_ENGINE_3.md`: Up to date and complete.
+- `docs/subsystems/security-intelligence/SECURITY_INTELLIGENCE.md`: Matches Sprint 3 implementation.
+- `docs/subsystems/project-context/PROJECT_CONTEXT.md`: Matches Sprint 2 context memory specifications.
 - `docs/OBSERVATION_ENGINE.md`: Matches Sprint 1 architecture.
 
 ---

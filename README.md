@@ -137,15 +137,15 @@ pnpm dev:status
 
 ## 📚 Master Documentation Index
 
-For exhaustive architecture, operational guides, and academic portfolios, refer to the [**Master Documentation Index**](docs/DOCUMENTATION_INDEX.md):
+For exhaustive architecture, operational guides, and academic portfolios, refer to the [**Master Documentation Index**](docs/DOCUMENTATION_INDEX.md) and [**Docs Directory**](docs/README.md):
 
-- **Architecture Deep Dive**: [`ARCHITECTURE.md`](ARCHITECTURE.md)
-- **Local Development Guide**: [`LOCAL_DEVELOPMENT.md`](LOCAL_DEVELOPMENT.md)
-- **API Reference**: [`API_REFERENCE.md`](API_REFERENCE.md)
+- **Architecture Deep Dive**: [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md)
+- **Local Development Guide**: [`docs/development/LOCAL_DEVELOPMENT.md`](docs/development/LOCAL_DEVELOPMENT.md)
+- **API Reference**: [`docs/api/API_REFERENCE.md`](docs/api/API_REFERENCE.md)
 - **Security & Privacy**: [`SECURITY.md`](SECURITY.md)
-- **Academic Thesis Report**: [`docs/FINAL_PROJECT_REPORT.md`](docs/FINAL_PROJECT_REPORT.md)
-- **Viva Master Sheet**: [`docs/VIVA_MASTER_SHEET.md`](docs/VIVA_MASTER_SHEET.md)
-- **Live Demo Runbook**: [`docs/FINAL_DEMO_RUNBOOK.md`](docs/FINAL_DEMO_RUNBOOK.md)
+- **Academic Thesis Report**: [`docs/academic/FINAL_PROJECT_REPORT.md`](docs/academic/FINAL_PROJECT_REPORT.md)
+- **Viva Master Sheet**: [`docs/academic/VIVA_MASTER_SHEET.md`](docs/academic/VIVA_MASTER_SHEET.md)
+- **Live Demo Runbook**: [`docs/demos/FINAL_DEMO_RUNBOOK.md`](docs/demos/FINAL_DEMO_RUNBOOK.md)
 
 ---
 
