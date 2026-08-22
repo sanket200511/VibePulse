@@ -73,8 +73,8 @@ async function main() {
     console.log(`[2/9] Registered Projects -> A: ${projIdA}, B: ${projIdB}`);
 
     // 3. Write files with secret to Project A
-    const vaultFile = path.join(tmpDirA, "vault.py");
-    await fs.writeFile(vaultFile, `API_KEY = "${SECRET_VAL}"\nDEBUG = True\n`, "utf-8");
+    const settingsFile = path.join(tmpDirA, "settings.py");
+    await fs.writeFile(settingsFile, `API_KEY = "${SECRET_VAL}"\nDEBUG = True\n`, "utf-8");
 
     // Ingest event to Project A
     const eventRes = await fetch(`${API_BASE}/events`, {
@@ -85,8 +85,8 @@ async function main() {
         timestamp: new Date().toISOString(),
         session_id: "11111111-2222-3333-4444-555555555555",
         project_root: tmpDirA,
-        file_path: vaultFile,
-        file_name: "vault.py",
+        file_path: settingsFile,
+        file_name: "settings.py",
         file_extension: ".py",
         language: "Python",
         git_branch: "main",
@@ -95,6 +95,9 @@ async function main() {
     });
     if (!eventRes.ok) throw new Error(`Failed to ingest event: ${eventRes.statusText}`);
     console.log(`[3/9] Ingested security event with secret into Project A.`);
+
+    // Allow background analysis pipeline to process
+    await new Promise((resolve) => setTimeout(resolve, 800));
 
     // 4. Fetch initial incident investigation
     const invRes = await fetch(`${API_BASE}/api/projects/${projIdA}/investigations/inc-sprint5-1`);

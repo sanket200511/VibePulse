@@ -73,8 +73,10 @@ describe("useSessionsData", () => {
       );
     });
 
-    expect(result.current.sessions).toHaveLength(1);
-    expect(result.current.sessions[0]?.event_count).toBe(9);
+    await waitFor(() => {
+      expect(result.current.sessions).toHaveLength(1);
+      expect(result.current.sessions[0]?.event_count).toBe(9);
+    });
   });
 
   it("adds a new session from a broadcast and sorts by last_event_at", async () => {
@@ -90,10 +92,12 @@ describe("useSessionsData", () => {
       );
     });
 
-    expect(result.current.sessions.map((session) => session.id)).toEqual([
-      "session-2",
-      "session-1",
-    ]);
+    await waitFor(() => {
+      expect(result.current.sessions.map((session) => session.id)).toEqual([
+        "session-2",
+        "session-1",
+      ]);
+    });
   });
 
   it("ignores malformed WebSocket payloads without crashing or changing the list", async () => {

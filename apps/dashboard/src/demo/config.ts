@@ -7,11 +7,7 @@ import { useState, useEffect } from "react";
 export function isDemoModeEnabled(): boolean {
   const stored = localStorage.getItem("vibepulse_demo_mode");
   if (stored === null) {
-    if (typeof process !== "undefined" && process.env.NODE_ENV === "test") {
-      return false;
-    }
-    // Default to true for presentation purposes
-    return true;
+    return false;
   }
   return stored === "true";
 }

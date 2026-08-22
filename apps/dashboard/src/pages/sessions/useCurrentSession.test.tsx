@@ -82,7 +82,9 @@ describe("useCurrentSession", () => {
       );
     });
 
-    expect(result.current.session?.id).toBe("session-2");
+    await waitFor(() => {
+      expect(result.current.session?.id).toBe("session-2");
+    });
   });
 
   it("applies session.updated broadcasts for the tracked session", async () => {
@@ -99,7 +101,9 @@ describe("useCurrentSession", () => {
       );
     });
 
-    expect(result.current.session?.event_count).toBe(5);
+    await waitFor(() => {
+      expect(result.current.session?.event_count).toBe(5);
+    });
   });
 
   it("ignores broadcasts for sessions other than the one being tracked", async () => {
@@ -116,8 +120,10 @@ describe("useCurrentSession", () => {
       );
     });
 
-    expect(result.current.session?.id).toBe("session-1");
-    expect(result.current.session?.event_count).toBe(1);
+    await waitFor(() => {
+      expect(result.current.session?.id).toBe("session-1");
+      expect(result.current.session?.event_count).toBe(1);
+    });
   });
 
   it("clears the tracked session on session.completed", async () => {
@@ -134,6 +140,8 @@ describe("useCurrentSession", () => {
       );
     });
 
-    expect(result.current.session).toBeNull();
+    await waitFor(() => {
+      expect(result.current.session).toBeNull();
+    });
   });
 });

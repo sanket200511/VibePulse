@@ -11,6 +11,7 @@ import { useSessionTimeline } from "./useSessionTimeline";
 import { useSessionArchitectureTimeline } from "./useSessionArchitectureTimeline";
 import { ArchitectureTimelinePanel } from "./ArchitectureTimelinePanel";
 import { EmptyState, ErrorState, LoadingState } from "../../components/states";
+import { Breadcrumbs } from "../../components/layout/Breadcrumbs";
 
 export function SessionDetailsPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -55,17 +56,36 @@ export function SessionDetailsPage() {
       </div>
     );
 
+  const projectName = session.project_root.split(/[\\/]/).filter(Boolean).pop() || "Project";
+
   return (
     <div className="animate-fade-in-up mx-auto flex w-full flex-1 flex-col gap-8 p-4 md:max-w-6xl md:p-8">
-      <header className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
-        <div>
+      <header className="space-y-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <Breadcrumbs
+            items={
+              session.project_id
+                ? [
+                    { label: "Projects", to: "/projects" },
+                    { label: projectName, to: `/projects/${session.project_id}` },
+                    { label: `Session ${session.id.slice(0, 8)}` },
+                  ]
+                : [
+                    { label: "History", to: "/history" },
+                    { label: `Session ${session.id.slice(0, 8)}` },
+                  ]
+            }
+          />
           <Link
             to={session.project_id ? `/projects/${session.project_id}` : "/history"}
-            className="text-secondary-text hover:text-primary-text flex items-center gap-1 text-sm transition-colors"
+            className="text-secondary-text hover:text-primary-text inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
           >
-            ← {session.project_id ? "Back to Project" : "Back to History"}
+            ← {session.project_id ? "Back to Project Story" : "Back to History"}
           </Link>
-          <div className="mt-4 flex flex-col gap-1">
+        </div>
+
+        <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+          <div className="flex flex-col gap-1">
             <div className="flex items-center gap-3">
               <span className="text-accent-color bg-accent-color/10 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest">
                 {session.status === "COMPLETED" ? "Completed Session" : "Active Session"}
@@ -75,21 +95,21 @@ export function SessionDetailsPage() {
               </span>
             </div>
             <h1 className="text-primary-text mt-2 max-w-2xl truncate text-3xl font-extrabold tracking-tight">
-              {session.summary?.headline || session.project_root.split(/[\\/]/).pop()}
+              {session.summary?.headline || projectName}
             </h1>
             <p className="text-muted-foreground mt-1 font-mono text-sm">{session.project_root}</p>
           </div>
-        </div>
 
-        {isCompleted && (
-          <Link
-            to={`/sessions/${session.id}/replay`}
-            className="focus-visible:ring-accent-color bg-accent-color shadow-accent-color/20 hover:bg-accent-color/90 inline-flex h-11 shrink-0 items-center justify-center rounded-lg px-8 text-sm font-bold text-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-1 disabled:pointer-events-none disabled:opacity-50"
-          >
-            <Play className="mr-2 h-4 w-4" />
-            Replay Session
-          </Link>
-        )}
+          {isCompleted && (
+            <Link
+              to={`/sessions/${session.id}/replay`}
+              className="focus-visible:ring-accent-color bg-accent-color shadow-accent-color/20 hover:bg-accent-color/90 inline-flex h-11 shrink-0 items-center justify-center rounded-lg px-8 text-sm font-bold text-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-1 disabled:pointer-events-none disabled:opacity-50"
+            >
+              <Play className="mr-2 h-4 w-4" />
+              Replay Session
+            </Link>
+          )}
+        </div>
       </header>
 
       {isTimelineLoading && <LoadingState label="Preparing session record…" />}

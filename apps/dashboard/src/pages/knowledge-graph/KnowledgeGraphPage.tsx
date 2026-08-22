@@ -13,7 +13,6 @@ import {
   Layers,
   FolderTree,
   Cpu,
-  HelpCircle,
   Info,
 } from "lucide-react";
 import { Badge } from "@vibepulse/ui";
@@ -25,6 +24,7 @@ import {
 import type { KnowledgeGraphNode, KnowledgeGraphEdge, KnowledgeGraphNodeType } from "./types";
 import { EvidenceInspector } from "../evidence/EvidenceInspector";
 import type { EntityType } from "../evidence/types";
+import { Breadcrumbs } from "../../components/layout/Breadcrumbs";
 
 export function KnowledgeGraphPage() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -131,47 +131,50 @@ export function KnowledgeGraphPage() {
   if (!projectId) return null;
 
   return (
-    <div className="animate-fade-in-up bg-background flex flex-1 flex-col space-y-6 p-8">
+    <div className="animate-fade-in-up bg-background text-foreground flex flex-1 flex-col space-y-6 p-6 md:p-8">
       {/* ── HEADER ─────────────────────────────────────────────────────────── */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <div className="flex items-center gap-3">
-            <Link
-              to={`/projects/${projectId}`}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-400 transition hover:text-white"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" />
-              Project Story
-            </Link>
-            <span className="text-gray-600">/</span>
-            <Link
-              to={`/projects/${projectId}/command-center`}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-400 transition hover:text-indigo-300"
-            >
-              Engineering Command Center
-            </Link>
-          </div>
-          <h1 className="mt-2 flex items-center gap-3 text-2xl font-bold tracking-tight text-white">
-            <Share2 className="h-6 w-6 text-indigo-400" />
-            Engineering Knowledge Graph & Project Memory
-          </h1>
-          <p className="text-xs text-gray-400">
-            Deterministic relationship projection across files, subsystems, security findings,
-            incidents, predictions, and resolutions.
-          </p>
+      <div className="space-y-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <Breadcrumbs
+            items={[
+              { label: "Projects", to: "/projects" },
+              { label: "Project Story", to: `/projects/${projectId}` },
+              { label: "Knowledge Graph" },
+            ]}
+          />
+          <Link
+            to={`/projects/${projectId}`}
+            className="text-secondary-text hover:text-primary-text inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to Project Story
+          </Link>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => refreshGraph()}
-            disabled={isRefreshing}
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-800 bg-gray-900/80 px-3.5 py-2 text-xs font-semibold text-gray-200 transition hover:border-gray-700 hover:bg-gray-800 disabled:opacity-50"
-          >
-            <RotateCcw
-              className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin text-indigo-400" : ""}`}
-            />
-            Refresh Projection
-          </button>
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-primary-text flex items-center gap-3 text-2xl font-bold tracking-tight">
+              <Share2 className="h-6 w-6 text-indigo-400" />
+              Engineering Knowledge Graph & Project Memory
+            </h1>
+            <p className="text-secondary-text mt-1 text-xs">
+              Deterministic relationship projection across files, subsystems, security findings,
+              incidents, predictions, and resolutions.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => refreshGraph()}
+              disabled={isRefreshing}
+              className="bg-card hover:bg-card-subtle border-border text-primary-text inline-flex items-center gap-2 rounded-lg border px-3.5 py-2 text-xs font-semibold shadow-sm transition disabled:opacity-50"
+            >
+              <RotateCcw
+                className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin text-indigo-400" : ""}`}
+              />
+              {isRefreshing ? "Reprojecting..." : "Refresh Projection"}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -188,24 +191,24 @@ export function KnowledgeGraphPage() {
           </div>
           <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-3.5">
             <div className="text-[11px] font-medium text-gray-400">Active Subsystems</div>
-            <div className="mt-1 text-xl font-bold text-white">{graph.subsystems.length}</div>
+            <div className="mt-1 text-xl font-bold text-white">{graph.subsystems?.length || 0}</div>
           </div>
           <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-3.5">
             <div className="text-[11px] font-medium text-gray-400">Security Findings</div>
             <div className="mt-1 text-xl font-bold text-rose-400">
-              {graph.node_count_by_type["SecurityFinding"] || 0}
+              {graph.node_count_by_type?.["SecurityFinding"] || 0}
             </div>
           </div>
           <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-3.5">
             <div className="text-[11px] font-medium text-gray-400">Correlated Incidents</div>
             <div className="mt-1 text-xl font-bold text-amber-400">
-              {graph.node_count_by_type["Incident"] || 0}
+              {graph.node_count_by_type?.["Incident"] || 0}
             </div>
           </div>
           <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-3.5">
             <div className="text-[11px] font-medium text-gray-400">Forecast Signals</div>
             <div className="mt-1 text-xl font-bold text-purple-400">
-              {graph.node_count_by_type["Prediction"] || 0}
+              {graph.node_count_by_type?.["Prediction"] || 0}
             </div>
           </div>
         </div>
@@ -226,7 +229,7 @@ export function KnowledgeGraphPage() {
             >
               All ({graph?.total_nodes || 0})
             </button>
-            {graph?.subsystems.map((sub) => (
+            {(graph?.subsystems || Object.keys(nodesBySubsystem)).map((sub) => (
               <button
                 key={sub}
                 onClick={() => setSelectedSubsystem(sub)}
@@ -650,15 +653,60 @@ export function KnowledgeGraphPage() {
                 </div>
               </div>
             ) : (
-              <div className="rounded-2xl border border-gray-800 bg-gray-900/30 p-6 text-center text-gray-500">
-                <HelpCircle className="mx-auto mb-2 h-8 w-8 text-gray-600" />
-                <p className="text-xs font-medium text-gray-400">
-                  Select any entity or relationship
+              <div className="border-border bg-card sticky top-8 space-y-4 rounded-2xl border p-6 shadow-sm">
+                <div className="border-border flex items-center gap-2 border-b pb-3">
+                  <Layers className="h-4 w-4 text-indigo-400" />
+                  <h3 className="text-primary-text text-sm font-bold">
+                    Graph Overview & Inspector
+                  </h3>
+                </div>
+
+                <p className="text-secondary-text text-xs leading-relaxed">
+                  Select any File, Finding, Incident, or relationship connector in the graph to
+                  inspect its deterministic evidence trail and causal connections.
                 </p>
-                <p className="mt-1 text-[11px] text-gray-600">
-                  Click any File, Finding, Incident, or edge connector to inspect causal evidence
-                  and connections.
-                </p>
+
+                {graph && (
+                  <div className="border-border bg-card-subtle grid grid-cols-3 gap-2 rounded-xl border p-3 text-center">
+                    <div>
+                      <div className="text-primary-text font-mono text-lg font-bold">
+                        {graph.nodes.length}
+                      </div>
+                      <div className="text-secondary-text text-[9px] font-bold uppercase">
+                        Nodes
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-primary-text font-mono text-lg font-bold">
+                        {graph.edges.length}
+                      </div>
+                      <div className="text-secondary-text text-[9px] font-bold uppercase">
+                        Edges
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-primary-text font-mono text-lg font-bold">
+                        {Object.keys(nodesBySubsystem).length}
+                      </div>
+                      <div className="text-secondary-text text-[9px] font-bold uppercase">
+                        Subsystems
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  onClick={() =>
+                    setInspectTarget({
+                      type: "health",
+                      id: "overall",
+                    })
+                  }
+                  className="bg-card hover:bg-card-subtle border-border text-primary-text inline-flex w-full items-center justify-center gap-1.5 rounded-xl border px-4 py-2 text-xs font-semibold shadow-sm transition"
+                >
+                  <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
+                  Inspect Project Evidence Graph
+                </button>
               </div>
             )}
           </div>

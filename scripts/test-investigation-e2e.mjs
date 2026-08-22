@@ -44,6 +44,7 @@ async function main() {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "vp-inv3-e2e-"));
   console.log(`[1/8] Created disposable project at: ${tmpDir}`);
 
+  let projectId = null;
   try {
     // 2. Register Project
     const regRes = await fetch(`${API_BASE}/api/projects`, {
@@ -56,7 +57,7 @@ async function main() {
     });
     if (!regRes.ok) throw new Error(`Failed to register project: ${regRes.statusText}`);
     const project = await regRes.json();
-    const projectId = project.id;
+    projectId = project.id;
     console.log(`[2/8] Registered Project ID: ${projectId}`);
 
     // 3. Create real source files

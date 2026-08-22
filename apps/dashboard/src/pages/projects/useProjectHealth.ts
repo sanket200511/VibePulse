@@ -3,7 +3,6 @@ import { useEffect, useMemo } from "react";
 import { getApiBaseUrl, getWsUrl } from "../../lib/api-config";
 import { connectWs } from "../../lib/ws-client";
 import type { DevelopmentEvent } from "../events/types";
-import { useDemoMode } from "../../demo/config";
 
 export interface HealthDimension {
   name: string;
@@ -65,7 +64,6 @@ export interface UnifiedProjectHealth {
 }
 
 export function useProjectHealth(projectId: string | undefined) {
-  const { isDemo } = useDemoMode();
   const queryClient = useQueryClient();
   const queryKey = useMemo(() => ["project-health", projectId], [projectId]);
 
@@ -78,13 +76,13 @@ export function useProjectHealth(projectId: string | undefined) {
       if (!res.ok) throw new Error("Failed to fetch project health");
       return res.json() as Promise<UnifiedProjectHealth>;
     },
-    enabled: !isDemo && !!projectId,
+    enabled: !!projectId,
     refetchOnWindowFocus: false,
     staleTime: 5000,
   });
 
   useEffect(() => {
-    if (isDemo || !projectId) return;
+    if (!projectId) return;
     const wsClient = connectWs({
       url: getWsUrl("/ws/events"),
       onMessage: (rawMsg: unknown) => {
@@ -105,7 +103,7 @@ export function useProjectHealth(projectId: string | undefined) {
       },
     });
     return () => wsClient.close();
-  }, [isDemo, projectId, queryClient]);
+  }, [projectId, queryClient]);
 
   return query;
 }

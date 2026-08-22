@@ -17,6 +17,7 @@ import {
 import { useSecurityIntelligence } from "./useSecurityIntelligence";
 import type { SecurityFinding } from "./types";
 import { formatRelativeTime } from "../../lib/relative-time";
+import { Breadcrumbs } from "../../components/layout/Breadcrumbs";
 
 export function SecurityCommandCenter() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -55,16 +56,25 @@ export function SecurityCommandCenter() {
   } = security;
 
   return (
-    <div className="animate-fade-in-up flex flex-1 flex-col p-8">
+    <div className="animate-fade-in-up bg-background text-foreground flex flex-1 flex-col p-6 md:p-8">
       {/* ── HEADER ── */}
       <div className="mb-8">
-        <Link
-          to={`/projects/${projectId}`}
-          className="text-secondary-text hover:text-primary-text mb-4 inline-flex items-center gap-2 text-sm font-medium transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Project Story
-        </Link>
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <Breadcrumbs
+            items={[
+              { label: "Projects", to: "/projects" },
+              { label: "Project Story", to: `/projects/${projectId}` },
+              { label: "Security Intelligence" },
+            ]}
+          />
+          <Link
+            to={`/projects/${projectId}`}
+            className="text-secondary-text hover:text-primary-text inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to Project Story
+          </Link>
+        </div>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-3">
@@ -293,11 +303,11 @@ export function SecurityCommandCenter() {
             Risk Factor Contributions
           </h3>
 
-          {risk.breakdown.length === 0 ? (
+          {!risk.breakdown || risk.breakdown.length === 0 ? (
             <p className="text-secondary-text text-xs">No risk factors identified.</p>
           ) : (
             <div className="space-y-2.5">
-              {risk.breakdown.map((item, idx) => (
+              {(risk.breakdown || []).map((item, idx) => (
                 <div key={idx} className="flex items-center justify-between text-xs">
                   <span className="text-secondary-text truncate pr-2" title={item.factor}>
                     {item.factor}
@@ -462,7 +472,7 @@ export function SecurityCommandCenter() {
                   {dependencies.vulnerability_intelligence_status}
                 </p>
                 <div className="text-muted-foreground mt-2 font-mono text-[10px]">
-                  Manifests: {dependencies.manifest_files.join(", ") || "None observed"}
+                  Manifests: {dependencies.manifest_files?.join(", ") || "None observed"}
                 </div>
               </div>
             </div>

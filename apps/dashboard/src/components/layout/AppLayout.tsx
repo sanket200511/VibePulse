@@ -7,7 +7,7 @@
  * and the pages it hosts.
  */
 
-import { Outlet } from "react-router-dom";
+import { Outlet, Link } from "react-router-dom";
 import { Navigation } from "./Navigation";
 import { ThemeToggle } from "../theme/ThemeToggle";
 import { PresentationToggle } from "./PresentationToggle";
@@ -30,7 +30,15 @@ export function AppLayout() {
 
       <header className="border-border bg-background/95 sticky top-0 z-40 border-b backdrop-blur">
         <div className="flex h-14 items-center justify-between gap-4 px-4 sm:px-8">
-          <span className="text-foreground text-sm font-semibold tracking-tight">VibePulse</span>
+          <Link
+            to="/"
+            className="text-foreground hover:text-accent-color focus-visible:ring-ring inline-flex items-center gap-2 rounded-lg text-sm font-extrabold tracking-tight transition-colors focus-visible:outline-none focus-visible:ring-2"
+            aria-label="VibePulse Workspace Home"
+          >
+            <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+              VibePulse
+            </span>
+          </Link>
           <div className="flex items-center gap-4">
             <Navigation />
             <PresentationToggle />

@@ -164,12 +164,12 @@ export function ProjectsPage() {
       const data = await response.json();
       return data.projects;
     },
-    enabled: !isDemo,
   });
 
-  const projects = isDemo ? demoProjects : projectsQuery.data || [];
-  const isLoading = !isDemo && projectsQuery.isLoading;
-  const isError = !isDemo && projectsQuery.isError;
+  const realProjects = projectsQuery.data || [];
+  const projects = realProjects.length > 0 ? realProjects : isDemo ? demoProjects : [];
+  const isLoading = projectsQuery.isLoading;
+  const isError = projectsQuery.isError && (!isDemo || realProjects.length === 0);
 
   return (
     <div className="animate-fade-in-up flex flex-1 flex-col p-8">
