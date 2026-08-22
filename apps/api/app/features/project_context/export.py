@@ -608,10 +608,11 @@ async def generate_project_context_markdown(db: AsyncSession, project_id: uuid.U
                 "(Evidence-First, Zero Hallucination)*"
             ),
             (
-                "- **Intent Classification**: Deterministic mapping across 12 canonical domains "
-                "(`PROJECT_HEALTH`, `SECURITY`, `INCIDENT`, `FILE`, `SUBSYSTEM`, `PREDICTION`, "
-                "`RESOLUTION`, `KNOWLEDGE_GRAPH`, `ENGINEERING_ACTIVITY`, `EVIDENCE`, "
-                "`PROJECT_OVERVIEW`, `UNKNOWN`)."
+                "- **Intent Classification**: Deterministic mapping across 16 canonical domains "
+                "(`PROJECT_HEALTH`, `SECURITY`, `PRIORITY`, `ENGINEERING_ACTIVITY`, `SUBSYSTEM`, "
+                "`INCIDENT`, `INCIDENT_CRITICALITY`, `INCIDENT_CAUSE`, `FILE`, `KNOWLEDGE_GRAPH`, "
+                "`PREDICTION`, `RESOLUTION`, `PROJECT_OVERVIEW`, `AI_HANDOFF`, "
+                "`EVIDENCE`, `UNKNOWN`)."
             ),
             (
                 "- **Tri-State Provenance**: Every statement explicitly tagged as `[OBSERVED]` "
@@ -623,6 +624,32 @@ async def generate_project_context_markdown(db: AsyncSession, project_id: uuid.U
                 "unknowns without guessing."
             ),
             "- **REST Endpoint**: `POST /api/projects/{project_id}/copilot/query`",
+            "",
+            "## 22. How an AI Agent Should Use This Context",
+            "",
+            "When downstream LLMs or autonomous coding agents consume this document:",
+            "",
+            "1. **Authoritative Ground Truth (`[OBSERVED]`)**:",
+            (
+                "   - File modifications, session timestamps, language breakdowns, and AST "
+                "rule violations are directly recorded PostgreSQL telemetry. "
+                "Treat these as empirical ground truth."
+            ),
+            "2. **Derived Intelligence (`[INFERRED]`)**:",
+            (
+                "   - Health scores, priority rankings, forecast signals, and architectural "
+                "patterns are mathematical projections derived from observed history. "
+                "Use them to prioritize actions."
+            ),
+            "3. **Explicit Boundaries (`[UNKNOWN]`)**:",
+            (
+                "   - Telemetry does not observe remote CI runners, cloud infrastructure, "
+                "or uncommitted files. Do NOT fabricate assumptions about these surfaces."
+            ),
+            "4. **Verification Protocol Before Code Modifications**:",
+            "   - Verify existing AST security guardrails (`SEC001`, credential leak patterns).",
+            "   - Preserve multi-project isolation and ensure all secrets remain `[REDACTED]`.",
+            "   - Run local unit tests and workspace typechecks to prevent regressions.",
             "",
         ]
     )

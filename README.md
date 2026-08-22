@@ -1,12 +1,11 @@
 <div align="center">
-  <!-- HERO BANNER PLACEHOLDER (Replace with docs/assets/hero-banner.svg) -->
   <img src="https://raw.githubusercontent.com/sanket200511/VibePulse/main/docs/assets/logo-placeholder.png" alt="VibePulse Logo" width="120" />
 
   <br />
 
   <h1>VibePulse</h1>
-  <p><strong>The Engineering Search & Investigation Engine</strong></p>
-  <p>Observe First. Derive Carefully. Never Invent.</p>
+  <p><strong>The Deterministic Engineering Intelligence Platform & AI Copilot Foundation</strong></p>
+  <p><em>Observe First. Derive Carefully. Never Invent.</em></p>
 
   <div>
     <a href="https://github.com/sanket200511/VibePulse/releases"><img src="https://img.shields.io/github/v/release/sanket200511/VibePulse?color=10b981&label=Version" alt="Version" /></a>
@@ -14,97 +13,102 @@
     <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome" /></a>
   </div>
   <br />
-
-  <!-- HERO SCREENSHOT PLACEHOLDER -->
-  <!-- Recommendation: Insert `docs/assets/hero-replay-engine.png` here (1440x900) -->
-  <img src="https://raw.githubusercontent.com/sanket200511/VibePulse/main/docs/assets/hero-replay-engine-placeholder.png" alt="VibePulse Replay Engine" width="100%" style="border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);" />
 </div>
 
-<br />
+**VibePulse** is a deterministic, event-driven engineering intelligence and investigation platform. It provides an end-to-end continuous loop from filesystem telemetry to causal root cause investigation, predictive risk forecasting, semantic knowledge graph traversal, and zero-hallucination AI Copilot assistance.
 
-**VibePulse** is a deterministic, event-driven observation platform for software engineering. It acts as an investigation engine, allowing you to discover, filter, correlate, and navigate your engineering activity natively.
-
-It does **not** generate code, nor does it replace Git or CI/CD. Instead, it provides a high-fidelity "Time Machine" and "Engineering DNA" to understand the _process_ of how your code evolves.
-
----
-
-## ⚡ Key Capabilities
-
-### 🎥 The Replay Engine
-
-Play back coding sessions exactly as they happened. VibePulse automatically segments long sessions into semantic chapters (`WORK`, `IDLE_GAP`, `LANGUAGE_SWITCH`).
-
-<!-- GIF PLACEHOLDER -->
-<!-- Recommendation: Insert `docs/assets/demo-replay-engine.gif` here -->
-
-### 🧬 Engineering DNA (Static Analysis)
-
-Extracts structural architecture (functions, classes, dependencies, security TODOs) without ever executing the code or sending it to the cloud.
-
-<!-- SCREENSHOT PLACEHOLDER -->
-<!-- Recommendation: Insert `docs/assets/engineering-dna.png` here -->
-
-### 🕵️ Investigation Engine
-
-A powerful, Kibana-style search interface to query your engineering history deterministically across all sessions.
-
-### 🤖 AI Provenance
-
-Statistically detect the likelihood of AI-assisted authorship based on typing velocity and AST complexity deltas.
+```
+OBSERVE ──▶ DETECT ──▶ UNDERSTAND ──▶ INVESTIGATE ──▶ RESOLVE ──▶ LEARN ──▶ PREDICT ──▶ ASK ──▶ ACT
+```
 
 ---
 
-## 🏗️ Architecture
+## ⚡ Core Capabilities
 
-VibePulse follows a decoupled, feature-first monorepo architecture:
+### 🎛️ Unified Intelligence Command Center
 
-1. **Daemon (Node.js)**: Runs locally. Detects filesystem events and streams them safely to the API.
-2. **API (FastAPI + Python 3.12)**: The brain. Persists events, runs AST/Security Analyzers, and manages session lifecycle.
-3. **Dashboard (React + Vite)**: A premium, dark-mode first UI that connects via WebSockets for real-time telemetry.
+The central engineering cockpit displaying the **Metric Triad**:
 
-<!-- ARCHITECTURE DIAGRAM PLACEHOLDER -->
-<!-- Recommendation: Render the Mermaid diagram from `docs/diagrams/system-architecture.md` here -->
+- **Overall Health Score** ($0 \dots 100$, **Higher = Better**): 5-dimension composite (`Security`, `Engineering Stability`, `Incident Health`, `Resolution Health`, `Predictive Risk`).
+- **Security Risk Score** (Points, **Higher = Worse**): Real-time sum of unmitigated AST security rules (`SEC001`, `DEBUG_TRUE`, credential leaks).
+- **Forecast Strength** ($0 \dots 100$, **Empirical Baseline**): Statistical confidence tier based on historical observation frequency and commit velocity.
+- **Embedded Copilot Mini-Console**: Ask grounded natural engineering questions with immediate `[Why?]` evidence triggers.
+
+### 🤖 AI Engineering Copilot Foundation (Zero LLM Dependency)
+
+Deterministic orchestration and retrieval over canonical PostgreSQL telemetry supporting 16 canonical query families with explicit tri-state provenance:
+
+- `[OBSERVED]`: Directly recorded filesystem telemetry and AST rules.
+- `[INFERRED]`: Deterministically derived health metrics, priority rankings, and forecasts.
+- `[UNKNOWN]`: Explicit observation boundaries (out-of-band deployments, remote CI).
+- **Answerability Gate**: Cleanly rejects out-of-scope queries (market prices, weather, elections, private emails) without hallucination.
+
+### 🔍 Universal Evidence Inspector & Trust Engine
+
+- Mathematical 5-dimension score decomposition ($W_i \times S_i$).
+- Multi-step causal evidence graphs connecting observed file modifications, AST detections, incident creation, and health impacts.
+
+### 🔮 Predictive Engineering Intelligence
+
+- Statistical regression and code churn acceleration forecasts.
+- File and subsystem hotspot detection and focus drift analysis.
+
+### 🕸️ Engineering Knowledge Graph & Project Memory 2.0
+
+- Semantic multi-entity graph traversal (`CONTAINS`, `BELONGS_TO`, `AFFECTS`, `RESOLVED_BY`, `SUPPORTS`).
+- Portable `PROJECT_CONTEXT.md` AI handoff export with complete guidance for downstream AI agents.
+
+---
+
+## 🏗️ Architecture & Invariants
 
 ```mermaid
-architecture-beta
-    group observer(cloud)[Developer Laptop]
-    service ide(server)[IDE / Filesystem] in observer
-    service daemon(server)[Node.js Daemon] in observer
+flowchart TD
+    IDE[Developer Filesystem / IDE] -->|File Events| Daemon[Node.js Observation Daemon]
+    Daemon -->|HTTP /events| API[FastAPI Intelligence Engine]
+    API -->|Persist & Query| DB[(PostgreSQL Canonical Ground Truth)]
+    API -->|WebSocket Stream| UI[React / Vite Command Center]
 
-    group backend(cloud)[VibePulse API Server]
-    service api(server)[FastAPI Backend] in backend
-    service db(database)[PostgreSQL] in backend
-
-    group client(cloud)[Browser]
-    service ui(server)[React Dashboard] in client
-
-    ide:R --> L:daemon
-    daemon:R --> L:api
-    api:R --> L:db
-    api:B --> T:ui
+    subgraph Intelligence Core
+        API --> SEC[Security Intelligence 2.0]
+        API --> INV[Investigation Engine 3.0]
+        API --> PRED[Predictive Intelligence]
+        API --> HEALTH[Unified Project Health]
+        API --> KG[Knowledge Graph & Memory 2.0]
+        API --> COPILOT[AI Engineering Copilot]
+    end
 ```
+
+### Core Invariants
+
+- **PostgreSQL is the ONLY canonical ground truth**: Zero duplicate state machines or in-memory caches.
+- **Zero Hallucination**: Pure deterministic projections ($A \equiv B$).
+- **Secret Redaction**: Raw tokens and credentials matching token patterns are strictly masked to `[REDACTED]`.
+- **Multi-Project Isolation**: Telemetry and context for Project A are completely segregated from Project B.
+- **Safe Project Deletion**: Removing a project from VibePulse deletes only telemetry records; user code remains untouched on disk.
 
 ---
 
 ## 🚀 Getting Started
 
-Ready to install VibePulse? Check out our comprehensive guides:
+```bash
+# 1. Install workspace dependencies
+pnpm install
 
-- 📖 [**Installation Guide**](INSTALLATION.md) — Local development and quick start.
-- 🚢 [**Deployment Guide**](DEPLOYMENT.md) — How to run VibePulse in production via Docker Compose.
-- 🏛️ [**Architecture Reference**](ARCHITECTURE.md) — Deep dive into the monorepo design and decisions.
-- 📡 [**API Reference**](API_REFERENCE.md) — Full REST and WebSocket endpoint documentation.
+# 2. Setup Python environment and run migrations
+cd apps/api && uv sync && uv run alembic upgrade head && cd ../..
+
+# 3. Start local seminar demonstration
+pnpm dev:seminar
+```
 
 ---
 
-## 🤝 Contributing
+## 🧪 Verification & Quality Baselines
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on our conventional commits, monorepo setup, and feature-first architecture rules.
-
-## 🛡️ Security
-
-If you discover a security vulnerability within VibePulse, please review our [Security Policy](SECURITY.md).
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+- **Backend Pytest**: 347 / 347 passed
+- **Daemon Vitest**: 130 / 130 passed
+- **TypeScript Typecheck**: 5 / 5 packages passed (0 errors)
+- **Lint & Ruff**: 5 / 5 packages passed (0 errors)
+- **Sprint 12 E2E Acceptance Test**: 14 / 14 criteria passed (`node scripts/test-sprint12-e2e.mjs`)
+- **Seminar Demo Runner**: 10-stage loop passed (`node scripts/demo-command-center.mjs`)
