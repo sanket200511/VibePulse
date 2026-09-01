@@ -245,7 +245,7 @@ export function SecurityCommandCenter() {
                     </div>
 
                     <Link
-                      to={`/projects/${projectId}/investigation`}
+                      to={`/projects/${projectId}/investigation?incidentId=${encodeURIComponent(inc.incident_id)}`}
                       className="bg-card hover:bg-card-subtle border-border text-primary-text inline-flex shrink-0 items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors"
                     >
                       Investigate

@@ -139,9 +139,9 @@ Running exhaustive live readiness audit...
   );
 
   // 3. Service Port Checks
-  const apiPort = process.env.VIBEPULSE_API_PORT || process.env.API_PORT || 5133;
-  const dashPort = process.env.VIBEPULSE_DASHBOARD_PORT || process.env.DASHBOARD_PORT || 5134;
-  const daemonPort = process.env.VIBEPULSE_DAEMON_PORT || process.env.DAEMON_PORT || 5135;
+  const apiPort = process.env.VIBEPULSE_API_PORT || process.env.API_PORT || 5184;
+  const dashPort = process.env.VIBEPULSE_DASHBOARD_PORT || process.env.DASHBOARD_PORT || 5183;
+  const daemonPort = process.env.VIBEPULSE_DAEMON_PORT || process.env.DAEMON_PORT || 5185;
 
   const apiUp = await checkHttp(`http://localhost:${apiPort}/health`);
   report(

@@ -19,7 +19,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
 
-const API_BASE = process.env.VIBEPULSE_API_URL || "http://127.0.0.1:5133";
+const API_BASE = process.env.VIBEPULSE_API_URL || "http://127.0.0.1:5184";
 const SECRET_VAL = "VIBEPULSE_INVESTIGATION_SECRET_2026";
 
 async function main() {
@@ -36,7 +36,7 @@ async function main() {
 
   if (!healthy) {
     console.error(`❌ FastAPI backend is not running at ${API_BASE}.`);
-    console.error("Please run: cd apps/api && uv run uvicorn app.main:app --port 5133");
+    console.error("Please run: cd apps/api && uv run uvicorn app.main:app --port 5184");
     process.exit(1);
   }
 

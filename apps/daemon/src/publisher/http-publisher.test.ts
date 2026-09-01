@@ -49,20 +49,20 @@ describe("createHttpPublisher", () => {
   describe("NORMAL publish()", () => {
     it("POSTs the event to <apiUrl>/events", async () => {
       fetchMock.mockResolvedValueOnce(new Response(null, { status: 201 }));
-      const publisher = createHttpPublisher("http://localhost:5133", BASE_CONFIG);
+      const publisher = createHttpPublisher("http://localhost:5184", BASE_CONFIG);
 
       await publisher.publish(NORMAL_EVENT);
 
       expect(fetchMock).toHaveBeenCalledTimes(1);
       const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-      expect(url).toBe("http://localhost:5133/events");
+      expect(url).toBe("http://localhost:5184/events");
       expect(init.method).toBe("POST");
       expect(JSON.parse(init.body as string)).toMatchObject({ file_path: "/repo/main.py" });
     });
 
     it("does not retry on a 4xx client error", async () => {
       fetchMock.mockResolvedValueOnce(new Response(null, { status: 422 }));
-      const publisher = createHttpPublisher("http://localhost:5133", BASE_CONFIG);
+      const publisher = createHttpPublisher("http://localhost:5184", BASE_CONFIG);
 
       await publisher.publish(NORMAL_EVENT);
 
@@ -73,7 +73,7 @@ describe("createHttpPublisher", () => {
       fetchMock
         .mockResolvedValueOnce(new Response(null, { status: 503 }))
         .mockResolvedValueOnce(new Response(null, { status: 201 }));
-      const publisher = createHttpPublisher("http://localhost:5133", BASE_CONFIG);
+      const publisher = createHttpPublisher("http://localhost:5184", BASE_CONFIG);
 
       await publisher.publish(NORMAL_EVENT);
 
@@ -82,7 +82,7 @@ describe("createHttpPublisher", () => {
 
     it("gives up after retryMaxNormal attempts when the API is unavailable", async () => {
       fetchMock.mockRejectedValue(new Error("connect ECONNREFUSED"));
-      const publisher = createHttpPublisher("http://localhost:5133", BASE_CONFIG);
+      const publisher = createHttpPublisher("http://localhost:5184", BASE_CONFIG);
 
       await expect(publisher.publish(NORMAL_EVENT)).resolves.toBeUndefined();
 
@@ -92,7 +92,7 @@ describe("createHttpPublisher", () => {
     it("respects a custom retryMaxNormal from config", async () => {
       fetchMock.mockRejectedValue(new Error("unavailable"));
       const config: PublisherConfig = { ...BASE_CONFIG, retryMaxNormal: 2 };
-      const publisher = createHttpPublisher("http://localhost:5133", config);
+      const publisher = createHttpPublisher("http://localhost:5184", config);
 
       await publisher.publish(NORMAL_EVENT);
 
@@ -103,18 +103,18 @@ describe("createHttpPublisher", () => {
   describe("CRITICAL publishCritical()", () => {
     it("POSTs critical events to the same /events endpoint", async () => {
       fetchMock.mockResolvedValueOnce(new Response(null, { status: 201 }));
-      const publisher = createHttpPublisher("http://localhost:5133", BASE_CONFIG);
+      const publisher = createHttpPublisher("http://localhost:5184", BASE_CONFIG);
 
       await publisher.publishCritical(CRITICAL_EVENT);
 
       const [url] = fetchMock.mock.calls[0] as [string, RequestInit];
-      expect(url).toBe("http://localhost:5133/events");
+      expect(url).toBe("http://localhost:5184/events");
       expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 
     it("stops immediately on success", async () => {
       fetchMock.mockResolvedValueOnce(new Response(null, { status: 201 }));
-      const publisher = createHttpPublisher("http://localhost:5133", BASE_CONFIG);
+      const publisher = createHttpPublisher("http://localhost:5184", BASE_CONFIG);
 
       await publisher.publishCritical(CRITICAL_EVENT);
 
@@ -123,7 +123,7 @@ describe("createHttpPublisher", () => {
 
     it("does not retry CRITICAL events on 4xx", async () => {
       fetchMock.mockResolvedValueOnce(new Response(null, { status: 422 }));
-      const publisher = createHttpPublisher("http://localhost:5133", BASE_CONFIG);
+      const publisher = createHttpPublisher("http://localhost:5184", BASE_CONFIG);
 
       await publisher.publishCritical(CRITICAL_EVENT);
 
@@ -132,7 +132,7 @@ describe("createHttpPublisher", () => {
 
     it("retries up to retryMaxCritical times (more than NORMAL)", async () => {
       fetchMock.mockRejectedValue(new Error("unavailable"));
-      const publisher = createHttpPublisher("http://localhost:5133", BASE_CONFIG);
+      const publisher = createHttpPublisher("http://localhost:5184", BASE_CONFIG);
 
       await publisher.publishCritical(CRITICAL_EVENT);
 
@@ -147,7 +147,7 @@ describe("createHttpPublisher", () => {
         retryMaxCritical: 7,
         retryBackoffBaseMs: 0,
       };
-      const publisher = createHttpPublisher("http://localhost:5133", config);
+      const publisher = createHttpPublisher("http://localhost:5184", config);
 
       await publisher.publishCritical(CRITICAL_EVENT);
 
@@ -159,7 +159,7 @@ describe("createHttpPublisher", () => {
         .mockRejectedValueOnce(new Error("unavailable"))
         .mockRejectedValueOnce(new Error("unavailable"))
         .mockResolvedValueOnce(new Response(null, { status: 201 }));
-      const publisher = createHttpPublisher("http://localhost:5133", BASE_CONFIG);
+      const publisher = createHttpPublisher("http://localhost:5184", BASE_CONFIG);
 
       await publisher.publishCritical(CRITICAL_EVENT);
 

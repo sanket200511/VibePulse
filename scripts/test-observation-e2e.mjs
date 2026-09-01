@@ -3,9 +3,9 @@ import path from "path";
 
 const testProjectDir = "D:\\VibePulse-Observation-Test";
 const primaryDemoDir = "D:\\VibePulse-Seminar-Demo";
-const API_URL = process.env.VIBEPULSE_API_URL || process.env.API_URL || "http://localhost:5133";
+const API_URL = process.env.VIBEPULSE_API_URL || process.env.API_URL || "http://localhost:5184";
 const DAEMON_URL =
-  process.env.VIBEPULSE_DAEMON_URL || process.env.DAEMON_URL || "http://localhost:5135";
+  process.env.VIBEPULSE_DAEMON_URL || process.env.DAEMON_URL || "http://localhost:5185";
 
 async function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));

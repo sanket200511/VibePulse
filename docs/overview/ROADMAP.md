@@ -22,7 +22,7 @@
 │  Phase 8: Engineering Knowledge Graph & Project Memory 2.0     [✓ COMPLETED] │
 │  Phase 9: AI Engineering Copilot (Zero LLM Dependency)         [✓ COMPLETED] │
 │  Phase 10: Unified Command Center & Production Supervisor UX   [✓ COMPLETED] │
-│  Phase 11: Dedicated Port Migration (5133/5134/5135)           [✓ COMPLETED] │
+│  Phase 11: Dedicated Port Migration (5184/5183/5185)           [✓ COMPLETED] │
 │  Phase 12: Forensic Truth Audit & Academic Packaging           [✓ COMPLETED] │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -40,8 +40,8 @@
 ### Phase 2 — Observation Engine 2.0 (`apps/daemon`)
 
 - Real-time filesystem observer using Chokidar with 300ms debouncing.
-- At-least-once HTTP delivery to `:5133/events` with exponential backoff.
-- Dedicated health server on port `5135` (`/health`, `/watch`, `/control/observe/start|stop`).
+- At-least-once HTTP delivery to `:5184/events` with exponential backoff.
+- Dedicated health server on port `5185` (`/health`, `/watch`, `/control/observe/start|stop`).
 
 ### Phase 3 — Security Intelligence 2.0
 
@@ -88,7 +88,7 @@
 
 ### Phase 11 — Dedicated Port Namespace
 
-- Migration from generic ports to dedicated namespace: API `5133`, Dashboard `5134`, Daemon `5135`, PostgreSQL `5432`.
+- Migration from generic ports to dedicated namespace: API `5184`, Dashboard `5183`, Daemon `5185`, PostgreSQL `5432`.
 
 ### Phase 12 — Forensic Truth Audit & Academic Packaging
 

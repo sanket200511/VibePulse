@@ -10,8 +10,8 @@ fs.writeFileSync(
 );
 fs.writeFileSync(path.join(secondaryBase, "app.py"), "print('hello secondary')\n");
 
-const API_URL = process.env.VIBEPULSE_API_URL || "http://localhost:5133";
-const DAEMON_URL = process.env.VIBEPULSE_DAEMON_URL || "http://localhost:5135";
+const API_URL = process.env.VIBEPULSE_API_URL || "http://localhost:5184";
+const DAEMON_URL = process.env.VIBEPULSE_DAEMON_URL || "http://localhost:5185";
 
 async function main() {
   let switchData = null;

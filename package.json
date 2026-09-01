@@ -21,7 +21,7 @@
     "cleanup:ephemeral": "node scripts/cleanup-ephemeral-projects.mjs",
     "cleanup:ephemeral:confirm": "node scripts/cleanup-ephemeral-projects.mjs --confirm",
     "verify": "turbo run typecheck lint test",
-    "dev:api": "cd apps/api && uv run uvicorn app.main:app --port 5133 --reload",
+    "dev:api": "cd apps/api && uv run uvicorn app.main:app --port 5184 --reload",
     "dev:dashboard": "pnpm --filter @vibepulse/dashboard dev",
     "dev:daemon": "pnpm --filter @vibepulse/daemon dev",
     "dev:ui": "pnpm --filter @vibepulse/dashboard dev",

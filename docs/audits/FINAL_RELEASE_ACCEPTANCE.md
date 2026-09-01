@@ -38,9 +38,9 @@ $$\text{OBSERVE} \to \text{DETECT} \to \text{UNDERSTAND} \to \text{INVESTIGATE} 
 ## 3. Runtime Acceptance
 
 - **Dedicated Port Namespace Invariant**:
-  - FastAPI API: `5133` (`5133` = VIBE)
-  - React Dashboard: `5134`
-  - Telemetry Daemon Health: `5135`
+  - FastAPI API: `5184`
+  - React Dashboard: `5183`
+  - Telemetry Daemon Health: `5185`
   - PostgreSQL Database: `5432`
   - Redis Cache / PubSub: Cloud
 - **Supervisor UX**: `pnpm dev` launches the multi-service stack with clean, structured logging (`[TIME] [SERVICE] [LEVEL] MESSAGE`) and preflight port conflict detection.
@@ -143,7 +143,7 @@ The runtime deserialization failure on `GET /api/projects/{id}/context` was test
 All current and authoritative documents have been reconciled with single canonical facts:
 
 - **Test Baselines**: 348 Backend Pytest + 130 Daemon Vitest = **478 Total Automated Tests**.
-- **Dedicated Ports**: `5133` (API), `5134` (Dashboard), `5135` (Daemon), `5432` (PostgreSQL), Redis (Cloud).
+- **Dedicated Ports**: `5184` (API), `5183` (Dashboard), `5185` (Daemon), `5432` (PostgreSQL), Redis (Cloud).
 - **Master Documentation Index**: Complete 7-tier authority governance established in [`docs/DOCUMENTATION_INDEX.md`](../DOCUMENTATION_INDEX.md).
 - **Historical Snapshot Markers**: Clear superseded banners added to all historical audit snapshots (`FULL_SYSTEM_AUDIT.md`, `WHOLE_SYSTEM_READINESS_AUDIT.md`, `POST_SPRINT12_AUDIT.md`, `GITHUB_RELEASE_AUDIT.md`).
 

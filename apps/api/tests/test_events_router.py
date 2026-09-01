@@ -126,8 +126,7 @@ async def test_start_observation_success(mock_client_class: AsyncMock, client: A
     body = response.json()
     assert body["event_type"] == "OBSERVATION_STARTED"
     assert body["project_root"] == "my_project_root"
-    mock_instance.post.assert_awaited_once_with("http://localhost:5135/control/observe/start")
-
+    mock_instance.post.assert_awaited_once_with("http://localhost:5185/control/observe/start")
     await asyncio.sleep(0.1)
 
 
@@ -147,7 +146,7 @@ async def test_stop_observation_success(mock_client_class: AsyncMock, client: As
     assert response.status_code == 201
     body = response.json()
     assert body["event_type"] == "OBSERVATION_STOPPED"
-    mock_instance.post.assert_awaited_once_with("http://localhost:5135/control/observe/stop")
+    mock_instance.post.assert_awaited_once_with("http://localhost:5185/control/observe/stop")
 
     await asyncio.sleep(0.1)
 
@@ -168,7 +167,7 @@ async def test_observation_already_started(
     assert response.status_code == 200
     body = response.json()
     assert body["event_type"] == "OBSERVATION_STARTED"
-    mock_instance.post.assert_awaited_once_with("http://localhost:5135/control/observe/start")
+    mock_instance.post.assert_awaited_once_with("http://localhost:5185/control/observe/start")
 
     await asyncio.sleep(0.1)
 
@@ -189,7 +188,7 @@ async def test_observation_already_stopped(
     assert response.status_code == 200
     body = response.json()
     assert body["event_type"] == "OBSERVATION_STOPPED"
-    mock_instance.post.assert_awaited_once_with("http://localhost:5135/control/observe/stop")
+    mock_instance.post.assert_awaited_once_with("http://localhost:5185/control/observe/stop")
 
     await asyncio.sleep(0.1)
 

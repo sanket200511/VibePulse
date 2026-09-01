@@ -4,7 +4,7 @@
 **Architecture Freeze**: Active
 **Canonical Source of Truth**: PostgreSQL 16+ Historical Telemetry
 **Deterministic Invariant**: Pure Derived Projections ($A \equiv B$)
-**Dedicated Port Namespace**: API `5133` | Dashboard `5134` | Daemon `5135` | PostgreSQL `5432`
+**Dedicated Port Namespace**: API `5184` | Dashboard `5183` | Daemon `5185` | PostgreSQL `5432`
 
 ---
 
@@ -27,12 +27,12 @@ VibePulse is a deterministic, event-driven engineering intelligence and investig
 
 ```mermaid
 flowchart TD
-    IDE[Developer Filesystem / IDE] -->|File Events| Daemon[Node.js Telemetry Daemon :5135]
-    Daemon -->|HTTP POST /events| API[FastAPI Intelligence Engine :5133]
+    IDE[Developer Filesystem / IDE] -->|File Events| Daemon[Node.js Telemetry Daemon :5185]
+    Daemon -->|HTTP POST /events| API[FastAPI Intelligence Engine :5184]
     API -->|Persist & Query| DB[(PostgreSQL 16 Canonical Ground Truth :5432)]
-    API -->|WebSocket Stream| UI[React 18 / Vite 6 Command Center :5134]
+    API -->|WebSocket Stream| UI[React 18 / Vite 6 Command Center :5183]
 
-    subgraph Intelligence Core [FastAPI Intelligence Core :5133]
+    subgraph Intelligence Core [FastAPI Intelligence Core :5184]
         API --> OBS[Observation Engine 2.0]
         API --> SEC[Security Intelligence 2.0]
         API --> INV[Investigation Engine 3.0]
@@ -86,7 +86,7 @@ All intelligence is derived from 7 canonical tables in PostgreSQL:
 ### A. Observation Engine 2.0 (`apps/daemon`)
 
 - **Runtime**: Node.js 22 + TypeScript + Chokidar.
-- **Port**: `5135` (`http://localhost:5135/health`).
+- **Port**: `5185` (`http://localhost:5185/health`).
 - **Functionality**: Observes filesystem mutations, debounces rapid writes, manages observation gates, registers project roots with the API, and delivers telemetry payloads via HTTP POST.
 
 ### B. Security Intelligence 2.0 (`app/features/security`)
@@ -129,7 +129,7 @@ All intelligence is derived from 7 canonical tables in PostgreSQL:
 ### I. Frontend Command Center (`apps/dashboard`)
 
 - **Runtime**: React 18 + Vite 6 + TypeScript + Tailwind CSS.
-- **Port**: `5134` (`http://localhost:5134`).
+- **Port**: `5183` (`http://localhost:5183`).
 - **Capabilities**: Real-time WebSocket telemetry stream (`/ws/events`, `/ws/sessions`), Metric Triad cards, interactive Causal Evidence Graph, Knowledge Graph visualization, and embedded Copilot mini-console.
 
 ---
@@ -138,10 +138,10 @@ All intelligence is derived from 7 canonical tables in PostgreSQL:
 
 | Component                    | Port       | Default URL                    | Purpose                              |
 | ---------------------------- | ---------- | ------------------------------ | ------------------------------------ |
-| **FastAPI Backend (API)**    | **`5133`** | `http://localhost:5133`        | REST & WebSocket intelligence engine |
-| **FastAPI Interactive Docs** | **`5133`** | `http://localhost:5133/docs`   | OpenAPI / Swagger specification      |
-| **React Dashboard (UI)**     | **`5134`** | `http://localhost:5134`        | Vite dev server & Command Center UI  |
-| **Telemetry Daemon**         | **`5135`** | `http://localhost:5135/health` | Filesystem watcher & health server   |
+| **FastAPI Backend (API)**    | **`5184`** | `http://localhost:5184`        | REST & WebSocket intelligence engine |
+| **FastAPI Interactive Docs** | **`5184`** | `http://localhost:5184/docs`   | OpenAPI / Swagger specification      |
+| **React Dashboard (UI)**     | **`5183`** | `http://localhost:5183`        | Vite dev server & Command Center UI  |
+| **Telemetry Daemon**         | **`5185`** | `http://localhost:5185/health` | Filesystem watcher & health server   |
 | **PostgreSQL Database**      | **`5432`** | `localhost:5432`               | Canonical source of truth            |
 | **Redis Cache / PubSub**     | **Cloud**  | Configured URI                 | Cloud Redis instance                 |
 

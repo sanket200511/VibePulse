@@ -46,6 +46,6 @@ ENV PYTHONDONTWRITEBYTECODE=1
 COPY docker/api-entrypoint.sh /usr/local/bin/api-entrypoint.sh
 RUN chmod +x /usr/local/bin/api-entrypoint.sh
 
-EXPOSE 5133
+EXPOSE 5184
 
 CMD ["api-entrypoint.sh"]

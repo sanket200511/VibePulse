@@ -18,7 +18,7 @@ import os from "os";
 import crypto from "crypto";
 import { execSync, spawn } from "child_process";
 
-const API_BASE = process.env.VIBEPULSE_API_URL || "http://localhost:5133";
+const API_BASE = process.env.VIBEPULSE_API_URL || "http://localhost:5184";
 const GLOBAL_TIMEOUT_MS = 25000;
 
 // Global watchdog timer to guarantee the test never hangs indefinitely
@@ -91,7 +91,7 @@ async function ensureApiServer() {
   } catch {}
 
   console.log("Starting temporary local FastAPI test instance...");
-  const apiPort = new URL(API_BASE).port || "5133";
+  const apiPort = new URL(API_BASE).port || "5184";
   const child = spawn("uv", ["run", "uvicorn", "app.main:app", "--port", apiPort], {
     cwd: path.resolve(process.cwd(), "apps/api"),
     shell: true,

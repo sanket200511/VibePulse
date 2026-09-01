@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     debug: bool = False
     log_level: str = "info"
     api_port: int = Field(
-        default=5133,
+        default=5184,
         ge=1,
         le=65535,
         validation_alias=AliasChoices("VIBEPULSE_API_PORT", "API_PORT"),
@@ -33,7 +33,7 @@ class Settings(BaseSettings):
 
     # ── Daemon ───────────────────────────────────────────────────────────────
     daemon_url: str = Field(
-        default="http://localhost:5135",
+        default="http://localhost:5185",
         validation_alias=AliasChoices("VIBEPULSE_DAEMON_URL", "DAEMON_URL"),
     )
 
@@ -47,8 +47,8 @@ class Settings(BaseSettings):
 
     # ── CORS ─────────────────────────────────────────────────────────────────
     cors_origins: list[AnyHttpUrl] = [
-        AnyHttpUrl("http://localhost:5134"),
-        AnyHttpUrl("http://127.0.0.1:5134"),
+        AnyHttpUrl("http://localhost:5183"),
+        AnyHttpUrl("http://127.0.0.1:5183"),
         AnyHttpUrl("http://localhost:3000"),
         AnyHttpUrl("http://127.0.0.1:3000"),
     ]

@@ -4,8 +4,8 @@
   "private": true,
   "description": "VibePulse FastAPI backend",
   "scripts": {
-    "dev": "uv run uvicorn app.main:app --host 0.0.0.0 --port 5133 --reload",
-    "start": "uv run uvicorn app.main:app --host 0.0.0.0 --port 5133",
+    "dev": "uv run uvicorn app.main:app --host 0.0.0.0 --port 5184 --reload",
+    "start": "uv run uvicorn app.main:app --host 0.0.0.0 --port 5184",
     "lint": "uv run ruff check app/",
     "lint:fix": "uv run ruff check app/ --fix",
     "format": "uv run ruff format app/",

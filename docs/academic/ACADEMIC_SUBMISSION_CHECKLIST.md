@@ -7,11 +7,11 @@
 
 ### 1. SOFTWARE & INFRASTRUCTURE
 
-- [x] Backend operational on `http://localhost:5133` (FastAPI / Python 3.12).
-- [x] Frontend dashboard operational on `http://localhost:5134` (React 18 / Vite).
-- [x] Observation daemon operational on `http://localhost:5135` (Node.js / TypeScript).
+- [x] Backend operational on `http://localhost:5184` (FastAPI / Python 3.12).
+- [x] Frontend dashboard operational on `http://localhost:5183` (React 18 / Vite).
+- [x] Observation daemon operational on `http://localhost:5185` (Node.js / TypeScript).
 - [x] PostgreSQL 16 operational on port `5432` with all 8 Alembic migrations applied.
-- [x] WebSocket live telemetry streaming functional (`ws://localhost:5133`).
+- [x] WebSocket live telemetry streaming functional (`ws://localhost:5184`).
 
 ### 2. INTELLIGENCE SUBSYSTEMS
 

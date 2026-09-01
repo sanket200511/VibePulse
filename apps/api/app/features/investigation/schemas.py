@@ -284,11 +284,11 @@ class InvestigationResult(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-    id: uuid.UUID
+    id: uuid.UUID | str
     timestamp: datetime
     project_root: str
     project_name: str | None = None
-    session_id: uuid.UUID
+    session_id: uuid.UUID | str
     file_path: str | None = None
     file_name: str | None = None
     language: str | None = None

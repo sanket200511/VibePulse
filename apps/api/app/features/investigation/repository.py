@@ -34,10 +34,23 @@ async def execute_investigation_query(
 
     # 1. Base Scopes
     if project_id:
-        # We need the project_root. If we just have project_id, we look up the project or
-        # filter sessions. Since DevelopmentEvent has no project_id, we join Session.
-        stmt = stmt.join(Session, DevelopmentEvent.session_id == Session.id)
-        stmt = stmt.where(Session.project_id == project_id)
+        from app.features.projects.models import Project
+
+        project = await db.get(Project, project_id)
+        if project:
+            norm_root = project.root_path.replace("\\", "/")
+            subq_sessions = select(Session.id).where(Session.project_id == project_id)
+            stmt = stmt.where(
+                or_(
+                    DevelopmentEvent.project_root == project.root_path,
+                    DevelopmentEvent.project_root == norm_root,
+                    func.lower(func.replace(DevelopmentEvent.project_root, "\\", "/"))
+                    == norm_root.lower(),
+                    DevelopmentEvent.session_id.in_(subq_sessions),
+                )
+            )
+        else:
+            stmt = stmt.where(DevelopmentEvent.id.is_(None))
 
     if session_id:
         stmt = stmt.where(DevelopmentEvent.session_id == session_id)

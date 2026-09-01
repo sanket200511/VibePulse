@@ -1,7 +1,7 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import type { CopilotResponse, CopilotEvidenceContext, CopilotSuggestion } from "./types";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:5133";
+const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:5184";
 
 export function useCopilot(projectId?: string) {
   // Query mutation

@@ -35,7 +35,7 @@ const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, "..");
 const API_DIR = path.join(ROOT_DIR, "apps", "api");
 
-const API_BASE = process.env.VIBEPULSE_API_URL || process.env.API_BASE || "http://127.0.0.1:5133";
+const API_BASE = process.env.VIBEPULSE_API_URL || process.env.API_BASE || "http://127.0.0.1:5184";
 const SECRET_TOKEN = "VIBEPULSE_FINAL_DEMO_SECRET_2026";
 const GLOBAL_TIMEOUT_MS = 45000;
 const DELAY_MS = Number(process.env.DEMO_SPEED_MS || "250");
@@ -134,7 +134,7 @@ async function ensureApiServer() {
   }
 
   console.log("Starting local FastAPI instance for demonstration...");
-  const apiPort = new URL(API_BASE).port || "5133";
+  const apiPort = new URL(API_BASE).port || "5184";
   const child = spawn(
     "uv",
     ["run", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", apiPort],

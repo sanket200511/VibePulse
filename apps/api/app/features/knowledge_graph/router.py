@@ -1,16 +1,21 @@
 """
-Engineering Knowledge Graph & Project Memory 2.0 Router.
+Engineering Knowledge Graph, Correlation & Causality Graph & Project Memory 2.0 Router.
 
 REST:
-  GET  /api/projects/{project_id}/knowledge-graph                  — full graph projection
-  GET  /api/projects/{project_id}/knowledge-graph/nodes            — graph nodes
-  GET  /api/projects/{project_id}/knowledge-graph/relationships    — graph relationships
-  GET  /api/projects/{project_id}/knowledge-graph/files/{path}     — file intelligence
-  GET  /api/projects/{project_id}/knowledge-graph/subsystems/{sub} — subsystem intelligence
-  GET  /api/projects/{project_id}/knowledge-graph/incidents/{inc}  — incident relationships
-  GET  /api/projects/{project_id}/knowledge-graph/memory           — Project Memory 2.0 AI model
-  GET  /api/projects/{project_id}/knowledge-graph/search           — deterministic search
-  POST /api/projects/{project_id}/knowledge-graph/refresh          — force re-projection
+  GET  /api/projects/{project_id}/knowledge-graph                      — full graph projection
+  GET  /api/projects/{project_id}/knowledge-graph/nodes                — graph nodes
+  GET  /api/projects/{project_id}/knowledge-graph/relationships        — graph relationships
+  GET  /api/projects/{project_id}/knowledge-graph/edges/{rel_id}/explain — explain relationship
+  GET  /api/projects/{project_id}/knowledge-graph/trace/root-cause    — trace root cause walk
+  GET  /api/projects/{project_id}/knowledge-graph/trace/impact        — trace impact walk
+  GET  /api/projects/{project_id}/knowledge-graph/timeline             — chronological event timeline
+  GET  /api/projects/{project_id}/knowledge-graph/before-after         — before/after remediation comparison
+  GET  /api/projects/{project_id}/knowledge-graph/files/{path}         — file intelligence
+  GET  /api/projects/{project_id}/knowledge-graph/subsystems/{sub}     — subsystem intelligence
+  GET  /api/projects/{project_id}/knowledge-graph/incidents/{inc}      — incident relationships
+  GET  /api/projects/{project_id}/knowledge-graph/memory               — Project Memory 2.0 AI model
+  GET  /api/projects/{project_id}/knowledge-graph/search               — deterministic search
+  POST /api/projects/{project_id}/knowledge-graph/refresh              — force re-projection
 """
 
 from __future__ import annotations
@@ -20,8 +25,12 @@ import uuid
 from app.core.database import get_db
 from app.features.knowledge_graph import service
 from app.features.knowledge_graph.schemas import (
+    BeforeAfterComparisonResponse,
     FileIntelligenceView,
+    GraphEdgeExplanation,
     GraphSearchResult,
+    GraphTimelineResponse,
+    GraphTraversalResponse,
     IncidentRelationshipView,
     KnowledgeGraphEdge,
     KnowledgeGraphNode,
@@ -81,6 +90,84 @@ async def get_graph_relationships(
         if relationship_type:
             edges = [e for e in edges if e.relationship_type.lower() == relationship_type.lower()]
         return edges
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+
+
+@router.get(
+    "/edges/{relationship_id:path}/explain",
+    response_model=GraphEdgeExplanation,
+    summary="Explain why a relationship exists with grounded evidence",
+)
+async def explain_relationship(
+    project_id: uuid.UUID,
+    relationship_id: str,
+    db: AsyncSession = Depends(get_db),
+) -> GraphEdgeExplanation:
+    try:
+        return await service.explain_graph_edge(db, project_id, relationship_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+
+
+@router.get(
+    "/trace/root-cause",
+    response_model=GraphTraversalResponse,
+    summary="Trace root cause walk backward across the graph",
+)
+async def trace_root_cause_endpoint(
+    project_id: uuid.UUID,
+    start_node: str = Query(..., description="Starting entity ID or label"),
+    db: AsyncSession = Depends(get_db),
+) -> GraphTraversalResponse:
+    try:
+        return await service.trace_root_cause(db, project_id, start_node)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+
+
+@router.get(
+    "/trace/impact",
+    response_model=GraphTraversalResponse,
+    summary="Trace downstream impact walk forward across the graph",
+)
+async def trace_impact_endpoint(
+    project_id: uuid.UUID,
+    start_node: str = Query(..., description="Starting entity ID or label"),
+    db: AsyncSession = Depends(get_db),
+) -> GraphTraversalResponse:
+    try:
+        return await service.trace_impact(db, project_id, start_node)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+
+
+@router.get(
+    "/timeline",
+    response_model=GraphTimelineResponse,
+    summary="Get chronological intelligence event timeline",
+)
+async def get_timeline_endpoint(
+    project_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+) -> GraphTimelineResponse:
+    try:
+        return await service.get_graph_timeline(db, project_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+
+
+@router.get(
+    "/before-after",
+    response_model=BeforeAfterComparisonResponse,
+    summary="Get before/after remediation comparison",
+)
+async def get_before_after_endpoint(
+    project_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+) -> BeforeAfterComparisonResponse:
+    try:
+        return await service.get_before_after_comparison(db, project_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
 

@@ -280,7 +280,18 @@ export function PredictionsPage() {
 
                     <button
                       onClick={() => {
-                        void navigate(`/projects/${projectId}/investigation`);
+                        const targetId = sig.investigation_incident_id;
+                        if (targetId) {
+                          void navigate(
+                            `/projects/${projectId}/investigation?incidentId=${encodeURIComponent(targetId)}`,
+                          );
+                        } else if (sig.affected_files?.[0]) {
+                          void navigate(
+                            `/projects/${projectId}/investigation?q=${encodeURIComponent(sig.affected_files[0])}`,
+                          );
+                        } else {
+                          void navigate(`/projects/${projectId}/investigation`);
+                        }
                       }}
                       className="flex items-center gap-1 rounded bg-indigo-600 px-3 py-1 font-semibold text-white transition hover:bg-indigo-500"
                     >
@@ -519,8 +530,20 @@ export function PredictionsPage() {
               </button>
               <button
                 onClick={() => {
+                  const targetId = selectedSignal.investigation_incident_id;
+                  const affFile = selectedSignal.affected_files?.[0];
                   setSelectedSignal(null);
-                  void navigate(`/projects/${projectId}/investigation`);
+                  if (targetId) {
+                    void navigate(
+                      `/projects/${projectId}/investigation?incidentId=${encodeURIComponent(targetId)}`,
+                    );
+                  } else if (affFile) {
+                    void navigate(
+                      `/projects/${projectId}/investigation?q=${encodeURIComponent(affFile)}`,
+                    );
+                  } else {
+                    void navigate(`/projects/${projectId}/investigation`);
+                  }
                 }}
                 className="rounded bg-indigo-600 px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-500"
               >

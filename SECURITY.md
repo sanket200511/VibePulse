@@ -11,7 +11,7 @@ VibePulse is designed from the ground up to observe proprietary intellectual pro
 
 ### 1. Zero Code Exfiltration
 
-- The VibePulse observation daemon operates strictly on your local machine and communicates solely with your configured FastAPI backend (`http://localhost:5133`).
+- The VibePulse observation daemon operates strictly on your local machine and communicates solely with your configured FastAPI backend (`http://localhost:5184`).
 - Zero telemetry, code snippets, or developer activity is transmitted to third-party cloud LLM APIs or external servers.
 
 ### 2. AST Secret Redaction by Design

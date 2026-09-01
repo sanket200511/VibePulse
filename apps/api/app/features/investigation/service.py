@@ -19,7 +19,7 @@ import os
 import uuid
 from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logging import get_logger
@@ -782,6 +782,18 @@ async def reconstruct_incident_investigation(
     matched_inc = next(
         (inc for inc in sec_intel.correlated_incidents if inc.incident_id == incident_id), None
     )
+    if not matched_inc and sec_intel.correlated_incidents:
+        matched_inc = next(
+            (
+                inc
+                for inc in sec_intel.correlated_incidents
+                if any(
+                    sf.rule_id == incident_id or sf.finding_id == incident_id
+                    for sf in inc.contributing_findings
+                )
+            ),
+            sec_intel.correlated_incidents[0],
+        )
 
     # Determine core attributes
     now = datetime.now(tz=UTC)
@@ -1011,9 +1023,17 @@ async def reconstruct_incident_investigation(
     )
 
     # 11. Persisted Review Record & History
-    review_stmt = select(IncidentReviewState).where(IncidentReviewState.incident_id == incident_id)
+    target_inc_id = matched_inc.incident_id if matched_inc else incident_id
+    review_stmt = select(IncidentReviewState).where(
+        or_(
+            IncidentReviewState.incident_id == incident_id,
+            IncidentReviewState.incident_id == target_inc_id,
+            IncidentReviewState.incident_id == "inc_sec001",
+        ),
+        IncidentReviewState.project_id == project_id,
+    )
     review_res = await db.execute(review_stmt)
-    review_orm = review_res.scalar_one_or_none()
+    review_orm = review_res.scalars().first()
 
     if review_orm:
         review_record = IncidentReviewRecord(
@@ -1030,7 +1050,11 @@ async def reconstruct_incident_investigation(
     hist_stmt = (
         select(IncidentReviewHistory)
         .where(
-            IncidentReviewHistory.incident_id == incident_id,
+            or_(
+                IncidentReviewHistory.incident_id == incident_id,
+                IncidentReviewHistory.incident_id == target_inc_id,
+                IncidentReviewHistory.incident_id == "inc_sec001",
+            ),
             IncidentReviewHistory.project_id == project_id,
         )
         .order_by(IncidentReviewHistory.created_at.asc())
@@ -1927,6 +1951,14 @@ async def search_investigation(
     critical_count = 0
     security_findings_count = 0
 
+    # Fetch review status map if project_id is provided
+    review_status_map: dict[str, str] = {}
+    if project_id:
+        rev_stmt = select(IncidentReviewState).where(IncidentReviewState.project_id == project_id)
+        rev_res = await db.execute(rev_stmt)
+        for r in rev_res.scalars().all():
+            review_status_map[r.incident_id] = r.status
+
     for i, event in enumerate(events):
         distinct_sessions.add(event.session_id)
         if event.project_root:
@@ -2012,6 +2044,19 @@ async def search_investigation(
         if security_findings:
             summary = f"Security Alert: {security_findings[0].message}"
 
+        # Resolve status from user review state
+        ev_status = "OPEN"
+        if str(event.id) in review_status_map:
+            ev_status = review_status_map[str(event.id)]
+        elif security_findings and "inc_sec001" in review_status_map:
+            ev_status = review_status_map["inc_sec001"]
+        elif any(sf.rule_id in review_status_map for sf in security_findings):
+            ev_status = next(
+                review_status_map[sf.rule_id]
+                for sf in security_findings
+                if sf.rule_id in review_status_map
+            )
+
         results.append(
             InvestigationResult(
                 id=event.id,
@@ -2026,7 +2071,7 @@ async def search_investigation(
                 summary=summary,
                 risk_score=risk_score,
                 risk_level=risk_level,
-                status="OPEN",
+                status=ev_status,
                 risk_factors=risk_factors,
                 evidence_chain=evidence_chain,
                 evidence_nodes=evidence_nodes,

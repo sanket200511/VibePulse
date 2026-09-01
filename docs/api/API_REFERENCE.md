@@ -1,8 +1,8 @@
 # VibePulse API Reference
 
 **Status**: Authoritative API Reference
-**Base URL**: `http://localhost:5133`
-**Interactive OpenAPI Docs**: `http://localhost:5133/docs`
+**Base URL**: `http://localhost:5184`
+**Interactive OpenAPI Docs**: `http://localhost:5184/docs`
 
 ---
 
@@ -33,7 +33,7 @@ Safely deletes a project from VibePulse. Cascades deletion strictly to internal 
 
 ### `POST /events`
 
-Ingests raw development events from the telemetry daemon (`5135`). Deduplicated on `(session_id, file_path, event_type, timestamp)`.
+Ingests raw development events from the telemetry daemon (`5185`). Deduplicated on `(session_id, file_path, event_type, timestamp)`.
 
 ### `GET /events`
 
@@ -126,5 +126,5 @@ Evaluates natural engineering queries across 16 canonical query families with gr
 
 ## 9. Real-Time WebSockets
 
-- `ws://localhost:5133/ws/events`: Live raw event broadcast stream.
-- `ws://localhost:5133/ws/sessions`: Live session state transition broadcast stream.
+- `ws://localhost:5184/ws/events`: Live raw event broadcast stream.
+- `ws://localhost:5184/ws/sessions`: Live session state transition broadcast stream.

@@ -11,14 +11,14 @@ VibePulse is designed to run natively and deterministically on the developer hos
 | Component           | Technology                        | Canonical Port          | Command                  |
 | ------------------- | --------------------------------- | ----------------------- | ------------------------ |
 | **PostgreSQL**      | Native PostgreSQL (local service) | `localhost:5432`        | Windows Service / Native |
-| **FastAPI Backend** | Python 3.12 + FastAPI + Uvicorn   | `http://localhost:5133` | `pnpm run dev:api`       |
-| **Dashboard**       | React + TypeScript + Vite         | `http://localhost:5134` | `pnpm run dev:dashboard` |
-| **Daemon**          | Node.js + TypeScript + Chokidar   | `http://localhost:5135` | `pnpm run dev:daemon`    |
+| **FastAPI Backend** | Python 3.12 + FastAPI + Uvicorn   | `http://localhost:5184` | `pnpm run dev:api`       |
+| **Dashboard**       | React + TypeScript + Vite         | `http://localhost:5183` | `pnpm run dev:dashboard` |
+| **Daemon**          | Node.js + TypeScript + Chokidar   | `http://localhost:5185` | `pnpm run dev:daemon`    |
 
 > [!NOTE]
 >
-> - The **Dashboard** runs on `http://localhost:5134` and automatically proxies `/api`, `/sessions`, `/events`, `/projects`, `/investigation`, `/health`, and `/ws` to FastAPI on port `5133`.
-> - The **Daemon** pushes development telemetry events to `http://localhost:5133/events` and exposes a local health/control gate on port `5135`.
+> - The **Dashboard** runs on `http://localhost:5183` and automatically proxies `/api`, `/sessions`, `/events`, `/projects`, `/investigation`, `/health`, and `/ws` to FastAPI on port `5184`.
+> - The **Daemon** pushes development telemetry events to `http://localhost:5184/events` and exposes a local health/control gate on port `5185`.
 > - **Docker is NOT required** for standard local development.
 
 ---
@@ -80,9 +80,9 @@ pnpm dev
 This runs the structured development supervisor providing:
 
 - Structured logs formatted as `[TIME] [SERVICE] [LEVEL] MESSAGE`
-- `[API]` FastAPI backend on `http://localhost:5133`
-- `[DASHBOARD]` React/Vite dashboard on `http://localhost:5134`
-- `[DAEMON]` Filesystem observation daemon on port `5135`
+- `[API]` FastAPI backend on `http://localhost:5184`
+- `[DASHBOARD]` React/Vite dashboard on `http://localhost:5183`
+- `[DAEMON]` Filesystem observation daemon on port `5185`
 
 ### Checking Instant Stack Status
 
@@ -196,12 +196,12 @@ VibePulse environment is READY.
   uv run alembic upgrade head
   ```
 
-### Issue: Port 5133 / 5134 / 5135 is already in use (`EADDRINUSE` / `WinError 10048`)
+### Issue: Port 5184 / 5183 / 5185 is already in use (`EADDRINUSE` / `WinError 10048`)
 
 - **Cause**: An orphan node/python process is still holding the port.
 - **Fix**: Check and terminate holding processes:
   ```powershell
-  Get-NetTCPConnection -LocalPort 5133,5134,5135 -ErrorAction SilentlyContinue | Select-Object LocalPort,OwningProcess
+  Get-NetTCPConnection -LocalPort 5184,5183,5185 -ErrorAction SilentlyContinue | Select-Object LocalPort,OwningProcess
   Stop-Process -Id <PID> -Force
   ```
 
@@ -221,7 +221,7 @@ VibePulse environment is READY.
 - [x] `pnpm doctor` passes with all checks green
 - [x] `uv run alembic current` reports `0005 (head)`
 - [x] `pnpm dev` starts API, Dashboard, and Daemon exactly once
-- [x] `http://localhost:5134` loads the VibePulse dashboard
+- [x] `http://localhost:5183` loads the VibePulse dashboard
 - [x] WebSocket live streams (`/ws/events`, `/ws/sessions`) connect without errors
 
 ---

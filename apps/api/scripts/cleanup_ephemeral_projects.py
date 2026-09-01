@@ -20,7 +20,14 @@ def classify_project(root_path: str | None, display_name: str | None) -> str:
     root = (root_path or "").replace("\\", "/").lower()
     name = (display_name or "").lower()
 
-    if root == "d:/projects/dabba" or root.endswith("/projects/dabba") or name == "dabba":
+    if (
+        root == "d:/projects/dabba"
+        or root.endswith("/projects/dabba")
+        or name == "dabba"
+        or root == "d:/vibepulse-seminar-demo"
+        or root.endswith("/vibepulse-seminar-demo")
+        or name == "vibepulse-seminar-demo"
+    ):
         return "PERSISTENT"
 
     ephemeral_tokens = [
@@ -30,7 +37,6 @@ def classify_project(root_path: str | None, display_name: str | None) -> str:
         "test-projects",
         "demo-projects",
         "vibepulse-demo",
-        "vibepulse-seminar-demo",
         "vibepulse-observation-test",
         "vibepulse-seminar-secondary",
         "vibepulse-sec",

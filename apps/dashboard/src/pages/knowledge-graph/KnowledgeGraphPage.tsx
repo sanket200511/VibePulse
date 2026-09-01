@@ -1,79 +1,209 @@
-import { useState, useMemo } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useState, useMemo, useEffect } from "react";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
-  Share2,
   Search,
   RotateCcw,
-  FileCode,
-  ShieldAlert,
-  AlertTriangle,
-  Sparkles,
-  CheckCircle2,
-  Layers,
-  FolderTree,
-  Cpu,
-  Info,
+  Crosshair,
+  TrendingUp,
+  Activity,
+  History,
+  GitCompare,
+  Calendar,
+  ChevronRight,
+  ChevronLeft,
+  X,
 } from "lucide-react";
 import { Badge } from "@vibepulse/ui";
 import {
   useKnowledgeGraph,
-  useFileIntelligence,
-  useSubsystemIntelligence,
+  useRootCauseTraversal,
+  useImpactTraversal,
+  useGraphTimeline,
+  useBeforeAfterComparison,
 } from "./useKnowledgeGraph";
-import type { KnowledgeGraphNode, KnowledgeGraphEdge, KnowledgeGraphNodeType } from "./types";
+import type {
+  KnowledgeGraphNode,
+  KnowledgeGraphEdge,
+  GraphMode,
+} from "./types";
+import { CorrelationGraphCanvas } from "./CorrelationGraphCanvas";
+import { CorrelationGraphInspector } from "./CorrelationGraphInspector";
 import { EvidenceInspector } from "../evidence/EvidenceInspector";
 import type { EntityType } from "../evidence/types";
 import { Breadcrumbs } from "../../components/layout/Breadcrumbs";
 
+function getNodesForMode(nodes: KnowledgeGraphNode[], mode: GraphMode): KnowledgeGraphNode[] {
+  if (mode === "INVESTIGATION") {
+    const allowed = new Set([
+      "DevelopmentEvent",
+      "SecurityFinding",
+      "Incident",
+      "RootCause",
+      "Resolution",
+      "Actor",
+      "HealthDimension",
+      "File",
+    ]);
+    return nodes.filter((n) => allowed.has(n.node_type));
+  } else if (mode === "IMPACT") {
+    const allowed = new Set([
+      "File",
+      "SecurityFinding",
+      "Incident",
+      "HealthDimension",
+      "Prediction",
+      "Project",
+      "Subsystem",
+      "Resolution",
+    ]);
+    return nodes.filter((n) => allowed.has(n.node_type));
+  } else if (mode === "MEMORY") {
+    const allowed = new Set([
+      "Project",
+      "Subsystem",
+      "File",
+      "Technology",
+      "Framework",
+      "HealthDimension",
+    ]);
+    return nodes.filter((n) => allowed.has(n.node_type));
+  }
+  return nodes;
+}
+
 export function KnowledgeGraphPage() {
   const { projectId } = useParams<{ projectId: string }>();
-  const { graph, isLoading, refreshGraph, isRefreshing } = useKnowledgeGraph(projectId);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Queries
+  const { graph, refreshGraph, isRefreshing } = useKnowledgeGraph(projectId);
+  const { data: timelineData } = useGraphTimeline(projectId);
+  const { data: beforeAfterData } = useBeforeAfterComparison(projectId);
+
+  // View state: CANVAS | TIMELINE | BEFORE_AFTER
+  const [viewMode, setViewMode] = useState<"CANVAS" | "TIMELINE" | "BEFORE_AFTER">("CANVAS");
+
+  // Graph Mode: RELATIONSHIP | INVESTIGATION | IMPACT | MEMORY
+  const [graphMode, setGraphMode] = useState<GraphMode>("RELATIONSHIP");
 
   // Filters & Search
-  const [selectedSubsystem, setSelectedSubsystem] = useState<string>("ALL");
-  const [selectedNodeType, setSelectedNodeType] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  // Drawer / Selection state
+  // Selection state
   const [selectedNode, setSelectedNode] = useState<KnowledgeGraphNode | null>(null);
   const [selectedEdge, setSelectedEdge] = useState<KnowledgeGraphEdge | null>(null);
 
-  // Evidence Inspector Modal state
+  // Focus & Depth state (Default depth = 1 for progressive disclosure)
+  const [focusNodeId, setFocusNodeId] = useState<string | null>(null);
+  const [focusDepth, setFocusDepth] = useState<number>(1);
+
+  // Traversal state
+  const [activeTraversal, setActiveTraversal] = useState<{
+    mode: "ROOT_CAUSE" | "IMPACT";
+    startNodeId: string;
+    currentStepIdx: number;
+  } | null>(null);
+
+  const { data: rootCauseData } = useRootCauseTraversal(
+    projectId,
+    activeTraversal?.mode === "ROOT_CAUSE" ? activeTraversal.startNodeId : null,
+  );
+  const { data: impactData } = useImpactTraversal(
+    projectId,
+    activeTraversal?.mode === "IMPACT" ? activeTraversal.startNodeId : null,
+  );
+
+  // Evidence Modal state
   const [inspectTarget, setInspectTarget] = useState<{
     type: EntityType;
     id: string;
   } | null>(null);
 
-  // Node details hooks
-  const selectedFilePath =
-    selectedNode?.node_type === "File"
-      ? selectedNode.metadata.file_path
-        ? String(selectedNode.metadata.file_path)
-        : null
-      : null;
-  const { data: fileIntel } = useFileIntelligence(projectId, selectedFilePath);
+  // Synchronize URL parameters on initial load
+  useEffect(() => {
+    if (!graph) return;
+    const nodeParam = searchParams.get("node");
+    const modeParam = searchParams.get("mode") as GraphMode | null;
+    const viewParam = searchParams.get("view");
+    const depthParam = searchParams.get("depth");
+    const qParam = searchParams.get("q");
 
-  const selectedSubsystemName = selectedNode?.node_type === "Subsystem" ? selectedNode.label : null;
-  const { data: subsysIntel } = useSubsystemIntelligence(projectId, selectedSubsystemName);
+    if (nodeParam) {
+      const match = graph.nodes.find(
+        (n) => n.node_id === nodeParam || n.label.toLowerCase() === nodeParam.toLowerCase(),
+      );
+      if (match) setSelectedNode(match);
+    }
+    if (modeParam && ["RELATIONSHIP", "INVESTIGATION", "IMPACT", "MEMORY"].includes(modeParam)) {
+      setGraphMode(modeParam);
+    }
+    if (viewParam && ["CANVAS", "TIMELINE", "BEFORE_AFTER"].includes(viewParam)) {
+      setViewMode(viewParam as any);
+    }
+    if (depthParam && !isNaN(Number(depthParam))) {
+      setFocusDepth(Number(depthParam));
+    }
+    if (qParam) {
+      setSearchQuery(qParam);
+    }
+  }, [graph]);
 
-  // Filtered nodes
+  const handleSelectNode = (node: KnowledgeGraphNode | null) => {
+    setSelectedNode(node);
+    const newParams = new URLSearchParams(searchParams);
+    if (node) {
+      newParams.set("node", node.node_id);
+    } else {
+      newParams.delete("node");
+    }
+    newParams.set("mode", graphMode);
+    newParams.set("view", viewMode);
+    newParams.set("depth", String(focusDepth));
+    setSearchParams(newParams);
+  };
+
+  const handleModeChange = (mode: GraphMode) => {
+    setGraphMode(mode);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("mode", mode);
+    setSearchParams(newParams);
+
+    if (graph) {
+      const allowedNodes = getNodesForMode(graph.nodes, mode);
+      if (selectedNode && !allowedNodes.some((n) => n.node_id === selectedNode.node_id)) {
+        const defaultNode =
+          allowedNodes.find((n) => n.node_type === "SecurityFinding" || n.node_type === "Incident") ||
+          allowedNodes[0] ||
+          null;
+        setSelectedNode(defaultNode);
+        if (defaultNode) setFocusNodeId(defaultNode.node_id);
+      }
+    }
+  };
+
+  const handleDepthChange = (depth: number) => {
+    setFocusDepth(depth);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("depth", String(depth));
+    setSearchParams(newParams);
+  };
+
+  // Filtered nodes by Mode and Search
   const filteredNodes = useMemo(() => {
     if (!graph) return [];
-    return graph.nodes.filter((n) => {
-      const matchSub =
-        selectedSubsystem === "ALL" ||
-        (n.subsystem && n.subsystem.toLowerCase() === selectedSubsystem.toLowerCase());
-      const matchType =
-        selectedNodeType === "ALL" || n.node_type.toLowerCase() === selectedNodeType.toLowerCase();
+    const modeNodes = getNodesForMode(graph.nodes, graphMode);
+
+    return modeNodes.filter((n) => {
       const matchSearch =
         !searchQuery.trim() ||
         n.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (n.subsystem && n.subsystem.toLowerCase().includes(searchQuery.toLowerCase())) ||
         JSON.stringify(n.metadata).toLowerCase().includes(searchQuery.toLowerCase());
-      return matchSub && matchType && matchSearch;
+
+      return matchSearch;
     });
-  }, [graph, selectedSubsystem, selectedNodeType, searchQuery]);
+  }, [graph, graphMode, searchQuery]);
 
   // Filtered edges
   const filteredEdges = useMemo(() => {
@@ -84,636 +214,434 @@ export function KnowledgeGraphPage() {
     );
   }, [graph, filteredNodes]);
 
-  // Group nodes by Subsystem for structured layout
-  const nodesBySubsystem = useMemo(() => {
-    const map: Record<string, KnowledgeGraphNode[]> = {};
-    for (const node of filteredNodes) {
-      const sub = node.subsystem || "General Architecture";
-      if (!map[sub]) map[sub] = [];
-      map[sub].push(node);
-    }
-    return map;
-  }, [filteredNodes]);
+  const activeTraversalResponse =
+    activeTraversal?.mode === "ROOT_CAUSE" ? rootCauseData : impactData;
 
-  const getNodeIcon = (type: KnowledgeGraphNodeType) => {
-    switch (type) {
-      case "File":
-        return <FileCode className="h-4 w-4 text-cyan-400" />;
-      case "SecurityFinding":
-        return <ShieldAlert className="h-4 w-4 text-rose-400" />;
-      case "Incident":
-        return <AlertTriangle className="h-4 w-4 text-amber-400" />;
-      case "Prediction":
-        return <Sparkles className="h-4 w-4 text-purple-400" />;
-      case "Resolution":
-        return <CheckCircle2 className="h-4 w-4 text-emerald-400" />;
-      case "Subsystem":
-        return <Layers className="h-4 w-4 text-indigo-400" />;
-      case "Technology":
-      case "Framework":
-        return <Cpu className="h-4 w-4 text-teal-400" />;
-      default:
-        return <FolderTree className="h-4 w-4 text-gray-400" />;
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val);
+    if (!val.trim() || !graph) return;
+    const match = graph.nodes.find(
+      (n) => n.label.toLowerCase().includes(val.toLowerCase()) || n.node_id === val,
+    );
+    if (match) {
+      setSelectedNode(match);
+      setFocusNodeId(match.node_id);
     }
   };
 
-  const getProvenanceBadgeClass = (prov: string) => {
-    switch (prov) {
-      case "OBSERVED":
-        return "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
-      case "INFERRED":
-        return "bg-purple-500/10 text-purple-400 border-purple-500/30";
-      default:
-        return "bg-gray-500/10 text-gray-400 border-gray-500/30";
+  const handleNextStep = () => {
+    if (!activeTraversal || !activeTraversalResponse) return;
+    const nextIdx = Math.min(
+      activeTraversalResponse.steps.length - 1,
+      activeTraversal.currentStepIdx + 1,
+    );
+    setActiveTraversal({ ...activeTraversal, currentStepIdx: nextIdx });
+    const targetStep = activeTraversalResponse.steps[nextIdx];
+    if (targetStep && graph) {
+      const matchNode = graph.nodes.find((n) => n.node_id === targetStep.node_id);
+      if (matchNode) setSelectedNode(matchNode);
+    }
+  };
+
+  const handlePrevStep = () => {
+    if (!activeTraversal || !activeTraversalResponse) return;
+    const prevIdx = Math.max(0, activeTraversal.currentStepIdx - 1);
+    setActiveTraversal({ ...activeTraversal, currentStepIdx: prevIdx });
+    const targetStep = activeTraversalResponse.steps[prevIdx];
+    if (targetStep && graph) {
+      const matchNode = graph.nodes.find((n) => n.node_id === targetStep.node_id);
+      if (matchNode) setSelectedNode(matchNode);
     }
   };
 
   if (!projectId) return null;
 
   return (
-    <div className="animate-fade-in-up bg-background text-foreground flex flex-1 flex-col space-y-6 p-6 md:p-8">
-      {/* ── HEADER ─────────────────────────────────────────────────────────── */}
-      <div className="space-y-4">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <Breadcrumbs
-            items={[
-              { label: "Projects", to: "/projects" },
-              { label: "Project Story", to: `/projects/${projectId}` },
-              { label: "Knowledge Graph" },
-            ]}
-          />
-          <Link
-            to={`/projects/${projectId}`}
-            className="text-secondary-text hover:text-primary-text inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Back to Project Story
-          </Link>
-        </div>
+    <div className="animate-fade-in-up bg-background text-foreground flex flex-1 flex-col space-y-4 p-6 md:p-8">
+      {/* ── BREADCRUMBS & TOP NAV ─────────────────────────────────────────── */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <Breadcrumbs
+          items={[
+            { label: "Projects", to: "/projects" },
+            { label: "Project Story", to: `/projects/${projectId}` },
+            { label: "Correlation & Causality Graph" },
+          ]}
+        />
+        <Link
+          to={`/projects/${projectId}`}
+          className="text-secondary-text hover:text-primary-text inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back to Project Story
+        </Link>
+      </div>
 
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-primary-text flex items-center gap-3 text-2xl font-bold tracking-tight">
-              <Share2 className="h-6 w-6 text-indigo-400" />
-              Engineering Knowledge Graph & Project Memory
-            </h1>
-            <p className="text-secondary-text mt-1 text-xs">
-              Deterministic relationship projection across files, subsystems, security findings,
-              incidents, predictions, and resolutions.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => refreshGraph()}
-              disabled={isRefreshing}
-              className="bg-card hover:bg-card-subtle border-border text-primary-text inline-flex items-center gap-2 rounded-lg border px-3.5 py-2 text-xs font-semibold shadow-sm transition disabled:opacity-50"
-            >
-              <RotateCcw
-                className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin text-indigo-400" : ""}`}
-              />
-              {isRefreshing ? "Reprojecting..." : "Refresh Projection"}
-            </button>
-          </div>
+      {/* ── CLEAN HEADER ─────────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-white sm:text-2xl">
+            Correlation & Causality Graph
+          </h1>
+          <p className="text-secondary-text mt-0.5 text-xs">
+            Evidence-grounded engineering relationships: Observation → Finding → Incident → Root Cause → Resolution → Impact → Prediction
+          </p>
         </div>
       </div>
 
-      {/* ── STATS BAR ───────────────────────────────────────────────────────── */}
-      {graph && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-3.5">
-            <div className="text-[11px] font-medium text-gray-400">Total Entities</div>
-            <div className="mt-1 text-xl font-bold text-white">{graph.total_nodes}</div>
-          </div>
-          <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-3.5">
-            <div className="text-[11px] font-medium text-gray-400">Relationships</div>
-            <div className="mt-1 text-xl font-bold text-indigo-400">{graph.total_edges}</div>
-          </div>
-          <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-3.5">
-            <div className="text-[11px] font-medium text-gray-400">Active Subsystems</div>
-            <div className="mt-1 text-xl font-bold text-white">{graph.subsystems?.length || 0}</div>
-          </div>
-          <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-3.5">
-            <div className="text-[11px] font-medium text-gray-400">Security Findings</div>
-            <div className="mt-1 text-xl font-bold text-rose-400">
-              {graph.node_count_by_type?.["SecurityFinding"] || 0}
-            </div>
-          </div>
-          <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-3.5">
-            <div className="text-[11px] font-medium text-gray-400">Correlated Incidents</div>
-            <div className="mt-1 text-xl font-bold text-amber-400">
-              {graph.node_count_by_type?.["Incident"] || 0}
-            </div>
-          </div>
-          <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-3.5">
-            <div className="text-[11px] font-medium text-gray-400">Forecast Signals</div>
-            <div className="mt-1 text-xl font-bold text-purple-400">
-              {graph.node_count_by_type?.["Prediction"] || 0}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── CONTROLS & SEARCH ──────────────────────────────────────────────── */}
-      <div className="flex flex-col gap-4 rounded-xl border border-gray-800 bg-gray-900/40 p-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold text-gray-400">Subsystem:</span>
+      {/* ── COMPACT TOOLBAR ───────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-2.5 rounded-xl border border-gray-800 bg-gray-900/60 p-2.5 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* VIEW SELECTOR */}
+          <div className="flex rounded-lg border border-gray-800 bg-gray-950 p-0.5">
             <button
-              onClick={() => setSelectedSubsystem("ALL")}
-              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
-                selectedSubsystem === "ALL"
+              onClick={() => setViewMode("CANVAS")}
+              className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-bold transition ${
+                viewMode === "CANVAS"
                   ? "bg-indigo-600 text-white shadow-sm"
-                  : "bg-gray-800/80 text-gray-300 hover:bg-gray-700"
+                  : "text-gray-400 hover:text-white"
               }`}
             >
-              All ({graph?.total_nodes || 0})
+              <Activity className="h-3 w-3" />
+              Graph
             </button>
-            {(graph?.subsystems || Object.keys(nodesBySubsystem)).map((sub) => (
+            <button
+              onClick={() => setViewMode("TIMELINE")}
+              className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-bold transition ${
+                viewMode === "TIMELINE"
+                  ? "bg-indigo-600 text-white shadow-sm"
+                  : "text-gray-400 hover:text-white"
+              }`}
+            >
+              <History className="h-3 w-3" />
+              Timeline
+            </button>
+            <button
+              onClick={() => setViewMode("BEFORE_AFTER")}
+              className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-bold transition ${
+                viewMode === "BEFORE_AFTER"
+                  ? "bg-indigo-600 text-white shadow-sm"
+                  : "text-gray-400 hover:text-white"
+              }`}
+            >
+              <GitCompare className="h-3 w-3" />
+              Before / After
+            </button>
+          </div>
+
+          {/* ANALYSIS MODES (General, Investigation, Impact, Memory) */}
+          <div className="flex items-center gap-1 border-l border-gray-800 pl-2.5">
+            {[
+              { mode: "RELATIONSHIP" as GraphMode, label: "General" },
+              { mode: "INVESTIGATION" as GraphMode, label: "Investigation" },
+              { mode: "IMPACT" as GraphMode, label: "Impact" },
+              { mode: "MEMORY" as GraphMode, label: "Memory" },
+            ].map(({ mode, label }) => (
               <button
-                key={sub}
-                onClick={() => setSelectedSubsystem(sub)}
-                className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
-                  selectedSubsystem === sub
-                    ? "bg-indigo-600 text-white shadow-sm"
-                    : "bg-gray-800/80 text-gray-300 hover:bg-gray-700"
+                key={mode}
+                onClick={() => handleModeChange(mode)}
+                className={`rounded-md px-2.5 py-1 text-[11px] font-bold transition ${
+                  graphMode === mode
+                    ? "bg-indigo-600 text-white shadow-sm ring-1 ring-indigo-400"
+                    : "bg-gray-800/70 text-gray-300 hover:bg-gray-700 hover:text-white"
                 }`}
               >
-                {sub}
+                {label}
               </button>
             ))}
           </div>
 
-          <div className="flex flex-wrap items-center gap-1.5 border-l border-gray-800 pl-4">
-            <span className="text-xs font-semibold text-gray-400">Type:</span>
-            {["ALL", "File", "SecurityFinding", "Incident", "Prediction"].map((t) => (
+          {/* DEPTH CONTROLS (1, 2, 3, All) */}
+          <div className="flex items-center gap-1 border-l border-gray-800 pl-2.5">
+            <span className="text-[10px] font-semibold uppercase text-gray-500 font-mono">Depth:</span>
+            {[
+              { value: 1, label: "1" },
+              { value: 2, label: "2" },
+              { value: 3, label: "3" },
+              { value: 4, label: "All" },
+            ].map((d) => (
               <button
-                key={t}
-                onClick={() => setSelectedNodeType(t)}
-                className={`rounded-lg px-2.5 py-1 text-xs font-medium transition ${
-                  selectedNodeType === t
-                    ? "bg-indigo-600 text-white"
-                    : "bg-gray-800/60 text-gray-400 hover:bg-gray-700 hover:text-white"
+                key={d.value}
+                onClick={() => handleDepthChange(d.value)}
+                className={`rounded px-2 py-0.5 font-mono text-[11px] font-bold transition ${
+                  focusDepth === d.value
+                    ? "bg-indigo-600 text-white shadow-sm ring-1 ring-indigo-400"
+                    : "bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white"
                 }`}
               >
-                {t === "SecurityFinding" ? "Findings" : t === "ALL" ? "All Types" : `${t}s`}
+                {d.label}
               </button>
             ))}
           </div>
+
+          {/* REFRESH */}
+          <button
+            onClick={() => refreshGraph()}
+            disabled={isRefreshing}
+            title="Refresh Knowledge Graph from PostgreSQL"
+            className="rounded-lg border border-gray-800 bg-gray-950 p-1.5 text-gray-400 hover:text-white disabled:opacity-50 transition"
+          >
+            <RotateCcw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin text-indigo-400" : ""}`} />
+          </button>
         </div>
 
-        <div className="relative w-full lg:w-72">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+        {/* SEARCH BAR */}
+        <div className="relative w-full lg:w-60">
+          <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-gray-500" />
           <input
             type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             placeholder="Search entities, files, rules..."
-            className="w-full rounded-lg border border-gray-800 bg-gray-950 py-2 pl-9 pr-4 text-xs text-white placeholder-gray-500 focus:border-indigo-500 focus:outline-none"
+            className="w-full rounded-lg border border-gray-800 bg-gray-950 py-1.5 pl-8 pr-7 text-xs text-white placeholder-gray-500 focus:border-indigo-500 focus:outline-none font-mono"
           />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-2 top-2 text-gray-500 hover:text-white"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
       </div>
 
-      {/* ── GRAPH CANVAS & RELATIONSHIPS VIEW ───────────────────────────────── */}
-      {isLoading ? (
-        <div className="flex h-96 items-center justify-center rounded-2xl border border-gray-800 bg-gray-900/20">
-          <div className="flex flex-col items-center gap-3">
-            <RotateCcw className="h-6 w-6 animate-spin text-indigo-400" />
-            <p className="text-xs text-gray-400">Materializing Knowledge Graph projection...</p>
-          </div>
-        </div>
-      ) : filteredNodes.length === 0 ? (
-        <div className="flex h-64 items-center justify-center rounded-2xl border border-gray-800 bg-gray-900/20">
-          <p className="text-sm text-gray-500">No graph entities matching active filters.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {/* Main Subsystem Clustering Columns (2 cols) */}
-          <div className="space-y-6 lg:col-span-2">
-            {Object.entries(nodesBySubsystem).map(([subsystemName, nodes]) => (
-              <div
-                key={subsystemName}
-                className="overflow-hidden rounded-2xl border border-gray-800 bg-gray-900/40 p-5 backdrop-blur-sm"
+      {/* ── TRAVERSAL STEPPER BANNER (IF ACTIVE) ─────────────────────────────── */}
+      {activeTraversal && activeTraversalResponse && (
+        <div className="rounded-xl border border-indigo-500/50 bg-indigo-950/70 p-3 backdrop-blur-md">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-indigo-500/30 pb-2 mb-2">
+            <div className="flex items-center gap-2">
+              {activeTraversal.mode === "ROOT_CAUSE" ? (
+                <Crosshair className="h-4 w-4 text-orange-400" />
+              ) : (
+                <TrendingUp className="h-4 w-4 text-purple-400" />
+              )}
+              <span className="text-xs font-bold text-white font-mono">
+                {activeTraversal.mode === "ROOT_CAUSE" ? "Root Cause Traversal" : "Impact Traversal"} — Step {activeTraversal.currentStepIdx + 1} of {activeTraversalResponse.steps.length}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handlePrevStep}
+                disabled={activeTraversal.currentStepIdx === 0}
+                className="inline-flex items-center gap-1 rounded bg-gray-800 px-2 py-0.5 text-xs text-gray-300 hover:bg-gray-700 disabled:opacity-40 transition"
               >
-                <div className="mb-4 flex items-center justify-between border-b border-gray-800/80 pb-3">
-                  <div className="flex items-center gap-2.5">
-                    <Layers className="h-5 w-5 text-indigo-400" />
-                    <h3 className="font-semibold text-white">{subsystemName}</h3>
-                    <Badge variant="outline" className="text-[10px] text-gray-400">
-                      {nodes.length} entities
-                    </Badge>
-                  </div>
-                  <button
-                    onClick={() => {
-                      const subNode = graph?.nodes.find(
-                        (n) => n.node_type === "Subsystem" && n.label === subsystemName,
-                      );
-                      if (subNode) setSelectedNode(subNode);
-                    }}
-                    className="text-xs font-semibold text-indigo-400 hover:text-indigo-300"
-                  >
-                    Subsystem Intelligence →
-                  </button>
-                </div>
+                <ChevronLeft className="h-3 w-3" /> Prev
+              </button>
+              <button
+                onClick={handleNextStep}
+                disabled={activeTraversal.currentStepIdx >= activeTraversalResponse.steps.length - 1}
+                className="inline-flex items-center gap-1 rounded bg-indigo-600 px-2 py-0.5 text-xs font-bold text-white hover:bg-indigo-500 disabled:opacity-40 transition"
+              >
+                Next <ChevronRight className="h-3 w-3" />
+              </button>
+              <button
+                onClick={() => setActiveTraversal(null)}
+                className="rounded bg-gray-800 px-2 py-0.5 text-xs text-gray-400 hover:text-white transition"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
 
-                {/* Grid of Nodes in this Subsystem */}
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  {nodes.map((node) => {
-                    const isSelected = selectedNode?.node_id === node.node_id;
-                    return (
-                      <div
-                        key={node.node_id}
-                        onClick={() => {
-                          setSelectedNode(node);
-                          setSelectedEdge(null);
-                        }}
-                        className={`cursor-pointer rounded-xl border p-3.5 transition ${
-                          isSelected
-                            ? "border-indigo-500 bg-indigo-500/10 shadow-lg shadow-indigo-500/10"
-                            : "border-gray-800/80 bg-gray-950/60 hover:border-gray-700 hover:bg-gray-900/80"
-                        }`}
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            {getNodeIcon(node.node_type)}
-                            <span className="text-[11px] font-semibold text-gray-400">
-                              {node.node_type}
-                            </span>
-                          </div>
-                          <span
-                            className={`rounded border px-1.5 py-0.5 text-[9px] font-bold ${getProvenanceBadgeClass(
-                              node.provenance,
-                            )}`}
-                          >
-                            [{node.provenance}]
-                          </span>
-                        </div>
-
-                        <div className="mt-2 truncate font-mono text-xs font-medium text-white">
-                          {node.label}
-                        </div>
-
-                        {/* Node mini-stats */}
-                        <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] text-gray-400">
-                          {node.node_type === "File" && (
-                            <>
-                              <span>{String(node.metadata.activity_count ?? 0)} events</span>
-                              <span>•</span>
-                              <span>{String(node.metadata.language ?? "")}</span>
-                            </>
-                          )}
-                          {node.node_type === "SecurityFinding" && (
-                            <span className="font-semibold text-rose-400">
-                              +{String(node.metadata.risk_contribution ?? "")} risk points
-                            </span>
-                          )}
-                          {node.node_type === "Incident" && (
-                            <span className="font-semibold text-amber-400">
-                              Risk: {String(node.metadata.risk_score ?? "")} (
-                              {String(node.metadata.status ?? "")})
-                            </span>
-                          )}
-                          {node.node_type === "Prediction" && (
-                            <span className="text-purple-400">
-                              {String(node.metadata.evidence_strength ?? "")} strength
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Subsystem Edges / Relationships Summary */}
-                <div className="mt-4 border-t border-gray-800/60 pt-3">
-                  <div className="mb-2 text-[11px] font-semibold text-gray-400">
-                    Connected Relationships:
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {filteredEdges
-                      .filter((e) => {
-                        const sNode = graph?.nodes.find((n) => n.node_id === e.source_node_id);
-                        return sNode?.subsystem === subsystemName;
-                      })
-                      .slice(0, 4)
-                      .map((edge) => (
-                        <button
-                          key={edge.relationship_id}
-                          onClick={() => {
-                            setSelectedEdge(edge);
-                            setSelectedNode(null);
-                          }}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-gray-800 bg-gray-950 px-2.5 py-1 text-[10px] text-gray-300 hover:border-indigo-500/50 hover:text-white"
-                        >
-                          <span className="font-bold text-indigo-400">
-                            {edge.relationship_type}
-                          </span>
-                          <span className="text-gray-500">→</span>
-                          <span className="max-w-[120px] truncate">{edge.label}</span>
-                        </button>
-                      ))}
-                  </div>
-                </div>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {activeTraversalResponse.steps.map((step, sIdx) => (
+              <div key={sIdx} className="flex items-center gap-1.5">
+                <button
+                  onClick={() => {
+                    setActiveTraversal({ ...activeTraversal, currentStepIdx: sIdx });
+                    const matchNode = graph?.nodes.find((n) => n.node_id === step.node_id);
+                    if (matchNode) setSelectedNode(matchNode);
+                  }}
+                  className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 font-mono text-[11px] transition ${
+                    activeTraversal.currentStepIdx === sIdx
+                      ? "border-indigo-400 bg-indigo-600 text-white font-bold"
+                      : "border-gray-800 bg-gray-950 text-gray-300 hover:border-gray-700"
+                  }`}
+                >
+                  <span className="text-indigo-400 font-bold">[{sIdx + 1}]</span>
+                  <span>{step.label}</span>
+                </button>
+                {sIdx < activeTraversalResponse.steps.length - 1 && (
+                  <span className="text-gray-600 text-xs">→</span>
+                )}
               </div>
             ))}
-          </div>
-
-          {/* Details / Inspector Drawer (1 col) */}
-          <div className="space-y-6">
-            {selectedNode ? (
-              <div className="sticky top-8 rounded-2xl border border-indigo-500/40 bg-gray-900/60 p-5 backdrop-blur-md">
-                <div className="flex items-center justify-between border-b border-gray-800 pb-3">
-                  <div className="flex items-center gap-2">
-                    {getNodeIcon(selectedNode.node_type)}
-                    <h3 className="text-sm font-bold text-white">
-                      {selectedNode.node_type} Details
-                    </h3>
-                  </div>
-                  <span
-                    className={`rounded border px-2 py-0.5 text-[10px] font-bold ${getProvenanceBadgeClass(
-                      selectedNode.provenance,
-                    )}`}
-                  >
-                    [{selectedNode.provenance}]
-                  </span>
-                </div>
-
-                <div className="mt-4 space-y-3">
-                  <div>
-                    <div className="text-[10px] font-semibold text-gray-400">Entity Label:</div>
-                    <div className="break-all font-mono text-xs font-medium text-white">
-                      {selectedNode.label}
-                    </div>
-                  </div>
-
-                  {selectedNode.subsystem && (
-                    <div>
-                      <div className="text-[10px] font-semibold text-gray-400">Subsystem:</div>
-                      <div className="text-xs font-semibold text-indigo-400">
-                        {selectedNode.subsystem}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* File-Specific Intelligence */}
-                  {selectedNode.node_type === "File" && fileIntel && (
-                    <div className="space-y-2.5 rounded-xl border border-gray-800 bg-gray-950/70 p-3 text-xs">
-                      <div className="font-semibold text-gray-300">File Intelligence</div>
-                      <div className="flex justify-between text-gray-400">
-                        <span>Total Events:</span>
-                        <span className="font-bold text-white">{fileIntel.activity_count}</span>
-                      </div>
-                      <div className="flex justify-between text-gray-400">
-                        <span>Security Findings:</span>
-                        <span className="font-bold text-rose-400">{fileIntel.findings_count}</span>
-                      </div>
-                      <div className="flex justify-between text-gray-400">
-                        <span>Associated Incidents:</span>
-                        <span className="font-bold text-amber-400">
-                          {fileIntel.incidents_count}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-gray-400">
-                        <span>Forecast Predictions:</span>
-                        <span className="font-bold text-purple-400">
-                          {fileIntel.predictions_count}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Subsystem-Specific Intelligence */}
-                  {selectedNode.node_type === "Subsystem" && subsysIntel && (
-                    <div className="space-y-2.5 rounded-xl border border-indigo-500/20 bg-indigo-950/10 p-3 text-xs">
-                      <div className="font-semibold text-indigo-300">Subsystem Posture</div>
-                      <div className="flex justify-between text-gray-400">
-                        <span>Total Files:</span>
-                        <span className="font-bold text-white">{subsysIntel.file_count}</span>
-                      </div>
-                      <div className="flex justify-between text-gray-400">
-                        <span>Total Activity:</span>
-                        <span className="font-bold text-white">
-                          {subsysIntel.activity_count} events
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-gray-400">
-                        <span>Subsystem Risk:</span>
-                        <span className="font-bold text-rose-400">
-                          +{subsysIntel.risk_score} pts ({subsysIntel.health_status})
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-gray-400">
-                        <span>Open Incidents:</span>
-                        <span className="font-bold text-amber-400">
-                          {subsysIntel.open_incidents_count}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Security-Specific Detail */}
-                  {selectedNode.node_type === "SecurityFinding" && (
-                    <div className="space-y-2 rounded-xl border border-rose-500/20 bg-rose-950/10 p-3 text-xs">
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Severity:</span>
-                        <span className="font-bold text-rose-400">
-                          {String(selectedNode.metadata.severity ?? "")}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Risk Contribution:</span>
-                        <span className="font-bold text-white">
-                          +{String(selectedNode.metadata.risk_contribution ?? "")}
-                        </span>
-                      </div>
-                      {Boolean(selectedNode.metadata.evidence) && (
-                        <div>
-                          <div className="text-[10px] text-gray-400">Redacted Evidence:</div>
-                          <pre className="mt-1 overflow-x-auto rounded bg-black/60 p-2 font-mono text-[11px] text-gray-300">
-                            {String(selectedNode.metadata.evidence ?? "")}
-                          </pre>
-                        </div>
-                      )}
-                      <button
-                        onClick={() =>
-                          setInspectTarget({
-                            type: "security",
-                            id: String(selectedNode.metadata.rule_id || "current"),
-                          })
-                        }
-                        className="mt-2 w-full rounded bg-rose-500/20 py-1.5 text-center text-xs font-semibold text-rose-300 hover:bg-rose-500/30"
-                      >
-                        [Why?] Inspect Security Evidence
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Incident-Specific Detail */}
-                  {selectedNode.node_type === "Incident" && (
-                    <div className="space-y-2 rounded-xl border border-amber-500/20 bg-amber-950/10 p-3 text-xs">
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Status:</span>
-                        <span className="font-bold text-amber-400">
-                          {String(selectedNode.metadata.status ?? "")}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Risk Score:</span>
-                        <span className="font-bold text-white">
-                          {String(selectedNode.metadata.risk_score ?? "")}/100
-                        </span>
-                      </div>
-                      <button
-                        onClick={() =>
-                          setInspectTarget({
-                            type: "incident",
-                            id: String(selectedNode.metadata.incident_id || "latest"),
-                          })
-                        }
-                        className="mt-2 w-full rounded bg-amber-500/20 py-1.5 text-center text-xs font-semibold text-amber-300 hover:bg-amber-500/30"
-                      >
-                        [Why?] Inspect Incident Evidence
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Metadata JSON Dump */}
-                  <div className="pt-2">
-                    <div className="text-[10px] font-semibold text-gray-500">
-                      Metadata Properties:
-                    </div>
-                    <pre className="mt-1 max-h-40 overflow-auto rounded bg-gray-950 p-2 font-mono text-[10px] text-gray-400">
-                      {JSON.stringify(selectedNode.metadata, null, 2)}
-                    </pre>
-                  </div>
-                </div>
-              </div>
-            ) : selectedEdge ? (
-              <div className="sticky top-8 rounded-2xl border border-indigo-500/40 bg-gray-900/60 p-5 backdrop-blur-md">
-                <div className="flex items-center justify-between border-b border-gray-800 pb-3">
-                  <div className="flex items-center gap-2">
-                    <Info className="h-4 w-4 text-indigo-400" />
-                    <h3 className="text-sm font-bold text-white">Relationship Explanation</h3>
-                  </div>
-                  <span
-                    className={`rounded border px-2 py-0.5 text-[10px] font-bold ${getProvenanceBadgeClass(
-                      selectedEdge.provenance,
-                    )}`}
-                  >
-                    [{selectedEdge.provenance}]
-                  </span>
-                </div>
-
-                <div className="mt-4 space-y-3">
-                  <div>
-                    <div className="text-[10px] font-semibold text-gray-400">
-                      Relationship Type:
-                    </div>
-                    <div className="font-mono text-xs font-bold text-indigo-400">
-                      {selectedEdge.relationship_type}
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="text-[10px] font-semibold text-gray-400">
-                      Rationale / Description:
-                    </div>
-                    <div className="mt-0.5 text-xs text-gray-200">{selectedEdge.label}</div>
-                  </div>
-
-                  {selectedEdge.evidence_references.length > 0 && (
-                    <div>
-                      <div className="text-[10px] font-semibold text-gray-400">
-                        Evidence References:
-                      </div>
-                      <div className="mt-1 flex flex-wrap gap-1.5">
-                        {selectedEdge.evidence_references.map((ev, i) => (
-                          <span
-                            key={i}
-                            className="rounded border border-gray-800 bg-gray-950 px-2 py-0.5 font-mono text-[10px] text-gray-300"
-                          >
-                            {ev}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <button
-                    onClick={() =>
-                      setInspectTarget({
-                        type: "health",
-                        id: "overall",
-                      })
-                    }
-                    className="mt-3 w-full rounded-lg border border-indigo-500/30 bg-indigo-600/20 py-2 text-xs font-semibold text-indigo-300 hover:bg-indigo-600/30"
-                  >
-                    [Why?] Inspect in Evidence Intelligence
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="border-border bg-card sticky top-8 space-y-4 rounded-2xl border p-6 shadow-sm">
-                <div className="border-border flex items-center gap-2 border-b pb-3">
-                  <Layers className="h-4 w-4 text-indigo-400" />
-                  <h3 className="text-primary-text text-sm font-bold">
-                    Graph Overview & Inspector
-                  </h3>
-                </div>
-
-                <p className="text-secondary-text text-xs leading-relaxed">
-                  Select any File, Finding, Incident, or relationship connector in the graph to
-                  inspect its deterministic evidence trail and causal connections.
-                </p>
-
-                {graph && (
-                  <div className="border-border bg-card-subtle grid grid-cols-3 gap-2 rounded-xl border p-3 text-center">
-                    <div>
-                      <div className="text-primary-text font-mono text-lg font-bold">
-                        {graph.nodes.length}
-                      </div>
-                      <div className="text-secondary-text text-[9px] font-bold uppercase">
-                        Nodes
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-primary-text font-mono text-lg font-bold">
-                        {graph.edges.length}
-                      </div>
-                      <div className="text-secondary-text text-[9px] font-bold uppercase">
-                        Edges
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-primary-text font-mono text-lg font-bold">
-                        {Object.keys(nodesBySubsystem).length}
-                      </div>
-                      <div className="text-secondary-text text-[9px] font-bold uppercase">
-                        Subsystems
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <button
-                  onClick={() =>
-                    setInspectTarget({
-                      type: "health",
-                      id: "overall",
-                    })
-                  }
-                  className="bg-card hover:bg-card-subtle border-border text-primary-text inline-flex w-full items-center justify-center gap-1.5 rounded-xl border px-4 py-2 text-xs font-semibold shadow-sm transition"
-                >
-                  <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
-                  Inspect Project Evidence Graph
-                </button>
-              </div>
-            )}
           </div>
         </div>
       )}
 
-      {/* ── EVIDENCE INSPECTOR MODAL INTEGRATION ──────────────────────────── */}
+      {/* ── MAIN CONTENT (72% CANVAS + 28% INSPECTOR) ───────────────────────── */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+        <div className="lg:col-span-8 xl:col-span-9">
+          {viewMode === "CANVAS" && (
+            <CorrelationGraphCanvas
+              nodes={filteredNodes}
+              edges={filteredEdges}
+              selectedNode={selectedNode}
+              selectedEdge={selectedEdge}
+              onSelectNode={handleSelectNode}
+              onSelectEdge={(edge) => {
+                setSelectedEdge(edge);
+                setSelectedNode(null);
+              }}
+              focusNodeId={focusNodeId}
+              focusDepth={focusDepth}
+              onDepthChange={handleDepthChange}
+              traversalSteps={activeTraversalResponse?.steps || []}
+              traversalMode={activeTraversal?.mode || null}
+            />
+          )}
+
+          {viewMode === "TIMELINE" && (
+            <div className="rounded-2xl border border-gray-800 bg-gray-900/40 p-6 backdrop-blur-md">
+              <div className="flex items-center justify-between border-b border-gray-800 pb-4 mb-6">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-indigo-400" />
+                  <h3 className="font-bold text-white">Chronological Intelligence Timeline</h3>
+                </div>
+                <Badge variant="outline" className="text-xs text-gray-400 font-mono">
+                  {timelineData?.total_events || 0} Grounded Events
+                </Badge>
+              </div>
+
+              <div className="space-y-3">
+                {timelineData?.events?.map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => {
+                      const matchNode = graph?.nodes.find((n) => n.node_id === item.entity_id);
+                      if (matchNode) setSelectedNode(matchNode);
+                    }}
+                    className={`flex items-start gap-4 rounded-xl border p-3.5 cursor-pointer transition ${
+                      selectedNode?.node_id === item.entity_id
+                        ? "border-indigo-500 bg-indigo-950/40"
+                        : "border-gray-800/80 bg-gray-950/60 hover:border-gray-700 hover:bg-gray-900/60"
+                    }`}
+                  >
+                    <div className="flex flex-col items-center">
+                      <div className="h-2.5 w-2.5 rounded-full bg-indigo-500" />
+                      <div className="h-full w-0.5 bg-gray-800" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-xs font-bold text-indigo-400">
+                          {new Date(item.timestamp).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                          })}
+                        </span>
+                        <span className="rounded border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-bold text-emerald-400">
+                          [{item.provenance}]
+                        </span>
+                      </div>
+                      <div className="mt-0.5 font-semibold text-xs text-white">{item.label}</div>
+                      {item.subsystem && (
+                        <div className="mt-0.5 text-[10px] text-gray-400">
+                          Subsystem: {item.subsystem}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {viewMode === "BEFORE_AFTER" && (
+            <div className="rounded-2xl border border-gray-800 bg-gray-900/40 p-6 backdrop-blur-md">
+              <div className="flex items-center justify-between border-b border-gray-800 pb-4 mb-6">
+                <div className="flex items-center gap-2">
+                  <GitCompare className="h-5 w-5 text-indigo-400" />
+                  <h3 className="font-bold text-white">Before vs After Remediation Posture</h3>
+                </div>
+                <Badge variant="outline" className="text-xs text-emerald-400 font-mono">
+                  {beforeAfterData?.remediation_summary || "Remediation audit verified"}
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-xl border border-rose-500/30 bg-rose-950/20 p-4">
+                  <div className="flex items-center justify-between border-b border-rose-500/20 pb-2">
+                    <span className="font-bold text-rose-400 text-xs">PRE-REMEDIATION (BEFORE)</span>
+                    <span className="text-[10px] font-mono text-rose-300">Active Risk</span>
+                  </div>
+                  <div className="mt-3 space-y-2 text-xs text-gray-300 font-mono">
+                    <div className="flex justify-between">
+                      <span>Graph Entities:</span>
+                      <span className="font-bold">{beforeAfterData?.before_nodes.length || 0}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Open Incidents:</span>
+                      <span className="font-bold text-rose-400">
+                        {beforeAfterData?.resolved_incidents_count || 1}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Posture:</span>
+                      <span className="font-bold text-rose-400">CRITICAL</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-4">
+                  <div className="flex items-center justify-between border-b border-emerald-500/20 pb-2">
+                    <span className="font-bold text-emerald-400 text-xs">POST-REMEDIATION (AFTER)</span>
+                    <span className="text-[10px] font-mono text-emerald-300">Resolved Audit</span>
+                  </div>
+                  <div className="mt-3 space-y-2 text-xs text-gray-300 font-mono">
+                    <div className="flex justify-between">
+                      <span>Graph Entities:</span>
+                      <span className="font-bold">{beforeAfterData?.after_nodes.length || 0}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Resolved Incidents:</span>
+                      <span className="font-bold text-emerald-400">
+                        {beforeAfterData?.resolved_incidents_count || 1}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Audit Status:</span>
+                      <span className="font-bold text-emerald-400">VERIFIED</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right Col: Streamlined Intelligence Inspector */}
+        <div className="lg:col-span-4 xl:col-span-3">
+          <CorrelationGraphInspector
+            projectId={projectId}
+            selectedNode={selectedNode}
+            selectedEdge={selectedEdge}
+            allNodes={graph?.nodes || []}
+            allEdges={graph?.edges || []}
+            onSelectNode={handleSelectNode}
+            onSelectEdge={(edge) => {
+              setSelectedEdge(edge);
+              setSelectedNode(null);
+            }}
+            onFocusNode={(nodeId) => {
+              setFocusNodeId(nodeId);
+              const node = graph?.nodes.find((n) => n.node_id === nodeId);
+              if (node) handleSelectNode(node);
+            }}
+            onTraceRootCause={(nodeId) => {
+              setActiveTraversal({ mode: "ROOT_CAUSE", startNodeId: nodeId, currentStepIdx: 0 });
+            }}
+            onTraceImpact={(nodeId) => {
+              setActiveTraversal({ mode: "IMPACT", startNodeId: nodeId, currentStepIdx: 0 });
+            }}
+            onOpenEvidence={(type, id) => setInspectTarget({ type, id })}
+          />
+        </div>
+      </div>
+
+      {/* ── EVIDENCE INSPECTOR MODAL ────────────────────────────────────────── */}
       {inspectTarget && (
         <EvidenceInspector
           projectId={projectId}

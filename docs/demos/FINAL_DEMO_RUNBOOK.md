@@ -10,11 +10,11 @@
 Run this 2 minutes before the presentation begins:
 
 - [ ] **PostgreSQL**: Running on port `5432` with latest schema (`alembic upgrade head`).
-- [ ] **FastAPI Backend**: `uv run uvicorn app.main:app --port 5133` (Healthy at `http://localhost:5133/health`).
-- [ ] **React Dashboard**: `pnpm --filter @vibepulse/dashboard dev` (Accessible at `http://localhost:5134`).
-- [ ] **Node Observation Daemon**: Operational on port `5135` (`http://localhost:5135/health`).
+- [ ] **FastAPI Backend**: `uv run uvicorn app.main:app --port 5184` (Healthy at `http://localhost:5184/health`).
+- [ ] **React Dashboard**: `pnpm --filter @vibepulse/dashboard dev` (Accessible at `http://localhost:5183`).
+- [ ] **Node Observation Daemon**: Operational on port `5185` (`http://localhost:5185/health`).
 - [ ] **Seminar Doctor Audit**: Run `node scripts/seminar-doctor.mjs` and confirm all checks pass.
-- [ ] **Browser**: Open `http://localhost:5134` in full screen (Dark Mode enabled).
+- [ ] **Browser**: Open `http://localhost:5183` in full screen (Dark Mode enabled).
 
 ---
 

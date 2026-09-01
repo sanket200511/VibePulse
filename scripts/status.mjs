@@ -9,11 +9,11 @@
 import http from "http";
 import net from "net";
 
-const API_PORT = Number(process.env.VIBEPULSE_API_PORT || process.env.API_PORT || 5133);
+const API_PORT = Number(process.env.VIBEPULSE_API_PORT || process.env.API_PORT || 5184);
 const DASHBOARD_PORT = Number(
-  process.env.VIBEPULSE_DASHBOARD_PORT || process.env.DASHBOARD_PORT || 5134,
+  process.env.VIBEPULSE_DASHBOARD_PORT || process.env.DASHBOARD_PORT || 5183,
 );
-const DAEMON_PORT = Number(process.env.VIBEPULSE_DAEMON_PORT || process.env.DAEMON_PORT || 5135);
+const DAEMON_PORT = Number(process.env.VIBEPULSE_DAEMON_PORT || process.env.DAEMON_PORT || 5185);
 
 const RESET = "\x1b[0m";
 const BOLD = "\x1b[1m";

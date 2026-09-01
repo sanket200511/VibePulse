@@ -8,7 +8,7 @@
 
 ### [00:00 - 01:00] Stage 1: OBSERVE
 
-- **WHAT TO CLICK**: Open browser at `http://localhost:5134`. Navigate to **Command Center**.
+- **WHAT TO CLICK**: Open browser at `http://localhost:5183`. Navigate to **Command Center**.
 - **WHAT TO SHOW**: Live Telemetry Feed (connected, waiting for events).
 - **WHAT TO SAY**:
   > _"Good morning, respected evaluators. Modern engineering visibility is broken because tools only see code after it is committed to Git. VibePulse observes development activity continuously at the filesystem level. I have our daemon watching a sample banking project. Watch what happens as I edit `src/auth/jwt_service.py` in my editor."_
