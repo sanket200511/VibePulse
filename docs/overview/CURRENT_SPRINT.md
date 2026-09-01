@@ -14,7 +14,7 @@ VibePulse is in an **active architecture and code freeze**. All intelligence sub
 - **Daemon Vitest**: 130 / 130 tests passing
 - **TypeScript Typecheck**: 5 / 5 packages passing (0 errors)
 - **Lint / Ruff**: 5 / 5 packages passing (0 errors)
-- **Dedicated Port Namespace**: Migrated to `5133` (API), `5134` (Dashboard), `5135` (Daemon)
+- **Dedicated Port Namespace**: Migrated to `5184` (API), `5183` (Dashboard), `5185` (Daemon)
 - **E2E Acceptance Suites**: 14 / 14 criteria passing (`node scripts/test-sprint12-e2e.mjs`)
 - **Deterministic Reconstructibility**: $A \equiv B$ verified (`node scripts/final-reconstructibility-audit.mjs`)
 - **Forensic Security Audit**: 100% secret redaction to `[REDACTED]` verified across all surfaces

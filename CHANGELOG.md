@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-- **Dedicated Port Namespace**: Migrated all development services to dedicated, clash-free ports: FastAPI (`5133` = VIBE), Dashboard (`5134`), Daemon (`5135`), PostgreSQL (`5432`), Redis (Cloud).
+- **Dedicated Port Namespace**: Migrated all development services to dedicated, clash-free ports: FastAPI (`5184`), Dashboard (`5183`), Daemon (`5185`), PostgreSQL (`5432`), Redis (Cloud).
 - **Professional Terminal Supervisor UX (`pnpm dev`)**: Introduced structured log hierarchy (`[TIME] [SERVICE] [LEVEL] MESSAGE`), preflight conflict detection, and sub-second CLI stack inspector (`pnpm dev:status`).
 - **Forensic Truth Audit Verification**: Validated 100% claim-to-code traceability across 348 Backend Pytest and 130 Daemon Vitest test suites.
 - **Academic Defense Portfolio**: Formulated complete B.Tech final thesis report (`FINAL_PROJECT_REPORT.md`), oral viva cheat-sheet (`VIVA_MASTER_SHEET.md`), and presentation deck (`PPT_CONTENT.md`).

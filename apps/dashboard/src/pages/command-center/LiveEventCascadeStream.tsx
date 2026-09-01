@@ -209,7 +209,9 @@ export function LiveEventCascadeStream({
             <div className="pt-2 text-right">
               <button
                 onClick={() => {
-                  void navigate(`/projects/${projectId}/investigation`);
+                  void navigate(
+                    `/projects/${projectId}/investigation?incidentId=${encodeURIComponent(selectedEvent.id)}`,
+                  );
                 }}
                 className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-indigo-500"
               >

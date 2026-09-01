@@ -24,8 +24,8 @@ import os from "node:os";
 import crypto from "node:crypto";
 import { execSync } from "node:child_process";
 
-const API_BASE = process.env.VIBEPULSE_API_URL || process.env.API_BASE || "http://127.0.0.1:5133";
-const DASHBOARD_BASE = process.env.VIBEPULSE_DASHBOARD_URL || "http://localhost:5134";
+const API_BASE = process.env.VIBEPULSE_API_URL || process.env.API_BASE || "http://127.0.0.1:5184";
+const DASHBOARD_BASE = process.env.VIBEPULSE_DASHBOARD_URL || "http://localhost:5183";
 const DELAY_MS = process.env.DEMO_SPEED_MS ? parseInt(process.env.DEMO_SPEED_MS, 10) : 1200;
 const GLOBAL_TIMEOUT_MS = 60000;
 

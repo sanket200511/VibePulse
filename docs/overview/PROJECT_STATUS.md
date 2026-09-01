@@ -39,14 +39,14 @@ OBSERVE ──▶ DETECT ──▶ UNDERSTAND ──▶ INVESTIGATE ──▶ RE
 
 ## 3. Dedicated Canonical Port Mapping
 
-| Service / Subsystem          | Dedicated Port | URL Endpoint                   | Description                                               |
-| ---------------------------- | -------------- | ------------------------------ | --------------------------------------------------------- |
-| **FastAPI Backend (API)**    | **`5133`**     | `http://localhost:5133`        | Core intelligence REST & WebSocket engine (`5133` = VIBE) |
-| **FastAPI Interactive Docs** | **`5133`**     | `http://localhost:5133/docs`   | OpenAPI / Swagger specification                           |
-| **React Dashboard (UI)**     | **`5134`**     | `http://localhost:5134`        | Vite dev server with reverse proxy                        |
-| **Telemetry Daemon**         | **`5135`**     | `http://localhost:5135/health` | Local filesystem observation worker                       |
-| **PostgreSQL Database**      | **`5432`**     | `localhost:5432`               | Canonical source of truth                                 |
-| **Redis Cache / PubSub**     | **Cloud**      | Configured URI                 | Cloud Redis instance                                      |
+| Service / Subsystem          | Dedicated Port | URL Endpoint                   | Description                               |
+| ---------------------------- | -------------- | ------------------------------ | ----------------------------------------- |
+| **FastAPI Backend (API)**    | **`5184`**     | `http://localhost:5184`        | Core intelligence REST & WebSocket engine |
+| **FastAPI Interactive Docs** | **`5184`**     | `http://localhost:5184/docs`   | OpenAPI / Swagger specification           |
+| **React Dashboard (UI)**     | **`5183`**     | `http://localhost:5183`        | Vite dev server with reverse proxy        |
+| **Telemetry Daemon**         | **`5185`**     | `http://localhost:5185/health` | Local filesystem observation worker       |
+| **PostgreSQL Database**      | **`5432`**     | `localhost:5432`               | Canonical source of truth                 |
+| **Redis Cache / PubSub**     | **Cloud**      | Configured URI                 | Cloud Redis instance                      |
 
 ---
 

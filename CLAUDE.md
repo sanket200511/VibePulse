@@ -108,9 +108,9 @@ cd ../..
 pnpm dev
 
 # Or start independently in 3 terminals:
-# Terminal 1 (Dashboard): pnpm --filter @vibepulse/dashboard dev # :5134
-# Terminal 2 (API): cd apps/api && uv run uvicorn app.main:app --reload --port 5133
-# Terminal 3 (Daemon): pnpm --filter @vibepulse/daemon dev # :5135
+# Terminal 1 (Dashboard): pnpm --filter @vibepulse/dashboard dev # :5183
+# Terminal 2 (API): cd apps/api && uv run uvicorn app.main:app --reload --port 5184
+# Terminal 3 (Daemon): pnpm --filter @vibepulse/daemon dev # :5185
 ```
 
 ---

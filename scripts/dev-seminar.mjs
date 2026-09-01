@@ -22,11 +22,11 @@ const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, "..");
 
 // ── Environment & Ports ──────────────────────────────────────────────────────
-const API_PORT = Number(process.env.VIBEPULSE_API_PORT || process.env.API_PORT || 5133);
+const API_PORT = Number(process.env.VIBEPULSE_API_PORT || process.env.API_PORT || 5184);
 const DASHBOARD_PORT = Number(
-  process.env.VIBEPULSE_DASHBOARD_PORT || process.env.DASHBOARD_PORT || 5134,
+  process.env.VIBEPULSE_DASHBOARD_PORT || process.env.DASHBOARD_PORT || 5183,
 );
-const DAEMON_PORT = Number(process.env.VIBEPULSE_DAEMON_PORT || process.env.DAEMON_PORT || 5135);
+const DAEMON_PORT = Number(process.env.VIBEPULSE_DAEMON_PORT || process.env.DAEMON_PORT || 5185);
 
 const IS_DEBUG =
   process.env.VIBEPULSE_LOG_LEVEL === "debug" ||
@@ -508,7 +508,7 @@ ${CYAN}${BOLD}╔═════════════════════
   log("DATABASE", "READY", "PostgreSQL connected on port 5432");
   log("REDIS", "READY", "Redis Cloud endpoint configured");
 
-  // Step 2: Pre-flight port conflict check (5133, 5134, 5135)
+  // Step 2: Pre-flight port conflict check (5184, 5183, 5185)
   const [apiConflict, dashConflict, daemonConflict] = await Promise.all([
     checkTcpPort("127.0.0.1", API_PORT),
     checkTcpPort("127.0.0.1", DASHBOARD_PORT),

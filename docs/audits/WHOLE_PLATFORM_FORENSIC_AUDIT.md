@@ -24,7 +24,7 @@ Prior to applying fixes, the platform was benchmarked with the following initial
 - **TypeScript Typecheck**: 5/5 packages passed (0 errors)
 - **Lint / Ruff**: 5/5 packages passed (0 errors)
 - **Seminar Doctor**: All static & AST checks passed
-- **Port Mapping**: Dedicated namespace strictly preserved (`5133` API, `5134` Dashboard, `5135` Daemon, `5432` PostgreSQL, Redis Cloud)
+- **Port Mapping**: Dedicated namespace strictly preserved (`5184` API, `5183` Dashboard, `5185` Daemon, `5432` PostgreSQL, Redis Cloud)
 
 ---
 

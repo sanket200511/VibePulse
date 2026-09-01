@@ -55,13 +55,13 @@ graph TD
 
 ## 4. Current API & Dashboard Ports
 
-| Service                   | Dedicated Port | Local URL Endpoint             | Description                                          |
-| :------------------------ | :------------- | :----------------------------- | :--------------------------------------------------- |
-| **FastAPI Backend (API)** | **`5133`**     | `http://localhost:5133`        | REST & WebSocket intelligence engine (`5133` = VIBE) |
-| **React Dashboard (UI)**  | **`5134`**     | `http://localhost:5134`        | Vite dev server & Command Center UI                  |
-| **Telemetry Daemon**      | **`5135`**     | `http://localhost:5135/health` | Filesystem watcher & health probe server             |
-| **PostgreSQL Database**   | **`5432`**     | `localhost:5432`               | Canonical source of truth                            |
-| **Redis Cache / PubSub**  | Cloud          | `rediss://...`                 | Scalable pub/sub broker                              |
+| Service                   | Dedicated Port | Local URL Endpoint             | Description                              |
+| :------------------------ | :------------- | :----------------------------- | :--------------------------------------- |
+| **FastAPI Backend (API)** | **`5184`**     | `http://localhost:5184`        | REST & WebSocket intelligence engine     |
+| **React Dashboard (UI)**  | **`5183`**     | `http://localhost:5183`        | Vite dev server & Command Center UI      |
+| **Telemetry Daemon**      | **`5185`**     | `http://localhost:5185/health` | Filesystem watcher & health probe server |
+| **PostgreSQL Database**   | **`5432`**     | `localhost:5432`               | Canonical source of truth                |
+| **Redis Cache / PubSub**  | Cloud          | `rediss://...`                 | Scalable pub/sub broker                  |
 
 ---
 
@@ -137,7 +137,7 @@ $$\text{OBSERVE} \to \text{DETECT} \to \text{UNDERSTAND} \to \text{INVESTIGATE} 
 ║       The Deterministic Engineering Intelligence Platform    ║
 ╚══════════════════════════════════════════════════════════════╝
 
-[PRE-FLIGHT] Validate PostgreSQL :5432 and FastAPI :5133 availability
+[PRE-FLIGHT] Validate PostgreSQL :5432 and FastAPI :5184 availability
 [01/10] OBSERVE      -> Register temporary project & ingest baseline telemetry
 [02/10] DETECT       -> Inject AST security issue & verify [REDACTED] masking
 [03/10] UNDERSTAND   -> Inspect multi-dimensional risk score and health degradation

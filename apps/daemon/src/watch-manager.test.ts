@@ -55,7 +55,7 @@ describe("WatchManager", () => {
     const debouncer = createMockDebouncer();
 
     const manager = createWatchManager({
-      apiUrl: "http://localhost:5133",
+      apiUrl: "http://localhost:5184",
       gate,
       debouncer,
     });
@@ -98,7 +98,7 @@ describe("WatchManager", () => {
     const debouncer = createMockDebouncer();
 
     const manager = createWatchManager({
-      apiUrl: "http://localhost:5133",
+      apiUrl: "http://localhost:5184",
       gate,
       debouncer,
     });
@@ -135,7 +135,7 @@ describe("WatchManager", () => {
     const debouncer = createMockDebouncer();
 
     const manager = createWatchManager({
-      apiUrl: "http://localhost:5133",
+      apiUrl: "http://localhost:5184",
       gate,
       debouncer,
     });
@@ -168,7 +168,7 @@ describe("WatchManager", () => {
     const debouncer = createMockDebouncer();
 
     const manager = createWatchManager({
-      apiUrl: "http://localhost:5133",
+      apiUrl: "http://localhost:5184",
       gate,
       debouncer,
     });

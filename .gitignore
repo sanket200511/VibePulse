@@ -74,6 +74,7 @@ htmlcov/
 coverage.xml
 *.cover
 .hypothesis/
+.vscode/
 
 # uv
 .uv/
@@ -90,3 +91,8 @@ coverage/
 *.pem
 .cache/
 TeMpPy/
+scratch/
+apps/api/scratch/
+
+#hackathon documents
+codeforge-hackathon-demo/

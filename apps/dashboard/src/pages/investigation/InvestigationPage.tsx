@@ -1,5 +1,5 @@
-import { useState, useMemo, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useState, useMemo, useRef, useEffect } from "react";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
   Search,
@@ -57,13 +57,28 @@ const RESOLUTION_TEMPLATES = [
 
 export function InvestigationPage() {
   const { projectId } = useParams<{ projectId: string }>();
-  const [query, setQuery] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const urlIncidentId =
+    searchParams.get("incidentId") || searchParams.get("incident") || searchParams.get("id");
+  const urlQuery = searchParams.get("q") || "";
+
+  const [query, setQuery] = useState(urlQuery);
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
-  const [selectedIncidentId, setSelectedIncidentId] = useState<string | null>(null);
+  const [selectedIncidentId, setSelectedIncidentId] = useState<string | null>(
+    urlIncidentId || null,
+  );
   const [selectedNode, setSelectedNode] = useState<EvidenceNode | null>(null);
   const [resolutionModalOpen, setResolutionModalOpen] = useState(false);
   const [resolutionNote, setResolutionNote] = useState("");
   const [targetStatus, setTargetStatus] = useState<string>("RESOLVED");
+
+  // Keep state in sync with URL search params
+  useEffect(() => {
+    if (urlIncidentId && urlIncidentId !== selectedIncidentId) {
+      setSelectedIncidentId(urlIncidentId);
+    }
+  }, [urlIncidentId, selectedIncidentId]);
 
   // Evidence Graph Interactive Navigation State
   const [graphZoom, setGraphZoom] = useState<number>(1);
@@ -105,21 +120,38 @@ export function InvestigationPage() {
     });
   }, [rawResults, query, statusFilter]);
 
-  // Active selected incident ID
+  // Active selected incident ID: explicit selection/URL target takes precedence
   const activeIncidentId = useMemo(() => {
     if (selectedIncidentId) return selectedIncidentId;
+    if (urlIncidentId) return urlIncidentId;
     if (filteredResults.length > 0 && filteredResults[0]?.id) {
       return String(filteredResults[0].id);
     }
+    if (rawResults.length > 0 && rawResults[0]?.id) {
+      return String(rawResults[0].id);
+    }
     return null;
-  }, [selectedIncidentId, filteredResults]);
+  }, [selectedIncidentId, urlIncidentId, filteredResults, rawResults]);
 
   // Fetch detailed incident investigation & review history for active incident
-  const { data: incidentDetail, isLoading: isDetailLoading } = useIncidentDetail(
-    projectId,
-    activeIncidentId,
-  );
+  const {
+    data: incidentDetail,
+    isLoading: isDetailLoading,
+    isError: isDetailError,
+  } = useIncidentDetail(projectId, activeIncidentId);
   const { data: historyData } = useIncidentHistory(projectId, activeIncidentId);
+
+  const handleSelectIncident = (id: string) => {
+    setSelectedIncidentId(id);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.set("incidentId", id);
+        return next;
+      },
+      { replace: true },
+    );
+  };
 
   const updateReviewMutation = useUpdateIncidentReview(projectId, activeIncidentId);
 
@@ -368,7 +400,7 @@ export function InvestigationPage() {
             <span>SEVERITY SORTED</span>
           </div>
 
-          {filteredResults.length === 0 ? (
+          {filteredResults.length === 0 && !incidentDetail ? (
             rawResults.length === 0 ? (
               <div className="bg-card border-border flex flex-col items-center justify-center rounded-xl border p-8 text-center">
                 <CheckCircle2 className="mb-2 h-8 w-8 text-emerald-500" />
@@ -397,56 +429,102 @@ export function InvestigationPage() {
               </div>
             )
           ) : (
-            filteredResults.map((res) => {
-              const isSelected = activeIncidentId === String(res.id);
-              const sev = (res.risk_level || "LOW").toUpperCase();
-              return (
-                <div
-                  key={String(res.id)}
-                  onClick={() => setSelectedIncidentId(String(res.id))}
-                  className={`relative cursor-pointer rounded-lg border p-3.5 transition ${
-                    isSelected
-                      ? "border-indigo-500 bg-gray-900 shadow-md shadow-indigo-950/40"
-                      : "border-gray-800 bg-gray-900/40 hover:border-gray-700 hover:bg-gray-900/80"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="line-clamp-1 text-xs font-bold text-gray-100">
-                      {res.summary}
-                    </span>
-                    <Badge
-                      variant="outline"
-                      className={`shrink-0 font-mono text-[10px] ${
-                        sev === "CRITICAL"
-                          ? "border-red-500/40 bg-red-950/20 text-red-400"
-                          : sev === "HIGH"
-                            ? "border-amber-500/40 bg-amber-950/20 text-amber-400"
-                            : "border-blue-500/40 text-blue-400"
-                      }`}
-                    >
-                      {sev} · {res.risk_score}
-                    </Badge>
-                  </div>
-
-                  <div className="mt-2 flex items-center gap-3 text-[11px] text-gray-400">
-                    <span className="flex items-center gap-1 font-mono">
-                      <Clock className="h-3 w-3 text-gray-500" />
-                      {new Date(res.timestamp).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        second: "2-digit",
-                      })}
-                    </span>
-                    {res.file_name && (
-                      <span className="flex items-center gap-1 truncate text-gray-300">
-                        <FileCode className="h-3 w-3 shrink-0 text-gray-500" />
-                        {res.file_name}
+            <>
+              {/* If targeted incident is resolved or not in the filtered event list, present it at top */}
+              {incidentDetail &&
+                !filteredResults.some(
+                  (r) =>
+                    String(r.id) === String(activeIncidentId) ||
+                    String(incidentDetail.incident_id) === String(r.id),
+                ) && (
+                  <div
+                    key={String(incidentDetail.incident_id)}
+                    onClick={() => handleSelectIncident(String(incidentDetail.incident_id))}
+                    className="relative cursor-pointer rounded-lg border border-indigo-500 bg-gray-900 p-3.5 shadow-md shadow-indigo-950/40 transition"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="line-clamp-1 text-xs font-bold text-gray-100">
+                        {incidentDetail.title}
                       </span>
-                    )}
+                      <Badge
+                        variant="outline"
+                        className={`shrink-0 font-mono text-[10px] ${
+                          incidentDetail.severity === "CRITICAL"
+                            ? "border-red-500/40 bg-red-950/20 text-red-400"
+                            : incidentDetail.severity === "HIGH"
+                              ? "border-amber-500/40 bg-amber-950/20 text-amber-400"
+                              : "border-blue-500/40 text-blue-400"
+                        }`}
+                      >
+                        {incidentDetail.severity} · {incidentDetail.risk_score}
+                      </Badge>
+                    </div>
+                    <div className="mt-2 flex items-center justify-between text-[11px] text-gray-400">
+                      <span className="flex items-center gap-1 font-mono text-indigo-300">
+                        <Sparkles className="h-3 w-3 text-indigo-400" />
+                        TARGETED INCIDENT
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className="border-emerald-500/40 text-[9px] text-emerald-400"
+                      >
+                        {incidentDetail.status}
+                      </Badge>
+                    </div>
                   </div>
-                </div>
-              );
-            })
+                )}
+
+              {filteredResults.map((res) => {
+                const isSelected = activeIncidentId === String(res.id);
+                const sev = (res.risk_level || "LOW").toUpperCase();
+                return (
+                  <div
+                    key={String(res.id)}
+                    onClick={() => handleSelectIncident(String(res.id))}
+                    className={`relative cursor-pointer rounded-lg border p-3.5 transition ${
+                      isSelected
+                        ? "border-indigo-500 bg-gray-900 shadow-md shadow-indigo-950/40"
+                        : "border-gray-800 bg-gray-900/40 hover:border-gray-700 hover:bg-gray-900/80"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="line-clamp-1 text-xs font-bold text-gray-100">
+                        {res.summary}
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className={`shrink-0 font-mono text-[10px] ${
+                          sev === "CRITICAL"
+                            ? "border-red-500/40 bg-red-950/20 text-red-400"
+                            : sev === "HIGH"
+                              ? "border-amber-500/40 bg-amber-950/20 text-amber-400"
+                              : "border-blue-500/40 text-blue-400"
+                        }`}
+                      >
+                        {sev} · {res.risk_score}
+                      </Badge>
+                    </div>
+
+                    <div className="mt-2 flex items-center gap-3 text-[11px] text-gray-400">
+                      <span className="flex items-center gap-1 font-mono">
+                        <Clock className="h-3 w-3 text-gray-500" />
+                        {new Date(res.timestamp).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          second: "2-digit",
+                        })}
+                      </span>
+                      {res.file_name && (
+                        <span className="flex items-center gap-1 truncate text-gray-300">
+                          <FileCode className="h-3 w-3 shrink-0 text-gray-500" />
+                          {res.file_name}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </>
           )}
         </div>
 
@@ -635,7 +713,7 @@ export function InvestigationPage() {
                     Review Audit Trail & Transitions
                   </h3>
                   <span className="font-mono text-xs text-gray-400">
-                    {historyData?.history.length || incidentDetail.review_history?.length || 0}{" "}
+                    {historyData?.history?.length || incidentDetail.review_history?.length || 0}{" "}
                     records
                   </span>
                 </div>
@@ -748,7 +826,7 @@ export function InvestigationPage() {
                         CONTRIBUTING SIGNALS
                       </div>
                       <ul className="list-inside list-disc space-y-1 text-[11px] text-gray-300">
-                        {incidentDetail.root_cause.contributing_signals.map((cs, i) => (
+                        {(incidentDetail.root_cause.contributing_signals || []).map((cs, i) => (
                           <li key={i}>{cs}</li>
                         ))}
                       </ul>
@@ -941,6 +1019,35 @@ export function InvestigationPage() {
                 )}
               </div>
             </>
+          ) : activeIncidentId && (isDetailError || !incidentDetail) ? (
+            <div className="bg-card border-border flex flex-col items-center justify-center rounded-xl border p-12 text-center shadow-sm">
+              <AlertCircle className="mb-3 h-10 w-10 text-amber-500" />
+              <h3 className="text-primary-text text-base font-bold">Incident Not Found</h3>
+              <p className="text-secondary-text mt-1.5 max-w-md text-xs leading-relaxed">
+                The referenced incident &ldquo;
+                <span className="font-mono text-amber-400">{activeIncidentId}</span>&rdquo; could
+                not be located in this workspace&apos;s verified telemetry.
+              </p>
+              <button
+                onClick={() => {
+                  setSelectedIncidentId(null);
+                  setSearchParams(
+                    (prev) => {
+                      const next = new URLSearchParams(prev);
+                      next.delete("incidentId");
+                      next.delete("incident");
+                      next.delete("id");
+                      return next;
+                    },
+                    { replace: true },
+                  );
+                }}
+                className="bg-card hover:bg-card-subtle border-border text-primary-text mt-4 inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-1.5 text-xs font-semibold shadow-sm transition"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                View All Project Incidents
+              </button>
+            </div>
           ) : (
             <div className="bg-card border-border flex flex-col items-center justify-center rounded-xl border p-12 text-center shadow-sm">
               <ShieldAlert className="mb-3 h-10 w-10 text-indigo-400/80" />

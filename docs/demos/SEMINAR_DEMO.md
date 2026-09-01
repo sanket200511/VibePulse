@@ -18,9 +18,9 @@ node scripts/seminar-doctor.mjs
 [PASS] [✓] Python / uv Toolchain
 [PASS] [✓] PostgreSQL Server (:5432)
 [PASS] [✓] PostgreSQL Schema & Redis Cloud (Connected & Configured)
-[PASS] [✓] FastAPI Backend (:5133)
-[PASS] [✓] React/Vite Dashboard (:5134)
-[PASS] [✓] Telemetry Daemon (:5135)
+[PASS] [✓] FastAPI Backend (:5184)
+[PASS] [✓] React/Vite Dashboard (:5183)
+[PASS] [✓] Telemetry Daemon (:5185)
 [PASS] [✓] Investigation Engine API (/api/investigation/search)
 [PASS] [✓] Security Guardian AST & SEC001 Regex Engine
 [PASS] [✓] Project Registration & Persistence API (/api/projects)
@@ -37,7 +37,7 @@ node scripts/seminar-doctor.mjs
 pnpm dev:seminar
 ```
 
-_Launches the resilient supervisor with PostgreSQL health gate, backend readiness check, live telemetry daemon, and dashboard on `http://localhost:5134` with automated health-recovery._
+_Launches the resilient supervisor with PostgreSQL health gate, backend readiness check, live telemetry daemon, and dashboard on `http://localhost:5183` with automated health-recovery._
 
 ---
 
@@ -45,7 +45,7 @@ _Launches the resilient supervisor with PostgreSQL health gate, backend readines
 
 ### **00:00 — 00:30 | Workspace Home & Live Observation**
 
-- **Action**: Open browser at `http://localhost:5134`.
+- **Action**: Open browser at `http://localhost:5183`.
 - **Narration**:
   > _"Judges, VibePulse is a real-time developer observability and security intelligence platform. It runs quietly in the background alongside the developer, observing file mutations, active sessions, and security posture in real time."_
 - **Visuals**:
@@ -58,24 +58,26 @@ _Launches the resilient supervisor with PostgreSQL health gate, backend readines
 
 - **Action**: In an observed project (e.g. `D:\VibePulse-Demo`), edit or touch a source file:
   ```python
-  # In auth.py
-  def verify_jwt_token(token: str) -> bool:
-      return len(token) > 0
+  # main.py
+  def calculate_tax(amount: float) -> float:
+      return amount * 0.18
   ```
 - **Narration**:
-  > _"As I write normal application logic, VibePulse ingests file modification events over WebSocket within milliseconds, tracking session timelines without any cloud dependency."_
+  > _"As we write clean, normal code, VibePulse records continuous, low-overhead session activity in PostgreSQL without triggering false-positive alerts."_
 - **Visuals**:
-  - Show the event counter increase in real time on the dashboard without refreshing the browser.
+  - Dashboard **Live Event Stream** receives the file edit event.
+  - **Overall Health Score** stays high (`100/100`).
 
 ---
 
-### **01:00 — 02:00 | Security Incident: Accidental Credential Exposure**
+### **01:00 — 02:00 | Real-Time Security Guardian Trigger**
 
-- **Action**: In `config/settings.py` or `src/database.py`, insert a demo secret:
+- **Action**: Introduce a hardcoded API credential into a settings file:
   ```python
-  # config/settings.py
-  DATABASE_URL = "postgresql://admin:secret@db.internal:5432/production"
-  API_KEY = "VIBEPULSE_DEMO_FAKE_KEY_123456"
+  # settings.py
+  DATABASE_URI = "postgresql://user:pass@localhost:5432/app"
+  API_KEY = "sk_live_99887766554433221100aabb"
+  DEBUG = True
   ```
 - **Narration**:
   > _"Now imagine a developer accidentally pastes a live API token or production database credential into configuration. Watch what happens."_
@@ -87,7 +89,7 @@ _Launches the resilient supervisor with PostgreSQL health gate, backend readines
 
 ### **02:00 — 03:00 | Investigation Command Center & Dynamic Evidence Graph**
 
-- **Action**: Navigate to `http://localhost:5134/investigation`.
+- **Action**: Navigate to `http://localhost:5183/investigation`.
 - **Narration**:
   > _"Instead of an ordinary flat log list, VibePulse reconstructs the complete incident as a causal Directed Acyclic Graph."_
 - **Visuals**:
@@ -129,7 +131,7 @@ _Launches the resilient supervisor with PostgreSQL health gate, backend readines
   1. Click **Mark as Reviewed** (badge transitions to green `✓ Reviewed`).
   2. Kill the terminal process running the stack (Ctrl+C).
   3. Start again with `pnpm dev:seminar`.
-  4. Refresh `http://localhost:5134/investigation` and `http://localhost:5134/history`.
+  4. Refresh `http://localhost:5183/investigation` and `http://localhost:5183/history`.
 - **Narration**:
   > _"If the daemon or entire development environment restarts, PostgreSQL remains the durable source of truth. Previous sessions and security investigations are permanently preserved, and a clean new session begins automatically."_
 - **Visuals**:
@@ -148,18 +150,18 @@ _Launches the resilient supervisor with PostgreSQL health gate, backend readines
 ## Fail-Safe Emergency Recovery Steps
 
 1. **If dashboard shows Disconnected**:
-   - Check if daemon is running on `:5135`:
+   - Check if daemon is running on `:5185`:
      ```bash
-     curl http://localhost:5135/health
+     curl http://localhost:5185/health
      ```
 2. **If backend database connection is interrupted**:
    - Confirm PostgreSQL is active on port 5432:
      ```bash
      node scripts/seminar-doctor.mjs
      ```
-3. **If port 5133, 5134 or 5135 is occupied by an old orphaned process**:
+3. **If port 5184, 5183 or 5185 is occupied by an old orphaned process**:
    - Check and release ports with `pnpm doctor` or:
      ```powershell
-     Get-NetTCPConnection -LocalPort 5133,5134,5135 -ErrorAction SilentlyContinue | Select-Object LocalPort,OwningProcess
+     Get-NetTCPConnection -LocalPort 5184,5183,5185 -ErrorAction SilentlyContinue | Select-Object LocalPort,OwningProcess
      ```
    - Restart cleanly with `pnpm dev:seminar`.

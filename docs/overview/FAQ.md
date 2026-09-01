@@ -20,10 +20,10 @@ VibePulse is neither a time-tracker nor a code generator:
 
 VibePulse uses a dedicated port namespace to prevent conflicts with standard development services:
 
-- **FastAPI Backend (API)**: `http://localhost:5133` (`5133` = VIBE)
-- **FastAPI Interactive Docs**: `http://localhost:5133/docs`
-- **React Dashboard (UI)**: `http://localhost:5134`
-- **Telemetry Daemon**: `http://localhost:5135/health`
+- **FastAPI Backend (API)**: `http://localhost:5184`
+- **FastAPI Interactive Docs**: `http://localhost:5184/docs`
+- **React Dashboard (UI)**: `http://localhost:5183`
+- **Telemetry Daemon**: `http://localhost:5185/health`
 - **PostgreSQL**: `localhost:5432`
 
 ---

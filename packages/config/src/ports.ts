@@ -2,17 +2,17 @@
  * Canonical port definitions and resolution helpers for VibePulse.
  *
  * Dedicated Namespace Mnemonic:
- * - 5133: VibePulse FastAPI API (5133 = VIBE)
- * - 5134: VibePulse Dashboard / Vite
- * - 5135: VibePulse Telemetry Daemon
+ * - 5184: VibePulse FastAPI API
+ * - 5183: VibePulse Dashboard / Vite
+ * - 5185: VibePulse Telemetry Daemon
  */
 
 import { getEnv, parsePort } from "./env";
 
 export const VIBEPULSE_PORTS = {
-  API: 5133,
-  DASHBOARD: 5134,
-  DAEMON: 5135,
+  API: 5184,
+  DASHBOARD: 5183,
+  DAEMON: 5185,
 } as const;
 
 export function getApiPort(): number {

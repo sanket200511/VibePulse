@@ -23,9 +23,9 @@ All automated test suites, end-to-end integration runners, type checkers, linter
 | Component                   | Target / URL               | Port    | Process / Technology                                       |
 | :-------------------------- | :------------------------- | :------ | :--------------------------------------------------------- |
 | **PostgreSQL Ground Truth** | `localhost:5432/vibepulse` | `5432`  | PostgreSQL 18 Server (`D:\Apps Data\PostgreSQL`)           |
-| **FastAPI Backend**         | `http://127.0.0.1:5133`    | `5133`  | Python 3.12.13, FastAPI, SQLAlchemy 2.0 Async, Pydantic v2 |
-| **React / Vite Dashboard**  | `http://localhost:5134`    | `5134`  | Node.js 22, React 18, TanStack Query v5, Tailwind CSS      |
-| **Telemetry Daemon**        | `http://localhost:5135`    | `5135`  | TypeScript, `@parcel/watcher`, Fastify Health Server       |
+| **FastAPI Backend**         | `http://127.0.0.1:5184`    | `5184`  | Python 3.12.13, FastAPI, SQLAlchemy 2.0 Async, Pydantic v2 |
+| **React / Vite Dashboard**  | `http://localhost:5183`    | `5183`  | Node.js 22, React 18, TanStack Query v5, Tailwind CSS      |
+| **Telemetry Daemon**        | `http://localhost:5185`    | `5185`  | TypeScript, `@parcel/watcher`, Fastify Health Server       |
 | **Redis Cache / Cloud**     | Redis Cloud Instance       | `12398` | Managed Redis Cache                                        |
 
 ---

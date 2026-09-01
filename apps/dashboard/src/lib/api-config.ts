@@ -15,7 +15,7 @@ export function getApiBaseUrl(): string {
   // In the browser, use the current origin so requests go through the Vite proxy.
   if (typeof window !== "undefined") return window.location.origin;
   // Fallback for SSR / tests
-  return "http://localhost:5133";
+  return "http://localhost:5184";
 }
 
 export function getWsUrl(path: string): string {
@@ -27,6 +27,6 @@ export function getWsUrl(path: string): string {
   const wsBase =
     typeof window !== "undefined"
       ? `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}`
-      : "ws://localhost:5134";
+      : "ws://localhost:5183";
   return new URL(path, wsBase).toString();
 }

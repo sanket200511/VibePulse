@@ -65,12 +65,12 @@ Deterministic orchestration and retrieval over canonical PostgreSQL telemetry su
 
 ```mermaid
 flowchart TD
-    IDE[Developer Filesystem / IDE] -->|File Events| Daemon[Node.js Observation Daemon :5135]
-    Daemon -->|HTTP POST /events| API[FastAPI Intelligence Engine :5133]
+    IDE[Developer Filesystem / IDE] -->|File Events| Daemon[Node.js Observation Daemon :5185]
+    Daemon -->|HTTP POST /events| API[FastAPI Intelligence Engine :5184]
     API -->|Persist & Query| DB[(PostgreSQL Canonical Ground Truth :5432)]
-    API -->|WebSocket Stream| UI[React / Vite Command Center :5134]
+    API -->|WebSocket Stream| UI[React / Vite Command Center :5183]
 
-    subgraph Intelligence Core [FastAPI Intelligence Engine :5133]
+    subgraph Intelligence Core [FastAPI Intelligence Engine :5184]
         API --> SEC[Security Intelligence 2.0]
         API --> INV[Investigation Engine 3.0]
         API --> RES[Resolution Intelligence]
@@ -93,13 +93,13 @@ flowchart TD
 
 ## 🔌 Dedicated Port Namespace
 
-| Service                      | Dedicated Port | URL Endpoint                   | Description                                          |
-| ---------------------------- | -------------- | ------------------------------ | ---------------------------------------------------- |
-| **FastAPI Backend (API)**    | **`5133`**     | `http://localhost:5133`        | REST & WebSocket intelligence engine (`5133` = VIBE) |
-| **FastAPI Interactive Docs** | **`5133`**     | `http://localhost:5133/docs`   | OpenAPI / Swagger specification                      |
-| **React Dashboard (UI)**     | **`5134`**     | `http://localhost:5134`        | Vite dev server & Command Center UI                  |
-| **Telemetry Daemon**         | **`5135`**     | `http://localhost:5135/health` | Filesystem watcher & health server                   |
-| **PostgreSQL**               | **`5432`**     | `localhost:5432`               | Canonical source of truth                            |
+| Service                      | Dedicated Port | URL Endpoint                   | Description                          |
+| ---------------------------- | -------------- | ------------------------------ | ------------------------------------ |
+| **FastAPI Backend (API)**    | **`5184`**     | `http://localhost:5184`        | REST & WebSocket intelligence engine |
+| **FastAPI Interactive Docs** | **`5184`**     | `http://localhost:5184/docs`   | OpenAPI / Swagger specification      |
+| **React Dashboard (UI)**     | **`5183`**     | `http://localhost:5183`        | Vite dev server & Command Center UI  |
+| **Telemetry Daemon**         | **`5185`**     | `http://localhost:5185/health` | Filesystem watcher & health server   |
+| **PostgreSQL**               | **`5432`**     | `localhost:5432`               | Canonical source of truth            |
 
 ---
 

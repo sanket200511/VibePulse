@@ -12,7 +12,7 @@ import path from "node:path";
 import os from "node:os";
 import crypto from "node:crypto";
 
-const API_BASE = process.env.VIBEPULSE_API_URL || process.env.API_BASE || "http://127.0.0.1:5133";
+const API_BASE = process.env.VIBEPULSE_API_URL || process.env.API_BASE || "http://127.0.0.1:5184";
 
 async function request(method, pathName, body = null) {
   const url = new URL(pathName, API_BASE);
@@ -58,13 +58,14 @@ async function runReconstructibilityAudit() {
   console.log("================================================================");
 
   const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vp-recon-audit-"));
+  let projectId = null;
 
   try {
     const reg = await request("POST", "/api/projects", {
       display_name: "Determinism Verification Project",
       root_path: tmpRoot,
     });
-    const projectId = reg.data.id;
+    projectId = reg.data.id;
     const sessionId = crypto.randomUUID();
 
     // Ingest controlled telemetry

@@ -27,13 +27,13 @@ import { createShutdownHandler } from "./shutdown";
 // Load .env and CLI flags before reading process.env
 loadDaemonEnv();
 
-const PORT = parsePort("VIBEPULSE_DAEMON_PORT", parsePort("DAEMON_PORT", 5135));
+const PORT = parsePort("VIBEPULSE_DAEMON_PORT", parsePort("DAEMON_PORT", 5185));
 
 async function main(): Promise<void> {
   // ── Configuration ─────────────────────────────────────────────────────────
   const config = loadConfig();
   const rawWatchRoot = process.env["WATCH_ROOT"] ?? process.cwd();
-  const apiUrl = getEnv("VIBEPULSE_API_URL") ?? getEnv("API_URL") ?? "http://localhost:5133";
+  const apiUrl = getEnv("VIBEPULSE_API_URL") ?? getEnv("API_URL") ?? "http://localhost:5184";
 
   logger.info("=========================================");
   logger.info("           VibePulse Daemon              ");

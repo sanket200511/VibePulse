@@ -69,7 +69,7 @@ To prevent documentation drift and maintain strict technical accuracy, all repos
 | Document               | Canonical Path                                                                                       | Status    | Audience    | Scope / Description                                                                                        |
 | ---------------------- | ---------------------------------------------------------------------------------------------------- | --------- | ----------- | ---------------------------------------------------------------------------------------------------------- |
 | **Engineering Guide**  | [`docs/development/ENGINEERING.md`](file:///d:/VibeSync/docs/development/ENGINEERING.md)             | `CURRENT` | Developer   | Coding standards, TypeScript/Python conventions, SOLID principles, and git workflows.                      |
-| **Local Development**  | [`docs/development/LOCAL_DEVELOPMENT.md`](file:///d:/VibeSync/docs/development/LOCAL_DEVELOPMENT.md) | `CURRENT` | Developer   | Native local environment setup, dedicated port configuration (`5133`/`5134`/`5135`), and supervisor usage. |
+| **Local Development**  | [`docs/development/LOCAL_DEVELOPMENT.md`](file:///d:/VibeSync/docs/development/LOCAL_DEVELOPMENT.md) | `CURRENT` | Developer   | Native local environment setup, dedicated port configuration (`5184`/`5183`/`5185`), and supervisor usage. |
 | **Installation Guide** | [`docs/development/INSTALLATION.md`](file:///d:/VibeSync/docs/development/INSTALLATION.md)           | `CURRENT` | Developer   | Prerequisites (Node 22, Python 3.12, PostgreSQL 16, pnpm 9), dependencies, and migrations.                 |
 | **Contributing Guide** | [`CONTRIBUTING.md`](file:///d:/VibeSync/CONTRIBUTING.md)                                             | `CURRENT` | Contributor | Open-source contribution rules, pull request guidelines, and issue reporting.                              |
 
@@ -180,9 +180,9 @@ $$\text{OBSERVE} \to \text{DETECT} \to \text{UNDERSTAND} \to \text{INVESTIGATE} 
 ## 🔑 Canonical Invariants Reference
 
 1. **Dedicated Port Namespace**:
-   - `FastAPI Backend API`: `5133` (`5133` = VIBE)
-   - `React / Vite Dashboard`: `5134`
-   - `Telemetry Daemon`: `5135`
+   - `FastAPI Backend API`: `5184`
+   - `React / Vite Dashboard`: `5183`
+   - `Telemetry Daemon`: `5185`
    - `PostgreSQL`: `5432`
    - `Redis`: Cloud
 2. **Ground Truth Invariant**: PostgreSQL is the single canonical source of truth. Zero dual state-machines or in-memory drift.
