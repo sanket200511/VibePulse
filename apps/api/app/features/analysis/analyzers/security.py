@@ -111,6 +111,8 @@ SEC001_ASSIGNMENT_REGEX = re.compile(
             admin_password|root_password|user_password|secret_password|
             auth_password|client_secret|api_secret|app_secret|secret_key|
             api_key|apikey|access_token|auth_token|bearer_token|token|
+            aws_access_key_id|aws_secret_access_key|aws_session_token|
+            access_key_id|secret_access_key|access_key|
             private_key|password|passwd|pwd
         )
         (?P=quote1)?
@@ -159,15 +161,15 @@ def redact_assignment(before_str: str) -> str:
 def redact_sensitive_line(line: str) -> str:
     """Scrub sensitive patterns from any line string."""
     line = re.sub(
-        r"(api[_-]?key|secret|token|password|passwd|auth[_-]?token)\s*[:=]\s*['\"][^'\"]+['\"]",
+        r"(api[_-]?key|secret|token|password|passwd|auth[_-]?token|aws[_-]?(?:access[_-]?key[_-]?id|secret[_-]?access[_-]?key)?)\s*[:=]\s*['\"][^'\"]+['\"]",
         r'\1 = "[REDACTED]"',
         line,
         flags=re.IGNORECASE,
     )
     line = re.sub(r"sk-[a-zA-Z0-9_-]{20,}", "sk-[REDACTED]", line)
     line = re.sub(
-        r"=['\"][A-Za-z0-9/+=]{16,40}['\"]",
-        '="[REDACTED]"',
+        r"\s*=\s*['\"][A-Za-z0-9/+=\-_]{16,64}['\"]",
+        ' = "[REDACTED]"',
         line,
         flags=re.IGNORECASE,
     )
@@ -276,7 +278,7 @@ class SecurityAnalyzer:
             description="AWS credentials should not be hardcoded in source files.",
             severity="HIGH",
             pattern=re.compile(
-                r"(?i)(?:aws_access_key_id|aws_secret_access_key)\s*=\s*['\"][A-Za-z0-9/+=]{16,40}['\"]"
+                r"(?i)(?:aws_access_key_id|aws_secret_access_key)\s*=\s*['\"][A-Za-z0-9/+=_\-]{16,64}['\"]"
             ),
             languages=("python", "typescript", "javascript", "all"),
             category="Secrets",
@@ -589,13 +591,21 @@ class SecurityAnalyzer:
                                 )
                             elif "aws" in matched_str.lower():
                                 redacted = re.sub(
-                                    r"=['\"][A-Za-z0-9/+=]{16,40}['\"]",
-                                    '="[REDACTED]"',
+                                    r"\s*=\s*['\"][^'\"]+['\"]",
+                                    ' = "[REDACTED]"',
                                     line_stripped,
                                     flags=re.IGNORECASE,
                                 )
                             else:
-                                redacted = "[REDACTED_SECRET]"
+                                redacted = redact_sensitive_line(line_stripped)
+                                if redacted == line_stripped:
+                                    redacted = re.sub(
+                                        r"\s*[:=]\s*['\"][^'\"]+['\"]",
+                                        ' = "[REDACTED]"',
+                                        line_stripped,
+                                    )
+                                    if redacted == line_stripped:
+                                        redacted = "[REDACTED_SECRET]"
                         else:
                             redacted = redact_sensitive_line(line_stripped)
                             if len(redacted) > 120:

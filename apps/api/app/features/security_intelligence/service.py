@@ -251,6 +251,10 @@ async def compute_security_intelligence(
                 import re
 
                 redacted_ev = re.sub(r"sk-[a-zA-Z0-9_-]{20,}", "sk-[REDACTED]", redacted_ev)
+            elif "aws" in redacted_ev.lower():
+                import re
+
+                redacted_ev = re.sub(r"\s*=\s*['\"][^'\"]+['\"]", ' = "[REDACTED]"', redacted_ev)
 
             findings_list.append(
                 SecurityFinding(

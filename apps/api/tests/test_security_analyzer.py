@@ -233,3 +233,43 @@ async def test_security_pipeline_e2e_persistence(client, test_session_factory, t
     assert sec["findings"]["findings"][0]["rule_id"] == "SEC001"
     assert sec["findings"]["findings"][0]["severity"] == "HIGH"
     assert sec["findings"]["findings"][0]["title"] == "Password / Credential Exposure"
+
+
+# ── TEST 11: AWS Access Key and Secret Key with Underscores Detection ──────────
+def test_aws_credentials_and_debug_detection(tmp_path):
+    settings_file = tmp_path / "settings.py"
+    settings_file.write_text(
+        '# Test config\n'
+        'AWS_ACCESS_KEY_ID = "AKIADEMO000000000000"\n'
+        'AWS_SECRET_ACCESS_KEY = "DEMO_SECRET_KEY_NOT_REAL"\n'
+        'DEBUG = True\n',
+        encoding="utf-8",
+    )
+
+    analyzer = SecurityAnalyzer()
+    res = analyzer.analyze(_create_event(settings_file, ".py", "python"), _create_context())
+    assert res is not None
+
+    findings = res.findings["findings"]
+    # Must detect both AWS credentials and DEBUG=True
+    rule_ids = [f["rule_id"] for f in findings]
+    assert "AWS_SECRET" in rule_ids or "SEC001" in rule_ids
+    assert "DEBUG_TRUE" in rule_ids
+
+    # Verify zero leakage of raw secrets in findings
+    serialized = json.dumps(res.findings)
+    assert "AKIADEMO000000000000" not in serialized
+    assert "DEMO_SECRET_KEY_NOT_REAL" not in serialized
+    assert "[REDACTED]" in serialized
+
+    # Check evidence values for AWS findings
+    aws_findings = [f for f in findings if f["rule_id"] in ("AWS_SECRET", "SEC001")]
+    assert len(aws_findings) >= 2
+    for af in aws_findings:
+        assert af["severity"] == "HIGH"
+        assert "[REDACTED]" in af["evidence"]
+        assert "[REDACTED]" in af["redacted_evidence"]
+
+    debug_findings = [f for f in findings if f["rule_id"] == "DEBUG_TRUE"]
+    assert len(debug_findings) == 1
+    assert debug_findings[0]["severity"] == "MEDIUM"
