@@ -19,6 +19,7 @@ import {
   Minimize,
   Compass,
   Hand,
+  Filter,
 } from "lucide-react";
 import type {
   KnowledgeGraphNode,
@@ -46,6 +47,32 @@ interface NodePosition {
   y: number;
 }
 
+export type NodeCategory = "all" | "context" | "code" | "findings" | "impact";
+
+export function getNodeFilterCategory(
+  type: KnowledgeGraphNodeType,
+): "context" | "code" | "findings" | "impact" {
+  switch (type) {
+    case "Subsystem":
+    case "Technology":
+    case "Framework":
+      return "context";
+    case "File":
+    case "DevelopmentEvent":
+      return "code";
+    case "SecurityFinding":
+    case "RootCause":
+      return "findings";
+    case "Incident":
+    case "HealthDimension":
+    case "Prediction":
+    case "Resolution":
+    case "Project":
+    default:
+      return "impact";
+  }
+}
+
 export function CorrelationGraphCanvas({
   nodes,
   edges,
@@ -71,6 +98,29 @@ export function CorrelationGraphCanvas({
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [activeCategoryFilter, setActiveCategoryFilter] = useState<NodeCategory>("all");
+
+  // Visual theme matching traversal mode
+  const traversalTheme = useMemo(() => {
+    if (traversalMode === "ROOT_CAUSE") {
+      return {
+        color: "#f43f5e",
+        badgeBg: "bg-rose-950/90",
+        badgeBorder: "border-rose-500/50",
+        badgeText: "text-rose-200",
+        pingBg: "bg-rose-400",
+        markerId: "url(#arrow-traversal-rc)",
+      };
+    }
+    return {
+      color: "#38bdf8",
+      badgeBg: "bg-indigo-950/90",
+      badgeBorder: "border-indigo-500/50",
+      badgeText: "text-indigo-200",
+      pingBg: "bg-indigo-400",
+      markerId: "url(#arrow-traversal-impact)",
+    };
+  }, [traversalMode]);
 
   // Multi-touch pinch zoom state
   const touchStateRef = useRef<{
@@ -133,9 +183,31 @@ export function CorrelationGraphCanvas({
     return reached;
   }, [nodes, edges, activeAnchorId, focusDepth, traversalSteps]);
 
-  const visibleNodes = useMemo(() => {
-    return nodes.filter((n) => visibleNeighborhoodIds.has(n.node_id));
+  // Counts for each category in current neighborhood
+  const categoryCounts = useMemo(() => {
+    const counts = { all: 0, context: 0, code: 0, findings: 0, impact: 0 };
+    nodes.forEach((n) => {
+      if (visibleNeighborhoodIds.has(n.node_id)) {
+        counts.all++;
+        const cat = getNodeFilterCategory(n.node_type);
+        counts[cat]++;
+      }
+    });
+    return counts;
   }, [nodes, visibleNeighborhoodIds]);
+
+  const visibleNodes = useMemo(() => {
+    let list = nodes.filter((n) => visibleNeighborhoodIds.has(n.node_id));
+    if (activeCategoryFilter !== "all") {
+      list = list.filter(
+        (n) =>
+          getNodeFilterCategory(n.node_type) === activeCategoryFilter ||
+          n.node_id === activeAnchorId ||
+          traversalSteps.some((s) => s.node_id === n.node_id),
+      );
+    }
+    return list;
+  }, [nodes, visibleNeighborhoodIds, activeCategoryFilter, activeAnchorId, traversalSteps]);
 
   const visibleEdges = useMemo(() => {
     return edges.filter(
@@ -688,13 +760,53 @@ export function CorrelationGraphCanvas({
             </button>
           )}
         </div>
+
+        {/* Declutter / Category Filter Chips */}
+        <div className="flex items-center gap-1 rounded-xl border border-gray-800 bg-gray-900/90 p-1 backdrop-blur-md shadow-lg text-[11px] font-mono">
+          <div className="flex items-center gap-1 px-1.5 text-gray-500 font-semibold">
+            <Filter className="h-3 w-3" />
+            <span className="hidden sm:inline">Layer:</span>
+          </div>
+          {(
+            [
+              { id: "all", label: "All", count: categoryCounts.all },
+              { id: "findings", label: "Security", count: categoryCounts.findings },
+              { id: "impact", label: "Impact", count: categoryCounts.impact },
+              { id: "code", label: "Code", count: categoryCounts.code },
+              { id: "context", label: "Arch", count: categoryCounts.context },
+            ] as const
+          ).map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setActiveCategoryFilter(cat.id)}
+              className={`rounded-lg px-2 py-1 transition flex items-center gap-1 ${
+                activeCategoryFilter === cat.id
+                  ? "bg-indigo-600/80 text-white font-semibold shadow"
+                  : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+              }`}
+            >
+              <span>{cat.label}</span>
+              <span
+                className={`text-[9px] rounded-full px-1 py-0.2 ${
+                  activeCategoryFilter === cat.id
+                    ? "bg-indigo-800 text-indigo-100"
+                    : "bg-gray-800 text-gray-400"
+                }`}
+              >
+                {cat.count}
+              </span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Traversal Mode Active Banner */}
       {traversalMode && (
-        <div className="absolute right-4 top-4 z-20 flex items-center gap-2 rounded-xl border border-indigo-500/50 bg-indigo-950/90 px-3.5 py-1.5 backdrop-blur-md shadow-lg">
-          <div className="h-2 w-2 animate-ping rounded-full bg-indigo-400" />
-          <span className="text-xs font-semibold text-indigo-200 font-mono">
+        <div
+          className={`absolute right-4 top-4 z-20 flex items-center gap-2 rounded-xl border ${traversalTheme.badgeBorder} ${traversalTheme.badgeBg} px-3.5 py-1.5 backdrop-blur-md shadow-lg`}
+        >
+          <div className={`h-2 w-2 animate-ping rounded-full ${traversalTheme.pingBg}`} />
+          <span className={`text-xs font-semibold ${traversalTheme.badgeText} font-mono`}>
             {traversalMode === "ROOT_CAUSE" ? "Root Cause Causal Walk" : "Impact Downstream Walk"} (
             {traversalSteps.length} steps)
           </span>
@@ -762,7 +874,7 @@ export function CorrelationGraphCanvas({
               <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#818cf8" />
             </marker>
             <marker
-              id="arrow-traversal"
+              id="arrow-traversal-impact"
               viewBox="0 0 10 10"
               refX="16"
               refY="5"
@@ -771,6 +883,17 @@ export function CorrelationGraphCanvas({
               orient="auto-start-reverse"
             >
               <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#38bdf8" />
+            </marker>
+            <marker
+              id="arrow-traversal-rc"
+              viewBox="0 0 10 10"
+              refX="16"
+              refY="5"
+              markerWidth="6"
+              markerHeight="6"
+              orient="auto-start-reverse"
+            >
+              <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#f43f5e" />
             </marker>
             <filter id="anchor-glow" x="-50%" y="-50%" width="200%" height="200%">
               <feDropShadow dx="0" dy="0" stdDeviation="6" floodColor="#818cf8" floodOpacity="0.7" />
@@ -824,7 +947,7 @@ export function CorrelationGraphCanvas({
                     fill="none"
                     stroke={
                       isTraversalEdge
-                        ? "#38bdf8"
+                        ? traversalTheme.color
                         : isHighlighted
                           ? "#818cf8"
                           : isObserved
@@ -835,7 +958,7 @@ export function CorrelationGraphCanvas({
                     strokeDasharray={isObserved ? undefined : "4 3"}
                     markerEnd={
                       isTraversalEdge
-                        ? "url(#arrow-traversal)"
+                        ? traversalTheme.markerId
                         : isHighlighted
                           ? "url(#arrow-active)"
                           : "url(#arrow-subtle)"
@@ -860,7 +983,7 @@ export function CorrelationGraphCanvas({
                         height="18"
                         rx="9"
                         fill="#090d16"
-                        stroke={isTraversalEdge ? "#38bdf8" : "#818cf8"}
+                        stroke={isTraversalEdge ? traversalTheme.color : "#818cf8"}
                         strokeWidth="1"
                       />
                       <text
@@ -929,7 +1052,7 @@ export function CorrelationGraphCanvas({
                     <circle
                       r="22"
                       fill="none"
-                      stroke={isTraversalNode ? "#38bdf8" : "#818cf8"}
+                      stroke={isTraversalNode ? traversalTheme.color : "#818cf8"}
                       strokeWidth="2.5"
                       strokeDasharray="4 2"
                       filter="url(#anchor-glow)"
@@ -945,7 +1068,7 @@ export function CorrelationGraphCanvas({
                     fill={isDimmed ? "#090d16" : isNodeSelected ? "#1e1b4b" : "#0f172a"}
                     stroke={
                       isTraversalNode
-                        ? "#38bdf8"
+                        ? traversalTheme.color
                         : isNodeSelected
                           ? "#818cf8"
                           : isHovered
@@ -958,7 +1081,7 @@ export function CorrelationGraphCanvas({
 
                   {isTraversalNode && (
                     <g transform="translate(13, -13)">
-                      <circle r="7.5" fill="#38bdf8" />
+                      <circle r="7.5" fill={traversalTheme.color} />
                       <text
                         x="0"
                         y="2.5"
