@@ -36,6 +36,12 @@ export async function checkApiHealth(apiUrl: string): Promise<boolean> {
   }
 }
 
+function getBasenameCrossPlatform(p: string): string {
+  const normalized = p.replace(/\\/g, "/");
+  const segments = normalized.split("/").filter(Boolean);
+  return segments[segments.length - 1] || path.basename(p) || "Project";
+}
+
 /**
  * Registers or ensures a project exists in the DepRadar backend.
  * Idempotent: returns existing project record if already registered.
@@ -46,7 +52,7 @@ export async function ensureProject(
   displayName?: string,
 ): Promise<RegisteredProject> {
   const projectsEndpoint = new URL("/api/projects", apiUrl).toString();
-  const name = displayName || path.basename(rootPath) || "Project";
+  const name = displayName || getBasenameCrossPlatform(rootPath);
 
   const response = await fetch(projectsEndpoint, {
     method: "POST",
