@@ -8,8 +8,8 @@ REST:
   GET  /api/projects/{project_id}/knowledge-graph/edges/{rel_id}/explain — explain relationship
   GET  /api/projects/{project_id}/knowledge-graph/trace/root-cause    — trace root cause walk
   GET  /api/projects/{project_id}/knowledge-graph/trace/impact        — trace impact walk
-  GET  /api/projects/{project_id}/knowledge-graph/timeline             — chronological event timeline
-  GET  /api/projects/{project_id}/knowledge-graph/before-after         — before/after remediation comparison
+  GET  /api/projects/{project_id}/knowledge-graph/timeline      — chronological event timeline
+  GET  /api/projects/{project_id}/knowledge-graph/before-after   — before/after remediation compare
   GET  /api/projects/{project_id}/knowledge-graph/files/{path}         — file intelligence
   GET  /api/projects/{project_id}/knowledge-graph/subsystems/{sub}     — subsystem intelligence
   GET  /api/projects/{project_id}/knowledge-graph/incidents/{inc}      — incident relationships

@@ -7,7 +7,8 @@ PostgreSQL historical tables (development_events, sessions, event_analyses,
 incident_review_states, incident_review_history, project_contexts).
 
 Traceability Chain:
-OBSERVED EVENT -> FINDING -> INCIDENT -> ROOT CAUSE -> HEALTH IMPACT -> RESOLUTION -> PREDICTION -> PROJECT MEMORY
+OBSERVED EVENT -> FINDING -> INCIDENT -> ROOT CAUSE -> HEALTH IMPACT
+               -> RESOLUTION -> PREDICTION -> PROJECT MEMORY
 
 Invariants:
 - PostgreSQL telemetry remains the ONLY canonical source of truth.
@@ -56,8 +57,7 @@ from app.features.projects.models import Project
 from app.features.security_intelligence.service import (
     compute_security_intelligence,
 )
-from app.features.sessions.models import Session
-from sqlalchemy import or_, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = get_logger(__name__)
@@ -156,20 +156,7 @@ async def build_project_knowledge_graph(
     events = ev_res.scalars().all()
 
     # 2. Fetch sessions
-    sess_stmt = (
-        select(Session)
-        .where(
-            or_(
-                Session.project_id == project_id,
-                Session.project_root == project.root_path,
-            )
-        )
-        .order_by(Session.started_at.asc())
-    )
-    sess_res = await db.execute(sess_stmt)
-    sessions = sess_res.scalars().all()
-
-    # 3. Fetch security intelligence
+    # 2. Fetch security intelligence
     sec_intel = await compute_security_intelligence(db, project_id)
 
     # 4. Fetch incident review states & history
@@ -294,7 +281,10 @@ async def build_project_knowledge_graph(
             subsys_node_id,
             "CONTAINS",
             f"Project contains {subsys_name} subsystem",
-            reason=f"Subsystem {subsys_name} is an active architectural boundary in {project.display_name}",
+            reason=(
+                f"Subsystem {subsys_name} is an active architectural boundary "
+                f"in {project.display_name}"
+            ),
             provenance="OBSERVED",
         )
 
@@ -318,7 +308,10 @@ async def build_project_knowledge_graph(
                 proj_node_id,
                 "USED_BY",
                 f"{lang} is used by project",
-                reason=f"Technology {lang} is detected across {count} project files in PostgreSQL telemetry",
+                reason=(
+                    f"Technology {lang} is detected across {count} project files in "
+                    "PostgreSQL telemetry"
+                ),
                 provenance="OBSERVED",
             )
 
@@ -394,7 +387,10 @@ async def build_project_knowledge_graph(
                     f_node_id,
                     "MODIFIED",
                     f"Event {ev.event_type} modified {os.path.basename(p_clean)}",
-                    reason=f"Telemetry recorded {ev.event_type} on {p_clean} at {ev.timestamp.isoformat() if ev.timestamp else ''}",
+                    reason=(
+                        f"Telemetry recorded {ev.event_type} on {p_clean} at "
+                        f"{ev.timestamp.isoformat() if ev.timestamp else ''}"
+                    ),
                     evidence=[str(ev.id)],
                     provenance="OBSERVED",
                 )
@@ -437,7 +433,10 @@ async def build_project_knowledge_graph(
                 finding_node_id,
                 "CONTAINS_FINDING",
                 f"Security finding {finding.rule_id} detected in {os.path.basename(file_norm)}",
-                reason=f"AST Security Guardian detected rule {finding.rule_id} violation ({finding.title}) in {file_norm} at line {finding.line_number}",
+                reason=(
+                    f"AST Security Guardian detected rule {finding.rule_id} violation "
+                    f"({finding.title}) in {file_norm} at line {finding.line_number}"
+                ),
                 evidence=[finding.finding_id],
                 provenance="OBSERVED",
                 metadata={"risk_contribution": finding.risk_contribution},
@@ -480,14 +479,18 @@ async def build_project_knowledge_graph(
                 subsys_node_id,
                 "AFFECTS",
                 f"Incident {inc.incident_id} affects {subsys} subsystem",
-                reason=f"Correlated incident {inc.incident_id} poses risk impact to {subsys} architectural boundary",
+                reason=(
+                    f"Correlated incident {inc.incident_id} poses risk impact to "
+                    f"{subsys} architectural boundary"
+                ),
                 evidence=[inc.incident_id],
                 provenance="OBSERVED",
             )
 
         # ── ROOT CAUSE NODE ──
         rc_node_id = f"rc-{inc.incident_id}"
-        primary_cause = f"Security vulnerability in {', '.join(os.path.basename(f) for f in inc.affected_files)}"
+        aff_basenames = ", ".join(os.path.basename(f) for f in inc.affected_files)
+        primary_cause = f"Security vulnerability in {aff_basenames}"
         add_node(
             KnowledgeGraphNode(
                 node_id=rc_node_id,
@@ -509,7 +512,10 @@ async def build_project_knowledge_graph(
             inc_node_id,
             "CAUSED",
             f"Root cause initiated Incident {inc.incident_id}",
-            reason=f"Underlying AST rule breaches in {', '.join(inc.affected_files)} triggered security incident {inc.incident_id}",
+            reason=(
+                f"Underlying AST rule breaches in {', '.join(inc.affected_files)} "
+                f"triggered security incident {inc.incident_id}"
+            ),
             evidence=[inc.incident_id],
             provenance="OBSERVED",
         )
@@ -519,12 +525,16 @@ async def build_project_knowledge_graph(
             if finding.file_path in inc.affected_files:
                 f_node_id = f"sec-{finding.finding_id}"
                 if f_node_id in nodes_dict:
+                    f_base = os.path.basename(finding.file_path)
                     add_edge(
                         f_node_id,
                         rc_node_id,
                         "CONTRIBUTED_TO",
                         f"Rule {finding.rule_id} contributed to Root Cause",
-                        reason=f"Violation of {finding.rule_id} in {os.path.basename(finding.file_path)} provided causal evidence for root cause",
+                        reason=(
+                            f"Violation of {finding.rule_id} in {f_base} "
+                            "provided causal evidence for root cause"
+                        ),
                         evidence=[finding.finding_id, inc.incident_id],
                         provenance="OBSERVED",
                     )
@@ -532,8 +542,15 @@ async def build_project_knowledge_graph(
                         f_node_id,
                         inc_node_id,
                         "CONTRIBUTED_TO",
-                        f"Rule {finding.rule_id} contributed +{finding.risk_contribution} risk to {inc.incident_id}",
-                        reason=f"Finding {finding.rule_id} contributed +{finding.risk_contribution} risk score points to incident {inc.incident_id}",
+                        (
+                            f"Rule {finding.rule_id} contributed "
+                            f"+{finding.risk_contribution} risk to {inc.incident_id}"
+                        ),
+                        reason=(
+                            f"Finding {finding.rule_id} contributed "
+                            f"+{finding.risk_contribution} risk score points "
+                            f"to incident {inc.incident_id}"
+                        ),
                         evidence=[finding.finding_id, inc.incident_id],
                         provenance="OBSERVED",
                     )
@@ -570,7 +587,10 @@ async def build_project_knowledge_graph(
                 res_node_id,
                 "RESOLVED_BY",
                 f"Incident {hist.incident_id} transitioned to {hist.new_status}",
-                reason=f"Incident review status transitioned from {hist.previous_status} to {hist.new_status} by reviewer '{hist.reviewer}'",
+                reason=(
+                    f"Incident review status transitioned from {hist.previous_status} "
+                    f"to {hist.new_status} by reviewer '{hist.reviewer}'"
+                ),
                 evidence=[str(hist.id)],
                 provenance="OBSERVED",
             )
@@ -596,7 +616,10 @@ async def build_project_knowledge_graph(
                 res_node_id,
                 "INVESTIGATED_BY",
                 f"Reviewed by {hist.reviewer}",
-                reason=f"Actor '{hist.reviewer}' signed off on transition with resolution note: '{clean_note[:80]}'",
+                reason=(
+                    f"Actor '{hist.reviewer}' signed off on transition with "
+                    f"resolution note: '{clean_note[:80]}'"
+                ),
                 evidence=[str(hist.id)],
                 provenance="OBSERVED",
             )
@@ -627,7 +650,10 @@ async def build_project_knowledge_graph(
             proj_node_id,
             "CONTRIBUTES_TO",
             f"{dim_label} ({score}/100) contributes to overall project health",
-            reason=f"{dim_label} contributes score {score}/100 toward composite project health ({health.overall_health_score}/100)",
+            reason=(
+                f"{dim_label} contributes score {score}/100 toward composite "
+                f"project health ({health.overall_health_score}/100)"
+            ),
             provenance="INFERRED",
         )
 
@@ -641,7 +667,11 @@ async def build_project_knowledge_graph(
                         dim_node_id,
                         "AFFECTS",
                         f"Incident {inc.incident_id} affects {dim_label}",
-                        reason=f"Active security incident {inc.incident_id} (severity: {inc.severity}, risk: {inc.risk_score}) degrades {dim_label}",
+                        reason=(
+                            f"Active security incident {inc.incident_id} "
+                            f"(severity: {inc.severity}, risk: {inc.risk_score}) "
+                            f"degrades {dim_label}"
+                        ),
                         evidence=[inc.incident_id],
                         provenance="OBSERVED",
                     )
@@ -677,7 +707,9 @@ async def build_project_knowledge_graph(
                 subsys_node_id,
                 "SUPPORTS",
                 f"Forecast predicts risk in {subsys} ({pred.evidence_strength} evidence strength)",
-                reason=f"Predictive telemetry trends indicate risk escalation in {subsys} subsystem",
+                reason=(
+                    f"Predictive telemetry trends indicate risk escalation in {subsys} subsystem"
+                ),
                 evidence=[pred.prediction_id],
                 provenance="INFERRED",
             )
@@ -687,7 +719,7 @@ async def build_project_knowledge_graph(
             pred_node_id,
             "health-predictive",
             "CONTRIBUTES_TO",
-            f"Prediction contributes to Predictive Health",
+            "Prediction contributes to Predictive Health",
             reason=f"Forecast signal '{pred.title}' informs predictive health score",
             evidence=[pred.prediction_id],
             provenance="INFERRED",
@@ -703,7 +735,10 @@ async def build_project_knowledge_graph(
                     pred_node_id,
                     "PREDICTED_AS",
                     f"Activity in {os.path.basename(f_path)} supports risk prediction",
-                    reason=f"Change velocity and AST density in {clean_fp} ground the forecast prediction",
+                    reason=(
+                        f"Change velocity and AST density in {clean_fp} ground "
+                        "the forecast prediction"
+                    ),
                     evidence=[pred.prediction_id],
                     provenance="INFERRED",
                 )
@@ -867,14 +902,18 @@ async def trace_root_cause(
             subsystem=current_node.subsystem,
             relationship_type=None,
             direction="START",
-            explanation=f"Starting root-cause analysis from {current_node.node_type} '{current_node.label}'",
+            explanation=(
+                f"Starting root-cause analysis from {current_node.node_type} "
+                f"'{current_node.label}'"
+            ),
             metadata=current_node.metadata,
         )
     )
     visited.add(current_node.node_id)
 
     # Backward traversal hierarchy:
-    # Project -> HealthDimension -> Incident -> RootCause -> SecurityFinding -> File -> DevelopmentEvent
+    # Project -> HealthDimension -> Incident -> RootCause
+    #         -> SecurityFinding -> File -> DevelopmentEvent
     while len(steps) < 10:
         step_idx += 1
         # Find inbound edges pointing to current_node
@@ -886,7 +925,8 @@ async def trace_root_cause(
                 e
                 for e in graph.edges
                 if e.source_node_id == current_node.node_id
-                and e.relationship_type in ("CAUSED", "CONTRIBUTED_TO", "MODIFIED", "CONTAINS_FINDING")
+                and e.relationship_type
+                in ("CAUSED", "CONTRIBUTED_TO", "MODIFIED", "CONTAINS_FINDING")
             ]
 
         next_edge = None
@@ -950,7 +990,10 @@ async def trace_root_cause(
         starting_label=start_node.label,
         target_node_id=steps[-1].node_id if len(steps) > 1 else None,
         steps=steps,
-        path_summary=f"Traced root cause path across {len(steps)} verified graph entities to '{steps[-1].label}'",
+        path_summary=(
+            f"Traced root cause path across {len(steps)} verified graph entities "
+            f"to '{steps[-1].label}'"
+        ),
         is_complete=is_terminal,
         stopping_reason=(
             "Reached origin telemetry event in PostgreSQL."
@@ -1004,14 +1047,18 @@ async def trace_impact(
             subsystem=current_node.subsystem,
             relationship_type=None,
             direction="START",
-            explanation=f"Starting impact analysis from {current_node.node_type} '{current_node.label}'",
+            explanation=(
+                f"Starting impact analysis from {current_node.node_type} "
+                f"'{current_node.label}'"
+            ),
             metadata=current_node.metadata,
         )
     )
     visited.add(current_node.node_id)
 
     # Forward traversal hierarchy:
-    # DevelopmentEvent -> File -> SecurityFinding -> RootCause -> Incident -> HealthDimension -> Project -> Prediction
+    # DevelopmentEvent -> File -> SecurityFinding -> RootCause -> Incident
+    #                  -> HealthDimension -> Project -> Prediction
     preferred_types = [
         "File",
         "SecurityFinding",
@@ -1051,7 +1098,9 @@ async def trace_impact(
                 subsystem=next_candidate.subsystem,
                 relationship_type=next_edge.relationship_type if next_edge else "AFFECTS",
                 direction="FORWARD",
-                explanation=next_edge.reason if next_edge else f"Propagates impact to {next_candidate.label}",
+                explanation=next_edge.reason
+                if next_edge
+                else f"Propagates impact to {next_candidate.label}",
                 evidence=next_edge.evidence_references if next_edge else [],
                 metadata=next_candidate.metadata,
             )
@@ -1069,7 +1118,10 @@ async def trace_impact(
         starting_label=start_node.label,
         target_node_id=steps[-1].node_id if len(steps) > 1 else None,
         steps=steps,
-        path_summary=f"Traced downstream impact path across {len(steps)} verified graph entities to '{steps[-1].label}'",
+        path_summary=(
+            f"Traced downstream impact path across {len(steps)} verified "
+            f"graph entities to '{steps[-1].label}'"
+        ),
         is_complete=len(steps) > 1,
         stopping_reason="Reached terminal impact boundary (Project Health / Prediction).",
         affected_subsystems=affected_subs,
@@ -1206,9 +1258,7 @@ async def get_before_after_comparison(
         before_nodes.append(node_copy)
 
     before_edges = [
-        e
-        for e in graph.edges
-        if e.relationship_type not in ("RESOLVED_BY", "INVESTIGATED_BY")
+        e for e in graph.edges if e.relationship_type not in ("RESOLVED_BY", "INVESTIGATED_BY")
     ]
 
     return BeforeAfterComparisonResponse(
@@ -1218,8 +1268,17 @@ async def get_before_after_comparison(
         after_nodes=after_nodes,
         after_edges=after_edges,
         resolved_incidents_count=len(resolved_inc_ids),
-        resolved_findings_count=len([n for n in graph.nodes if n.node_type == "SecurityFinding" and n.metadata.get("status") == "RESOLVED"]),
-        remediation_summary=f"Remediated {len(resolved_inc_ids)} incidents with verified resolution audit trails in PostgreSQL.",
+        resolved_findings_count=len(
+            [
+                n
+                for n in graph.nodes
+                if n.node_type == "SecurityFinding" and n.metadata.get("status") == "RESOLVED"
+            ]
+        ),
+        remediation_summary=(
+            f"Remediated {len(resolved_inc_ids)} incidents with verified "
+            "resolution audit trails in PostgreSQL."
+        ),
     )
 
 
