@@ -27,14 +27,14 @@ describe("getGreeting", () => {
   });
 
   it("names the project when one is known and no session is active", () => {
-    expect(getGreeting(new Date("2026-07-07T08:00:00"), false, "vibepulse-api").message).toBe(
-      "Here's where you left off in vibepulse-api.",
+    expect(getGreeting(new Date("2026-07-07T08:00:00"), false, "depradar-api").message).toBe(
+      "Here's where you left off in depradar-api.",
     );
   });
 
   it("names the project when one is known and a session is active", () => {
-    expect(getGreeting(new Date("2026-07-07T08:00:00"), true, "vibepulse-api").message).toBe(
-      "You have a session in progress on vibepulse-api.",
+    expect(getGreeting(new Date("2026-07-07T08:00:00"), true, "depradar-api").message).toBe(
+      "You have a session in progress on depradar-api.",
     );
   });
 });

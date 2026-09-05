@@ -52,7 +52,7 @@ def test_copilot_query_classification_intents():
         ("How was this incident resolved?", "RESOLUTION"),
         ("What do we know about this project?", "PROJECT_OVERVIEW"),
         ("Generate an AI handoff for this project.", "AI_HANDOFF"),
-        ("Why does VibePulse believe this score?", "EVIDENCE"),
+        ("Why does DepRadar believe this score?", "EVIDENCE"),
         # Out-of-scope queries
         ("What is Bitcoin's price tomorrow?", "UNKNOWN"),
         ("What will the weather be tomorrow?", "UNKNOWN"),

@@ -36,7 +36,7 @@ describe("WorkspaceHomePage with Demo Mode Enabled", () => {
   it("renders the demo mode banner and workspace header", () => {
     renderHomePage();
 
-    expect(screen.getByText(/VibePulse Engineering Observability Platform/i)).toBeInTheDocument();
+    expect(screen.getByText(/DepRadar Engineering Observability Platform/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Workspace: VibeSync/i })).toBeInTheDocument();
     expect(screen.getByText(/Path: d:\/VibeSync/i)).toBeInTheDocument();
   });
@@ -53,9 +53,9 @@ describe("WorkspaceHomePage with Demo Mode Enabled", () => {
     // Specific demo text from mock data
     expect(screen.getByText("Refactoring the filesystem observation pipeline")).toBeInTheDocument();
     expect(screen.getByText(/Today you spent most of your time/i)).toBeInTheDocument();
-    expect(screen.getByText("Active Session in VibePulse")).toBeInTheDocument();
+    expect(screen.getByText("Active Session in DepRadar")).toBeInTheDocument();
     expect(screen.getByText("Started Observation")).toBeInTheDocument();
-    expect(screen.getByText("VibePulse daemon attached to workspace root")).toBeInTheDocument();
+    expect(screen.getByText("DepRadar daemon attached to workspace root")).toBeInTheDocument();
     expect(screen.getByText("AquaPulse")).toBeInTheDocument();
   });
 
@@ -84,9 +84,9 @@ describe("WorkspaceHomePage with Demo Mode Disabled", () => {
     renderHomePage();
 
     expect(
-      screen.queryByText(/VibePulse Engineering Observability Platform/i),
+      screen.queryByText(/DepRadar Engineering Observability Platform/i),
     ).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "VibePulse" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "DepRadar" })).toBeInTheDocument();
 
     // Live state sections
     expect(screen.getAllByText("Observation Status").length).toBeGreaterThanOrEqual(1);

@@ -8,7 +8,7 @@
 
 ## 1. Executive Summary & Objective
 
-VibePulse has successfully built and verified seven core intelligence and telemetry subsystems across Sprints 1–6:
+DepRadar has successfully built and verified seven core intelligence and telemetry subsystems across Sprints 1–6:
 
 $$\mathbf{OBSERVE \longrightarrow DETECT \longrightarrow INVESTIGATE \longrightarrow RESOLVE \longrightarrow LEARN \longrightarrow ANTICIPATE \longrightarrow \left[\text{Sprint 7: UNIFIED HEALTH}\right]}$$
 

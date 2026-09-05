@@ -10,7 +10,7 @@
 
 ## Context
 
-VibePulse's primary value is **observing software evolution during AI-assisted development**. The platform must:
+DepRadar's primary value is **observing software evolution during AI-assisted development**. The platform must:
 
 1. Ingest a high volume of events from developer machines (file changes, git operations, AI tool interactions).
 2. Process and enrich events in near real-time.

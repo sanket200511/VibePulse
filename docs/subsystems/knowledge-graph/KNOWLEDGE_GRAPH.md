@@ -1,13 +1,13 @@
 # Engineering Knowledge Graph & Project Memory 2.0
 
-> **Sprint 10 Deliverable — VibePulse Observability Platform**
-> _Central Principle: "What Does VibePulse Know About This Project, and How Are Its Parts Connected?"_
+> **Sprint 10 Deliverable — DepRadar Observability Platform**
+> _Central Principle: "What Does DepRadar Know About This Project, and How Are Its Parts Connected?"_
 
 ---
 
 ## 1. Overview & Architectural Role
 
-The **Engineering Knowledge Graph & Project Memory 2.0** layer represents the culmination of VibePulse's canonical intelligence pipeline:
+The **Engineering Knowledge Graph & Project Memory 2.0** layer represents the culmination of DepRadar's canonical intelligence pipeline:
 
 ```mermaid
 graph LR
@@ -33,7 +33,7 @@ graph LR
 
 ## 2. Semantic Node & Edge Taxonomy
 
-Rather than rendering hundreds of raw individual file events as discrete nodes, VibePulse builds a **high-signal semantic engineering graph**:
+Rather than rendering hundreds of raw individual file events as discrete nodes, DepRadar builds a **high-signal semantic engineering graph**:
 
 | Node Type         | Description                                               | Key Metadata                                                |
 | :---------------- | :-------------------------------------------------------- | :---------------------------------------------------------- |

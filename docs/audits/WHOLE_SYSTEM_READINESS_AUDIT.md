@@ -1,4 +1,4 @@
-# VibePulse Whole-System Readiness Audit
+# DepRadar Whole-System Readiness Audit
 
 > **Status**: Historical Snapshot (Early Developmental Readiness Review)
 > **Superseded by**: [`docs/audits/FINAL_PROJECT_STATUS.md`](FINAL_PROJECT_STATUS.md) & [`docs/history/sprints/sprint-14/SPRINT_14_TRUTH_AUDIT.md`](../history/sprints/sprint-14/SPRINT_14_TRUTH_AUDIT.md)
@@ -29,7 +29,7 @@ The daemon works reliably for the environment it is started in, but it lacks a f
 To observe an arbitrary project:
 
 ```bash
-WATCH_ROOT=/path/to/project pnpm --filter @vibepulse/daemon dev
+WATCH_ROOT=/path/to/project pnpm --filter @depradar/daemon dev
 ```
 
 To enable observation, a control request must be sent:
@@ -178,7 +178,7 @@ Yes. Navigated through Workspace → Projects → Project Pulse → Session Repl
 1. `docker compose up -d postgres redis`
 2. `cd apps/api && uv run uvicorn app.main:app --reload`
 3. `cd apps/dashboard && pnpm dev`
-4. `WATCH_ROOT=/target pnpm --filter @vibepulse/daemon dev`
+4. `WATCH_ROOT=/target pnpm --filter @depradar/daemon dev`
 5. `curl -X POST http://localhost:9000/control/observe/start`
 
 ## 33. Pre-Demo Checklist
@@ -193,7 +193,7 @@ If local infrastructure fails (e.g., Docker crash), the presenter must toggle **
 
 ## 35. Claims we ARE safe to make tomorrow
 
-- VibePulse operates deterministically.
+- DepRadar operates deterministically.
 - File contents never leave the machine.
 - Project Intelligence derives strictly from observed reality.
 

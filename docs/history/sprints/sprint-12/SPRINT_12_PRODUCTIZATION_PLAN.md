@@ -6,7 +6,7 @@
 
 ## 1. Current Architecture & Source of Truth
 
-VibePulse already possesses 10 canonical intelligence subsystems:
+DepRadar already possesses 10 canonical intelligence subsystems:
 
 ```
 [ Raw Filesystem Events ]
@@ -128,7 +128,7 @@ Sprint 12 focuses on **Productization, Copilot Hardening, and the Closed-Loop En
 ## 4. Verification & Quality Gates
 
 1. Backend Tests: `uv run pytest` -> 347+ tests passed.
-2. Daemon Tests: `pnpm --filter @vibepulse/daemon test` -> 130 tests passed.
+2. Daemon Tests: `pnpm --filter @depradar/daemon test` -> 130 tests passed.
 3. Typecheck: `pnpm typecheck` -> 0 errors across 5 packages.
 4. Lint: `pnpm lint` -> 0 errors across 5 packages.
 5. Sprint 12 E2E: `node scripts/test-sprint12-e2e.mjs` -> All criteria passed.

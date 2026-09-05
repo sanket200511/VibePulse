@@ -96,4 +96,4 @@ Upon any selection, search, traversal step, or expansion:
 3. **Phase 3: Toolbar & Header Cleanup**
    - Simplify `KnowledgeGraphPage.tsx` into a clean, modern intelligence command strip.
 4. **Phase 4: Verification & Live Browser Validation**
-   - Verify on `VibePulse-Seminar-Demo` with `settings.py`, `SEC001`, root-cause traversal, and search.
+   - Verify on `DepRadar-Seminar-Demo` with `settings.py`, `SEC001`, root-cause traversal, and search.

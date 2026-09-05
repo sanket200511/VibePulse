@@ -1,24 +1,24 @@
 # Frequently Asked Questions (FAQ)
 
-## 1. What makes VibePulse different from WakaTime, SonarQube, or GitHub Copilot?
+## 1. What makes DepRadar different from WakaTime, SonarQube, or GitHub Copilot?
 
-VibePulse is neither a time-tracker nor a code generator:
+DepRadar is neither a time-tracker nor a code generator:
 
-- **Unlike WakaTime**: VibePulse doesn't merely count keystroke hours; it constructs causal Directed Acyclic Graphs (DAGs) and semantic Knowledge Graphs from raw filesystem activity.
-- **Unlike SonarQube / Snyk**: VibePulse observes pre-commit, real-time code evolution in the editor before git commits exist, computing live Metric Triad scores and dynamic incident resolutions.
-- **Unlike GitHub Copilot**: VibePulse does not generate or write code. Its AI Engineering Copilot foundation is a zero-hallucination, deterministic intelligence engine providing explainable answers with tri-state provenance (`[OBSERVED]`, `[INFERRED]`, `[UNKNOWN]`) over your local telemetry.
+- **Unlike WakaTime**: DepRadar doesn't merely count keystroke hours; it constructs causal Directed Acyclic Graphs (DAGs) and semantic Knowledge Graphs from raw filesystem activity.
+- **Unlike SonarQube / Snyk**: DepRadar observes pre-commit, real-time code evolution in the editor before git commits exist, computing live Metric Triad scores and dynamic incident resolutions.
+- **Unlike GitHub Copilot**: DepRadar does not generate or write code. Its AI Engineering Copilot foundation is a zero-hallucination, deterministic intelligence engine providing explainable answers with tri-state provenance (`[OBSERVED]`, `[INFERRED]`, `[UNKNOWN]`) over your local telemetry.
 
 ---
 
-## 2. Does VibePulse send my code to the cloud or an external LLM?
+## 2. Does DepRadar send my code to the cloud or an external LLM?
 
 **No.** The observation daemon runs locally on your machine. AST analysis and security checks run on your local/self-hosted FastAPI backend. No source code, diffs, or prompts are sent to external cloud LLMs (OpenAI, Anthropic, etc.).
 
 ---
 
-## 3. What are the canonical ports used by VibePulse?
+## 3. What are the canonical ports used by DepRadar?
 
-VibePulse uses a dedicated port namespace to prevent conflicts with standard development services:
+DepRadar uses a dedicated port namespace to prevent conflicts with standard development services:
 
 - **FastAPI Backend (API)**: `http://localhost:5184`
 - **FastAPI Interactive Docs**: `http://localhost:5184/docs`
@@ -49,7 +49,7 @@ The Copilot uses deterministic intent classification across 16 canonical query f
 
 ---
 
-## 6. How does VibePulse ensure deterministic reconstructibility ($A \equiv B$)?
+## 6. How does DepRadar ensure deterministic reconstructibility ($A \equiv B$)?
 
 PostgreSQL 16 is the single canonical source of truth. All metrics, graphs, incident timelines, and summaries are pure deterministic mathematical projections over the immutable `development_events` and `event_analyses` tables. Replaying the event stream produces an exact, bit-for-bit identical state.
 
@@ -61,6 +61,6 @@ AST inspection rules identify credentials and tokens matching sensitive patterns
 
 ---
 
-## 8. What happens when I delete a project in VibePulse?
+## 8. What happens when I delete a project in DepRadar?
 
-Safe Project Deletion guarantees that removing a project cascades deletion strictly to VibePulse's internal PostgreSQL database records. The physical codebase and directory on your hard drive remain 100% untouched.
+Safe Project Deletion guarantees that removing a project cascades deletion strictly to DepRadar's internal PostgreSQL database records. The physical codebase and directory on your hard drive remain 100% untouched.

@@ -1,6 +1,6 @@
-# VibePulse Typography System
+# DepRadar Typography System
 
-This document defines the typography philosophy, reading hierarchies, text roles, and structural layout rules of VibePulse. It serves as the typographic architecture specification for the entire product, ensuring that typography is used to establish structure, reduce cognitive load, and support long developer workflows.
+This document defines the typography philosophy, reading hierarchies, text roles, and structural layout rules of DepRadar. It serves as the typographic architecture specification for the entire product, ensuring that typography is used to establish structure, reduce cognitive load, and support long developer workflows.
 
 This system defines semantic roles and reading behavior, not implementation details. It contains no pixel sizes, line-height constants, Tailwind class names, or font-family declarations.
 
@@ -8,9 +8,9 @@ This system defines semantic roles and reading behavior, not implementation deta
 
 ## 1. Typography Philosophy
 
-In VibePulse, typography is information architecture, never decoration.
+In DepRadar, typography is information architecture, never decoration.
 
-Typography communicates structure before content. Before a developer reads a single word, the spatial arrangement, density, and contrast of text must explain how the page is organized. Good typography becomes invisible; it creates an intuitive flow that guides the reader through information without drawing attention to itself. Reading must feel effortless. By structuring typography to reflect the natural cognitive patterns of developers, VibePulse reduces visual thinking and prioritizes clean information delivery.
+Typography communicates structure before content. Before a developer reads a single word, the spatial arrangement, density, and contrast of text must explain how the page is organized. Good typography becomes invisible; it creates an intuitive flow that guides the reader through information without drawing attention to itself. Reading must feel effortless. By structuring typography to reflect the natural cognitive patterns of developers, DepRadar reduces visual thinking and prioritizes clean information delivery.
 
 ---
 
@@ -90,7 +90,7 @@ Whitespace is considered an active component of typography. By spacing text elem
 
 ## 6. Silence
 
-The absence of text is a core typographic principle in VibePulse. Confident products speak less.
+The absence of text is a core typographic principle in DepRadar. Confident products speak less.
 
 - **Concise Communication**: Not every interface element requires a descriptive paragraph or an explanatory tooltip. Text is kept minimal, concise, and focused.
 - **Cognitive Relief**: The deliberate omission of redundant labels or descriptive text reduces cognitive load, allowing the developer to focus entirely on the core data.
@@ -113,7 +113,7 @@ Each level of depth is visually isolated, allowing the developer to decide when 
 
 ## 8. Cognitive Budget
 
-Every typographic emphasis is an expenditure of the developer's attention. Because attention is finite, VibePulse treats emphasis as a strictly budgeted resource:
+Every typographic emphasis is an expenditure of the developer's attention. Because attention is finite, DepRadar treats emphasis as a strictly budgeted resource:
 
 - **Emphasis Scarcity**: Bold weights, capitalizations, scale increases, and highlighted values are applied sparingly. Every time a value is bolded or enlarged, it consumes a portion of the page's attention budget.
 - **Deliberate Expenditure**: If a screen highlights multiple values simultaneously, the hierarchy is diluted, and cognitive fatigue increases. Typography spends attention intentionally, ensuring that only the most critical information stands out.
@@ -200,7 +200,7 @@ Emphasis must be earned through necessity. When everything is emphasized, nothin
 
 ## 15. Long-Session Readability
 
-VibePulse is designed to support developers during extended coding sessions. The typography system actively mitigates eye fatigue and supports sustained concentration:
+DepRadar is designed to support developers during extended coding sessions. The typography system actively mitigates eye fatigue and supports sustained concentration:
 
 - **Line Length Limitation**: Text containers restrict paragraph widths to a readable character length (typically 50–75 characters per line). Excessively long lines are prohibited as they increase reading fatigue.
 - **Luminance Balance**: High-contrast, stark white text on pure black backgrounds is avoided. Instead, the system uses soft, off-white text values against deep slate backgrounds, reducing contrast glare while maintaining legibility.

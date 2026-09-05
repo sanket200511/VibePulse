@@ -1,12 +1,12 @@
-# VibePulse System Design
+# DepRadar System Design
 
-This document focuses on the operational topology, deployment, and scalability mechanics of VibePulse.
+This document focuses on the operational topology, deployment, and scalability mechanics of DepRadar.
 
 For the deep-dive on code organization and the monorepo structure, see [Architecture Reference](ARCHITECTURE.md).
 
 ## Operational Topology
 
-VibePulse is composed of four principal node types:
+DepRadar is composed of four principal node types:
 
 1. **Observer Nodes (Daemon)**
    - **Runtime**: Node.js `v20+`

@@ -118,7 +118,7 @@ export function ProjectCard({
                     className="flex w-full items-center gap-2.5 px-3.5 py-2 text-left text-xs font-medium text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
-                    Remove from VibePulse
+                    Remove from DepRadar
                   </button>
                 </>
               )}
@@ -177,8 +177,8 @@ export function ProjectsPage() {
         title="Projects"
         description={
           isDemo
-            ? "Every project VibePulse is currently observing in Demo Mode."
-            : "Every project VibePulse is currently observing."
+            ? "Every project DepRadar is currently observing in Demo Mode."
+            : "Every project DepRadar is currently observing."
         }
       />
 
@@ -191,7 +191,7 @@ export function ProjectsPage() {
       ) : projects.length === 0 ? (
         <EmptyState
           title="No projects found"
-          description="VibePulse hasn't observed any development activity yet."
+          description="DepRadar hasn't observed any development activity yet."
         />
       ) : (
         <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">

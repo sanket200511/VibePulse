@@ -1,4 +1,4 @@
-# VibePulse UX Principles
+# DepRadar UX Principles
 
 Version: 1.0
 
@@ -6,9 +6,9 @@ Version: 1.0
 
 # Purpose
 
-VibePulse is not an analytics dashboard.
+DepRadar is not an analytics dashboard.
 
-VibePulse is a Developer Workspace.
+DepRadar is a Developer Workspace.
 
 Its purpose is to help developers understand, replay, and reflect on their software development journey.
 
@@ -29,7 +29,7 @@ The product should feel:
 
 Users should never feel overwhelmed by information.
 
-Instead, VibePulse should guide them naturally through their development story.
+Instead, DepRadar should guide them naturally through their development story.
 
 ---
 
@@ -53,7 +53,7 @@ Help the user understand:
 
 ## 2. Reflection Over Productivity
 
-VibePulse never judges developers.
+DepRadar never judges developers.
 
 It never encourages unhealthy competition.
 
@@ -117,7 +117,7 @@ The user should never feel lost.
 
 Users should feel comfortable immediately.
 
-However, VibePulse should never become a generic admin dashboard.
+However, DepRadar should never become a generic admin dashboard.
 
 Avoid dashboard clichés.
 
@@ -221,7 +221,7 @@ Trust is more important than visual polish.
 
 # Product Identity
 
-VibePulse should feel like a thoughtful engineering companion.
+DepRadar should feel like a thoughtful engineering companion.
 
 It should never feel like:
 
@@ -236,8 +236,8 @@ Everything else is secondary.
 
 ---
 
-## VibePulse Design Manifesto
+## DepRadar Design Manifesto
 
 Every design decision should help developers understand their work more clearly.
 
-If a feature, animation, interaction, or sentence does not improve understanding, it does not belong in VibePulse.
+If a feature, animation, interaction, or sentence does not improve understanding, it does not belong in DepRadar.

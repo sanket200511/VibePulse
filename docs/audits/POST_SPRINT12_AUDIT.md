@@ -1,11 +1,11 @@
-# VibePulse — Post-Sprint 12 Stabilization & Architecture Audit
+# DepRadar — Post-Sprint 12 Stabilization & Architecture Audit
 
 > **Status**: Historical Snapshot (Post-Sprint 12 Stabilization Baseline)
 > **Superseded by**: [`docs/audits/FINAL_PROJECT_STATUS.md`](FINAL_PROJECT_STATUS.md) & [`docs/audits/FINAL_RELEASE_ACCEPTANCE.md`](FINAL_RELEASE_ACCEPTANCE.md)
 
 **Document Status**: ARCHITECTURE AUDIT & STABILIZATION BASELINE (HISTORICAL)
 **Sprint Phase**: Post-Sprint 12 Stabilization & Finalization
-**Repository**: `VibePulse` Monorepo
+**Repository**: `DepRadar` Monorepo
 **Target Invariant**: PostgreSQL Historical Telemetry as Single Canonical Ground Truth ($A \equiv B$)
 
 ---
@@ -44,7 +44,7 @@
 1. **AI Handoff Guidance**:
    - `export.py` / `PROJECT_CONTEXT.md` needs the explicit section `"How an AI Agent Should Use This Context"` defining authoritative vs inferred vs unknown rules.
 2. **Safe Project Deletion Dialog**:
-   - Verify frontend project delete modal explicitly states: _"This removes VibePulse's recorded telemetry only. Your files will not be deleted."_
+   - Verify frontend project delete modal explicitly states: _"This removes DepRadar's recorded telemetry only. Your files will not be deleted."_
 3. **Command Center Visual Clarity**:
    - Ensure the professors/judges immediately understand:
      - Health Score ($0 \dots 100$, **Higher = Better**)

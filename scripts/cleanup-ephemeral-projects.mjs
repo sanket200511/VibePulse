@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * VibePulse Ephemeral Project Cleanup Utility
+ * DepRadar Ephemeral Project Cleanup Utility
  *
  * Safely inspects and removes ephemeral/test/demo projects from PostgreSQL
  * while strictly protecting legitimate persistent workspaces (e.g. D:\Projects\Dabba).

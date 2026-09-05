@@ -55,7 +55,7 @@ export function useDeleteProject(options?: { onSuccess?: () => void }) {
     },
     onSuccess: (_data, projectId) => {
       toast.emit({
-        title: "Project removed from VibePulse",
+        title: "Project removed from DepRadar",
         description: "Your project files were not modified.",
         type: "ARCH",
       });

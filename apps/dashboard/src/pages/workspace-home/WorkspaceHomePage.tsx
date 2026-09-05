@@ -37,7 +37,7 @@ import type { Project } from "../projects/types";
 /**
  * WorkspaceHomePage
  *
- * Implements the VibePulse Dashboard (docs/design/DASHBOARD.md) shell.
+ * Implements the DepRadar Dashboard (docs/design/DASHBOARD.md) shell.
  * Integrates Demo Mode to present realistic telemetry and AI insights.
  */
 export function WorkspaceHomePage() {
@@ -59,9 +59,7 @@ export function WorkspaceHomePage() {
                 <Sparkles className="text-accent-color h-4 w-4 shrink-0" />
               </div>
               <div>
-                <p className="text-sm font-semibold">
-                  VibePulse Engineering Observability Platform
-                </p>
+                <p className="text-sm font-semibold">DepRadar Engineering Observability Platform</p>
                 <p className="text-secondary-text mt-0.5 text-xs">
                   Using disposable demonstration telemetry to showcase continuous engineering
                   intelligence.
@@ -128,7 +126,7 @@ function LiveWorkspaceHeader() {
             )}
           </div>
           <h1 className="text-primary-text text-xl font-bold tracking-tight">
-            {session ? (session.project_root.split(/[/\\]/).pop() ?? "Workspace") : "VibePulse"}
+            {session ? (session.project_root.split(/[/\\]/).pop() ?? "Workspace") : "DepRadar"}
           </h1>
           {session && (
             <p className="text-secondary-text mt-0.5 font-mono text-xs">{session.project_root}</p>
@@ -286,7 +284,7 @@ function LivePrimaryCanvas() {
                 <p className="text-secondary-text text-xs">
                   {wsConnected
                     ? "Real-time telemetry stream active"
-                    : "Start the VibePulse daemon to begin observing"}
+                    : "Start the DepRadar daemon to begin observing"}
                 </p>
               </div>
             </div>

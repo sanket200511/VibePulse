@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * VibePulse Development Supervisor & Seminar Orchestrator
+ * DepRadar Development Supervisor & Seminar Orchestrator
  *
  * Provides a professional, clean development supervisor experience:
  * - Structured log hierarchy: [TIME] [SERVICE] [LEVEL] MESSAGE
@@ -119,7 +119,7 @@ const SERVICES = {
     url: `http://localhost:${DASHBOARD_PORT}`,
     port: DASHBOARD_PORT,
     command: process.platform === "win32" ? "pnpm.cmd" : "pnpm",
-    args: ["--filter", "@vibepulse/dashboard", "dev"],
+    args: ["--filter", "@depradar/dashboard", "dev"],
     cwd: ROOT_DIR,
     status: "STARTING",
   },
@@ -130,7 +130,7 @@ const SERVICES = {
     url: `http://localhost:${DAEMON_PORT}/health`,
     port: DAEMON_PORT,
     command: process.platform === "win32" ? "pnpm.cmd" : "pnpm",
-    args: ["--filter", "@vibepulse/daemon", "dev"],
+    args: ["--filter", "@depradar/daemon", "dev"],
     cwd: ROOT_DIR,
     status: "STARTING",
   },
@@ -356,7 +356,7 @@ function processChildOutput(svcKey, rawText, isStderr = false) {
       }
       if (
         trimmed.startsWith("===") ||
-        trimmed.includes("VibePulse Daemon") ||
+        trimmed.includes("DepRadar Daemon") ||
         trimmed.includes("Initial Target") ||
         trimmed.includes("Daemon port") ||
         trimmed.includes("Watcher closed") ||
@@ -590,7 +590,7 @@ ${CYAN}${BOLD}╔═════════════════════
       `  Database    → ${BOLD}CONNECTED${RESET}${GREEN}`,
       `  WebSocket   → ${BOLD}ws://localhost:${API_PORT}${RESET}${GREEN}`,
       ``,
-      `  ${DIM}Press Ctrl+C to stop VibePulse.${RESET}${GREEN}`,
+      `  ${DIM}Press Ctrl+C to stop DepRadar.${RESET}${GREEN}`,
     ],
     GREEN,
   );

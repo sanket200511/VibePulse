@@ -107,7 +107,7 @@ class TimelineOutcome:
     session rather than narrating it entry-by-entry.
 
     ``largest_change`` is a proxy (the most-edited file by event count), not a
-    line-diff size — VibePulse never reads file content, so a content-based
+    line-diff size — DepRadar never reads file content, so a content-based
     "largest change" cannot be derived truthfully. It is ``None`` when no file
     was edited more than once, i.e. when the signal isn't meaningfully
     derivable rather than inventing one.

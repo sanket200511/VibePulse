@@ -1,4 +1,4 @@
-# VibePulse — Empirical System Evaluation
+# DepRadar — Empirical System Evaluation
 
 **Evaluation Status**: EXPERIMENTALLY MEASURED & VERIFIED
 **Evaluation Scope**: Deterministic Performance, Test Pyramid, Security Invariants, and Reconstructibility ($A \equiv B$)
@@ -28,7 +28,7 @@ The following latency metrics were measured deterministically using `scripts/mea
 
 ## 2. Test Pyramid & Reliability
 
-VibePulse enforces a strict multi-tier testing pyramid:
+DepRadar enforces a strict multi-tier testing pyramid:
 
 ```
                   ┌────────────────────────┐
@@ -69,7 +69,7 @@ VibePulse enforces a strict multi-tier testing pyramid:
 
 ## 4. Reconstructibility Verification ($A \equiv B$)
 
-VibePulse mathematically guarantees that derived intelligence is a pure projection over historical telemetry:
+DepRadar mathematically guarantees that derived intelligence is a pure projection over historical telemetry:
 
 $$\text{Telemetry } T \xrightarrow{\text{Projection } P} \text{Intelligence State } A$$
 $$\text{Purge Derived Memory} \implies \text{Telemetry } T \xrightarrow{\text{Projection } P} \text{Intelligence State } B$$

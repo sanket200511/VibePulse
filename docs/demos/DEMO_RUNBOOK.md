@@ -1,12 +1,12 @@
-# VibePulse Live Seminar & Judge Demonstration Runbook
+# DepRadar Live Seminar & Judge Demonstration Runbook
 
 ## 1. Executive Demonstration Goal
 
-Demonstrate the complete, live VibePulse causal loop to seminar judges:
+Demonstrate the complete, live DepRadar causal loop to seminar judges:
 
 $$\mathbf{OBSERVE \longrightarrow DETECT \longrightarrow INVESTIGATE \longrightarrow RESOLVE \longrightarrow LEARN \longrightarrow ANTICIPATE \longrightarrow HEALTH}$$
 
-**Key Message**: VibePulse is **NOT** a dashboard that invents ML confidence scores. Every insight, alert, and health number is deterministically derived from live development telemetry.
+**Key Message**: DepRadar is **NOT** a dashboard that invents ML confidence scores. Every insight, alert, and health number is deterministically derived from live development telemetry.
 
 ---
 
@@ -63,7 +63,7 @@ $$\mathbf{OBSERVE \longrightarrow DETECT \longrightarrow INVESTIGATE \longrighta
    - Step 3: Health Impact (Dimension score adjustments)
    - Step 4: 1-Click `[Investigate in Engine 3.0]` button leading directly to the Investigation Evidence Graph.
 
-### Step 5: Trust & Explainability ("Why Does VibePulse Believe This?")
+### Step 5: Trust & Explainability ("Why Does DepRadar Believe This?")
 
 1. Click the **`[Why This Score?]`** button on the Health scorecard.
 2. The **Evidence Inspector** opens showing:
@@ -73,7 +73,7 @@ $$\mathbf{OBSERVE \longrightarrow DETECT \longrightarrow INVESTIGATE \longrighta
    - Causal Evidence Chain tracing the exact raw file event to AST detection to health impact.
    - Click `[Why is this #1?]` on Priority #1 to view deterministic urgency scoring.
 
-### Step 6: Engineering Knowledge Graph & Project Memory 2.0 ("What Does VibePulse Know?")
+### Step 6: Engineering Knowledge Graph & Project Memory 2.0 ("What Does DepRadar Know?")
 
 1. Click **`[Knowledge Graph]`** in the top navigation or navigate to `/projects/:id/knowledge-graph`.
 2. Observe the interactive semantic graph:
@@ -83,7 +83,7 @@ $$\mathbf{OBSERVE \longrightarrow DETECT \longrightarrow INVESTIGATE \longrighta
    - Multi-Entity Search: Type `auth` or `jwt` to traverse connected components across files and rules.
    - Project Memory 2.0 Export: Review Section 20 of `PROJECT_CONTEXT.md` for AI handoffs.
 
-### Step 7: AI Engineering Copilot ("Ask VibePulse Anything — Zero Hallucination")
+### Step 7: AI Engineering Copilot ("Ask DepRadar Anything — Zero Hallucination")
 
 1. Click **`[AI Copilot]`** in the top navigation or navigate to `/projects/:id/copilot`.
 2. Click dynamic suggestion: _"What should I fix first?"_

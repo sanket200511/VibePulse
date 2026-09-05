@@ -1,4 +1,4 @@
-# VibePulse — Seminar Live Demonstration Script (5-Minute Runbook)
+# DepRadar — Seminar Live Demonstration Script (5-Minute Runbook)
 
 ---
 
@@ -47,7 +47,7 @@ _Launches the resilient supervisor with PostgreSQL health gate, backend readines
 
 - **Action**: Open browser at `http://localhost:5183`.
 - **Narration**:
-  > _"Judges, VibePulse is a real-time developer observability and security intelligence platform. It runs quietly in the background alongside the developer, observing file mutations, active sessions, and security posture in real time."_
+  > _"Judges, DepRadar is a real-time developer observability and security intelligence platform. It runs quietly in the background alongside the developer, observing file mutations, active sessions, and security posture in real time."_
 - **Visuals**:
   - Show the **Observation Status** card showing `Daemon Connected` (green pulse) and the current active project.
   - Point out that all data shown is durable and backed by local PostgreSQL.
@@ -56,14 +56,14 @@ _Launches the resilient supervisor with PostgreSQL health gate, backend readines
 
 ### **00:30 — 01:00 | Normal File Activity**
 
-- **Action**: In an observed project (e.g. `D:\VibePulse-Demo`), edit or touch a source file:
+- **Action**: In an observed project (e.g. `D:\DepRadar-Demo`), edit or touch a source file:
   ```python
   # main.py
   def calculate_tax(amount: float) -> float:
       return amount * 0.18
   ```
 - **Narration**:
-  > _"As we write clean, normal code, VibePulse records continuous, low-overhead session activity in PostgreSQL without triggering false-positive alerts."_
+  > _"As we write clean, normal code, DepRadar records continuous, low-overhead session activity in PostgreSQL without triggering false-positive alerts."_
 - **Visuals**:
   - Dashboard **Live Event Stream** receives the file edit event.
   - **Overall Health Score** stays high (`100/100`).
@@ -91,7 +91,7 @@ _Launches the resilient supervisor with PostgreSQL health gate, backend readines
 
 - **Action**: Navigate to `http://localhost:5183/investigation`.
 - **Narration**:
-  > _"Instead of an ordinary flat log list, VibePulse reconstructs the complete incident as a causal Directed Acyclic Graph."_
+  > _"Instead of an ordinary flat log list, DepRadar reconstructs the complete incident as a causal Directed Acyclic Graph."_
 - **Visuals**:
   - **KPI Metrics Strip**:
     - `OBSERVED EVENTS`
@@ -113,7 +113,7 @@ _Launches the resilient supervisor with PostgreSQL health gate, backend readines
 
 - **Action**: Click the red **Secret Pattern Detected** node in the Evidence Graph.
 - **Narration**:
-  > _"Notice two critical engineering guarantees: First, VibePulse masks and redacts secrets before persistence (`API_KEY = "[REDACTED]"`). Second, our detection pipeline is completely explainable — powered by Tree-Sitter AST inspection rather than opaque, hallucinating black boxes."_
+  > _"Notice two critical engineering guarantees: First, DepRadar masks and redacts secrets before persistence (`API_KEY = "[REDACTED]"`). Second, our detection pipeline is completely explainable — powered by Tree-Sitter AST inspection rather than opaque, hallucinating black boxes."_
 - **Visuals**:
   - Detail drawer displays masked snippet.
   - **Why This Was Flagged**:
@@ -143,7 +143,7 @@ _Launches the resilient supervisor with PostgreSQL health gate, backend readines
 ### **04:30 — 05:00 | Architecture Summary & Closing**
 
 - **Narration**:
-  > _"To summarize: VibePulse is a zero-latency, privacy-first developer observability and security intelligence engine that turns raw filesystem activity into explainable security incident graphs."_
+  > _"To summarize: DepRadar is a zero-latency, privacy-first developer observability and security intelligence engine that turns raw filesystem activity into explainable security incident graphs."_
 
 ---
 

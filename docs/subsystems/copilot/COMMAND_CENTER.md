@@ -1,8 +1,8 @@
-# VibePulse Engineering Command Center
+# DepRadar Engineering Command Center
 
 ## 1. Overview & Vision
 
-The **VibePulse Engineering Command Center** is the unified live operational control room for software engineering teams and leadership. It represents the complete end-to-end causal intelligence loop:
+The **DepRadar Engineering Command Center** is the unified live operational control room for software engineering teams and leadership. It represents the complete end-to-end causal intelligence loop:
 
 $$\mathbf{OBSERVE \longrightarrow DETECT \longrightarrow INVESTIGATE \longrightarrow RESOLVE \longrightarrow LEARN \longrightarrow ANTICIPATE \longrightarrow HEALTH}$$
 

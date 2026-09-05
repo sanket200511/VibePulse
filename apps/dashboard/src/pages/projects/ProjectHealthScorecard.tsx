@@ -13,7 +13,7 @@ import {
   HelpCircle,
   HelpCircle as WhyIcon,
 } from "lucide-react";
-import { Badge } from "@vibepulse/ui";
+import { Badge } from "@depradar/ui";
 import {
   useProjectHealth,
   useRefreshProjectHealth,

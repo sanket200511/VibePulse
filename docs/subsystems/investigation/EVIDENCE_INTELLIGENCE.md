@@ -1,4 +1,4 @@
-# VibePulse Trust, Explainability & Evidence Intelligence
+# DepRadar Trust, Explainability & Evidence Intelligence
 
 ## 1. Overview & Vision
 
@@ -6,13 +6,13 @@ The central product question of Sprint 9 is:
 
 $$\mathbf{"\text{WHY DOES VIBEPULSE BELIEVE THIS?}"}$$
 
-VibePulse does not fabricate heuristic scores or opaque AI confidence percentages. Every health grade, security violation, incident correlation, predictive forecast, and recommended priority is directly grounded in concrete, empirical PostgreSQL telemetry and deterministic rule chains.
+DepRadar does not fabricate heuristic scores or opaque AI confidence percentages. Every health grade, security violation, incident correlation, predictive forecast, and recommended priority is directly grounded in concrete, empirical PostgreSQL telemetry and deterministic rule chains.
 
 ---
 
 ## 2. Universal Evidence & Provenance Model
 
-Every piece of intelligence in VibePulse carries an explicit **Provenance Tag**:
+Every piece of intelligence in DepRadar carries an explicit **Provenance Tag**:
 
 | Provenance Tag   | Definition                                                                                                  | Example                                                                               |
 | ---------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
@@ -41,7 +41,7 @@ $$S_{\text{overall}} = 0.25 \times S_{\text{sec}} + 0.20 \times S_{\text{eng}} +
 
 ## 4. Causal Evidence Chains
 
-When an engineer inspects any conclusion, VibePulse reveals the exact chronological chain of evidence:
+When an engineer inspects any conclusion, DepRadar reveals the exact chronological chain of evidence:
 
 ```
 [ 1. FILE_MODIFIED ]

@@ -1,6 +1,6 @@
-# Contributing to VibePulse
+# Contributing to DepRadar
 
-First, thank you for your interest in contributing to VibePulse! This project is maintained by a core team but relies on open-source contributions to expand its analytical capabilities.
+First, thank you for your interest in contributing to DepRadar! This project is maintained by a core team but relies on open-source contributions to expand its analytical capabilities.
 
 Before contributing, please read our [Architecture Reference](ARCHITECTURE.md) to understand the system's design philosophy.
 
@@ -8,7 +8,7 @@ Before contributing, please read our [Architecture Reference](ARCHITECTURE.md) t
 
 ## 1. Development Workflow
 
-VibePulse is a Turborepo monorepo. We use `pnpm` for package management and `uv` for Python environments.
+DepRadar is a Turborepo monorepo. We use `pnpm` for package management and `uv` for Python environments.
 
 ### Local Setup
 
@@ -17,9 +17,9 @@ VibePulse is a Turborepo monorepo. We use `pnpm` for package management and `uv`
 3. Ensure local PostgreSQL is running on port 5432 and REDIS_URL is configured in `apps/api/.env`.
 4. Run `uv sync` in `apps/api` and run `uv run alembic upgrade head` to migrate the DB.
 5. Start the development servers in three terminals:
-   - Terminal 1: `pnpm --filter @vibepulse/dashboard dev`
+   - Terminal 1: `pnpm --filter @depradar/dashboard dev`
    - Terminal 2: `cd apps/api && uv run uvicorn app.main:app --reload --port 8080`
-   - Terminal 3: `pnpm --filter @vibepulse/daemon dev`
+   - Terminal 3: `pnpm --filter @depradar/daemon dev`
 
 ### Running Tests
 

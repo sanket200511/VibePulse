@@ -1,4 +1,4 @@
-# VibePulse — Project Intelligence & Engineering DNA
+# DepRadar — Project Intelligence & Engineering DNA
 
 > **Sprint 2 Architectural Specification & Verification Reference**
 
@@ -6,7 +6,7 @@
 
 ## 1. Architectural Philosophy: Derived Projection vs. Source of Truth
 
-In VibePulse, **Project Intelligence is a derived projection**.
+In DepRadar, **Project Intelligence is a derived projection**.
 
 - **PostgreSQL `development_events`, `sessions`, and `event_analyses`** remain the authoritative, historical source of truth.
 - `project_contexts` acts as a **materialized projection / cache layer** that speeds up queries for the Dashboard and AI agents.
@@ -36,7 +36,7 @@ In VibePulse, **Project Intelligence is a derived projection**.
 
 ## 2. Strict Evidence Provenance: OBSERVED vs. INFERRED vs. UNKNOWN
 
-Every intelligence property projected by VibePulse is strictly classified into one of three tiers:
+Every intelligence property projected by DepRadar is strictly classified into one of three tiers:
 
 1. **`OBSERVED`**:
    - Directly backed by a concrete file path, lockfile, AST node, manifest declaration, or Git repository metadata.

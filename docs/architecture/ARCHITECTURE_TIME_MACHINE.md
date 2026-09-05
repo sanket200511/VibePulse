@@ -2,9 +2,9 @@
 
 ## Context
 
-VibePulse's initial `Timeline` engine grouped identical file edits together to reduce noise, acting more like an aggregated activity feed than a forensic trail. While excellent for understanding overall session velocity, it buried deterministic structural insights (e.g., exactly when a `FUNCTION_ADDED` or `HARDCODED_PASSWORD` occurred) inside collapsed groupings.
+DepRadar's initial `Timeline` engine grouped identical file edits together to reduce noise, acting more like an aggregated activity feed than a forensic trail. While excellent for understanding overall session velocity, it buried deterministic structural insights (e.g., exactly when a `FUNCTION_ADDED` or `HARDCODED_PASSWORD` occurred) inside collapsed groupings.
 
-Sprint PX-9.4 introduced the **Architecture Time Machine**, transforming VibePulse into a deterministic engineering journal.
+Sprint PX-9.4 introduced the **Architecture Time Machine**, transforming DepRadar into a deterministic engineering journal.
 
 ## Core Design
 

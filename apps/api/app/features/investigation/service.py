@@ -1546,7 +1546,7 @@ def export_investigation_ai_handoff(detail: InvestigationIncidentDetail) -> str:
     Renders structured AI Handoff document with explicit OBSERVED, INFERRED, UNKNOWN sections.
     """
     lines = [
-        f"# VibePulse Investigation AI Handoff: {detail.title}",
+        f"# DepRadar Investigation AI Handoff: {detail.title}",
         "",
         "## 1. Project Context",
         f"- **Project ID**: `{detail.project_id}`",
@@ -1648,7 +1648,7 @@ def _compute_risk_and_evidence(
             subtitle="Developer activity observed by local daemon",
             kind="SESSION",
             timestamp=t_start,
-            details={"source": "VibePulse Telemetry Daemon"},
+            details={"source": "DepRadar Telemetry Daemon"},
         )
     )
 

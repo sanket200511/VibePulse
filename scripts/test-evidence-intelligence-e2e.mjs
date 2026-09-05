@@ -5,7 +5,7 @@
  * VIBEPULSE TRUST, EXPLAINABILITY & EVIDENCE INTELLIGENCE
  *
  * Verifies:
- * 1. "Why Does VibePulse Believe This?" explainability endpoint for all 5 domains:
+ * 1. "Why Does DepRadar Believe This?" explainability endpoint for all 5 domains:
  *    - health (Mathematical score decomposition & 5-dimension causal chain)
  *    - security (AST violation rationale, risk contribution, redacted evidence)
  *    - incident (Evidence graph correlation, review decisions, root cause)

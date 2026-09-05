@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The Project Pulse is VibePulse's signature longitudinal visualization for project intelligence. It serves as a visual fingerprint, tracking the rhythm and scale of development sessions over time. It provides a temporal map of when work happened and how intensive it was.
+The Project Pulse is DepRadar's signature longitudinal visualization for project intelligence. It serves as a visual fingerprint, tracking the rhythm and scale of development sessions over time. It provides a temporal map of when work happened and how intensive it was.
 
 ## Deterministic Semantics
 
@@ -41,7 +41,7 @@ This preserves chronological accuracy. If 10 sessions occur in week 1 and 1 sess
 
 ## Truth Boundary
 
-Project Pulse rejects speculative metrics. Height strictly means "VibePulse observed this many events". It does not claim productivity, quality, or success.
+Project Pulse rejects speculative metrics. Height strictly means "DepRadar observed this many events". It does not claim productivity, quality, or success.
 
 ## Reduced Motion
 

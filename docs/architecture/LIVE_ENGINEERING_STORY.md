@@ -2,7 +2,7 @@
 
 ## Context
 
-In Sprint PX-10.1, VibePulse transitioned from an auto-refreshing dashboard into a fully "live" engineering experience. Previously, raw events triggered global React Query invalidations, forcing complete timeline rebuilds. Now, VibePulse intelligently splices new telemetry directly into existing views.
+In Sprint PX-10.1, DepRadar transitioned from an auto-refreshing dashboard into a fully "live" engineering experience. Previously, raw events triggered global React Query invalidations, forcing complete timeline rebuilds. Now, DepRadar intelligently splices new telemetry directly into existing views.
 
 ## Event Flow
 
@@ -27,4 +27,4 @@ In Sprint PX-10.1, VibePulse transitioned from an auto-refreshing dashboard into
 
 ## Truth Boundary
 
-As always, the system enforces strict deterministic reporting. The wording in the Toasts (e.g., "Function Added") is derived identically to the timeline entries, sourced purely from `StaticAnalysisAnalyzer` and `SecurityAnalyzer`. The system invents no "insights", ensuring complete adherence to VibePulse principles.
+As always, the system enforces strict deterministic reporting. The wording in the Toasts (e.g., "Function Added") is derived identically to the timeline entries, sourced purely from `StaticAnalysisAnalyzer` and `SecurityAnalyzer`. The system invents no "insights", ensuring complete adherence to DepRadar principles.

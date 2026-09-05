@@ -1,6 +1,6 @@
 # Sprint 11 Architecture Plan: AI Engineering Copilot Foundation
 
-> **Sprint 11 Objective**: Build an evidence-backed, provider-neutral AI Engineering Copilot Foundation on top of VibePulse's canonical intelligence layers.
+> **Sprint 11 Objective**: Build an evidence-backed, provider-neutral AI Engineering Copilot Foundation on top of DepRadar's canonical intelligence layers.
 
 ---
 
@@ -36,7 +36,7 @@ The Query Classifier deterministically maps queries to 12 intents:
 
 | Intent                 | Sample Questions                                                   | Retrieved Subsystems                          |
 | :--------------------- | :----------------------------------------------------------------- | :-------------------------------------------- |
-| `PROJECT_OVERVIEW`     | "What does VibePulse know about this project?"                     | Project Context Memory, Knowledge Graph       |
+| `PROJECT_OVERVIEW`     | "What does DepRadar know about this project?"                      | Project Context Memory, Knowledge Graph       |
 | `PROJECT_HEALTH`       | "Why is this project unhealthy?", "What should I fix first?"       | Unified Health, Priorities, 5 Dimensions      |
 | `SECURITY`             | "What security issues keep recurring?", "Why is auth risky?"       | Security Intelligence 2.0, AST Findings       |
 | `INCIDENT`             | "Why was this incident created?", "Tell me about incident INC-123" | Investigation Engine 3.0, Evidence Graph      |
@@ -46,7 +46,7 @@ The Query Classifier deterministically maps queries to 12 intents:
 | `RESOLUTION`           | "What was resolved recently?", "Show audit history"                | Incident Review History, Resolutions          |
 | `KNOWLEDGE_GRAPH`      | "What is connected to auth.py?", "Show relationships"              | Knowledge Graph Nodes & Edges                 |
 | `ENGINEERING_ACTIVITY` | "What changed recently?", "Show recent sessions"                   | Sessions, Development Events, Engineering DNA |
-| `EVIDENCE`             | "Why does VibePulse believe this?", "Show evidence"                | Universal Evidence Inspector, Causal Chains   |
+| `EVIDENCE`             | "Why does DepRadar believe this?", "Show evidence"                 | Universal Evidence Inspector, Causal Chains   |
 | `UNKNOWN`              | "Who wrote this code?", "Deploy to AWS"                            | Out of scope / unanswerable gate              |
 
 ---

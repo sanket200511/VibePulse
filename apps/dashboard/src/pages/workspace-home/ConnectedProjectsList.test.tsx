@@ -9,7 +9,7 @@ describe("ConnectedProjectsList", () => {
     const projects: ConnectedProject[] = [
       {
         id: "proj-1",
-        name: "vibepulse-api",
+        name: "depradar-api",
         path: "~/code/vibepulse/apps/api",
         status: "observing",
         lastActivityAt: "2026-07-07T08:52:00Z",
@@ -29,7 +29,7 @@ describe("ConnectedProjectsList", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText("vibepulse-api")).toBeInTheDocument();
+    expect(screen.getByText("depradar-api")).toBeInTheDocument();
     expect(screen.getByText("Observing")).toBeInTheDocument();
     expect(screen.getByText("acme-checkout-service")).toBeInTheDocument();
     expect(screen.getByText("Idle")).toBeInTheDocument();

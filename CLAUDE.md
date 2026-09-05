@@ -1,4 +1,4 @@
-# CLAUDE.md – VibePulse
+# CLAUDE.md – DepRadar
 
 Instructions for AI coding assistants (Claude, Copilot, Cursor, etc.) working on this repository.
 
@@ -6,7 +6,7 @@ Instructions for AI coding assistants (Claude, Copilot, Cursor, etc.) working on
 
 ## Project Overview
 
-VibePulse is a Developer Observability Platform for the AI Coding Era.
+DepRadar is a Developer Observability Platform for the AI Coding Era.
 It observes software evolution during AI-assisted development and provides actionable intelligence.
 
 **This is NOT a code generation tool. It is an observation and intelligence tool.**
@@ -77,7 +77,7 @@ docker/            Dockerfiles and infrastructure configs
 
 # Product Experience Principles
 
-VibePulse is not an analytics dashboard.
+DepRadar is not an analytics dashboard.
 
 It is a Developer Workspace.
 
@@ -108,9 +108,9 @@ cd ../..
 pnpm dev
 
 # Or start independently in 3 terminals:
-# Terminal 1 (Dashboard): pnpm --filter @vibepulse/dashboard dev # :5183
+# Terminal 1 (Dashboard): pnpm --filter @depradar/dashboard dev # :5183
 # Terminal 2 (API): cd apps/api && uv run uvicorn app.main:app --reload --port 5184
-# Terminal 3 (Daemon): pnpm --filter @vibepulse/daemon dev # :5185
+# Terminal 3 (Daemon): pnpm --filter @depradar/daemon dev # :5185
 ```
 
 ---
@@ -167,8 +167,8 @@ pnpm dev                             # Start all apps
 pnpm lint                            # Lint all TS/TSX
 pnpm typecheck                       # TypeCheck all TS
 pnpm format                          # Format everything
-pnpm --filter @vibepulse/dashboard dev    # Dashboard only
-pnpm --filter @vibepulse/daemon dev       # Daemon only
+pnpm --filter @depradar/dashboard dev    # Dashboard only
+pnpm --filter @depradar/daemon dev       # Daemon only
 cd apps/api && uv run pytest         # API tests
 cd apps/api && uv run ruff check app/ # API lint
 ```

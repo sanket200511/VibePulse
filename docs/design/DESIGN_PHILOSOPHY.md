@@ -1,16 +1,16 @@
-# VibePulse Design Philosophy
+# DepRadar Design Philosophy
 
-> Software engineering is an art form disguised as instruction. Yet, the tools we use to reflect on our work are often sterile, chaotic, or built for management rather than the makers themselves. Engineering deserves beautiful tools. VibePulse exists to close this gap. We observe the silent evolution of code not to measure it, but to understand it. We aim to make software engineering understandable, rather than merely observable.
+> Software engineering is an art form disguised as instruction. Yet, the tools we use to reflect on our work are often sterile, chaotic, or built for management rather than the makers themselves. Engineering deserves beautiful tools. DepRadar exists to close this gap. We observe the silent evolution of code not to measure it, but to understand it. We aim to make software engineering understandable, rather than merely observable.
 
-This document defines the core visual, interaction, and emotional principles that guide the creation of the VibePulse user interface. It serves as a timeless product design manifesto and the single source of truth for all design decisions.
+This document defines the core visual, interaction, and emotional principles that guide the creation of the DepRadar user interface. It serves as a timeless product design manifesto and the single source of truth for all design decisions.
 
 ---
 
 ## 1. Vision
 
-VibePulse is the developer's window into the rhythm of their work. It translates the chaotic noise of filesystem updates, editor commands, and terminal executions into a clear, structured story of software evolution.
+DepRadar is the developer's window into the rhythm of their work. It translates the chaotic noise of filesystem updates, editor commands, and terminal executions into a clear, structured story of software evolution.
 
-VibePulse does not generate code, and it does not review code. It observes. Because it acts as a passive lens, its interface must never feel like an IDE, a generic admin panel, or an intrusive monitoring tool. Instead, VibePulse is:
+DepRadar does not generate code, and it does not review code. It observes. Because it acts as a passive lens, its interface must never feel like an IDE, a generic admin panel, or an intrusive monitoring tool. Instead, DepRadar is:
 
 > **Mission Control for Software Engineering.**
 
@@ -22,17 +22,17 @@ It provides a high-level, calm, and confidence-inspiring overview of active proj
 
 ### The Passive Observer
 
-The UI must honor the passive nature of the platform. Since VibePulse never actively modifies the codebase, the interface should feel like an objective, premium recording instrument—like an acoustic soundstage or a physical flight data recorder. It sits quietly in the background, presenting data with absolute precision and zero editorial bias.
+The UI must honor the passive nature of the platform. Since DepRadar never actively modifies the codebase, the interface should feel like an objective, premium recording instrument—like an acoustic soundstage or a physical flight data recorder. It sits quietly in the background, presenting data with absolute precision and zero editorial bias.
 
 ### Context Over Numbers
 
-A single metric (such as "300 edits") is meaningless without context. VibePulse prioritizes the narrative of the work over raw counts. The UI should always seek to explain _how_ work happened—showing the transition from an intense burst of creation to a steady period of refactoring, or a quiet pause of deep thought.
+A single metric (such as "300 edits") is meaningless without context. DepRadar prioritizes the narrative of the work over raw counts. The UI should always seek to explain _how_ work happened—showing the transition from an intense burst of creation to a steady period of refactoring, or a quiet pause of deep thought.
 
 ---
 
 ## 3. Engineering Storytelling
 
-A developer's session is not a list of files or a sum of modifications; it is a creative arc. VibePulse never presents isolated metrics. Every screen must tell the cohesive story of a development session.
+A developer's session is not a list of files or a sum of modifications; it is a creative arc. DepRadar never presents isolated metrics. Every screen must tell the cohesive story of a development session.
 
 A number—whether representing files changed, lines touched, or seconds idle—only gains meaning when it serves as supporting evidence for a larger narrative. The interface must always lead with the story: the transition from scattered exploration to deep, focused writing, the gradual refinement of a complex module, or the quiet intervals of contemplation. Metrics exist only to validate and ground the story, never to replace it.
 
@@ -46,7 +46,7 @@ Avoid visual noise. Every border, margin, font size, and color must serve a purp
 
 ### Protect the Developer's Attention
 
-Software development demands intense, sustained focus. VibePulse must never become a source of distraction or visual fatigue. Every visual decision—every margin, line, and contrast ratio—should actively reduce cognitive load rather than increase it. Information is presented contextually, and secondary details are deferred until requested, keeping the developer's attention locked on their work.
+Software development demands intense, sustained focus. DepRadar must never become a source of distraction or visual fatigue. Every visual decision—every margin, line, and contrast ratio—should actively reduce cognitive load rather than increase it. Information is presented contextually, and secondary details are deferred until requested, keeping the developer's attention locked on their work.
 
 ### Structure Over Clutter
 
@@ -54,7 +54,7 @@ Complex data is organized into high-fidelity visual structures and clear chronol
 
 ### Professional Sophistication
 
-VibePulse is designed for professionals. It uses a clean, modern aesthetic with consistent layouts, balanced typography, and a cohesive, understated color palette. It values utility and subtle elegance over superficial flair.
+DepRadar is designed for professionals. It uses a clean, modern aesthetic with consistent layouts, balanced typography, and a cohesive, understated color palette. It values utility and subtle elegance over superficial flair.
 
 ---
 
@@ -62,7 +62,7 @@ VibePulse is designed for professionals. It uses a clean, modern aesthetic with 
 
 The user interface is designed to evoke specific emotions when a developer views their session profile or timeline:
 
-- **Calmness**: When checking VibePulse, the user should feel a sense of mental relief. Even if their development session was chaotic, the interface should organize that chaos into a structured, understandable story.
+- **Calmness**: When checking DepRadar, the user should feel a sense of mental relief. Even if their development session was chaotic, the interface should organize that chaos into a structured, understandable story.
 - **Confidence**: The UI should reassure developers that their work is being captured reliably. The visual hierarchy, the precision of the timestamps, and the clarity of the summaries should feel rock-solid.
 - **Awareness**: Users should walk away with a clearer understanding of their own habits—recognizing their peak focus hours, identifying when they got stuck, and understanding their language distribution without manual logging.
 
@@ -72,7 +72,7 @@ The user interface is designed to evoke specific emotions when a developer views
 
 ### The Palette of Focus
 
-VibePulse uses a refined, dark-first color palette designed to reduce eye strain during long coding sessions.
+DepRadar uses a refined, dark-first color palette designed to reduce eye strain during long coding sessions.
 
 - **Primary Backgrounds**: Deep, rich slate and charcoal tones (not pure black) that create depth and separate the interface from the browser frame.
 - **Accents**: Curated, low-saturation hues (e.g., muted amber for warnings, slate blue for primary actions, subtle teal for success). High-vibrancy primary colors are used sparingly, reserved solely for critical notifications or active indicators.
@@ -143,10 +143,10 @@ The user interface should feel instantaneous. A slow observability tool defeats 
 
 ## 12. What We Avoid
 
-To preserve the calm, focused character of VibePulse, the following elements must never appear in the UI:
+To preserve the calm, focused character of DepRadar, the following elements must never appear in the UI:
 
 - **Hacker/Cyberpunk Themes**: No glowing green-on-black terminal fonts, mock retro scans, or sci-fi borders.
-- **Gamification**: No leaderboard rankings, "streak" trophies, developer productivity badges, or competitive grading. VibePulse is a tool for self-awareness, not a workplace management scoreboard.
+- **Gamification**: No leaderboard rankings, "streak" trophies, developer productivity badges, or competitive grading. DepRadar is a tool for self-awareness, not a workplace management scoreboard.
 - **Clashing Vibrant Gradients**: No aggressive purple-to-pink neon transitions or high-vibrancy primary button arrays.
 - **Intrusive Overlays**: No unprompted popups, marketing modal dialogs, or aggressive onboarding tours that interrupt the developer's flow.
 
@@ -154,7 +154,7 @@ To preserve the calm, focused character of VibePulse, the following elements mus
 
 ## 13. Success Criteria
 
-A screen design or interaction in VibePulse is considered successful if:
+A screen design or interaction in DepRadar is considered successful if:
 
 1.  **It can be read at a glance**: A developer can glance at the page for three seconds and immediately understand what they worked on and how focused the session was.
 2.  **It reduces stress**: The interface feels like a sanctuary of order, bringing structure to a complex coding session.

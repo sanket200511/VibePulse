@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 
-const base = "D:\\VibePulse-Seminar-Demo";
+const base = "D:\\DepRadar-Seminar-Demo";
 const settingsPath = path.join(base, "config", "settings.py");
 
 const content = `import os

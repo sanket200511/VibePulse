@@ -1,4 +1,4 @@
-# VibePulse — Canonical Scoring & Mathematical Reference
+# DepRadar — Canonical Scoring & Mathematical Reference
 
 **Status**: IMPLEMENTATION-VERIFIED MATHEMATICAL REFERENCE
 **Source Code**: `apps/api/app/features/project_health/service.py`, `security_intelligence/service.py`, `predictive_intelligence/service.py`

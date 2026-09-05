@@ -1,4 +1,4 @@
-import { Badge } from "@vibepulse/ui";
+import { Badge } from "@depradar/ui";
 import { useState } from "react";
 import type { DevelopmentEvent } from "./types";
 import { EventAnalysisDetails } from "./EventAnalysisDetails";

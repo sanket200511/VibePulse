@@ -2,7 +2,7 @@
 
 ## Overview
 
-Presentation Mode is a top-level orchestrator that guides first-time users through the VibePulse capabilities via a cinematic, Apple Keynote-style walkthrough. It controls routing and highlights specific components with a dynamic spotlight overlay, ensuring users understand the determinism and power of the system without manual exploration.
+Presentation Mode is a top-level orchestrator that guides first-time users through the DepRadar capabilities via a cinematic, Apple Keynote-style walkthrough. It controls routing and highlights specific components with a dynamic spotlight overlay, ensuring users understand the determinism and power of the system without manual exploration.
 
 ## State Machine
 

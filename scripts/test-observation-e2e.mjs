@@ -1,8 +1,8 @@
 import fs from "fs";
 import path from "path";
 
-const testProjectDir = "D:\\VibePulse-Observation-Test";
-const primaryDemoDir = "D:\\VibePulse-Seminar-Demo";
+const testProjectDir = "D:\\DepRadar-Observation-Test";
+const primaryDemoDir = "D:\\DepRadar-Seminar-Demo";
 const API_URL = process.env.VIBEPULSE_API_URL || process.env.API_URL || "http://localhost:5184";
 const DAEMON_URL =
   process.env.VIBEPULSE_DAEMON_URL || process.env.DAEMON_URL || "http://localhost:5185";
@@ -111,7 +111,7 @@ async function runE2E() {
   } finally {
     // Safely remove test project from PostgreSQL
     if (testProjectId) {
-      console.log("      Safely removing disposable project from VibePulse DB...");
+      console.log("      Safely removing disposable project from DepRadar DB...");
       try {
         await fetch(`${API_URL}/api/projects/${testProjectId}?force=true`, { method: "DELETE" });
       } catch {}

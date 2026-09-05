@@ -6,7 +6,7 @@
  * "Loading...".
  */
 
-import { cn } from "@vibepulse/ui";
+import { cn } from "@depradar/ui";
 
 export interface LoadingStateProps {
   /** What is happening, e.g. "Preparing your development story…". */

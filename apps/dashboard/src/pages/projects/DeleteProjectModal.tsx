@@ -96,7 +96,7 @@ export function DeleteProjectModal({
             </div>
             <div>
               <h3 id="delete-project-title" className="text-primary-text text-base font-bold">
-                Remove from VibePulse
+                Remove from DepRadar
               </h3>
               <p className="text-secondary-text text-xs">Safe deletion of observation history</p>
             </div>
@@ -140,7 +140,7 @@ export function DeleteProjectModal({
           <div className="bg-card-subtle/50 border-border rounded-xl border p-4 text-xs">
             <div className="text-secondary-text mb-2.5 flex items-center gap-1.5 font-semibold">
               <Database className="h-3.5 w-3.5" />
-              VibePulse will permanently remove its stored PostgreSQL data:
+              DepRadar will permanently remove its stored PostgreSQL data:
             </div>
             <ul className="text-secondary-text list-disc space-y-1.5 pl-4 marker:text-red-400">
               <li>
@@ -194,7 +194,7 @@ export function DeleteProjectModal({
 
           {deleteMutation.isError && !conflictError && (
             <div className="rounded-lg bg-red-500/10 p-3 text-xs text-red-400">
-              {deleteMutation.error?.message || "Failed to remove project from VibePulse."}
+              {deleteMutation.error?.message || "Failed to remove project from DepRadar."}
             </div>
           )}
         </div>
@@ -218,7 +218,7 @@ export function DeleteProjectModal({
             {deleteMutation.isPending ? (
               <>
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Removing from VibePulse...
+                Removing from DepRadar...
               </>
             ) : (
               "Remove Project"

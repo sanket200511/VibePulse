@@ -1,6 +1,6 @@
-# VibePulse Documentation
+# DepRadar Documentation
 
-Welcome to the comprehensive technical documentation for **VibePulse** — The Deterministic Engineering Intelligence Platform & AI Copilot Foundation.
+Welcome to the comprehensive technical documentation for **DepRadar** — The Deterministic Engineering Intelligence Platform & AI Copilot Foundation.
 
 ---
 

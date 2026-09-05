@@ -1,6 +1,6 @@
-# VibePulse Visual Language
+# DepRadar Visual Language
 
-This document defines the complete visual identity, sensory personality, and compositional DNA of VibePulse. It serves as the visual architecture specification, bridging design philosophy with component implementation. Every future user interface element must derive from the rules established in this document.
+This document defines the complete visual identity, sensory personality, and compositional DNA of DepRadar. It serves as the visual architecture specification, bridging design philosophy with component implementation. Every future user interface element must derive from the rules established in this document.
 
 This document focus entirely on aesthetics, perception, and visual communication. It contains no React imports, CSS classes, Tailwind utility names, HTML nodes, or platform-specific variables.
 
@@ -8,7 +8,7 @@ This document focus entirely on aesthetics, perception, and visual communication
 
 ## 1. Visual Personality
 
-VibePulse’s interface communicates with quiet authority, functioning as a high-fidelity observation deck for engineering. Its visual personality is defined by five characteristics:
+DepRadar’s interface communicates with quiet authority, functioning as a high-fidelity observation deck for engineering. Its visual personality is defined by five characteristics:
 
 - **Calm**: Visual noise is actively suppressed. The interface does not clamor for attention with flashing banners or aggressive colors. It sits quietly at rest, creating a sanctuary for focus.
 - **Intentional**: Every visual node—every border, margin, font size, and layout block—exists for a single, logical reason. Nothing is approximate or accidental.
@@ -16,7 +16,7 @@ VibePulse’s interface communicates with quiet authority, functioning as a high
 - **Technical**: The interface honors the precision of software engineering. Monospaced paths, structured sequences, and exact timestamps are styled with architectural respect.
 - **Reflective**: The visual hierarchy, spacing, and progression encourage retrospective self-analysis.
 
-### What VibePulse is Never:
+### What DepRadar is Never:
 
 - _Corporate_: It does not look like a sales dashboard or a management spreadsheet.
 - _Playful_: It avoids round, bubbly shapes, whimsical illustrations, or casual copy.
@@ -27,7 +27,7 @@ VibePulse’s interface communicates with quiet authority, functioning as a high
 
 ## 2. First Impression
 
-A developer's perception of VibePulse evolves systematically across their initial interactions:
+A developer's perception of DepRadar evolves systematically across their initial interactions:
 
 - **Within 3 Seconds**: The developer experiences a feeling of visual relief and structural order. They immediately recognize that the screen is clean, quiet, and formatted to prevent eye strain.
 - **Within 10 Seconds**: The developer gains basic comprehension of today’s work. The narrative summary headline and active session indicators stand out, explaining what happened without forcing them to read detailed charts.
@@ -67,7 +67,7 @@ Light is used to establish visual depth and direct developer focus.
 
 - **Contrast as Depth**: Visual hierarchy is created by contrasting adjacent neutral layers. As elements stack closer to the user in physical space, they reflect more light (using slightly lighter neutral values).
 - **Highlights & Elevation**: Accent highlights are applied sparingly, reserved for active cursor focus, primary action buttons, or recording indicators.
-- **Focus & Calmness**: Instead of using high-brightness borders or neon glows, VibePulse uses soft, low-contrast neutral tones. Light behaves naturally, diffusing across borders to guide the developer's eye without demanding attention.
+- **Focus & Calmness**: Instead of using high-brightness borders or neon glows, DepRadar uses soft, low-contrast neutral tones. Light behaves naturally, diffusing across borders to guide the developer's eye without demanding attention.
 
 ---
 
@@ -100,7 +100,7 @@ Interaction behaviors are consistent and predictable across the entire applicati
 
 ## 8. Emotional Rhythm
 
-VibePulse maps visual transitions to the natural emotional phases of a developer's day:
+DepRadar maps visual transitions to the natural emotional phases of a developer's day:
 
 - **Beginning**: The user opens the app. The dashboard feels clean, organized, and calm, reducing pre-work stress (_Curiosity_ and _Calmness_).
 - **Exploration**: The developer reviews active workspaces and session histories, navigating routes with fluid, responsive ease (_Understanding_).
@@ -136,7 +136,7 @@ The Dashboard, Timeline, Replay, and AI Insights feel like one cohesive family b
 
 ## 11. Anti-Patterns
 
-To preserve VibePulse's professional character, the interface must never resemble the following:
+To preserve DepRadar's professional character, the interface must never resemble the following:
 
 - **A Gaming Dashboard**: No high-contrast neon health bars, level metrics, or flashing achievements.
 - **A Crypto Dashboard**: No green/red ticker tapes, market-style dial charts, or rapid real-time counter animations.
@@ -151,6 +151,6 @@ To preserve VibePulse's professional character, the interface must never resembl
 
 The Visual Language is successful if:
 
-1.  **Immediate Brand Recognition**: A developer can glance at a screenshot of VibePulse for one second and instantly know: _"This is VibePulse,"_ even if the logo, brand name, and text are blurred out.
+1.  **Immediate Brand Recognition**: A developer can glance at a screenshot of DepRadar for one second and instantly know: _"This is DepRadar,"_ even if the logo, brand name, and text are blurred out.
 2.  **Calmness is Achieved**: The interface consistently feels like a quiet sanctuary, reducing eye strain and cognitive fatigue during extended sessions.
 3.  **High Utility remains Primary**: The aesthetics never compromise data readability; every design choice directly supports software engineering self-reflection.

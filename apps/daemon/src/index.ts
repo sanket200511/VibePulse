@@ -1,5 +1,5 @@
 /**
- * VibePulse Daemon – Composition root.
+ * DepRadar Daemon – Composition root.
  *
  * Pipeline:
  *   WatchManager (Watcher → Normaliser) → Gate → Debouncer → Queue → Publisher → API
@@ -11,7 +11,7 @@
  *     POST /control/observe/start|stop
  */
 
-import { parsePort, getEnv } from "@vibepulse/config";
+import { parsePort, getEnv } from "@depradar/config";
 import { loadDaemonEnv, watchEnvFile } from "./env-loader";
 import { loadConfig } from "./config";
 import { createObservationGate } from "./observation-gate";
@@ -36,7 +36,7 @@ async function main(): Promise<void> {
   const apiUrl = getEnv("VIBEPULSE_API_URL") ?? getEnv("API_URL") ?? "http://localhost:5184";
 
   logger.info("=========================================");
-  logger.info("           VibePulse Daemon              ");
+  logger.info("           DepRadar Daemon              ");
   logger.info("=========================================");
   logger.info(`Initial Target : ${rawWatchRoot}`);
   logger.info(`API            : ${apiUrl}`);

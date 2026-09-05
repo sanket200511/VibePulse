@@ -1,4 +1,4 @@
-# VibePulse — Examiner Viva Master Defense Sheet
+# DepRadar — Examiner Viva Master Defense Sheet
 
 **Purpose**: High-impact, defensible, oral answers for project evaluators, professors, and examiners.
 **Core Motto**: _Observe continuously. Derive deterministically. Never hallucinate._
@@ -9,15 +9,15 @@
 
 ### 30-Second Elevator Pitch
 
-> _"VibePulse is a deterministic engineering intelligence platform that observes local filesystem activity in real time. Instead of waiting for Git commits or CI/CD pipelines, VibePulse continuously captures developer churn, analyzes syntax with static AST rules, detects hardcoded secrets with automatic `[REDACTED]` masking, and provides a 100% deterministic AI Copilot over 16 canonical query families with zero hallucination risk."_
+> _"DepRadar is a deterministic engineering intelligence platform that observes local filesystem activity in real time. Instead of waiting for Git commits or CI/CD pipelines, DepRadar continuously captures developer churn, analyzes syntax with static AST rules, detects hardcoded secrets with automatic `[REDACTED]` masking, and provides a 100% deterministic AI Copilot over 16 canonical query families with zero hallucination risk."_
 
 ### 1-Minute Executive Summary
 
-> _"Traditional engineering tools suffer from milestone bias: they only see code after it is committed or deployed. VibePulse introduces continuous filesystem telemetry via a local Node.js daemon that streams events to a FastAPI intelligence engine backed by PostgreSQL. From this single ground truth, VibePulse calculates a 5-dimension Unified Health Score ($0 \dots 100$), correlates security incidents with causal DAGs, forecasts code churn hotspots, and builds a semantic Knowledge Graph. Crucially, our Copilot interface uses deterministic query routing with explicit fact provenance—`[OBSERVED]`, `[INFERRED]`, and `[UNKNOWN]`—ensuring that every statement is strictly backed by database evidence."_
+> _"Traditional engineering tools suffer from milestone bias: they only see code after it is committed or deployed. DepRadar introduces continuous filesystem telemetry via a local Node.js daemon that streams events to a FastAPI intelligence engine backed by PostgreSQL. From this single ground truth, DepRadar calculates a 5-dimension Unified Health Score ($0 \dots 100$), correlates security incidents with causal DAGs, forecasts code churn hotspots, and builds a semantic Knowledge Graph. Crucially, our Copilot interface uses deterministic query routing with explicit fact provenance—`[OBSERVED]`, `[INFERRED]`, and `[UNKNOWN]`—ensuring that every statement is strictly backed by database evidence."_
 
 ### 3-Minute Technical Walkthrough
 
-> _"VibePulse operates on a 10-stage canonical lifecycle: **Observe, Detect, Understand, Investigate, Resolve, Learn, Predict, Ask, Act, and Memory**._
+> _"DepRadar operates on a 10-stage canonical lifecycle: **Observe, Detect, Understand, Investigate, Resolve, Learn, Predict, Ask, Act, and Memory**._
 >
 > 1. _In Stage 1 (Observe), our daemon captures debounced file modifications and hashes diffs into PostgreSQL `development_events`._
 > 2. _In Stage 2 (Detect), Tree-Sitter and Python AST analyzers inspect syntax to catch `SEC001` hardcoded credentials and `DEBUG_TRUE` flags, automatically masking raw tokens to `[REDACTED]`._
@@ -42,13 +42,13 @@
 
 ### Q3: Why not use an external LLM (like GPT-4 or Claude)?
 
-> **Answer**: Generative LLMs are non-deterministic, prone to hallucination, introduce high API latency and cost, and risk leaking proprietary code to third-party cloud servers. VibePulse achieves sub-65ms deterministic query synthesis by querying relational ground truth directly.
+> **Answer**: Generative LLMs are non-deterministic, prone to hallucination, introduce high API latency and cost, and risk leaking proprietary code to third-party cloud servers. DepRadar achieves sub-65ms deterministic query synthesis by querying relational ground truth directly.
 
 ### Q4: Isn't your Copilot just rule-based?
 
 > **Answer**: Yes, and that is an intentional engineering design. It is a deterministic classifier and multi-domain canonical retriever. For mission-critical engineering telemetry and security risk metrics, determinism and exact mathematical provenance are far more reliable than probabilistic approximations.
 
-### Q5: Where is the "AI" in VibePulse?
+### Q5: Where is the "AI" in DepRadar?
 
 > **Answer**: The intelligence lies in automated static AST pattern matching, multi-dimensional weighted composite scoring ($W_i \times S_i$), causal incident graph reconstruction, linear regression churn forecasting, and semantic knowledge graph projection.
 
@@ -58,15 +58,15 @@
 
 ### Q7: How is this different from GitHub Copilot?
 
-> **Answer**: GitHub Copilot is a code-completion tool that generates lines of code inside an editor. VibePulse is a project-level engineering intelligence platform that evaluates repository health, security posture, churn hotspots, and resolution history.
+> **Answer**: GitHub Copilot is a code-completion tool that generates lines of code inside an editor. DepRadar is a project-level engineering intelligence platform that evaluates repository health, security posture, churn hotspots, and resolution history.
 
 ### Q8: How is this different from SonarQube?
 
-> **Answer**: SonarQube runs batch scans on integrated builds. VibePulse observes continuous sub-second developer churn as code is being edited, providing instant feedback and preserving historical causal timelines.
+> **Answer**: SonarQube runs batch scans on integrated builds. DepRadar observes continuous sub-second developer churn as code is being edited, providing instant feedback and preserving historical causal timelines.
 
 ### Q9: How is this different from Sentry?
 
-> **Answer**: Sentry captures runtime application crashes in production. VibePulse observes pre-commit development activity and code construction on the developer's local workstation.
+> **Answer**: Sentry captures runtime application crashes in production. DepRadar observes pre-commit development activity and code construction on the developer's local workstation.
 
 ### Q10: What happens when the FastAPI backend is down?
 
@@ -86,7 +86,7 @@
 
 ### Q14: Can your system detect every possible security vulnerability?
 
-> **Answer**: No. VibePulse uses high-precision static AST rules (`SEC001`, `DEBUG_TRUE`, credential regex) to catch common misconfigurations and credential leaks without execution overhead. It is not a full dynamic symbolic execution engine.
+> **Answer**: No. DepRadar uses high-precision static AST rules (`SEC001`, `DEBUG_TRUE`, credential regex) to catch common misconfigurations and credential leaks without execution overhead. It is not a full dynamic symbolic execution engine.
 
 ### Q15: Can your system predict production failures?
 
@@ -158,7 +158,7 @@
 
 ### Q32: Is this production-ready?
 
-> **Answer**: VibePulse is fully verified for local development and academic evaluation within its documented workstation scope. Production deployment would require containerized daemon agents and distributed PostgreSQL clustering.
+> **Answer**: DepRadar is fully verified for local development and academic evaluation within its documented workstation scope. Production deployment would require containerized daemon agents and distributed PostgreSQL clustering.
 
 ### Q33: What would you change if given 6 more months?
 

@@ -2,9 +2,9 @@
 
 ## Context
 
-VibePulse's initial iteration provided fragmented visibility. Users had to visit the `Events` page for the raw feed, the `Projects` page for high-level summaries, and the `Sessions` page for deep dives into replay or architecture.
+DepRadar's initial iteration provided fragmented visibility. Users had to visit the `Events` page for the raw feed, the `Projects` page for high-level summaries, and the `Sessions` page for deep dives into replay or architecture.
 
-In Sprint PX-10.0, the **Engineering Story** dashboard was introduced as the unified, flagship experience of VibePulse. The goal is to answer a single question immediately upon viewing: _"What happened while this software was being built?"_
+In Sprint PX-10.0, the **Engineering Story** dashboard was introduced as the unified, flagship experience of DepRadar. The goal is to answer a single question immediately upon viewing: _"What happened while this software was being built?"_
 
 ## Purpose
 
@@ -20,7 +20,7 @@ The Engineering Story is a single-pane-of-glass narrative that combines Project 
 
 ## Truth Boundary
 
-As per VibePulse's core philosophy, the Engineering Story contains **no AI hallucinations, no inferred productivity scores, and no estimated effort metrics**. Every timeline node, architecture change, and security finding is deterministically traced back to a raw `AnalyzableEvent` captured by the filesystem daemon.
+As per DepRadar's core philosophy, the Engineering Story contains **no AI hallucinations, no inferred productivity scores, and no estimated effort metrics**. Every timeline node, architecture change, and security finding is deterministically traced back to a raw `AnalyzableEvent` captured by the filesystem daemon.
 
 ## Navigation & Replay Integration
 

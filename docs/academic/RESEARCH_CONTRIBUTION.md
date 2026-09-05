@@ -1,4 +1,4 @@
-# VibePulse: A Deterministic Event-Driven Architecture for Continuous Engineering Intelligence and Grounded AI Copilots
+# DepRadar: A Deterministic Event-Driven Architecture for Continuous Engineering Intelligence and Grounded AI Copilots
 
 **Academic Contribution Document & Technical Treatise**
 
@@ -14,9 +14,9 @@ Modern software engineering organizations struggle with fragmented, ephemeral vi
 2. **Ephemeral Context**: Incidents are discussed in out-of-band communication channels (Slack, Jira) without durable causal links to the underlying code edits.
 3. **LLM Hallucination & Risk**: Generative AI tools often fabricate architectural claims or leak unredacted credentials due to a lack of grounded, deterministic state projections.
 
-## 3. Proposed VibePulse Architecture
+## 3. Proposed DepRadar Architecture
 
-VibePulse introduces a decoupled, 3-tier architecture:
+DepRadar introduces a decoupled, 3-tier architecture:
 
 - **Observation Daemon (Node.js)**: Continuous local filesystem monitoring and change hashing.
 - **Intelligence Engine (FastAPI / PostgreSQL)**: Static AST parsing, multi-dimensional health scoring, predictive risk forecasting, and knowledge graph construction.
@@ -32,11 +32,11 @@ Development telemetry is captured at sub-second granularity as `development_even
 
 ## 5. Evidence-Backed Engineering Intelligence
 
-Every metric in VibePulse is traceable to concrete raw events. When a risk score or health grade is presented, the system generates an explicit mathematical breakdown and causal evidence chain.
+Every metric in DepRadar is traceable to concrete raw events. When a risk score or health grade is presented, the system generates an explicit mathematical breakdown and causal evidence chain.
 
 ## 6. Deterministic Intelligence
 
-VibePulse avoids probabilistic approximations for core metrics. Intelligence states are computed as pure mathematical functions over stored PostgreSQL rows, guaranteeing that identical telemetry inputs always yield identical analytical projections ($A \equiv B$).
+DepRadar avoids probabilistic approximations for core metrics. Intelligence states are computed as pure mathematical functions over stored PostgreSQL rows, guaranteeing that identical telemetry inputs always yield identical analytical projections ($A \equiv B$).
 
 ## 7. Security Intelligence & AST Guardrails
 

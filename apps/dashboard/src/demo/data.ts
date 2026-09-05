@@ -5,7 +5,7 @@ import type { HealthReport } from "../pages/sessions/health-types";
 import type { SessionProfile } from "../pages/sessions/insights-types";
 
 // COHERENT STORY:
-// Developer is building the VibePulse observability daemon.
+// Developer is building the DepRadar observability daemon.
 // They had a completed session yesterday (session_vibesync_001) which has rich replay, health, timeline, and insights.
 // They have an active session today (session_vibesync_002) which is what is shown on the main dashboard.
 

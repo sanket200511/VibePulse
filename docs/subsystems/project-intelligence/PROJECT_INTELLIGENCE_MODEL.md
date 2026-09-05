@@ -1,12 +1,12 @@
 # Project Intelligence Truth Model (PX-8.3)
 
-This document establishes the deterministic boundaries and formulas for VibePulse Project Intelligence. It enforces the "Observe First, Derive Carefully" mandate by ensuring every signal is reproducible from persisted telemetry without assuming developer psychology or unproven codebase states.
+This document establishes the deterministic boundaries and formulas for DepRadar Project Intelligence. It enforces the "Observe First, Derive Carefully" mandate by ensuring every signal is reproducible from persisted telemetry without assuming developer psychology or unproven codebase states.
 
 ## 1. Truth Matrix
 
 | Signal                                      | Source Table | Source Field(s)                       | Aggregation Strategy                                                                  | Direct/Derived | Semantic Meaning                                              | Forbidden Interpretation                       | Performance Cost                | MVP Decision |
 | ------------------------------------------- | ------------ | ------------------------------------- | ------------------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------- | ---------------------------------------------- | ------------------------------- | ------------ |
-| **Observation Window**                      | `sessions`   | `started_at`, `last_event_at`         | `MIN(started_at)` and `MAX(last_event_at)` WHERE `project_id = ?`                     | Direct         | The time boundaries of actual VibePulse observation.          | Repository age, project start/end dates.       | Very Low (indexed sweep)        | **Include**  |
+| **Observation Window**                      | `sessions`   | `started_at`, `last_event_at`         | `MIN(started_at)` and `MAX(last_event_at)` WHERE `project_id = ?`                     | Direct         | The time boundaries of actual DepRadar observation.           | Repository age, project start/end dates.       | Very Low (indexed sweep)        | **Include**  |
 | **Observed Sessions**                       | `sessions`   | `id`                                  | `COUNT(id)`                                                                           | Direct         | Total number of recorded development sessions.                | Developer work sessions, productivity.         | Very Low                        | **Include**  |
 | **Total Events**                            | `sessions`   | `event_count`                         | `SUM(event_count)`                                                                    | Derived        | Total volume of tracked file and IDE events.                  | Developer output, lines of code, effort.       | Low                             | **Include**  |
 | **Language Activity**                       | `sessions`   | `languages` (JSONB)                   | `SUM(value)` via JSONB key expansion (`jsonb_each_text`) across all project sessions. | Derived        | Distribution of observed events grouped by language.          | Codebase language composition, repository LOC. | Medium (JSONB expansion)        | **Include**  |
@@ -20,7 +20,7 @@ This document establishes the deterministic boundaries and formulas for VibePuls
 
 **Rationale:**
 
-1. **Existing Optimization:** The VibePulse Session Engine already performs incremental rollups (`event_count`, `languages`, `files`, `events_by_type`) as events arrive. We do NOT need to aggregate millions of raw `development_events`.
+1. **Existing Optimization:** The DepRadar Session Engine already performs incremental rollups (`event_count`, `languages`, `files`, `events_by_type`) as events arrive. We do NOT need to aggregate millions of raw `development_events`.
 2. **Cardinality:** A project typically has tens to thousands of `sessions`, not millions. Expanding and aggregating JSONB columns (`jsonb_each_text`) over 1,000 rows in PostgreSQL takes low milliseconds.
 3. **Simplicity:** No write amplification. No migration of a `project_summaries` table. No stale data cache invalidation.
 4. **Conclusion:** Live aggregation over `sessions` is strictly the MVP architectural sweet spot.

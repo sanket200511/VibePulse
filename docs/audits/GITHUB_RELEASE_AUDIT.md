@@ -1,10 +1,10 @@
-# VibePulse — GitHub Release Cleanliness Audit
+# DepRadar — GitHub Release Cleanliness Audit
 
 > **Status**: Historical Snapshot (Pre-Release Cleanliness Audit)
 > **Superseded by**: [`docs/audits/FINAL_RELEASE_ACCEPTANCE.md`](FINAL_RELEASE_ACCEPTANCE.md)
 
 **Audit Timestamp**: August 2026
-**Auditor**: VibePulse System Architecture Suite
+**Auditor**: DepRadar System Architecture Suite
 **Result**: **100% CLEAN — ZERO JUNK, SECRETS, OR TEMPORARY ARTIFACTS**
 
 ---

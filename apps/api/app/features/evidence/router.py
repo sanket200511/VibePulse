@@ -22,7 +22,7 @@ router = APIRouter(
 @router.get(
     "/{entity_type}/{entity_id}",
     response_model=EntityExplainabilityResponse,
-    summary="Explain why VibePulse arrived at a specific conclusion",
+    summary="Explain why DepRadar arrived at a specific conclusion",
 )
 async def get_entity_explanation(
     project_id: uuid.UUID,

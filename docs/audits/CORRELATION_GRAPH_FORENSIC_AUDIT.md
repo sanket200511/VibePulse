@@ -1,4 +1,4 @@
-# VibePulse Correlation & Causality Graph — Forensic Audit
+# DepRadar Correlation & Causality Graph — Forensic Audit
 
 **Audit Date:** 2026-08-25  
 **Audited Subsystems:** Knowledge Graph, Investigation Engine 3.0, Security Intelligence, Unified Project Health, Predictive Intelligence, AI Copilot, Project Context, Frontend Dashboard  
@@ -8,9 +8,9 @@
 
 ## 1. Executive Summary
 
-This forensic audit evaluates VibePulse's existing Knowledge Graph foundation to establish the blueprint for extending it into a **Correlation & Causality Graph**.
+This forensic audit evaluates DepRadar's existing Knowledge Graph foundation to establish the blueprint for extending it into a **Correlation & Causality Graph**.
 
-VibePulse already possesses a deterministic graph projection engine in `apps/api/app/features/knowledge_graph` and a rich UI in `apps/dashboard/src/pages/knowledge-graph`. However, the current graph primarily models structural relationships (`CONTAINS`, `BELONGS_TO`, `ASSOCIATED_WITH`, `AFFECTS`, `RESOLVED_BY`, `SUPPORTS`, `CONTRIBUTES_TO`) in a grouped grid view.
+DepRadar already possesses a deterministic graph projection engine in `apps/api/app/features/knowledge_graph` and a rich UI in `apps/dashboard/src/pages/knowledge-graph`. However, the current graph primarily models structural relationships (`CONTAINS`, `BELONGS_TO`, `ASSOCIATED_WITH`, `AFFECTS`, `RESOLVED_BY`, `SUPPORTS`, `CONTRIBUTES_TO`) in a grouped grid view.
 
 To achieve complete causal traceability:
 $$\text{OBSERVED EVENT} \longrightarrow \text{FINDING} \longrightarrow \text{INCIDENT} \longrightarrow \text{ROOT CAUSE / INVESTIGATION} \longrightarrow \text{HEALTH IMPACT} \longrightarrow \text{RESOLUTION} \longrightarrow \text{PREDICTION} \longrightarrow \text{PROJECT MEMORY}$$
@@ -107,7 +107,7 @@ All derivations remain 100% grounded in PostgreSQL telemetry (`development_event
    - `get_incident_detail_3` already computes causal root cause and risk evolution.
 4. **Secret Masking & Security Invariants (`_mask_secret`)**:
    - Proven regex masking ensures zero credential exposure across all graph nodes and edges.
-5. **Breadcrumbs & UI Component System (`@vibepulse/ui`)**:
+5. **Breadcrumbs & UI Component System (`@depradar/ui`)**:
    - High-contrast dark theme badges, modals, and buttons.
 
 ---
@@ -153,6 +153,6 @@ All derivations remain 100% grounded in PostgreSQL telemetry (`development_event
   - Backend pytest tests (graph projection, traversal, evidence, isolation, secret redaction).
   - Frontend Vitest tests (selection, inspector, focus mode, traversal, deep-linking).
 - **PHASE 10: Live Seminar Demo Validation**
-  - Validate against `VibePulse-Seminar-Demo` in browser runtime.
+  - Validate against `DepRadar-Seminar-Demo` in browser runtime.
 - **PHASE 11: Final Implementation Documentation**
   - Create `docs/audits/CORRELATION_GRAPH_IMPLEMENTATION.md`.

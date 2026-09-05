@@ -1,4 +1,4 @@
-# VibePulse API Reference
+# DepRadar API Reference
 
 **Status**: Authoritative API Reference
 **Base URL**: `http://localhost:5184`
@@ -25,7 +25,7 @@ Retrieves a specific project by UUID.
 
 ### `DELETE /api/projects/{project_id}`
 
-Safely deletes a project from VibePulse. Cascades deletion strictly to internal database records; physical files on disk remain untouched.
+Safely deletes a project from DepRadar. Cascades deletion strictly to internal database records; physical files on disk remain untouched.
 
 ---
 

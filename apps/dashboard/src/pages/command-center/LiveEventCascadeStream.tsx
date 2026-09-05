@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { FileCode, Search, ArrowRight, Radio, Clock, Sparkles } from "lucide-react";
-import { Badge } from "@vibepulse/ui";
+import { Badge } from "@depradar/ui";
 import type { LiveCascadeEvent } from "./useCommandCenter";
 import type { UnifiedProjectHealth } from "../projects/useProjectHealth";
 import type { SecurityIntelligence, SecurityFinding } from "../security/types";

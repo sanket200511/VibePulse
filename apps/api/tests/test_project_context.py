@@ -28,9 +28,9 @@ async def test_get_or_create_project_context_empty(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_project_context_derived_from_real_events(client: AsyncClient):
-    root_path = rf"D:\Test-Projects\VibePulse-{uuid.uuid4().hex[:8]}"
+    root_path = rf"D:\Test-Projects\DepRadar-{uuid.uuid4().hex[:8]}"
     p_res = await client.post(
-        "/api/projects", json={"root_path": root_path, "display_name": "VibePulse-App"}
+        "/api/projects", json={"root_path": root_path, "display_name": "DepRadar-App"}
     )
     assert p_res.status_code == 200
     p_id = p_res.json()["id"]
@@ -263,7 +263,7 @@ async def test_export_project_context_markdown(client: AsyncClient):
     assert "## 13. Security Posture" in md_text
     assert "## 14. Activity Summary" in md_text
     assert "# AI Handoff Context" in md_text
-    assert "## What VibePulse Knows" in md_text
+    assert "## What DepRadar Knows" in md_text
     assert "## Unknown / Not Yet Observed" in md_text
     assert "## Recommended First Questions for an AI Agent" in md_text
     assert "## Context Provenance" in md_text

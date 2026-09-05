@@ -18,8 +18,8 @@ const mockInvestigationResponse = {
     {
       id: "event-123",
       timestamp: "2026-08-22T10:00:00Z",
-      project_root: "D:/VibePulse-Seminar-Demo",
-      project_name: "VibePulse-Seminar-Demo",
+      project_root: "D:/DepRadar-Seminar-Demo",
+      project_name: "DepRadar-Seminar-Demo",
       session_id: "sess-1",
       file_path: "config/settings.py",
       file_name: "settings.py",
@@ -66,7 +66,7 @@ const mockInvestigationResponse = {
 const mockIncidentDetail = {
   investigation_id: "inv-inc_sec001",
   project_id: "c95554c9-2b13-4b2d-882a-660cd2da14fe",
-  project_display_name: "VibePulse-Seminar-Demo",
+  project_display_name: "DepRadar-Seminar-Demo",
   incident_id: "inc_sec001",
   title: "Observed Development Incident",
   summary: "Critical security violation in settings.py",

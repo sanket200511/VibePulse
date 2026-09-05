@@ -13,7 +13,7 @@ function runCmdThrow(cmd, cwd = rootDir) {
 
 console.log("\n===============================================");
 console.log("WARNING:");
-console.log("This will delete all local VibePulse database tables and data.");
+console.log("This will delete all local DepRadar database tables and data.");
 console.log("This action is destructive and cannot be undone.");
 console.log("===============================================\n");
 

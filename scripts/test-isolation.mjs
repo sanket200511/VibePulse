@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 
-const secondaryBase = "D:\\VibePulse-Seminar-Secondary";
+const secondaryBase = "D:\\DepRadar-Seminar-Secondary";
 
 fs.mkdirSync(secondaryBase, { recursive: true });
 fs.writeFileSync(
@@ -34,7 +34,7 @@ async function main() {
     const listRes = await fetch(`${API_URL}/api/projects`);
     const list = await listRes.json();
     const hasSecondary = list.projects.some((p) => p.root_path === secondaryBase);
-    const hasPrimary = list.projects.some((p) => p.root_path === "D:\\VibePulse-Seminar-Demo");
+    const hasPrimary = list.projects.some((p) => p.root_path === "D:\\DepRadar-Seminar-Demo");
     console.log("Both projects distinct in API:", { hasSecondary, hasPrimary });
 
     // Switch daemon back to primary demo project first (so secondary is not active)
@@ -42,17 +42,17 @@ async function main() {
     await fetch(`${DAEMON_URL}/watch`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ root: "D:\\VibePulse-Seminar-Demo" }),
+      body: JSON.stringify({ root: "D:\\DepRadar-Seminar-Demo" }),
     });
     await new Promise((r) => setTimeout(r, 1000));
 
     // Now delete secondary project safely via API
-    console.log("3. Safely removing secondary project from VibePulse...");
+    console.log("3. Safely removing secondary project from DepRadar...");
     const delRes = await fetch(`${API_URL}/api/projects/${switchData.project_id}?force=true`, {
       method: "DELETE",
     });
     const delData = await delRes.json();
-    console.log("Secondary project removed from VibePulse:", delData.deleted);
+    console.log("Secondary project removed from DepRadar:", delData.deleted);
 
     // Verify physical directory still exists untouched
     const dirExists = fs.existsSync(path.join(secondaryBase, "app.py"));

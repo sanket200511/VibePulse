@@ -1,4 +1,4 @@
-# VibePulse Product Experience
+# DepRadar Product Experience
 
 Version: 1.0
 Status: Authoritative — Product Architecture Blueprint
@@ -7,11 +7,11 @@ Status: Authoritative — Product Architecture Blueprint
 
 ## About This Document
 
-This document is the master blueprint for how developers experience VibePulse. It does not introduce new product philosophy — [[VISION.md]], [[docs/design/PRODUCT_PRINCIPLES.md]], [[docs/design/UX_PRINCIPLES.md]], [[docs/design/COPY_GUIDELINES.md]], [[docs/design/MOTION.md]], and [[docs/adr/0009-health-engine.md]] already establish who VibePulse is for, what it values, how it speaks, and how it moves. What did not exist until now was a single place that connects those principles to a concrete journey, screen structure, and navigation model — the thing a Staff Frontend Engineer actually needs before building a single screen.
+This document is the master blueprint for how developers experience DepRadar. It does not introduce new product philosophy — [[VISION.md]], [[docs/design/PRODUCT_PRINCIPLES.md]], [[docs/design/UX_PRINCIPLES.md]], [[docs/design/COPY_GUIDELINES.md]], [[docs/design/MOTION.md]], and [[docs/adr/0009-health-engine.md]] already establish who DepRadar is for, what it values, how it speaks, and how it moves. What did not exist until now was a single place that connects those principles to a concrete journey, screen structure, and navigation model — the thing a Staff Frontend Engineer actually needs before building a single screen.
 
 Three governing decisions shape everything below, and are stated once here rather than repeated at every section:
 
-1. **Authority.** [[docs/adr/0009-health-engine.md]] and every file under `docs/design/` are the authoritative source of current product philosophy. Root `DESIGN.md`'s "Health Score" (circular progress, large number, trend arrow, score history) and "Dashboard" framing are historical concepts, superseded by the Health Engine's actual score-free design and by VibePulse's "Developer Workspace" identity. They are not used as source material here and are expected to be corrected in a future, separate Documentation Alignment sprint.
+1. **Authority.** [[docs/adr/0009-health-engine.md]] and every file under `docs/design/` are the authoritative source of current product philosophy. Root `DESIGN.md`'s "Health Score" (circular progress, large number, trend arrow, score history) and "Dashboard" framing are historical concepts, superseded by the Health Engine's actual score-free design and by DepRadar's "Developer Workspace" identity. They are not used as source material here and are expected to be corrected in a future, separate Documentation Alignment sprint.
 2. **Reflection is Insights.** "Reflection" is the user-facing product name for the feature engineered, tested, and documented as `insights` (ADR-0007). There is one screen and one experience — this document never treats them as two things wearing one name.
 3. **Target, not current.** This document describes where the product experience should be, independent of `SessionDetailsPage.tsx`'s present section order. Where today's implementation diverges from the architecture below, it is called out explicitly as **implementation drift**, to be resolved in a future frontend sprint — not a reason to shape this document around today's UI.
 
@@ -21,17 +21,17 @@ This document stays at the level of product architecture: journeys, screens, hie
 
 ## 1. Product Experience Summary
 
-VibePulse is a **Developer Workspace**, not an analytics dashboard, not a productivity tracker, not an AI wrapper ([[docs/design/PRODUCT_PRINCIPLES.md]], Vision). It exists to help a developer understand their own development process — to **Observe, Understand, Replay, Reflect, and Evolve** ([[docs/design/PRODUCT_PRINCIPLES.md]], Product Pillars) — without ever judging, ranking, or surveilling the person doing the work.
+DepRadar is a **Developer Workspace**, not an analytics dashboard, not a productivity tracker, not an AI wrapper ([[docs/design/PRODUCT_PRINCIPLES.md]], Vision). It exists to help a developer understand their own development process — to **Observe, Understand, Replay, Reflect, and Evolve** ([[docs/design/PRODUCT_PRINCIPLES.md]], Product Pillars) — without ever judging, ranking, or surveilling the person doing the work.
 
 Five documents already define how this identity should feel and speak, and this document treats each as a fixed input rather than something to re-derive:
 
-- **[[VISION.md]]** answers _why_ VibePulse exists — the observability gap opened by AI-assisted development — and states the product should feel Calm, Reflective, Developer-first, Timeless, and Intelligent without being intrusive.
+- **[[VISION.md]]** answers _why_ DepRadar exists — the observability gap opened by AI-assisted development — and states the product should feel Calm, Reflective, Developer-first, Timeless, and Intelligent without being intrusive.
 - **[[docs/design/PRODUCT_PRINCIPLES.md]]** translates that vision into six Core Values (Clarity, Reflection, Trust, Explainability, Calm, Timelessness) and four Design Principles (Story Over Statistics, Context Before Detail, Progress Over Perfection, Simplicity Through Structure).
 - **[[docs/design/UX_PRINCIPLES.md]]** translates those values into interface-level rules: one primary purpose per screen, progressive disclosure, context-first orientation, and mandatory accessibility.
 - **[[docs/design/COPY_GUIDELINES.md]]** makes the product's voice consistent everywhere that voice appears — calm, direct, never fabricated, never celebratory about a developer's habits.
 - **[[docs/design/MOTION.md]]** makes movement consistent with that same voice — motion communicates state, never decorates, and Replay is the one place allowed continuous, cinematic movement, because it is "an interactive story," never a video.
 
-What none of these documents do — deliberately, since none of them were scoped to — is describe the actual sequence of screens a developer moves through, how those screens relate to each other structurally, or how VibePulse's shipped backend capabilities (Events, Analysis, Sessions, Timeline, Insights, Replay, Health) surface as a coherent, navigable product. That is this document's sole job. Everything that follows is an application of the five documents above to concrete journeys, screens, hierarchy, and navigation — never a departure from them.
+What none of these documents do — deliberately, since none of them were scoped to — is describe the actual sequence of screens a developer moves through, how those screens relate to each other structurally, or how DepRadar's shipped backend capabilities (Events, Analysis, Sessions, Timeline, Insights, Replay, Health) surface as a coherent, navigable product. That is this document's sole job. Everything that follows is an application of the five documents above to concrete journeys, screens, hierarchy, and navigation — never a departure from them.
 
 ---
 
@@ -57,27 +57,27 @@ Every other experience begins from here.
 
 ## 2. Complete Developer Journey
 
-Every journey below follows the same shape: what the developer is trying to do, how they feel while doing it, how the product responds, what action (if any) is theirs to take, and how they — and VibePulse — know the journey is complete.
+Every journey below follows the same shape: what the developer is trying to do, how they feel while doing it, how the product responds, what action (if any) is theirs to take, and how they — and DepRadar — know the journey is complete.
 
 ### 2.1 First Launch
 
 - **User goal:** Understand what this tool is and whether it's worth pointing at real work, in under a minute.
 - **Emotional state:** Curious but wary — another tool asking for attention, unproven.
-- **Product response:** A calm, honest explanation of what VibePulse does (observes, never generates or modifies code) and what it will need (a project to watch). No setup wizard, no forced multi-step onboarding flow, no marketing language ([[docs/design/COPY_GUIDELINES.md]], "Things We Never Say").
+- **Product response:** A calm, honest explanation of what DepRadar does (observes, never generates or modifies code) and what it will need (a project to watch). No setup wizard, no forced multi-step onboarding flow, no marketing language ([[docs/design/COPY_GUIDELINES.md]], "Things We Never Say").
 - **Primary action:** Connect a first project.
 - **Completion criteria:** The developer can state, in their own words, "it watches my work and shows it back to me" — and knows the single next step is connecting a project.
 
 ### 2.2 Connecting a Project
 
-- **User goal:** Get VibePulse observing real work with minimal ceremony, then get back to coding.
+- **User goal:** Get DepRadar observing real work with minimal ceremony, then get back to coding.
 - **Emotional state:** Slightly impatient — this is a means to an end, not the point of using the product.
 - **Product response:** One clear path, stating plainly what will be observed (file changes, language, git context, session activity) and what will not (code content is never generated or altered). Confirms success with quiet confidence, not celebration ("Project connected." not "You're all set! 🎉").
-- **Primary action:** Point VibePulse's daemon at a project directory.
+- **Primary action:** Point DepRadar's daemon at a project directory.
 - **Completion criteria:** The project appears as connected and in a "waiting for activity" state — never an error, never a blank unexplained screen.
 
 ### 2.3 Beginning a Session
 
-- **User goal:** Start coding without thinking about VibePulse at all.
+- **User goal:** Start coding without thinking about DepRadar at all.
 - **Emotional state:** Focused on the actual work; any friction here is a direct cost to that focus.
 - **Product response:** A session begins automatically, in the background, the moment observed activity starts ([[VISION.md]] Principles, "Observe, don't interrupt"). No popup, no confirmation prompt, no sound.
 - **Primary action:** None — this journey has no user action by design.
@@ -85,7 +85,7 @@ Every journey below follows the same shape: what the developer is trying to do, 
 
 ### 2.4 Live Development
 
-- **User goal:** Occasionally check what VibePulse has seen so far, without breaking concentration.
+- **User goal:** Occasionally check what DepRadar has seen so far, without breaking concentration.
 - **Emotional state:** Deep focus; interruption is the enemy here, not information.
 - **Product response:** A live Timeline is available on demand, updated over the existing WebSocket channel, but nothing surfaces uninvited — no badges, no toasts, no attention-seeking indicators while the developer is heads-down.
 - **Primary action:** Optionally glance at the current session's state.
@@ -129,7 +129,7 @@ Every journey below follows the same shape: what the developer is trying to do, 
 - **Emotional state:** Re-orienting — wants "where did I leave off," not a guilt-inducing streak count.
 - **Product response:** Workspace Home surfaces the most recent session and any notable carryover context, phrased the same calm, non-judgmental way as everything else in the product.
 - **Primary action:** Open the most recent session, or begin a new one by starting to code.
-- **Completion criteria:** The developer knows "where things stand" within seconds of opening VibePulse.
+- **Completion criteria:** The developer knows "where things stand" within seconds of opening DepRadar.
 
 ### 2.10 Future AI-Assisted Workflow
 
@@ -148,7 +148,7 @@ Every screen below is described the same way: its purpose, the developer it's bu
 ### 3.1 Workspace Home
 
 - **Purpose:** Orient the developer — what's happening now, what happened most recently, where their projects stand.
-- **Primary user:** A developer opening VibePulse at the start of a day, or returning mid-day.
+- **Primary user:** A developer opening DepRadar at the start of a day, or returning mid-day.
 - **Primary action:** Open the current or most recent session.
 - **Secondary actions:** Switch projects, jump to History, connect a new project.
 - **Dependencies:** Sessions (current status), Timeline (last-session summary).
@@ -158,8 +158,8 @@ Every screen below is described the same way: its purpose, the developer it's bu
 ### 3.2 Connect Project
 
 - **Purpose:** Bring a new project under observation, with full transparency about what will and won't be captured.
-- **Primary user:** A developer setting up VibePulse for the first time, or adding an additional project.
-- **Primary action:** Point VibePulse at a project directory.
+- **Primary user:** A developer setting up DepRadar for the first time, or adding an additional project.
+- **Primary action:** Point DepRadar at a project directory.
 - **Secondary actions:** Review what is/isn't observed before confirming.
 - **Dependencies:** Daemon connectivity.
 - **Future scalability:** Extends naturally to Cloud Sync (Section 7) as an additional connection method, not a redesign.
@@ -193,7 +193,7 @@ Every screen below is described the same way: its purpose, the developer it's bu
 - **Secondary actions:** Connect a new project, disconnect one.
 - **Dependencies:** Project connection state (Section 3.2).
 - **Future scalability:** Gains a Team-scoped grouping level (Section 7) without changing its per-project purpose.
-- **Ownership within product:** The map of everything VibePulse currently watches.
+- **Ownership within product:** The map of everything DepRadar currently watches.
 
 ### 3.6 Developer Profile _(future)_
 
@@ -233,7 +233,7 @@ Every screen below is described the same way: its purpose, the developer it's bu
 - **Secondary actions:** Manage connected projects, manage Cloud Sync connection.
 - **Dependencies:** None functional — purely presentational/preference state.
 - **Future scalability:** Naturally absorbs Cloud Sync account state and Team membership settings.
-- **Ownership within product:** The one place "how VibePulse behaves for me" lives; deliberately never contains a toggle that would let a user hide Reflection's honesty (e.g. no "don't tell me about interruptions").
+- **Ownership within product:** The one place "how DepRadar behaves for me" lives; deliberately never contains a toggle that would let a user hide Reflection's honesty (e.g. no "don't tell me about interruptions").
 
 ### 3.10 Notifications _(future)_
 
@@ -248,7 +248,7 @@ Every screen below is described the same way: its purpose, the developer it's bu
 ### 3.11 Team Workspace _(future, Post-v1)_
 
 - **Purpose:** Extend Workspace Home, Projects, and History to a team's shared set of projects.
-- **Primary user:** A member of an engineering team using VibePulse together.
+- **Primary user:** A member of an engineering team using DepRadar together.
 - **Primary action:** Move between personal and team-scoped views.
 - **Secondary actions:** Manage team membership (depends on Phase 5 auth).
 - **Dependencies:** Authentication and multi-tenancy (Phase 5, per [[ROADMAP.md]]).
@@ -336,7 +336,7 @@ _Five-second check: a first-time developer can tell, before doing anything, exac
 
 ## 6. Interaction Model
 
-VibePulse's natural movement follows one path, with two peer on-ramps: **Workspace → Session → (Replay → Reflection, within Session) → History → Projects → Future AI (within Session)**.
+DepRadar's natural movement follows one path, with two peer on-ramps: **Workspace → Session → (Replay → Reflection, within Session) → History → Projects → Future AI (within Session)**.
 
 **Workspace Home is the hub.** From here, a developer opens the current or most recent Session. History and Projects are peer entry points that also lead into a Session — they exist to help a developer _find_ the right session, not to compete with Workspace Home as an alternate hub.
 
@@ -384,7 +384,7 @@ None of the above requires a new navigation model, a new anchor category beyond 
 
 ## 8. Product Experience Roadmap
 
-Each sprint below is independently shippable: it has one clear objective, can be tested and reviewed on its own, and leaves VibePulse in a releasable state when it lands — following the same Capability → Review → Hardening → Next Capability discipline already established in [[ROADMAP.md]].
+Each sprint below is independently shippable: it has one clear objective, can be tested and reviewed on its own, and leaves DepRadar in a releasable state when it lands — following the same Capability → Review → Hardening → Next Capability discipline already established in [[ROADMAP.md]].
 
 - **PX-1 — Workspace Shell.** Build the persistent anchor set (Workspace Home, Projects, History), the Contextual Navigation model, and the shared empty/loading/error state system. No feature content yet. _Testable/reviewable as: can a developer move between the three anchors and understand where they are, with nothing else built yet?_
 - **PX-2 — Home Experience.** Workspace Home's full Information Hierarchy: current/recent session state, quick entry to the last completed session, project quick-switch.

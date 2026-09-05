@@ -1,9 +1,9 @@
-# VibePulse — Final Release Acceptance & Truth Reconciliation Report
+# DepRadar — Final Release Acceptance & Truth Reconciliation Report
 
 **Document Status**: AUTHORITATIVE RELEASE GATE  
 **Audit Timestamp**: August 2026  
 **Auditor**: Release Engineering & Architectural Quality Assurance  
-**Repository**: [https://github.com/sanket200511/VibePulse](https://github.com/sanket200511/VibePulse)  
+**Repository**: [https://github.com/sanket200511/Vortex-DepRadar](https://github.com/sanket200511/Vortex-DepRadar)  
 **Release Gate Verdict**: **RELEASE-READY / ACCEPTED**
 
 ---
@@ -168,7 +168,7 @@ All current and authoritative documents have been reconciled with single canonic
 | Verification Suite / Artifact        | Command / Target                              | Result                               | Verdict |
 | ------------------------------------ | --------------------------------------------- | ------------------------------------ | ------- |
 | **Backend Pytest Suite**             | `cd apps/api && uv run pytest`                | **348 / 348 passed**                 | `PASS`  |
-| **Daemon Vitest Suite**              | `pnpm --filter @vibepulse/daemon test`        | **130 / 130 passed**                 | `PASS`  |
+| **Daemon Vitest Suite**              | `pnpm --filter @depradar/daemon test`         | **130 / 130 passed**                 | `PASS`  |
 | **Monorepo TypeScript Typecheck**    | `pnpm typecheck`                              | **5 / 5 packages passed (0 errors)** | `PASS`  |
 | **Monorepo Linting (ESLint + Ruff)** | `pnpm lint`                                   | **5 / 5 packages passed (0 errors)** | `PASS`  |
 | **Monorepo Code Formatting**         | `pnpm format --check`                         | **100% Prettier formatted**          | `PASS`  |

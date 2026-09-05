@@ -2,11 +2,11 @@
 
 ## Context
 
-In Sprint PX-11.0, VibePulse introduces the Engineering Time Machine. Previously, all views rendered the full present state of the project. The Time Machine allows developers to reconstruct the historical evolution of the codebase deterministically.
+In Sprint PX-11.0, DepRadar introduces the Engineering Time Machine. Previously, all views rendered the full present state of the project. The Time Machine allows developers to reconstruct the historical evolution of the codebase deterministically.
 
 ## The Time Machine Engine
 
-To ensure single-source-of-truth reconstruction, VibePulse uses a centralized **Time Machine Engine** (implemented via React Context).
+To ensure single-source-of-truth reconstruction, DepRadar uses a centralized **Time Machine Engine** (implemented via React Context).
 
 Instead of each UI component (e.g., Project Pulse, Timeline) implementing its own `useMemo` time-filtering logic, they receive already-sliced data from the Engine.
 

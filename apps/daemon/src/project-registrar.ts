@@ -37,7 +37,7 @@ export async function checkApiHealth(apiUrl: string): Promise<boolean> {
 }
 
 /**
- * Registers or ensures a project exists in the VibePulse backend.
+ * Registers or ensures a project exists in the DepRadar backend.
  * Idempotent: returns existing project record if already registered.
  */
 export async function ensureProject(

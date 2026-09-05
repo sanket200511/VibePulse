@@ -1,7 +1,7 @@
 name: vibepulse
 
 # ─────────────────────────────────────────────────────────────────────────────
-# VibePulse – Local development stack
+# DepRadar – Local development stack
 #
 # Run:  docker compose up -d
 # Stop: docker compose down

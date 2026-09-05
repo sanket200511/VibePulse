@@ -1,4 +1,4 @@
-# VibePulse — Final Defense Claims & Verification Guide
+# DepRadar — Final Defense Claims & Verification Guide
 
 **Audience**: Final-Year Project Examiners, Viva Panels, Evaluators, Reviewers
 

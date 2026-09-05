@@ -1,4 +1,4 @@
-# VibePulse — System Architecture Specification
+# DepRadar — System Architecture Specification
 
 **Status**: Authoritative Architecture Specification
 **Architecture Freeze**: Active
@@ -10,11 +10,11 @@
 
 ## 1. Architectural Mission & Principles
 
-VibePulse is a deterministic, event-driven engineering intelligence and investigation platform. It provides an end-to-end continuous loop from passive filesystem telemetry to causal root cause investigation, predictive risk forecasting, semantic knowledge graph traversal, and zero-hallucination AI Copilot assistance.
+DepRadar is a deterministic, event-driven engineering intelligence and investigation platform. It provides an end-to-end continuous loop from passive filesystem telemetry to causal root cause investigation, predictive risk forecasting, semantic knowledge graph traversal, and zero-hallucination AI Copilot assistance.
 
 ### Core Architectural Principles
 
-1. **Passive Observation**: VibePulse never writes, suggests, or modifies user source code. It passively observes filesystem mutations, AST changes, and developer session boundaries.
+1. **Passive Observation**: DepRadar never writes, suggests, or modifies user source code. It passively observes filesystem mutations, AST changes, and developer session boundaries.
 2. **PostgreSQL as Single Source of Truth**: All metrics, graphs, incidents, and copilot answers are pure deterministic projections over immutable PostgreSQL records. There are zero duplicate in-memory state machines.
 3. **Deterministic Reconstructibility ($A \equiv B$)**: Replaying the canonical event log yields an exact, bit-for-bit identical state for health scores, causal DAGs, knowledge graphs, and resolution histories.
 4. **Secret Redaction by Design**: AST parsers mask sensitive credentials matching secret patterns to `[REDACTED]` before persistence and presentation.
@@ -152,4 +152,4 @@ All intelligence is derived from 7 canonical tables in PostgreSQL:
 - **Determinism**: State is 100% reconstructible ($A \equiv B$).
 - **Test Suite**: 348 Backend Pytest + 130 Daemon Vitest tests passing.
 - **Multi-Project Isolation**: Tenant telemetry is completely partitioned by `project_id`.
-- **Safe Lifecycle**: Project deletion removes only VibePulse telemetry database records; source code on disk is never modified or deleted.
+- **Safe Lifecycle**: Project deletion removes only DepRadar telemetry database records; source code on disk is never modified or deleted.

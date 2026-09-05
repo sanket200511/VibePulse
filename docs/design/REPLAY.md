@@ -1,6 +1,6 @@
-# VibePulse Replay Experience
+# DepRadar Replay Experience
 
-This document defines the complete Replay experience for VibePulse. It serves as the experiential and structural design specification for VibePulse's session playback engine, ensuring that replay acts as a reflective, clean reconstruction of software evolution rather than an ornamental animation.
+This document defines the complete Replay experience for DepRadar. It serves as the experiential and structural design specification for DepRadar's session playback engine, ensuring that replay acts as a reflective, clean reconstruction of software evolution rather than an ornamental animation.
 
 This document focuses on presentation logic, pacing mechanics, and visual attention rules. It contains no React component scripts, CSS styling variables, Tailwind configurations, or media player implementation code.
 
@@ -8,7 +8,7 @@ This document focuses on presentation logic, pacing mechanics, and visual attent
 
 ## 1. Replay Philosophy
 
-VibePulse Replay reconstructs a software engineering session from observable filesystem and command line events.
+DepRadar Replay reconstructs a software engineering session from observable filesystem and command line events.
 
 It is not a video screen recording, an IDE keylogger, a terminal keystroke recording, or a movie. Video screen recordings fail because they consume gigabytes of storage, capture sensitive background windows, and force developers to watch hours of static screens. IDE recordings capture trivial keystrokes rather than macro progress.
 
@@ -142,7 +142,7 @@ If a project has no recorded telemetry, the Replay view remains a beautiful visu
 
 ## 14. Demo Mode
 
-During presentations, Replay serves as a showcase for VibePulse's engineering depth.
+During presentations, Replay serves as a showcase for DepRadar's engineering depth.
 
 - **Curated Rhythms**: In Demo Mode, the playback runs a pre-loaded, highly authentic session (e.g., creating a module, writing tests, debugging, refactoring, and committing). Pacing is optimized to complete the showcase within a 45-second replay window, demonstrating the dynamic compression and timeline relationship cleanly.
 

@@ -1,6 +1,6 @@
 # Project Read Model
 
-This document outlines the design decisions and architectural boundaries for the `Project` entity's Read Model and its representation in the VibePulse dashboard, as established in the PX-8.2 phase.
+This document outlines the design decisions and architectural boundaries for the `Project` entity's Read Model and its representation in the DepRadar dashboard, as established in the PX-8.2 phase.
 
 ## 1. What the Read Model Includes vs Excludes
 
@@ -11,7 +11,7 @@ The canonical `ProjectRead` model is strictly limited to deterministic fields th
 - `id`: The canonical UUID of the project.
 - `display_name`: The human-readable name of the project (typically derived from the root directory name).
 - `root_path`: The canonical, normalized absolute path to the project on the observed filesystem.
-- `created_at`: The exact timestamp when VibePulse first observed this project.
+- `created_at`: The exact timestamp when DepRadar first observed this project.
 - `updated_at`: The exact timestamp of the most recent observation or modification.
 
 ### Excluded (Derivations and Analytics)
@@ -25,7 +25,7 @@ The Read Model explicitly **excludes**:
 
 ## 2. Rationale for Exclusions
 
-VibePulse adheres to a strict architectural rule: **Observe First. Derive Carefully. Infer Only When Evidence Supports It.**
+DepRadar adheres to a strict architectural rule: **Observe First. Derive Carefully. Infer Only When Evidence Supports It.**
 
 Embedding derived metrics directly into the `ProjectRead` model forces the database to perform complex, unbounded aggregations on every project fetch. By excluding derivations like session counts or active states from the core model:
 

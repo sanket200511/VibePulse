@@ -33,10 +33,10 @@ export function AppLayout() {
           <Link
             to="/"
             className="text-foreground hover:text-accent-color focus-visible:ring-ring inline-flex items-center gap-2 rounded-lg text-sm font-extrabold tracking-tight transition-colors focus-visible:outline-none focus-visible:ring-2"
-            aria-label="VibePulse Workspace Home"
+            aria-label="DepRadar Workspace Home"
           >
             <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-              VibePulse
+              DepRadar
             </span>
           </Link>
           <div className="flex items-center gap-4">

@@ -1,4 +1,4 @@
-# VibePulse Canonical Intelligence Pipeline
+# DepRadar Canonical Intelligence Pipeline
 
 ```mermaid
 flowchart LR

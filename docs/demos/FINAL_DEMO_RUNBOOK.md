@@ -1,4 +1,4 @@
-# VibePulse — Final Demonstration Runbook & Presentation Guide
+# DepRadar — Final Demonstration Runbook & Presentation Guide
 
 **Audience**: Final-Year Project Evaluators, Professors, Academic Examiners, and Technical Judges
 **Core Thesis**: _Observe First. Derive Carefully. Never Invent._
@@ -11,7 +11,7 @@ Run this 2 minutes before the presentation begins:
 
 - [ ] **PostgreSQL**: Running on port `5432` with latest schema (`alembic upgrade head`).
 - [ ] **FastAPI Backend**: `uv run uvicorn app.main:app --port 5184` (Healthy at `http://localhost:5184/health`).
-- [ ] **React Dashboard**: `pnpm --filter @vibepulse/dashboard dev` (Accessible at `http://localhost:5183`).
+- [ ] **React Dashboard**: `pnpm --filter @depradar/dashboard dev` (Accessible at `http://localhost:5183`).
 - [ ] **Node Observation Daemon**: Operational on port `5185` (`http://localhost:5185/health`).
 - [ ] **Seminar Doctor Audit**: Run `node scripts/seminar-doctor.mjs` and confirm all checks pass.
 - [ ] **Browser**: Open `http://localhost:5183` in full screen (Dark Mode enabled).
@@ -24,7 +24,7 @@ Run this 2 minutes before the presentation begins:
 
 - **Action**: Open Dashboard at Command Center. Start observation daemon on the sample banking project.
 - **What to Say**:
-  > _"Modern engineering visibility is broken. Git only sees finished commits, and AI coding assistants frequently hallucinate project architecture. VibePulse introduces continuous filesystem observation. Without manual developer reporting, every change is captured into PostgreSQL ground truth."_
+  > _"Modern engineering visibility is broken. Git only sees finished commits, and AI coding assistants frequently hallucinate project architecture. DepRadar introduces continuous filesystem observation. Without manual developer reporting, every change is captured into PostgreSQL ground truth."_
 
 ### Minute 2: Security Detection & Redaction (Stages 2 & 3)
 
@@ -36,13 +36,13 @@ Run this 2 minutes before the presentation begins:
 
 - **Action**: Click into Investigation from the active incident card.
 - **What to Say**:
-  > _"VibePulse doesn't just sound an alarm—it reconstructs the entire causal DAG. We can see the exact file modification, the triggered rule, and why the Health Score degraded."_
+  > _"DepRadar doesn't just sound an alarm—it reconstructs the entire causal DAG. We can see the exact file modification, the triggered rule, and why the Health Score degraded."_
 
 ### Minute 4: AI Copilot without Hallucination (Stage 8)
 
 - **Action**: Type _"What should I fix first?"_ into the Command Center Copilot mini-console.
 - **What to Say**:
-  > _"Unlike generic LLMs that guess, VibePulse's Copilot is 100% deterministic. Every single statement is categorized into `[OBSERVED]` telemetry, `[INFERRED]` intelligence, or `[UNKNOWN]` boundaries."_
+  > _"Unlike generic LLMs that guess, DepRadar's Copilot is 100% deterministic. Every single statement is categorized into `[OBSERVED]` telemetry, `[INFERRED]` intelligence, or `[UNKNOWN]` boundaries."_
 
 ### Minute 5: Remediation & Closed-Loop Recovery (Stages 5, 9 & 10)
 

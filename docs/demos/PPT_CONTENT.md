@@ -1,14 +1,14 @@
-# VibePulse — Final Presentation Slide Deck Content (18 Slides)
+# DepRadar — Final Presentation Slide Deck Content (18 Slides)
 
 ---
 
 ### Slide 1: Title Slide
 
-- **Title**: **VibePulse**
+- **Title**: **DepRadar**
 - **Subtitle**: An Event-Driven Deterministic Architecture for Continuous Engineering Intelligence & Grounded Copilot Orchestration
 - **Presenter Details**: B.Tech Final Year Project Presentation
 - **What to Say**:
-  > _"Good morning. Today we present VibePulse, an engineering intelligence platform designed to observe code evolution in real time and provide deterministic, evidence-backed intelligence without generative LLM hallucination."_
+  > _"Good morning. Today we present DepRadar, an engineering intelligence platform designed to observe code evolution in real time and provide deterministic, evidence-backed intelligence without generative LLM hallucination."_
 
 ---
 
@@ -45,7 +45,7 @@
   - **Observation Tier**: Node.js daemon / TypeScript / Chokidar file watcher.
 - **Suggested Figure**: `docs/diagrams/system-architecture.md`
 - **What to Say**:
-  > _"VibePulse follows a decoupled 3-tier architecture. The local Node.js daemon watches filesystem changes and streams events to FastAPI, which projects intelligence directly from PostgreSQL."_
+  > _"DepRadar follows a decoupled 3-tier architecture. The local Node.js daemon watches filesystem changes and streams events to FastAPI, which projects intelligence directly from PostgreSQL."_
 
 ---
 
@@ -107,7 +107,7 @@
   - Formal triage state machine: `OPEN` $\to$ `INVESTIGATING` $\to$ `REVIEWED` $\to$ `RESOLVED`.
   - Immutable audit history persisted in `incident_review_history`.
 - **What to Say**:
-  > _"When an incident occurs, VibePulse traces the root cause back to the exact modifying event and permanently logs the engineer's resolution notes."_
+  > _"When an incident occurs, DepRadar traces the root cause back to the exact modifying event and permanently logs the engineer's resolution notes."_
 
 ---
 
@@ -216,4 +216,4 @@
   - Full academic report, runbooks, and test suites available.
   - **Open for Questions & Live Demonstration**.
 - **What to Say**:
-  > _"In conclusion, VibePulse proves that engineering intelligence can be continuous, explainable, and deterministic. Thank you, and we are now open for questions."_
+  > _"In conclusion, DepRadar proves that engineering intelligence can be continuous, explainable, and deterministic. Thank you, and we are now open for questions."_

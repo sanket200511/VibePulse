@@ -1,6 +1,6 @@
-# VibePulse Dashboard Experience
+# DepRadar Dashboard Experience
 
-This document defines the complete Dashboard experience for VibePulse. It serves as the experiential and structural design specification for the primary interface, ensuring the dashboard acts as the developer's calm, focused Mission Control for their workday.
+This document defines the complete Dashboard experience for DepRadar. It serves as the experiential and structural design specification for the primary interface, ensuring the dashboard acts as the developer's calm, focused Mission Control for their workday.
 
 This document focuses on layout philosophy, information hierarchy, and visual behavior. It contains no React component declarations, CSS styling rules, Tailwind utility classes, or platform-specific variables.
 
@@ -8,7 +8,7 @@ This document focuses on layout philosophy, information hierarchy, and visual be
 
 ## 1. Purpose
 
-The VibePulse Dashboard exists to answer a single question for the developer:
+The DepRadar Dashboard exists to answer a single question for the developer:
 
 > **"How is my engineering journey going today?"**
 
@@ -79,7 +79,7 @@ The system tracks historical patterns to provide context for today's session. Ho
 
 ## 7. First Impression
 
-During the first five seconds of opening VibePulse, the user must experience a feeling of visual relief and organization.
+During the first five seconds of opening DepRadar, the user must experience a feeling of visual relief and organization.
 
 - **What Attracts Attention**: The primary focal point must be today’s high-level narrative summary—a clear, plain-language description of today’s focus.
 - **What Remains Quiet**: Metrics, directories, timeline details, and secondary navigation elements must remain understated. They exist to support the primary narrative, not compete with it.
@@ -171,7 +171,7 @@ Layout blocks are organized as single-purpose information modules:
 
 ## 14. Metrics Philosophy
 
-VibePulse rejects vanity metrics that create stress or false targets.
+DepRadar rejects vanity metrics that create stress or false targets.
 
 - **Value-Driven Metrics**: Metrics exist only if they directly help the developer understand their work rhythm (e.g., duration of flow state, distribution of language focus, or length of active sessions).
 - **No Gamification**: Avoid metrics like "total lines of code added," "edits per minute," or "productivity grades." Big, high-contrast numbers are banned unless they represent a clean duration counter.
@@ -183,7 +183,7 @@ VibePulse rejects vanity metrics that create stress or false targets.
 The dashboard experience for new users must feel welcoming, encouraging, and clean:
 
 - **No Broken Layouts**: If no session data exists, the dashboard must not show empty cards, error codes, or broken outlines.
-- **Visual Sanctuary**: The screen displays a beautifully aligned empty state container featuring an encouraging welcome message, a clear explanation of how VibePulse observes, and a single, primary action button to register the first workspace.
+- **Visual Sanctuary**: The screen displays a beautifully aligned empty state container featuring an encouraging welcome message, a clear explanation of how DepRadar observes, and a single, primary action button to register the first workspace.
 
 ---
 
@@ -231,7 +231,7 @@ The Dashboard succeeds when:
 
 ## 20. Emotional Journey
 
-Opening VibePulse must feel like entering a quietly organized workspace:
+Opening DepRadar must feel like entering a quietly organized workspace:
 
 > _"Someone quietly organized my workday."_
 

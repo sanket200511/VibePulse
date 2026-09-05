@@ -1,8 +1,8 @@
 # Deployment Guide
 
-This guide describes how to deploy VibePulse in a production environment (v1.0.0).
+This guide describes how to deploy DepRadar in a production environment (v1.0.0).
 
-VibePulse is designed as a single-tenant or internal tooling application. Because of the nature of file system observation, the **Daemon** runs locally on the developer's machine, while the **API**, **Database**, and **Dashboard** can be hosted centrally.
+DepRadar is designed as a single-tenant or internal tooling application. Because of the nature of file system observation, the **Daemon** runs locally on the developer's machine, while the **API**, **Database**, and **Dashboard** can be hosted centrally.
 
 ## Production Topology
 
@@ -36,8 +36,8 @@ The provided `docker-compose.yml` supports spinning up the API along with its de
 1. Clone the repository on your server:
 
    ```bash
-   git clone https://github.com/sanket200511/VibePulse.git
-   cd VibePulse
+   git clone https://github.com/sanket200511/Vortex-DepRadar.git
+   cd DepRadar
    ```
 
 2. Configure environment variables for production:
@@ -66,7 +66,7 @@ The provided `docker-compose.yml` supports spinning up the API along with its de
 
 ## 2. Deploying the Dashboard (Frontend)
 
-The VibePulse dashboard is a statically generated single-page application (SPA). It can be hosted on Vercel, AWS S3 + CloudFront, Nginx, or directly via the provided Docker setup.
+The DepRadar dashboard is a statically generated single-page application (SPA). It can be hosted on Vercel, AWS S3 + CloudFront, Nginx, or directly via the provided Docker setup.
 
 ### Building for Production
 
@@ -78,7 +78,7 @@ If deploying manually (e.g., to an Nginx server):
    ```
 2. Build the Vite application:
    ```bash
-   pnpm --filter @vibepulse/dashboard build
+   pnpm --filter @depradar/dashboard build
    ```
 3. Copy the output:
    The `apps/dashboard/dist` folder contains the production-ready assets.
@@ -125,7 +125,7 @@ Every developer participating in the workspace must run the daemon locally to tr
    ```
 4. Start the daemon:
    ```bash
-   pnpm --filter @vibepulse/daemon dev
+   pnpm --filter @depradar/daemon dev
    ```
 
 _(Note: Daemon binary packaging via `pkg` or `bun` is tracked for a post-v1.0 release)._

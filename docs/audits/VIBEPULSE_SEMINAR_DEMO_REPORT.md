@@ -1,10 +1,10 @@
-# VibePulse — Live Seminar Demonstration Audit Report
+# DepRadar — Live Seminar Demonstration Audit Report
 
 **Report Date:** 2026-08-22T17:11:00+05:30  
 **Status:** READY FOR LIVE DEMONSTRATION & SCREEN RECORDING  
-**Project Name:** `VibePulse-Seminar-Demo`  
+**Project Name:** `DepRadar-Seminar-Demo`  
 **Project ID:** `c95554c9-2b13-4b2d-882a-660cd2da14fe`  
-**Project Root Path:** `D:\VibePulse-Seminar-Demo`  
+**Project Root Path:** `D:\DepRadar-Seminar-Demo`  
 **Authoritative Backend:** `http://127.0.0.1:5184` (PostgreSQL `:5432`)  
 **Dashboard UI:** `http://localhost:5183`
 
@@ -12,7 +12,7 @@
 
 ## 1. Executive Summary
 
-A complete, live engineering scenario was executed against the **VibePulse** platform using the dedicated demo project `VibePulse-Seminar-Demo`. The project was registered through the official API, populated with real multi-subsystem source code, observed by the telemetry daemon, subjected to deterministic AST security violations (`SEC001`, `DEBUG_TRUE`), correlated into an incident investigation, remediated with multi-tier review history, enriched with predictive churn modeling, materialized into a 40-node Knowledge Graph, and queried via the zero-hallucination AI Copilot.
+A complete, live engineering scenario was executed against the **DepRadar** platform using the dedicated demo project `DepRadar-Seminar-Demo`. The project was registered through the official API, populated with real multi-subsystem source code, observed by the telemetry daemon, subjected to deterministic AST security violations (`SEC001`, `DEBUG_TRUE`), correlated into an incident investigation, remediated with multi-tier review history, enriched with predictive churn modeling, materialized into a 40-node Knowledge Graph, and queried via the zero-hallucination AI Copilot.
 
 The project remains **fully active and persistent in PostgreSQL** and available for immediate screen recording and committee evaluation.
 
@@ -86,7 +86,7 @@ The project remains **fully active and persistent in PostgreSQL** and available 
 ## 4. UI/UX & Navigation Audit
 
 - **Global Navigation:** Header contains strictly `Workspace Home`, `Projects`, and `History`.
-- **Wayfinding:** Every subpage (`Command Center`, `Security`, `Investigation`, `Predictions`, `Knowledge Graph`, `Copilot`, `AI Provenance`) includes standard breadcrumb links back to `Workspace → Projects → VibePulse-Seminar-Demo`.
+- **Wayfinding:** Every subpage (`Command Center`, `Security`, `Investigation`, `Predictions`, `Knowledge Graph`, `Copilot`, `AI Provenance`) includes standard breadcrumb links back to `Workspace → Projects → DepRadar-Seminar-Demo`.
 - **Responsive Layout:** Verified clean rendering on 1920×1080, 1440×900, 1024×768, and 390×844 viewports.
 
 ---

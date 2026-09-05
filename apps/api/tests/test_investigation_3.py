@@ -228,7 +228,7 @@ async def test_export_investigation_markdown_and_ai_handoff(db_session: AsyncSes
 
     # 2. Test AI Handoff Export
     ai_md = export_investigation_ai_handoff(inv)
-    assert "# VibePulse Investigation AI Handoff:" in ai_md
+    assert "# DepRadar Investigation AI Handoff:" in ai_md
     assert "## 1. Project Context" in ai_md
     assert "## 2. What Was Observed [OBSERVED]" in ai_md
     assert "## 3. What Was Inferred [INFERRED]" in ai_md

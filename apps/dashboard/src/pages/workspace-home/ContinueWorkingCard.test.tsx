@@ -7,7 +7,7 @@ import type { ContinueWorkingSession } from "./types";
 function makeSession(overrides: Partial<ContinueWorkingSession> = {}): ContinueWorkingSession {
   return {
     id: "session-1",
-    projectName: "vibepulse-api",
+    projectName: "depradar-api",
     headline: "Refactored session timeline grouping",
     primaryLanguage: "Python",
     durationMinutes: 47,
@@ -25,7 +25,7 @@ describe("ContinueWorkingCard", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText("vibepulse-api")).toBeInTheDocument();
+    expect(screen.getByText("depradar-api")).toBeInTheDocument();
     expect(screen.getByText("Refactored session timeline grouping")).toBeInTheDocument();
     expect(screen.getByText("47 min")).toBeInTheDocument();
     expect(screen.getByText("Python")).toBeInTheDocument();

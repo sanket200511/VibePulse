@@ -2,7 +2,7 @@
 
 ## Overview
 
-**Security Intelligence 2.0** upgrades VibePulse from basic secret detection into a continuous, evidence-backed security posture and risk correlation engine.
+**Security Intelligence 2.0** upgrades DepRadar from basic secret detection into a continuous, evidence-backed security posture and risk correlation engine.
 
 It transforms developer activity and static telemetry into actionable security understanding:
 

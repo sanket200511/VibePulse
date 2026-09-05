@@ -18,11 +18,11 @@ async def run_persistence_test() -> None:
         # Phase 1: Register Project
         p_res = await client.post(
             "/api/projects",
-            json={"root_path": r"D:\VibePulse-Demo", "display_name": "VibePulse-Demo"},
+            json={"root_path": r"D:\DepRadar-Demo", "display_name": "DepRadar-Demo"},
         )
         assert p_res.status_code == 200, f"Project registration failed: {p_res.text}"
         project_id = p_res.json()["id"]
-        print(f"\n[Phase 1] Project registered: {project_id} (VibePulse-Demo)")
+        print(f"\n[Phase 1] Project registered: {project_id} (DepRadar-Demo)")
 
         # Phase 2: Start Session 1 and Ingest Events
         sess1_id = str(uuid.uuid4())
@@ -35,8 +35,8 @@ async def run_persistence_test() -> None:
                 "event_type": "FILE_CREATED",
                 "timestamp": datetime.now(UTC).isoformat(),
                 "session_id": sess1_id,
-                "project_root": r"D:\VibePulse-Demo",
-                "file_path": r"D:\VibePulse-Demo\src\auth.py",
+                "project_root": r"D:\DepRadar-Demo",
+                "file_path": r"D:\DepRadar-Demo\src\auth.py",
                 "file_name": "auth.py",
                 "file_extension": ".py",
                 "language": "Python",
@@ -54,8 +54,8 @@ async def run_persistence_test() -> None:
                 "event_type": "FILE_MODIFIED",
                 "timestamp": datetime.now(UTC).isoformat(),
                 "session_id": sess1_id,
-                "project_root": r"D:\VibePulse-Demo",
-                "file_path": r"D:\VibePulse-Demo\src\settings.py",
+                "project_root": r"D:\DepRadar-Demo",
+                "file_path": r"D:\DepRadar-Demo\src\settings.py",
                 "file_name": "settings.py",
                 "file_extension": ".py",
                 "language": "Python",
@@ -73,9 +73,9 @@ async def run_persistence_test() -> None:
                 "event_type": "OBSERVATION_STOPPED",
                 "timestamp": datetime.now(UTC).isoformat(),
                 "session_id": sess1_id,
-                "project_root": r"D:\VibePulse-Demo",
-                "file_path": r"D:\VibePulse-Demo",
-                "file_name": "VibePulse-Demo",
+                "project_root": r"D:\DepRadar-Demo",
+                "file_path": r"D:\DepRadar-Demo",
+                "file_name": "DepRadar-Demo",
                 "file_extension": "",
                 "language": "",
                 "git_branch": "main",
@@ -101,7 +101,7 @@ async def run_persistence_test() -> None:
 
         p_re_res = await client.post(
             "/api/projects",
-            json={"root_path": r"D:\VibePulse-Demo", "display_name": "VibePulse-Demo"},
+            json={"root_path": r"D:\DepRadar-Demo", "display_name": "DepRadar-Demo"},
         )
         assert p_re_res.status_code == 200
         assert p_re_res.json()["id"] == project_id, "Project ID should be durable and idempotent!"
@@ -114,8 +114,8 @@ async def run_persistence_test() -> None:
                 "event_type": "FILE_MODIFIED",
                 "timestamp": datetime.now(UTC).isoformat(),
                 "session_id": sess2_id,
-                "project_root": r"D:\VibePulse-Demo",
-                "file_path": r"D:\VibePulse-Demo\src\api.py",
+                "project_root": r"D:\DepRadar-Demo",
+                "file_path": r"D:\DepRadar-Demo\src\api.py",
                 "file_name": "api.py",
                 "file_extension": ".py",
                 "language": "Python",
@@ -135,9 +135,9 @@ async def run_persistence_test() -> None:
         projects_list = p_api.json()["projects"]
         names = [p["display_name"] for p in projects_list]
         print(f"  GET /api/projects returned {len(projects_list)} project(s): {names}")
-        demo_projects = [p for p in projects_list if p["root_path"] == r"D:\VibePulse-Demo"]
+        demo_projects = [p for p in projects_list if p["root_path"] == r"D:\DepRadar-Demo"]
         assert len(demo_projects) == 1, (
-            f"Expected exactly 1 project for D:\\VibePulse-Demo, found {len(demo_projects)}"
+            f"Expected exactly 1 project for D:\\DepRadar-Demo, found {len(demo_projects)}"
         )
 
         # 2. Sessions History API

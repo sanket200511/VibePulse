@@ -1,7 +1,7 @@
-# VibePulse — Current Project Status
+# DepRadar — Current Project Status
 
-**Project**: VibePulse — The Deterministic Engineering Intelligence Platform & AI Copilot Foundation
-**Repository**: [https://github.com/sanket200511/VibePulse](https://github.com/sanket200511/VibePulse)
+**Project**: DepRadar — The Deterministic Engineering Intelligence Platform & AI Copilot Foundation
+**Repository**: [https://github.com/sanket200511/Vortex-DepRadar](https://github.com/sanket200511/Vortex-DepRadar)
 **Status**: STABLE, EXPLAINABLE, DEMONSTRABLE, DEFENSIBLE, COMPLETE
 **Architecture Freeze**: ACTIVE
 **Canonical Source of Truth**: PostgreSQL 16+ Historical Telemetry
@@ -11,7 +11,7 @@
 
 ## 1. Executive Summary
 
-VibePulse is a deterministic, event-driven software engineering intelligence and investigation platform. It provides an end-to-end continuous loop from passive filesystem telemetry to causal root cause investigation, predictive risk forecasting, semantic knowledge graph traversal, and zero-hallucination AI Copilot assistance.
+DepRadar is a deterministic, event-driven software engineering intelligence and investigation platform. It provides an end-to-end continuous loop from passive filesystem telemetry to causal root cause investigation, predictive risk forecasting, semantic knowledge graph traversal, and zero-hallucination AI Copilot assistance.
 
 ```
 OBSERVE ──▶ DETECT ──▶ UNDERSTAND ──▶ INVESTIGATE ──▶ RESOLVE ──▶ LEARN ──▶ PREDICT ──▶ ASK ──▶ ACT ──▶ MEMORY
@@ -24,7 +24,7 @@ OBSERVE ──▶ DETECT ──▶ UNDERSTAND ──▶ INVESTIGATE ──▶ RE
 | Verification Suite / Check           | Command                                           | Verified Result                      |
 | ------------------------------------ | ------------------------------------------------- | ------------------------------------ |
 | **Backend Pytest**                   | `cd apps/api && uv run pytest`                    | **349 / 349 passed**                 |
-| **Daemon Vitest**                    | `pnpm --filter @vibepulse/daemon test`            | **130 / 130 passed**                 |
+| **Daemon Vitest**                    | `pnpm --filter @depradar/daemon test`             | **130 / 130 passed**                 |
 | **TypeScript Typecheck**             | `pnpm typecheck`                                  | **5 / 5 packages passed (0 errors)** |
 | **Lint / Ruff**                      | `pnpm lint`                                       | **5 / 5 packages passed (0 errors)** |
 | **Seminar Doctor**                   | `node scripts/seminar-doctor.mjs`                 | **ALL CHECKS PASS**                  |

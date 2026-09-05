@@ -30,7 +30,7 @@ describe("ProjectDetailsPage (Demo Mode)", () => {
     renderWithRouter("/projects/project_vibesync_001");
 
     // Identity region
-    expect(screen.getByRole("heading", { name: "VibePulse" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "DepRadar" })).toBeInTheDocument();
     expect(screen.getAllByText("d:/VibeSync").length).toBeGreaterThan(0);
 
     // Session region

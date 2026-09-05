@@ -1,13 +1,13 @@
-# VibePulse — Examiner Viva & Defense Preparation (Truth-Audited)
+# DepRadar — Examiner Viva & Defense Preparation (Truth-Audited)
 
 **Audience**: Project Evaluators, University Professors, Viva Panels
 **Purpose**: Direct, implementation-grounded, defensible answers to examiner questions.
 
 ---
 
-### Q1: What problem does VibePulse solve?
+### Q1: What problem does DepRadar solve?
 
-> **Answer**: `[VERIFIED]` VibePulse addresses the lack of continuous visibility into granular in-situ software development. While Git records milestone commits and CI/CD tests merged builds, VibePulse captures the granular, real-time evolution of code—detecting security bugs, hotspots, and architectural drift before code is committed or deployed.
+> **Answer**: `[VERIFIED]` DepRadar addresses the lack of continuous visibility into granular in-situ software development. While Git records milestone commits and CI/CD tests merged builds, DepRadar captures the granular, real-time evolution of code—detecting security bugs, hotspots, and architectural drift before code is committed or deployed.
 
 ### Q2: Why use filesystem telemetry instead of Git hooks or IDE plugins?
 
@@ -17,11 +17,11 @@
 
 > **Answer**: `[ARCHITECTURAL GUARANTEE]` Relying on a relational database ensures ACID compliance, durability, and multi-tenant project isolation. All intelligence layers (Health, Predictions, Knowledge Graph, Copilot) are pure deterministic projections over stored historical events, guaranteeing complete reconstructibility ($A \equiv B$).
 
-### Q4: Why doesn't VibePulse use an LLM for its core Copilot?
+### Q4: Why doesn't DepRadar use an LLM for its core Copilot?
 
-> **Answer**: `[VERIFIED]` LLMs are non-deterministic, prone to hallucination, expensive to run, and risk leaking proprietary code. By using deterministic intent classification and multi-domain canonical retrieval, VibePulse guarantees evidence-bounded factual responses without third-party API dependencies.
+> **Answer**: `[VERIFIED]` LLMs are non-deterministic, prone to hallucination, expensive to run, and risk leaking proprietary code. By using deterministic intent classification and multi-domain canonical retrieval, DepRadar guarantees evidence-bounded factual responses without third-party API dependencies.
 
-### Q5: How does VibePulse avoid hallucinating facts?
+### Q5: How does DepRadar avoid hallucinating facts?
 
 > **Answer**: `[VERIFIED]` Every assertion is strictly bound to database rows through our Answerability Gate. If an entity or question falls outside observed telemetry (e.g. Bitcoin price or weather), the system explicitly returns `answerable: false` and `evidence_strength: INSUFFICIENT`.
 
@@ -87,7 +87,7 @@
 
 ### Q21: What happens when a project is deleted?
 
-> **Answer**: `[VERIFIED]` VibePulse executes a cascading database delete of its internal telemetry records, but **never** touches the user's physical repository or files on disk.
+> **Answer**: `[VERIFIED]` DepRadar executes a cascading database delete of its internal telemetry records, but **never** touches the user's physical repository or files on disk.
 
 ### Q22: What are the primary system limitations?
 
@@ -97,10 +97,10 @@
 
 > **Answer**: Pre-commit policy enforcement hooks and an optional local open-weight LLM adapter (e.g., Llama 3) that consumes the deterministic context package.
 
-### Q24: How is VibePulse different from GitHub?
+### Q24: How is DepRadar different from GitHub?
 
-> **Answer**: `[VERIFIED]` GitHub stores milestone commits and pull requests. VibePulse observes the continuous, granular process of writing code in real time before commits occur.
+> **Answer**: `[VERIFIED]` GitHub stores milestone commits and pull requests. DepRadar observes the continuous, granular process of writing code in real time before commits occur.
 
-### Q25: How is VibePulse different from an IDE?
+### Q25: How is DepRadar different from an IDE?
 
-> **Answer**: `[VERIFIED]` IDEs focus on code editing and language servers for a single file. VibePulse provides a multi-dimensional project intelligence platform connecting security, health, predictions, and cross-file causal histories.
+> **Answer**: `[VERIFIED]` IDEs focus on code editing and language servers for a single file. DepRadar provides a multi-dimensional project intelligence platform connecting security, health, predictions, and cross-file causal histories.

@@ -29,7 +29,7 @@ function check(name, testFn, failMsg = "Failed") {
 }
 
 console.log("\n=========================");
-console.log("    VibePulse Doctor     ");
+console.log("    DepRadar Doctor     ");
 console.log("=========================\n");
 
 let allPassed = true;
@@ -110,9 +110,9 @@ allPassed &= check("PostgreSQL Status & Schema", () => {
 
 console.log("\nOverall:");
 if (allPassed) {
-  console.log("VibePulse environment is READY.");
+  console.log("DepRadar environment is READY.");
 } else {
-  console.log("VibePulse environment has issues.");
+  console.log("DepRadar environment has issues.");
   console.log("\nSuggested fix:\n       pnpm setup");
 }
 process.exit(allPassed ? 0 : 1);

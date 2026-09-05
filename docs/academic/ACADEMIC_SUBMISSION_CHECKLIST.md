@@ -1,4 +1,4 @@
-# VibePulse — Academic Submission Master Checklist
+# DepRadar — Academic Submission Master Checklist
 
 **Status**: READY FOR FINAL B.TECH SUBMISSION & VIVA
 **Architecture Freeze**: ACTIVE & RESPECTED
@@ -34,7 +34,7 @@
 ### 4. TESTING & EVALUATION
 
 - [x] Pytest Backend Suite: **348 / 348 passed** (`uv run pytest`).
-- [x] Daemon Vitest Suite: **130 / 130 passed** (`pnpm --filter @vibepulse/daemon test`).
+- [x] Daemon Vitest Suite: **130 / 130 passed** (`pnpm --filter @depradar/daemon test`).
 - [x] Workspace Typecheck: **5 / 5 packages passed (0 errors)** (`pnpm typecheck`).
 - [x] Workspace Linting: **5 / 5 packages passed (0 errors)** (`pnpm lint`).
 - [x] Sprint 12 E2E Acceptance: **14 / 14 passed** (`node scripts/test-sprint12-e2e.mjs`).

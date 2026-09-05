@@ -1,1 +1,1 @@
-# VibePulse API application package
+# DepRadar API application package

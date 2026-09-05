@@ -195,7 +195,7 @@ def _compose_summary(
 
     if intent == "AI_HANDOFF" or intent == "PROJECT_OVERVIEW":
         return (
-            f"VibePulse Project Memory 2.0 tracks {p_name} across "
+            f"DepRadar Project Memory 2.0 tracks {p_name} across "
             f"{len(data.graph.subsystems)} subsystems with an Overall Health Score of "
             f"{health.overall_health_score}/100 ({health.grade}). "
             "Full portable AI handoff is available in PROJECT_CONTEXT.md Section 20-21."
@@ -203,7 +203,7 @@ def _compose_summary(
 
     if intent == "EVIDENCE":
         return (
-            f"Every VibePulse assertion is backed by PostgreSQL telemetry. "
+            f"Every DepRadar assertion is backed by PostgreSQL telemetry. "
             f"Overall Health {health.overall_health_score}/100 decomposes into: "
             f"Security ({health.security_health.score}), "
             f"Engineering ({health.engineering_stability.score}), "

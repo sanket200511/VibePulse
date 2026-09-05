@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 
-const base = process.argv[2] || process.env.VIBEPULSE_DEMO_DIR || "D:\\VibePulse-Seminar-Demo";
+const base = process.argv[2] || process.env.VIBEPULSE_DEMO_DIR || "D:\\DepRadar-Seminar-Demo";
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));

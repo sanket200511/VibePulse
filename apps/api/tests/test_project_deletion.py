@@ -382,7 +382,7 @@ async def test_delete_project_does_not_delete_filesystem(
     assert proj_dir.exists()
     assert sentinel_file.exists()
 
-    # 2. Register project in VibePulse
+    # 2. Register project in DepRadar
     proj_res = await client.post(
         "/api/projects",
         json={"root_path": str(proj_dir), "display_name": "MyRealSourceProject"},
@@ -390,7 +390,7 @@ async def test_delete_project_does_not_delete_filesystem(
     assert proj_res.status_code == 200
     p_id = proj_res.json()["id"]
 
-    # 3. Delete from VibePulse
+    # 3. Delete from DepRadar
     del_res = await client.delete(f"/api/projects/{p_id}")
     assert del_res.status_code == 200
 

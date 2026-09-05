@@ -1,8 +1,8 @@
 {
-  "name": "@vibepulse/daemon",
+  "name": "@depradar/daemon",
   "version": "0.0.1",
   "private": true,
-  "description": "VibePulse Daemon – File system observer and event emitter",
+  "description": "DepRadar Daemon – File system observer and event emitter",
   "type": "module",
   "scripts": {
     "dev": "tsx watch --include .env src/index.ts",
@@ -14,7 +14,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@vibepulse/config": "workspace:*",
+    "@depradar/config": "workspace:*",
     "chokidar": "^4.0.3"
   },
   "devDependencies": {

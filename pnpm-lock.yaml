@@ -55,7 +55,7 @@ importers:
 
   apps/daemon:
     dependencies:
-      '@vibepulse/config':
+      '@depradar/config':
         specifier: workspace:*
         version: link:../../packages/config
       chokidar:
@@ -86,7 +86,7 @@ importers:
       '@tanstack/react-query-devtools':
         specifier: ^5.64.1
         version: 5.101.2(@tanstack/react-query@5.101.2(react@18.3.1))(react@18.3.1)
-      '@vibepulse/ui':
+      '@depradar/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       lucide-react:

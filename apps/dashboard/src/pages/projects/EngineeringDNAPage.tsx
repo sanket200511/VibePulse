@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { useMemo, useEffect } from "react";
 import type { BiographyEntry } from "./types";
-import { cn } from "@vibepulse/ui";
+import { cn } from "@depradar/ui";
 import { usePresentation } from "../../components/presentation/PresentationContext";
 
 // Helper to determine node characteristics

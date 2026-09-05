@@ -1,6 +1,6 @@
-# VibePulse Demo Mode Specification
+# DepRadar Demo Mode Specification
 
-This document defines the complete demonstration experience of VibePulse. It serves as the experiential and narrative design specification for showcase environments, ensuring that VibePulse can be quickly understood, experienced, and evaluated within a 3–5 minute presentation window.
+This document defines the complete demonstration experience of DepRadar. It serves as the experiential and narrative design specification for showcase environments, ensuring that DepRadar can be quickly understood, experienced, and evaluated within a 3–5 minute presentation window.
 
 This document focuses on presentation storytelling, visual hierarchy progression, and data design philosophy. It contains no React components, CSS definitions, mock database schemas, or implementation-specific variables.
 
@@ -8,7 +8,7 @@ This document focuses on presentation storytelling, visual hierarchy progression
 
 ## 1. Purpose
 
-Demo Mode exists to make VibePulse’s passive observation capability immediately understandable and compelling to an external audience.
+Demo Mode exists to make DepRadar’s passive observation capability immediately understandable and compelling to an external audience.
 
 Unlike Production Mode, which relies on active, real-time filesystem activity gathered over days, Demo Mode delivers a pre-loaded, coherent, and highly structured story of a realistic development session. It does not display artificial complexity or arbitrary mock datasets. Instead, it showcases the product's core telemetry, analysis, and visualization capabilities by projecting a realistic, relatable engineering journey that feels authentic, professional, and trustworthy.
 
@@ -37,7 +37,7 @@ Closing Summary (3:45 - 4:15)
 ```
 
 - **Welcome**: Establishes the "Mission Control" vision. A calm, clean, focused entry point.
-- **Project Overview**: Shows multiple active projects, demonstrating that VibePulse sits quietly at the workspace root observing multiple paths.
+- **Project Overview**: Shows multiple active projects, demonstrating that DepRadar sits quietly at the workspace root observing multiple paths.
 - **Today's Story**: Replaces dry data points with a human-readable narrative summarizing today's active session.
 - **Focus Journey**: Visualizes the developer's work rhythms, separating flow state, contemplation, and breaks.
 - **Timeline Details**: Chronologically displays file creation, evolution, removal, and checkpoint events.
@@ -81,7 +81,7 @@ The success of the demonstration depends on the authenticity of its pre-loaded d
   - _Start_: Creation of a new module or test file.
   - _Middle_: Multiple modifications, a deletion/refactoring sequence, and subsequent test runs.
   - _End_: A structured checkpoint and a successful validation summary.
-- **Authentic Imperfection**: Include minor diversions, such as brief syntax updates followed immediately by corrections, demonstrating that VibePulse accurately tracks real human processes.
+- **Authentic Imperfection**: Include minor diversions, such as brief syntax updates followed immediately by corrections, demonstrating that DepRadar accurately tracks real human processes.
 
 ---
 
@@ -101,7 +101,7 @@ The recommended path through the interface follows a logical progression of dept
 
 Presenter actions must remain deliberate, steady, and narrative-driven:
 
-- **Narrative Focus**: The presenter should talk about _what the developer was doing_ rather than explaining the UI buttons. For example: _"Here, we see the developer started refactoring their schema; VibePulse automatically captured this transition and highlighted it in the timeline."_
+- **Narrative Focus**: The presenter should talk about _what the developer was doing_ rather than explaining the UI buttons. For example: _"Here, we see the developer started refactoring their schema; DepRadar automatically captured this transition and highlighted it in the timeline."_
 - **Deliberate Navigation**: Avoid rapid page switching, erratic scrolling, or clicking multiple buttons in quick succession. Allow transitions to finish smoothly.
 - **De-emphasize Implementation**: Do not explain how the backend daemon, file watchers, or SQLite database work unless directly questioned. Let the interface tell the story of the data.
 
@@ -111,7 +111,7 @@ Presenter actions must remain deliberate, steady, and narrative-driven:
 
 The demonstration must fit within a comfortable 5-minute budget:
 
-- **Opening & Context**: 30 seconds. (Set the stage, explain what VibePulse is observing).
+- **Opening & Context**: 30 seconds. (Set the stage, explain what DepRadar is observing).
 - **Dashboard / Project View**: 45 seconds. (Show active workspaces, start/stop gates).
 - **Session Narrative & Focus**: 60 seconds. (Walk through today's story and developer focus metrics).
 - **Detailed Timeline**: 60 seconds. (Drill into specific events: creation, evolution, checkpoints).
@@ -160,7 +160,7 @@ The following patterns are prohibited in Demo Mode:
 
 Demo Mode is successful if:
 
-1.  **Immediate Comprehension**: An observer with no prior knowledge understands exactly what VibePulse does within the first 60 seconds.
+1.  **Immediate Comprehension**: An observer with no prior knowledge understands exactly what DepRadar does within the first 60 seconds.
 2.  **Authentic Feeling**: The pre-loaded session feels like a real developer's workspace, not a synthetic marketing mockup.
 3.  **Narrative Dominance**: The presenter spends 80% of their time explaining the engineering story and only 20% describing where buttons are located.
 4.  **Zero Glitches**: The presentation runs smoothly from start to finish without layout breaks, empty states, or visual pauses.

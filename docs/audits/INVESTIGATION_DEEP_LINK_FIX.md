@@ -1,8 +1,8 @@
-# VibePulse — Investigation Deep-Link & Selection Resolution Audit
+# DepRadar — Investigation Deep-Link & Selection Resolution Audit
 
 **Status**: Verified & Fixed  
 **Date**: 2026-08-22  
-**Target Scenario**: `VibePulse-Seminar-Demo`  
+**Target Scenario**: `DepRadar-Seminar-Demo`  
 **Components**: `FastAPI Backend (app/features/investigation)`, `React Dashboard (apps/dashboard/src/pages/investigation)`
 
 ---
@@ -15,7 +15,7 @@ When navigating to the **Investigation Command Center 3.0** via the **"Investiga
 
 1. The dashboard navigated to `/projects/:id/investigation` without preserving the incident identity query parameters.
 2. The Investigation page initialized without reading URL search parameters (`?incidentId=...`).
-3. The Investigation Search repository queried `DevelopmentEvent.project_root == project.root_path` using strict literal equality without normalizing slash/backslash separators (e.g. `D:\VibePulse-Seminar-Demo` vs `D:/VibePulse-Seminar-Demo`), which resulted in 0 events returned by the query.
+3. The Investigation Search repository queried `DevelopmentEvent.project_root == project.root_path` using strict literal equality without normalizing slash/backslash separators (e.g. `D:\DepRadar-Seminar-Demo` vs `D:/DepRadar-Seminar-Demo`), which resulted in 0 events returned by the query.
 4. When `rawResults` was empty, the UI simultaneously displayed summary metrics (`Resolved: 1, Resolution Rate: 100%`) while showing `CORRELATED INCIDENTS (0)` and `"No Incidents Recorded"` with a blank detail panel saying `"Select an incident from the stream to inspect its deterministic causal DAG..."`.
 
 ### Underlying Failure Points
@@ -34,7 +34,7 @@ When navigating to the **Investigation Command Center 3.0** via the **"Investiga
 
 1. **`app/features/investigation/repository.py`**:
    - Enhanced `execute_investigation_query` to query events by normalized project root path (`func.replace(DevelopmentEvent.project_root, "\\", "/")`), literal `root_path`, and session association subquery (`DevelopmentEvent.session_id.in_(subq_sessions)`).
-   - Ensured all 40 events for `VibePulse-Seminar-Demo` are correctly retrieved.
+   - Ensured all 40 events for `DepRadar-Seminar-Demo` are correctly retrieved.
 2. **`app/features/investigation/service.py`**:
    - In `reconstruct_incident_investigation`: Added fallback alias matching for `incident_id` across `contributing_findings` rule IDs and `"inc_sec001"`.
    - In `search_investigation`: Pre-fetched `IncidentReviewState` records for `project_id` and assigned actual persisted status (`RESOLVED`, `INVESTIGATING`, `REVIEWED`, `OPEN`) to each `InvestigationResult`.
@@ -79,7 +79,7 @@ When navigating to the **Investigation Command Center 3.0** via the **"Investiga
    - `node scripts/test-resolution-e2e.mjs`: PASSED 100% (Sprint 5 Incident Resolution E2E).
    - `node scripts/test-investigation-e2e.mjs`: PASSED 100% (Sprint 4 Investigation Engine 3.0 E2E).
 
-### B. Live Verification with `VibePulse-Seminar-Demo`
+### B. Live Verification with `DepRadar-Seminar-Demo`
 
 - **Project ID**: `c95554c9-2b13-4b2d-882a-660cd2da14fe`
 - **Forecast Card**: "Recurrence Risk: Password / Credential Exposure (SEC001)"

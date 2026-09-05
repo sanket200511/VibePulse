@@ -1,12 +1,12 @@
-# VibePulse — Local Development Guide
+# DepRadar — Local Development Guide
 
-This guide documents the canonical local-development architecture, prerequisites, setup procedure, service ports, and troubleshooting steps for running VibePulse without Docker.
+This guide documents the canonical local-development architecture, prerequisites, setup procedure, service ports, and troubleshooting steps for running DepRadar without Docker.
 
 ---
 
 ## 1. Architecture & Canonical Ports
 
-VibePulse is designed to run natively and deterministically on the developer host machine:
+DepRadar is designed to run natively and deterministically on the developer host machine:
 
 | Component           | Technology                        | Canonical Port          | Command                  |
 | ------------------- | --------------------------------- | ----------------------- | ------------------------ |
@@ -126,7 +126,7 @@ pnpm run dev:daemon -- --watch "D:\Projects\Animal Disease Prediction"
 
 ## 6. Configuring & Switching Watched Projects
 
-VibePulse supports dynamic observation of arbitrary developer projects on your filesystem without modifying application source code:
+DepRadar supports dynamic observation of arbitrary developer projects on your filesystem without modifying application source code:
 
 1. **Option A — Via Environment Variable**:
    In `apps/daemon/.env`, set:
@@ -163,7 +163,7 @@ Output:
 
 ```
 =========================
-    VibePulse Doctor
+    DepRadar Doctor
 =========================
 
 [PASS] Node.js
@@ -175,7 +175,7 @@ Output:
 [PASS] PostgreSQL Status & Schema
 
 Overall:
-VibePulse environment is READY.
+DepRadar environment is READY.
 ```
 
 ---
@@ -221,14 +221,14 @@ VibePulse environment is READY.
 - [x] `pnpm doctor` passes with all checks green
 - [x] `uv run alembic current` reports `0005 (head)`
 - [x] `pnpm dev` starts API, Dashboard, and Daemon exactly once
-- [x] `http://localhost:5183` loads the VibePulse dashboard
+- [x] `http://localhost:5183` loads the DepRadar dashboard
 - [x] WebSocket live streams (`/ws/events`, `/ws/sessions`) connect without errors
 
 ---
 
 ## 9. Project Lifecycle & Hygiene Management
 
-VibePulse establishes a strict distinction between **Persistent Projects** and **Ephemeral Projects**:
+DepRadar establishes a strict distinction between **Persistent Projects** and **Ephemeral Projects**:
 
 - **Persistent Projects** (e.g. `D:\Projects\Dabba`): Persist durably across system restarts, demo runs, and test suites.
 - **Ephemeral Test/Demo Projects**: Created with temporary directory roots during integration tests or live demos. All test and demo scripts execute within `try ... finally` blocks and guarantee deletion via `DELETE /api/projects/:id?force=true`.

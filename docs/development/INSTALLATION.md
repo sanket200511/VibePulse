@@ -1,6 +1,6 @@
 # Installation Guide
 
-Welcome to the VibePulse installation guide. This document covers everything you need to know to get VibePulse running locally for development and testing.
+Welcome to the DepRadar installation guide. This document covers everything you need to know to get DepRadar running locally for development and testing.
 
 ## Prerequisites
 
@@ -18,16 +18,16 @@ Ensure you have the following installed on your machine before beginning:
 
 ## Step 1: Clone the Repository
 
-Clone the VibePulse source code to your local machine:
+Clone the DepRadar source code to your local machine:
 
 ```bash
-git clone https://github.com/sanket200511/VibePulse.git
-cd VibePulse
+git clone https://github.com/sanket200511/Vortex-DepRadar.git
+cd DepRadar
 ```
 
 ## Step 2: Install Node Dependencies
 
-VibePulse is a Turborepo monorepo using `pnpm` workspaces. Install the root and workspace dependencies:
+DepRadar is a Turborepo monorepo using `pnpm` workspaces. Install the root and workspace dependencies:
 
 ```bash
 pnpm install
@@ -87,7 +87,7 @@ Run the applications locally. We recommend opening three separate terminals:
 **Terminal 1 (Dashboard):**
 
 ```bash
-pnpm --filter @vibepulse/dashboard dev
+pnpm --filter @depradar/dashboard dev
 ```
 
 **Terminal 2 (API):**
@@ -100,7 +100,7 @@ uv run uvicorn app.main:app --reload --port 5184
 **Terminal 3 (Daemon):**
 
 ```bash
-pnpm --filter @vibepulse/daemon dev
+pnpm --filter @depradar/daemon dev
 ```
 
 You should see:
@@ -133,4 +133,4 @@ Ensure you have replaced `<PASTE_YOUR_REDIS_CLOUD_URL_HERE>` in `apps/api/.env` 
 
 ### UI changes not syncing
 
-Ensure you ran `pnpm install` in the root directory. Because VibePulse uses workspaces, UI primitives (`@vibepulse/ui`) must be linked properly via `pnpm`.
+Ensure you ran `pnpm install` in the root directory. Because DepRadar uses workspaces, UI primitives (`@depradar/ui`) must be linked properly via `pnpm`.

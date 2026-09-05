@@ -1,4 +1,4 @@
-# VibePulse — Sprint 14 Forensic Truth Audit & Claim Verification
+# DepRadar — Sprint 14 Forensic Truth Audit & Claim Verification
 
 **Audit Scope**: Verification of every major claim in documentation against concrete source code, tests, and database invariants.
 **Architecture Freeze**: ACTIVE & RESPECTED

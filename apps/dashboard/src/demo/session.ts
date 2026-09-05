@@ -11,5 +11,5 @@ export const demoSession: DemoSession = {
   status: "ACTIVE",
   durationMinutes: 240,
   primaryLanguage: "TypeScript",
-  projectName: "VibePulse",
+  projectName: "DepRadar",
 };

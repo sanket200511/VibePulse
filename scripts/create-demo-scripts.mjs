@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 
-const demoDir = "D:\\VibePulse-Seminar-Demo";
+const demoDir = "D:\\DepRadar-Seminar-Demo";
 
 const resetScript = `Write-Host '=========================================' -ForegroundColor Cyan
 Write-Host '  SECUREPAY SEMINAR DEMO — RESET SCRIPT   ' -ForegroundColor Cyan

@@ -1,4 +1,4 @@
-import { Button } from "@vibepulse/ui";
+import { Button } from "@depradar/ui";
 import { Play, Pause, SkipBack, SkipForward, RotateCcw, FastForward } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { UseReplayControllerResult, ReplaySpeed } from "./useReplayController";

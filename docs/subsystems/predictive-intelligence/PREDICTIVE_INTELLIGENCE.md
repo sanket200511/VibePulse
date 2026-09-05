@@ -2,11 +2,11 @@
 
 ## Overview
 
-**Predictive Engineering Intelligence** extends VibePulse from reactive investigation and resolution into evidence-backed anticipation:
+**Predictive Engineering Intelligence** extends DepRadar from reactive investigation and resolution into evidence-backed anticipation:
 
 $$\text{OBSERVE} \longrightarrow \text{DETECT} \longrightarrow \text{INVESTIGATE} \longrightarrow \text{RESOLVE} \longrightarrow \text{LEARN} \longrightarrow \mathbf{ANTICIPATE}$$
 
-Rather than relying on ungrounded or non-deterministic machine learning hallucinations, VibePulse projects future engineering risks and hotspots **strictly from the empirical telemetry and security analyses already recorded in PostgreSQL**.
+Rather than relying on ungrounded or non-deterministic machine learning hallucinations, DepRadar projects future engineering risks and hotspots **strictly from the empirical telemetry and security analyses already recorded in PostgreSQL**.
 
 Every forecast is accompanied by an **additive score breakdown**, **explicit evidence strength**, and direct deep-links into the **Evidence Graph 3.0** and **Incident Resolution Center**.
 
@@ -82,7 +82,7 @@ Example Score Breakdown:
 
 ## Pluggable Provider Interface
 
-VibePulse defines an abstract provider interface allowing future external or local ML providers to be plugged in alongside the deterministic baseline:
+DepRadar defines an abstract provider interface allowing future external or local ML providers to be plugged in alongside the deterministic baseline:
 
 ```python
 class PredictiveSignalProvider(ABC):

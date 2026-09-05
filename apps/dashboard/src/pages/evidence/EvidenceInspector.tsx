@@ -9,7 +9,7 @@ import {
   Layers,
   FileCode,
 } from "lucide-react";
-import { Badge } from "@vibepulse/ui";
+import { Badge } from "@depradar/ui";
 import { useEvidenceExplainability } from "./useEvidenceExplainability";
 import type { EntityType, ScoreDecompositionItem, EvidenceChainStep } from "./types";
 

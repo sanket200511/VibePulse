@@ -1,4 +1,4 @@
-# VibePulse: An Event-Driven Deterministic Architecture for Continuous Engineering Intelligence and Grounded Copilot Orchestration
+# DepRadar: An Event-Driven Deterministic Architecture for Continuous Engineering Intelligence and Grounded Copilot Orchestration
 
 **Final Year Project Report / Technical Dissertation**
 **Degree**: Bachelor of Technology in Computer Science & Engineering
@@ -9,7 +9,7 @@
 
 ## Abstract
 
-Modern software engineering organizations suffer from fragmented, out-of-band visibility into the software creation process. Version control systems record curated milestone commits, while static analysis tools typically execute in delayed CI/CD pipelines. This dissertation presents **VibePulse**, a deterministic, event-driven engineering intelligence architecture that captures sub-second local filesystem telemetry and derives multi-dimensional project health composites, static AST security findings, causal incident DAGs, predictive code churn forecasts, and semantic knowledge graphs directly from relational database ground truth. Furthermore, VibePulse implements an AI Engineering Copilot orchestration layer over 16 canonical query families with tri-state provenance (`[OBSERVED]`, `[INFERRED]`, `[UNKNOWN]`) and an Answerability Gate, rejecting out-of-scope queries without reliance on third-party generative LLMs. Empirical evaluation across 348 backend tests, 130 daemon tests, and isolated repository benchmarks demonstrates sub-115ms local query latencies and 100% deterministic reconstructibility ($A \equiv B$).
+Modern software engineering organizations suffer from fragmented, out-of-band visibility into the software creation process. Version control systems record curated milestone commits, while static analysis tools typically execute in delayed CI/CD pipelines. This dissertation presents **DepRadar**, a deterministic, event-driven engineering intelligence architecture that captures sub-second local filesystem telemetry and derives multi-dimensional project health composites, static AST security findings, causal incident DAGs, predictive code churn forecasts, and semantic knowledge graphs directly from relational database ground truth. Furthermore, DepRadar implements an AI Engineering Copilot orchestration layer over 16 canonical query families with tri-state provenance (`[OBSERVED]`, `[INFERRED]`, `[UNKNOWN]`) and an Answerability Gate, rejecting out-of-scope queries without reliance on third-party generative LLMs. Empirical evaluation across 348 backend tests, 130 daemon tests, and isolated repository benchmarks demonstrates sub-115ms local query latencies and 100% deterministic reconstructibility ($A \equiv B$).
 
 ---
 
@@ -17,7 +17,7 @@ Modern software engineering organizations suffer from fragmented, out-of-band vi
 
 Software development is inherently iterative, characterized by rapid local prototyping, configuration experiments, debugging cycles, and transient code states. However, traditional engineering intelligence tools only observe software at high-latency integration boundaries (e.g., Git push or CI/CD build triggers). As a result, transient security exposures (such as accidentally saved API keys or debug flags) and localized architectural churn are lost before peer review.
 
-VibePulse bridges this visibility gap by introducing continuous local observation coupled with deterministic relational state projection.
+DepRadar bridges this visibility gap by introducing continuous local observation coupled with deterministic relational state projection.
 
 ---
 
@@ -32,7 +32,7 @@ VibePulse bridges this visibility gap by introducing continuous local observatio
 
 ## 3. Motivation & Objectives
 
-The primary motivation behind VibePulse is to construct a transparent, explainable, and deterministic engineering intelligence system that guarantees:
+The primary motivation behind DepRadar is to construct a transparent, explainable, and deterministic engineering intelligence system that guarantees:
 
 - **Continuous Local Telemetry**: Automatic capture of filesystem events without manual developer intervention.
 - **Deterministic Metrics**: Mathematical health scoring ($0 \dots 100$) where identical telemetry inputs always yield identical analytical projections ($A \equiv B$).
@@ -43,7 +43,7 @@ The primary motivation behind VibePulse is to construct a transparent, explainab
 
 ## 4. System Architecture
 
-VibePulse employs a decoupled 3-tier architecture:
+DepRadar employs a decoupled 3-tier architecture:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -69,7 +69,7 @@ VibePulse employs a decoupled 3-tier architecture:
                                │ HTTP POST /events
 ┌──────────────────────────────┴──────────────────────────────┐
 │                      Observation Tier                       │
-│   VibePulse Node.js Daemon (TypeScript / Chokidar)          │
+│   DepRadar Node.js Daemon (TypeScript / Chokidar)          │
 │   - Debounced Watcher      - SHA-256 Hasher - HTTP Publisher│
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -205,4 +205,4 @@ The system was benchmarked under local development workstation conditions agains
 
 ## 10. Conclusion
 
-VibePulse demonstrates that continuous, sub-second development telemetry can be harnessed to deliver deterministic, explainable, and evidence-grounded engineering intelligence. By relying on PostgreSQL historical events as the single ground truth and pairing deterministic intent classification with strict secret redaction and tri-state provenance, VibePulse eliminates the hallucination and credential leakage risks typical of non-deterministic LLM tools.
+DepRadar demonstrates that continuous, sub-second development telemetry can be harnessed to deliver deterministic, explainable, and evidence-grounded engineering intelligence. By relying on PostgreSQL historical events as the single ground truth and pairing deterministic intent classification with strict secret redaction and tri-state provenance, DepRadar eliminates the hallucination and credential leakage risks typical of non-deterministic LLM tools.

@@ -4,7 +4,7 @@
 
 READY WITH ARCHITECTURAL GAPS
 
-The core telemetry (events and sessions) is highly detailed, deterministic, and securely models long-term chronological history. However, VibePulse lacks a canonical persisted `Project` entity on the backend. Building Project Intelligence directly on top of the current schema will require heavy, repetitive aggregations by string paths, making longitudinal cross-session queries inefficient at scale.
+The core telemetry (events and sessions) is highly detailed, deterministic, and securely models long-term chronological history. However, DepRadar lacks a canonical persisted `Project` entity on the backend. Building Project Intelligence directly on top of the current schema will require heavy, repetitive aggregations by string paths, making longitudinal cross-session queries inefficient at scale.
 
 ## What Project Means Today
 
@@ -39,7 +39,7 @@ The actual verified data flow is:
 
 ## What We Cannot Claim
 
-To maintain the VibePulse Truth Boundary, we explicitly **FORBID** the following project-level inferences (unless backed by a future deterministic analyzer):
+To maintain the DepRadar Truth Boundary, we explicitly **FORBID** the following project-level inferences (unless backed by a future deterministic analyzer):
 
 - "Code quality improved"
 - "Technical debt increased / decreased"

@@ -1,4 +1,4 @@
-# VibePulse — Master Final Project Checklist
+# DepRadar — Master Final Project Checklist
 
 **Status**: READY FOR FINAL EVALUATION & ACADEMIC DEFENSE
 **Architecture Freeze**: ACTIVE
@@ -37,7 +37,7 @@
 ### 4. QUALITY & TEST BASELINE
 
 - [x] **Backend Pytest**: 348 / 348 passed (`uv run pytest`).
-- [x] **Daemon Vitest**: 130 / 130 passed (`pnpm --filter @vibepulse/daemon test`).
+- [x] **Daemon Vitest**: 130 / 130 passed (`pnpm --filter @depradar/daemon test`).
 - [x] **TypeScript Typecheck**: 5 / 5 packages passed with 0 errors (`pnpm typecheck`).
 - [x] **Lint & Ruff**: 5 / 5 packages passed with 0 errors (`pnpm lint`).
 - [x] **Sprint 12 E2E Acceptance**: 14 / 14 criteria passed (`node scripts/test-sprint12-e2e.mjs`).

@@ -13,9 +13,9 @@ export interface DemoProject extends Project {
   lastActive: string;
 }
 
-export const demoProjectVibePulse: DemoProject = {
+export const demoProjectDepRadar: DemoProject = {
   id: "project_vibesync_001",
-  display_name: "VibePulse",
+  display_name: "DepRadar",
   root_path: "d:/VibeSync",
   created_at: "2026-07-10T09:00:00Z",
   updated_at: "2026-07-25T09:00:00Z",
@@ -40,4 +40,4 @@ export const demoProjectAquaPulse: DemoProject = {
   languages: [{ name: "TypeScript", percentage: 100, color: "bg-blue-500" }],
 };
 
-export const demoProjects: DemoProject[] = [demoProjectVibePulse, demoProjectAquaPulse];
+export const demoProjects: DemoProject[] = [demoProjectDepRadar, demoProjectAquaPulse];

@@ -7,7 +7,7 @@
  */
 
 import type { ReactNode } from "react";
-import { cn } from "@vibepulse/ui";
+import { cn } from "@depradar/ui";
 import { FileQuestion } from "lucide-react";
 
 export interface EmptyStateProps {

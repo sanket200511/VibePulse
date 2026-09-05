@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * VibePulse — Live Seminar Demo Project Scenario Orchestrator
+ * DepRadar — Live Seminar Demo Project Scenario Orchestrator
  *
- * Prepares and keeps alive the canonical "VibePulse-Seminar-Demo" project
+ * Prepares and keeps alive the canonical "DepRadar-Seminar-Demo" project
  * with real telemetry, AST security detection, incident investigation,
  * resolution history, predictive intelligence, knowledge graph, Copilot facts,
  * and project context export.
@@ -20,7 +20,7 @@ const ROOT_DIR = path.resolve(__dirname, "..");
 
 const API_BASE = process.env.VIBEPULSE_API_URL || "http://127.0.0.1:5184";
 const DASHBOARD_BASE = process.env.VIBEPULSE_DASHBOARD_URL || "http://localhost:5183";
-const DEMO_ROOT = "D:\\VibePulse-Seminar-Demo";
+const DEMO_ROOT = "D:\\DepRadar-Seminar-Demo";
 const SECRET_KEY_VAL = "VIBEPULSE_SEMINAR_FAKE_SECRET_2026";
 
 function sleep(ms) {
@@ -112,10 +112,10 @@ async function main() {
   }
 
   // 2. Register or get Project
-  console.log("[1/10] Registering VibePulse-Seminar-Demo in PostgreSQL ground truth...");
+  console.log("[1/10] Registering DepRadar-Seminar-Demo in PostgreSQL ground truth...");
   const regRes = await request("POST", "/api/projects", {
     root_path: DEMO_ROOT,
-    display_name: "VibePulse-Seminar-Demo",
+    display_name: "DepRadar-Seminar-Demo",
   });
 
   if (regRes.status !== 200 && regRes.status !== 201) {
@@ -384,7 +384,7 @@ async function main() {
   console.log("================================================================\n");
 
   console.log(`Project ID:        ${projectId}`);
-  console.log(`Project Name:      VibePulse-Seminar-Demo`);
+  console.log(`Project Name:      DepRadar-Seminar-Demo`);
   console.log(`Project Root:      ${DEMO_ROOT}`);
   console.log(`Active Session:    ${sessionId}\n`);
 

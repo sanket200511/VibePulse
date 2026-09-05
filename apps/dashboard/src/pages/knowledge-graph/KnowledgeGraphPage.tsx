@@ -14,7 +14,7 @@ import {
   ChevronLeft,
   X,
 } from "lucide-react";
-import { Badge } from "@vibepulse/ui";
+import { Badge } from "@depradar/ui";
 import {
   useKnowledgeGraph,
   useRootCauseTraversal,

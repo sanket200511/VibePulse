@@ -1,15 +1,15 @@
-# VibePulse Correlation & Causality Graph — Implementation Report
+# DepRadar Correlation & Causality Graph — Implementation Report
 
 **Implementation Date:** 2026-08-25  
-**Version:** VibePulse 2.0 Semantic Core  
+**Version:** DepRadar 2.0 Semantic Core  
 **Canonical Stack Ports:** Dashboard `:5183` | API `:5184` | Daemon `:5185` | PostgreSQL `:5432`  
-**Target Scenario:** `VibePulse-Seminar-Demo` (`334351d3-4aeb-4bc4-9387-f22e236acda8`)
+**Target Scenario:** `DepRadar-Seminar-Demo` (`334351d3-4aeb-4bc4-9387-f22e236acda8`)
 
 ---
 
 ## 1. Executive Summary
 
-The VibePulse Knowledge Graph has been upgraded into a production-grade **Correlation & Causality Graph**. The system delivers end-to-end causal traceability across the engineering lifecycle:
+The DepRadar Knowledge Graph has been upgraded into a production-grade **Correlation & Causality Graph**. The system delivers end-to-end causal traceability across the engineering lifecycle:
 
 $$\text{OBSERVED EVENT} \longrightarrow \text{FINDING} \longrightarrow \text{INCIDENT} \longrightarrow \text{ROOT CAUSE} \longrightarrow \text{HEALTH IMPACT} \longrightarrow \text{RESOLUTION} \longrightarrow \text{PREDICTION} \longrightarrow \text{PROJECT MEMORY}$$
 

@@ -1,8 +1,8 @@
-# VibePulse — Master Documentation Index & Authority Model
+# DepRadar — Master Documentation Index & Authority Model
 
 **Status**: Authoritative Master Index
-**Project**: VibePulse (Deterministic Engineering Intelligence Platform & AI Copilot Foundation)
-**Repository**: [https://github.com/sanket200511/VibePulse](https://github.com/sanket200511/VibePulse)
+**Project**: DepRadar (Deterministic Engineering Intelligence Platform & AI Copilot Foundation)
+**Repository**: [https://github.com/sanket200511/Vortex-DepRadar](https://github.com/sanket200511/Vortex-DepRadar)
 
 ---
 
@@ -55,12 +55,12 @@ To prevent documentation drift and maintain strict technical accuracy, all repos
 
 ## 🏗️ 3. Architecture & System Design
 
-| Document                    | Canonical Path                                                                                                                               | Status      | Audience             | Scope / Description                                                                                     |
-| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | -------------------- | ------------------------------------------------------------------------------------------------------- |
-| **System Architecture**     | [`docs/architecture/ARCHITECTURE.md`](file:///d:/VibeSync/docs/architecture/ARCHITECTURE.md)                                                 | `CURRENT`   | Architect, Developer | Comprehensive system architecture, data flow, PostgreSQL ground truth model, and intelligence pipeline. |
-| **System Design**           | [`docs/architecture/SYSTEM_DESIGN.md`](file:///d:/VibeSync/docs/architecture/SYSTEM_DESIGN.md)                                               | `CURRENT`   | Architect, Developer | Operational node topology, sequence diagrams, and scalability considerations.                           |
-| **Design Philosophy**       | [`docs/architecture/DESIGN.md`](file:///d:/VibeSync/docs/architecture/DESIGN.md)                                                             | `CURRENT`   | Designer, Developer  | Engineering philosophy and core UI/UX architecture principles.                                          |
-| **VibePulse 2.0 Blueprint** | [`docs/architecture/VIBEPULSE_2.0_ARCHITECTURE_BLUEPRINT.md`](file:///d:/VibeSync/docs/architecture/VIBEPULSE_2.0_ARCHITECTURE_BLUEPRINT.md) | `REFERENCE` | Architect            | Deep architectural blueprint for the intelligence layers.                                               |
+| Document                   | Canonical Path                                                                                                                               | Status      | Audience             | Scope / Description                                                                                     |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | -------------------- | ------------------------------------------------------------------------------------------------------- |
+| **System Architecture**    | [`docs/architecture/ARCHITECTURE.md`](file:///d:/VibeSync/docs/architecture/ARCHITECTURE.md)                                                 | `CURRENT`   | Architect, Developer | Comprehensive system architecture, data flow, PostgreSQL ground truth model, and intelligence pipeline. |
+| **System Design**          | [`docs/architecture/SYSTEM_DESIGN.md`](file:///d:/VibeSync/docs/architecture/SYSTEM_DESIGN.md)                                               | `CURRENT`   | Architect, Developer | Operational node topology, sequence diagrams, and scalability considerations.                           |
+| **Design Philosophy**      | [`docs/architecture/DESIGN.md`](file:///d:/VibeSync/docs/architecture/DESIGN.md)                                                             | `CURRENT`   | Designer, Developer  | Engineering philosophy and core UI/UX architecture principles.                                          |
+| **DepRadar 2.0 Blueprint** | [`docs/architecture/VIBEPULSE_2.0_ARCHITECTURE_BLUEPRINT.md`](file:///d:/VibeSync/docs/architecture/VIBEPULSE_2.0_ARCHITECTURE_BLUEPRINT.md) | `REFERENCE` | Architect            | Deep architectural blueprint for the intelligence layers.                                               |
 
 ---
 
@@ -189,4 +189,4 @@ $$\text{OBSERVE} \to \text{DETECT} \to \text{UNDERSTAND} \to \text{INVESTIGATE} 
 3. **Determinism Invariant**: Replaying canonical events yields an identical state ($A \equiv B$).
 4. **Secret Redaction**: Raw tokens and credentials are masked to `[REDACTED]` prior to persistence and presentation.
 5. **Multi-Project Isolation**: Telemetry and context for Project A are 100% isolated from Project B.
-6. **Safe Project Deletion**: Removing a project deletes only VibePulse telemetry; local source code is never touched.
+6. **Safe Project Deletion**: Removing a project deletes only DepRadar telemetry; local source code is never touched.

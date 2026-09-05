@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * VibePulse Project Lifecycle & Ephemeral Cleanup Verification Test
+ * DepRadar Project Lifecycle & Ephemeral Cleanup Verification Test
  *
  * Verifies:
  * 1. Persistent projects remain in PostgreSQL across operations.

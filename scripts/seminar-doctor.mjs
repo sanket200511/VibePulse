@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * VibePulse Seminar Doctor
+ * DepRadar Seminar Doctor
  * Comprehensive verification tool for live seminar presentation readiness.
  */
 

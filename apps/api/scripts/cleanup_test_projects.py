@@ -1,5 +1,5 @@
 """
-VibePulse Safe Project Cleanup Script.
+DepRadar Safe Project Cleanup Script.
 
 Removes stale/test project database records while protecting seminar demo
 and active projects. Does NOT delete physical filesystem directories.
@@ -27,11 +27,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 # Explicitly Protected Seminar Projects
 PROTECTED_PROJECT_NAMES = {
-    "VibePulse-Demo",
+    "DepRadar-Demo",
     "Alpha-Service",
     "Beta-Analytics",
     "VibeSync",
-    "VibePulse",
+    "DepRadar",
 }
 
 PROTECTED_PROJECT_ROOTS = {
@@ -171,7 +171,7 @@ async def delete_project_records(db: AsyncSession, project: Project) -> dict[str
 
 
 async def main() -> None:
-    parser = argparse.ArgumentParser(description="VibePulse Project Cleanup Utility")
+    parser = argparse.ArgumentParser(description="DepRadar Project Cleanup Utility")
     parser.add_argument(
         "--confirm",
         action="store_true",
@@ -184,7 +184,7 @@ async def main() -> None:
 
         if not args.confirm:
             print("==================================================")
-            print("VibePulse Project Cleanup -- DRY RUN")
+            print("DepRadar Project Cleanup -- DRY RUN")
             print("==================================================")
             print()
             if not candidates:
@@ -214,7 +214,7 @@ async def main() -> None:
 
         # CONFIRMED CLEANUP MODE
         print("==================================================")
-        print("VibePulse Project Cleanup -- EXECUTING DELETION")
+        print("DepRadar Project Cleanup -- EXECUTING DELETION")
         print("==================================================")
         print()
 

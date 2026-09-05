@@ -10,7 +10,7 @@ import {
   ShieldAlert,
   type LucideIcon,
 } from "lucide-react";
-import { Badge } from "@vibepulse/ui";
+import { Badge } from "@depradar/ui";
 import { getApiBaseUrl } from "../../lib/api-config";
 
 interface EvolutionObservation {

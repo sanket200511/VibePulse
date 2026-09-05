@@ -1,6 +1,6 @@
-# VibePulse Color System
+# DepRadar Color System
 
-This document defines the semantic color language, hierarchy, and visual communication rules of VibePulse. It acts as the conceptual color specification for the entire product, ensuring that color is used exclusively to convey meaning, direct attention, and reduce cognitive fatigue.
+This document defines the semantic color language, hierarchy, and visual communication rules of DepRadar. It acts as the conceptual color specification for the entire product, ensuring that color is used exclusively to convey meaning, direct attention, and reduce cognitive fatigue.
 
 This system defines roles and meanings, not implementation details. It contains no hex codes, RGB values, Tailwind classes, or platform-specific variables.
 
@@ -8,15 +8,15 @@ This system defines roles and meanings, not implementation details. It contains 
 
 ## 1. Color Philosophy
 
-In VibePulse, color is a communication tool, never decoration.
+In DepRadar, color is a communication tool, never decoration.
 
-Developers spend hours staring at complex interfaces. A colorful dashboard with glowing elements, high-saturation accents, and decorative gradients increases cognitive fatigue and distracts from the core data. By employing a highly restrained, neutral color strategy, VibePulse creates a calm, focused environment where the developer’s work—not the tool's interface—takes center stage. Color is introduced only when there is a state change, a critical warning, or a distinct action that requires cognitive processing.
+Developers spend hours staring at complex interfaces. A colorful dashboard with glowing elements, high-saturation accents, and decorative gradients increases cognitive fatigue and distracts from the core data. By employing a highly restrained, neutral color strategy, DepRadar creates a calm, focused environment where the developer’s work—not the tool's interface—takes center stage. Color is introduced only when there is a state change, a critical warning, or a distinct action that requires cognitive processing.
 
 ---
 
 ## 2. Emotional Temperature
 
-Semantic color in VibePulse communicates an emotional state rather than a visual preference. Every semantic role is selected to establish a specific emotional intent, ensuring that the visual language aligns with the developer's cognitive state:
+Semantic color in DepRadar communicates an emotional state rather than a visual preference. Every semantic role is selected to establish a specific emotional intent, ensuring that the visual language aligns with the developer's cognitive state:
 
 - **Neutral → Calm**: Backgrounds and surfaces provide a quiet, stable workspace that reduces visual stimulation.
 - **Observation → Awareness**: Visual indicators of active recording generate a quiet, confident awareness of passive telemetry collection.
@@ -31,7 +31,7 @@ Semantic color in VibePulse communicates an emotional state rather than a visual
 
 ## 3. Attention Budget
 
-Every screen in VibePulse has a strict attention budget. Human attention is limited, and color is expensive. When too many accents compete for attention, the entire layout breaks down.
+Every screen in DepRadar has a strict attention budget. Human attention is limited, and color is expensive. When too many accents compete for attention, the entire layout breaks down.
 
 - **Single Dominant Target**: Each screen must contain exactly one dominant attention target. If a page requires the user to see a critical warning, that warning must be the only chromatic element on the screen.
 - **Intentional Scarcity**: Accent colors are kept scarce. If every module, button, and badge uses its own accent, the user's eye is pulled in multiple directions. Chromatic color is applied only to primary actions, active states, or notifications.
@@ -85,16 +85,16 @@ By keeping the baseline neutral, the eye rests comfortably on the workspace. As 
 
 ## 7. Observation Identity
 
-Observation—the passive recording of filesystem activity—is VibePulse's defining capability. To distinguish this state from standard application behaviors (like navigating page routes or adjusting configurations), Observation is granted a unique, dedicated semantic identity.
+Observation—the passive recording of filesystem activity—is DepRadar's defining capability. To distinguish this state from standard application behaviors (like navigating page routes or adjusting configurations), Observation is granted a unique, dedicated semantic identity.
 
 - **Dedicated Hue**: Observation actions (starting/stopping observation) and indicators (active recording banners) must use a distinct, highly identifiable semantic hue that is never shared with standard primary actions.
-- **Why**: When a developer looks at the screen, they must know instantly whether VibePulse is active and capturing data. The dedicated observation identity acts as a secure indicator of active recording.
+- **Why**: When a developer looks at the screen, they must know instantly whether DepRadar is active and capturing data. The dedicated observation identity acts as a secure indicator of active recording.
 
 ---
 
 ## 8. Health Communication
 
-Visualizing developer health and focus rhythms is a core capability of VibePulse. The color system deliberately rejects "traffic-light" scoring models (e.g., green for high focus, red for distraction) to avoid gamification and false value judgments.
+Visualizing developer health and focus rhythms is a core capability of DepRadar. The color system deliberately rejects "traffic-light" scoring models (e.g., green for high focus, red for distraction) to avoid gamification and false value judgments.
 
 - **Continuous Spectrum**: Health metrics utilize a soft, continuous spectrum of low-contrast tones.
 - **Informative, Not Judgmental**: The color roles map to states of mind rather than scorecards. A transition from deep focus to an idle gap does not transition from "healthy green" to "danger red." Instead, it moves between calm, distinct hues representing different phases of the working cycle (e.g., Flow, Contemplation, Recharging).
@@ -118,7 +118,7 @@ The timeline displays a complex chronological sequence of events. Each event cat
 
 ## 10. Future AI Features
 
-As VibePulse integrates advanced AI summarization and predictive capabilities, the color system reserves a dedicated semantic role for AI-generated elements.
+As DepRadar integrates advanced AI summarization and predictive capabilities, the color system reserves a dedicated semantic role for AI-generated elements.
 
 - **Coexistence**: AI-inferred insights must not compete visually with developer-authored code or deterministic system facts.
 - **Delineation**: AI-generated elements are consistently colored with an analytical, high-contrast, yet low-saturation accent. This distinguishes automated insights from raw system metrics (e.g., file modification histories) at a glance, maintaining clarity about the source of the data.
@@ -127,7 +127,7 @@ As VibePulse integrates advanced AI summarization and predictive capabilities, t
 
 ## 11. Dark Mode Philosophy
 
-For developers, dark interfaces are the default. VibePulse treats Dark Mode as the primary design target.
+For developers, dark interfaces are the default. DepRadar treats Dark Mode as the primary design target.
 
 > **Darkness is the canvas, not the feature.**
 
@@ -177,6 +177,6 @@ The following color application patterns are prohibited:
 
 The color system is successful if:
 
-1.  **Eye Strain is Minimized**: A developer can use VibePulse for eight hours in a dark room without experiencing visual fatigue.
+1.  **Eye Strain is Minimized**: A developer can use DepRadar for eight hours in a dark room without experiencing visual fatigue.
 2.  **No Action is Missed**: Critical system failures or warning indicators are identified instantly, even when scanning the page from a distance.
 3.  **Grayscale Test Passes**: The entire application remains fully usable, navigable, and legible when the screen is viewed in complete black-and-white.

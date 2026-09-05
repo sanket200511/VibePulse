@@ -1,10 +1,10 @@
-# VibePulse Observation Pipeline
+# DepRadar Observation Pipeline
 
-This document details the architecture and operational mechanics of the VibePulse Filesystem Observation Pipeline implemented during Sprint PX-5.2. It is written for future contributors, AI coding agents, and maintainers to provide a comprehensive understanding of how raw filesystem events are transformed into structured observability data.
+This document details the architecture and operational mechanics of the DepRadar Filesystem Observation Pipeline implemented during Sprint PX-5.2. It is written for future contributors, AI coding agents, and maintainers to provide a comprehensive understanding of how raw filesystem events are transformed into structured observability data.
 
 ## Pipeline Philosophy
 
-The VibePulse observation pipeline is constructed around a strict interpretation of the **Single Responsibility Principle** applied at the architectural level. Every stage in the pipeline owns exactly one responsibility.
+The DepRadar observation pipeline is constructed around a strict interpretation of the **Single Responsibility Principle** applied at the architectural level. Every stage in the pipeline owns exactly one responsibility.
 
 This philosophy improves maintainability by:
 
@@ -78,7 +78,7 @@ Filesystem
 
 ### 3. Normaliser
 
-- **Purpose:** Transform OS events into the VibePulse domain model.
+- **Purpose:** Transform OS events into the DepRadar domain model.
 - **Responsibility:** Enrich paths with metadata (language detection, relative pathing) and assign the monotonic `daemon_seq`.
 - **Input:** Filtered raw paths and base event types.
 - **Output:** A populated `DevelopmentEvent` object.
@@ -110,7 +110,7 @@ Filesystem
 
 ### 7. Priority Publisher
 
-- **Purpose:** Deliver events to the VibePulse API.
+- **Purpose:** Deliver events to the DepRadar API.
 - **Responsibility:** Execute HTTP POST requests with priority-class exponential backoff (`NORMAL` vs `CRITICAL`).
 - **Input:** Queued `DevelopmentEvent`.
 - **Output:** HTTP transmission (fire-and-forget from the pipeline's perspective).

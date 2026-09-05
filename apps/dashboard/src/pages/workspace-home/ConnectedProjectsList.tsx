@@ -1,12 +1,12 @@
 /**
- * Connected Projects — every project VibePulse is currently observing
+ * Connected Projects — every project DepRadar is currently observing
  * (docs/design/PRODUCT_EXPERIENCE.md, Section 5, Workspace Home #3, and
  * Section 3.5). Recognition over detail: name, path, live status. No
  * per-project link yet — Projects has no per-project deep route until a
  * later sprint.
  */
 
-import { Badge } from "@vibepulse/ui";
+import { Badge } from "@depradar/ui";
 import { SectionContainer } from "../../components/layout/SectionContainer";
 import { EmptyState } from "../../components/states";
 import type { ConnectedProject } from "./types";
@@ -22,7 +22,7 @@ export function ConnectedProjectsList({ projects }: ConnectedProjectsListProps) 
       <SectionContainer title="Connected Projects">
         <EmptyState
           title="No projects connected yet"
-          description="Connect a project and VibePulse will start observing its activity here."
+          description="Connect a project and DepRadar will start observing its activity here."
         />
       </SectionContainer>
     );

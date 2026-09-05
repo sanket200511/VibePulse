@@ -28,7 +28,7 @@ describe("DeleteProjectModal", () => {
       </QueryClientProvider>,
     );
 
-    expect(screen.queryByText("Remove from VibePulse")).not.toBeInTheDocument();
+    expect(screen.queryByText("Remove from DepRadar")).not.toBeInTheDocument();
   });
 
   it("renders when isOpen is true and requires project name to enable delete button", () => {
@@ -39,7 +39,7 @@ describe("DeleteProjectModal", () => {
       </QueryClientProvider>,
     );
 
-    expect(screen.getByText("Remove from VibePulse")).toBeInTheDocument();
+    expect(screen.getByText("Remove from DepRadar")).toBeInTheDocument();
     expect(
       screen.getByText(/Your physical project directory and source files will/i),
     ).toBeInTheDocument();

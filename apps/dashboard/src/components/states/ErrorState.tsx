@@ -5,7 +5,7 @@
  * `role="alert"` so assistive tech announces it as soon as it appears.
  */
 
-import { cn } from "@vibepulse/ui";
+import { cn } from "@depradar/ui";
 
 export interface ErrorStateProps {
   /** What happened and what can be done, e.g. "We couldn't reach the API. Retrying in the background…". */

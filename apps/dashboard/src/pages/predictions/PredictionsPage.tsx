@@ -16,7 +16,7 @@ import {
   BarChart3,
   HelpCircle,
 } from "lucide-react";
-import { Badge } from "@vibepulse/ui";
+import { Badge } from "@depradar/ui";
 import { Breadcrumbs } from "../../components/layout/Breadcrumbs";
 import {
   usePredictiveSummary,

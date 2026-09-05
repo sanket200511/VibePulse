@@ -6,7 +6,7 @@
 
 ## 1. Baseline & Frozen Architecture Summary
 
-VibePulse operates on a strictly deterministic, evidence-grounded intelligence loop over PostgreSQL historical telemetry:
+DepRadar operates on a strictly deterministic, evidence-grounded intelligence loop over PostgreSQL historical telemetry:
 
 $$\text{OBSERVE} \longrightarrow \text{DETECT} \longrightarrow \text{UNDERSTAND} \longrightarrow \text{INVESTIGATE} \longrightarrow \text{RESOLVE} \longrightarrow \text{LEARN} \longrightarrow \text{PREDICT} \longrightarrow \text{ASK} \longrightarrow \text{ACT} \longrightarrow \text{MEMORY}$$
 

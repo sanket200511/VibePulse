@@ -2,11 +2,11 @@
 
 ## 1. Overview & Core Mission
 
-**VibePulse Sprint 11** establishes the **AI Engineering Copilot Foundation**.
+**DepRadar Sprint 11** establishes the **AI Engineering Copilot Foundation**.
 
 The core mission of the AI Copilot is to answer the fundamental human engineering question:
 
-> **"Ask VibePulse anything about this codebase."**
+> **"Ask DepRadar anything about this codebase."**
 
 Examples:
 
@@ -16,7 +16,7 @@ Examples:
 - _"Why was this incident created?"_
 - _"What might go wrong next?"_
 - _"What is connected to settings.py?"_
-- _"What does VibePulse know about this project?"_
+- _"What does DepRadar know about this project?"_
 
 ---
 
@@ -65,8 +65,8 @@ Examples:
 | `RESOLUTION`           | _"What was resolved recently?", "triage audit history"_                        | `IncidentReviewHistory`                                          |
 | `KNOWLEDGE_GRAPH`      | _"What is connected to auth.py?", "graph dependencies"_                        | `get_or_create_knowledge_graph`                                  |
 | `ENGINEERING_ACTIVITY` | _"What changed recently?", "recent sessions"_                                  | `DevelopmentEvent`, `Session`                                    |
-| `EVIDENCE`             | _"Why does VibePulse believe this?", "show evidence"_                          | `explain_entity`                                                 |
-| `PROJECT_OVERVIEW`     | _"What does VibePulse know about this project?"_                               | `get_or_create_project_context`                                  |
+| `EVIDENCE`             | _"Why does DepRadar believe this?", "show evidence"_                           | `explain_entity`                                                 |
+| `PROJECT_OVERVIEW`     | _"What does DepRadar know about this project?"_                                | `get_or_create_project_context`                                  |
 | `UNKNOWN`              | Out-of-scope or ungrounded questions                                           | _Answerability Gate: `answerable: false`_                        |
 
 ---

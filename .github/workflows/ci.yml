@@ -111,6 +111,6 @@ jobs:
           context: .
           file: ./docker/api.Dockerfile
           push: false
-          tags: vibepulse/api:ci
+          tags: depradar/api:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max

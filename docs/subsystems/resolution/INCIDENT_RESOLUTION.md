@@ -2,7 +2,7 @@
 
 ## 1. Architectural Overview
 
-VibePulse Sprint 5 completes the developer security loop by extending the platform from:
+DepRadar Sprint 5 completes the developer security loop by extending the platform from:
 
 $$\text{OBSERVE} \longrightarrow \text{DETECT} \longrightarrow \text{INVESTIGATE} \longrightarrow \text{RESOLVE} \longrightarrow \text{LEARN}$$
 
@@ -99,7 +99,7 @@ _Security Invariant_: The WebSocket payload contains only metadata (project ID, 
 
 ## 5. Resolution Intelligence Engine
 
-VibePulse maps detected static and dynamic findings to evidence-backed remediation playbooks:
+DepRadar maps detected static and dynamic findings to evidence-backed remediation playbooks:
 
 ### Rule Mappings
 

@@ -1,8 +1,8 @@
 {
-  "name": "@vibepulse/api",
+  "name": "@depradar/api",
   "version": "0.0.1",
   "private": true,
-  "description": "VibePulse FastAPI backend",
+  "description": "DepRadar FastAPI backend",
   "scripts": {
     "dev": "uv run uvicorn app.main:app --host 0.0.0.0 --port 5184 --reload",
     "start": "uv run uvicorn app.main:app --host 0.0.0.0 --port 5184",

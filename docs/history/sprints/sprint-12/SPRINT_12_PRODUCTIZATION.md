@@ -1,8 +1,8 @@
-# VibePulse — Sprint 12 Architecture & Productization
+# DepRadar — Sprint 12 Architecture & Productization
 
 ## End-to-End Intelligence Loop & Copilot Hardening
 
-Sprint 12 represents the canonical composition and productization layer over the complete 10-stage VibePulse intelligence architecture:
+Sprint 12 represents the canonical composition and productization layer over the complete 10-stage DepRadar intelligence architecture:
 
 ```
 OBSERVE ──▶ DETECT ──▶ UNDERSTAND ──▶ INVESTIGATE ──▶ RESOLVE ──▶ LEARN ──▶ PREDICT ──▶ ASK ──▶ ACT
@@ -73,6 +73,6 @@ The Copilot query subsystem (`apps/api/app/features/copilot/`) serves as a deter
 - **Sprint 12 E2E Acceptance Test (`scripts/test-sprint12-e2e.mjs`)**: 14 / 14 Criteria Passed.
 - **Live Command Center Demo (`scripts/demo-command-center.mjs`)**: Seamless 10-stage presentation sequence executed.
 - **Pytest Suite (`uv run pytest`)**: 347 / 347 tests passed.
-- **Daemon Suite (`pnpm --filter @vibepulse/daemon test`)**: 130 / 130 tests passed.
+- **Daemon Suite (`pnpm --filter @depradar/daemon test`)**: 130 / 130 tests passed.
 - **TypeScript Typecheck (`pnpm typecheck`)**: 5 / 5 workspace packages passed with 0 errors.
 - **ESLint & Ruff Lint (`pnpm lint`)**: 5 / 5 workspace packages passed with 0 errors.

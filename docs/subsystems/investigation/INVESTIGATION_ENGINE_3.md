@@ -2,7 +2,7 @@
 
 ## 1. Overview & Objective
 
-Investigation Engine 3.0 upgrades VibePulse from a basic query tool ("show suspicious events") into a **Unified Incident Intelligence Layer** that reconstructs and explains the complete story of a development incident.
+Investigation Engine 3.0 upgrades DepRadar from a basic query tool ("show suspicious events") into a **Unified Incident Intelligence Layer** that reconstructs and explains the complete story of a development incident.
 
 It deterministically answers:
 

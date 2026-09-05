@@ -1,6 +1,6 @@
-# VibePulse Timeline Experience
+# DepRadar Timeline Experience
 
-This document defines the complete Timeline experience for VibePulse. It serves as the experiential and structural design specification for VibePulse's signature view, ensuring the timeline translates raw telemetry logs into a compelling, clear narrative of software creation.
+This document defines the complete Timeline experience for DepRadar. It serves as the experiential and structural design specification for DepRadar's signature view, ensuring the timeline translates raw telemetry logs into a compelling, clear narrative of software creation.
 
 This document focuses on presentation logic, information hierarchies, and temporal storytelling behavior. It contains no React components, CSS definitions, Tailwind utility structures, database tables, or platform-specific variables.
 
@@ -8,9 +8,9 @@ This document focuses on presentation logic, information hierarchies, and tempor
 
 ## 1. Timeline Philosophy
 
-The VibePulse Timeline is the story of software being created.
+The DepRadar Timeline is the story of software being created.
 
-It is not an event log, a git history log, a filesystem browser, an audit database, or a debugging console. Raw event logs fail because they flood the user with thousands of repetitive, low-level facts (such as file saves or micro-edits) that provide no context. By contrast, the VibePulse Timeline filters, aggregates, and prioritizes these raw inputs, translating a chaotic stream of filesystem updates into an understandable, chronological story of developer focus, intent, and progress.
+It is not an event log, a git history log, a filesystem browser, an audit database, or a debugging console. Raw event logs fail because they flood the user with thousands of repetitive, low-level facts (such as file saves or micro-edits) that provide no context. By contrast, the DepRadar Timeline filters, aggregates, and prioritizes these raw inputs, translating a chaotic stream of filesystem updates into an understandable, chronological story of developer focus, intent, and progress.
 
 ---
 

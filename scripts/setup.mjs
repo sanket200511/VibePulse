@@ -23,7 +23,7 @@ function runCmdThrow(cmd, cwd = rootDir) {
 }
 
 console.log("\n=========================");
-console.log("   VibePulse Setup       ");
+console.log("   DepRadar Setup       ");
 console.log("=========================\n");
 
 // 1. Verify requirements

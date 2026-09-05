@@ -12,7 +12,7 @@ export const demoTimeline: DemoTimelineItem[] = [
     timestamp: "09:00",
     title: "Started Observation",
     type: "system",
-    description: "VibePulse daemon attached to workspace root",
+    description: "DepRadar daemon attached to workspace root",
   },
   {
     id: "2",

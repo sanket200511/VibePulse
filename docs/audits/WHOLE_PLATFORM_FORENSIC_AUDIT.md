@@ -1,15 +1,15 @@
-# VibePulse — Whole Platform Forensic Bug Audit & Hardening Report
+# DepRadar — Whole Platform Forensic Bug Audit & Hardening Report
 
 **Audit Date**: August 2026  
 **Auditor**: Forensic Quality Engineering & Architecture Verification  
-**Repository**: [https://github.com/sanket200511/VibePulse](https://github.com/sanket200511/VibePulse)  
+**Repository**: [https://github.com/sanket200511/Vortex-DepRadar](https://github.com/sanket200511/Vortex-DepRadar)  
 **Status**: COMPLETE / VERIFIED
 
 ---
 
 ## 1. Executive Summary
 
-This forensic audit was conducted across the entire VibePulse monorepo (`apps/api`, `apps/dashboard`, `apps/daemon`, `packages/*`, and `scripts/*`) to identify, isolate, reproduce, root-cause, fix, and verify runtime bugs, schema deserialization flaws, unhandled edge-cases, and reliability bottlenecks in the running platform.
+This forensic audit was conducted across the entire DepRadar monorepo (`apps/api`, `apps/dashboard`, `apps/daemon`, `packages/*`, and `scripts/*`) to identify, isolate, reproduce, root-cause, fix, and verify runtime bugs, schema deserialization flaws, unhandled edge-cases, and reliability bottlenecks in the running platform.
 
 PostgreSQL remains the single canonical source of truth, and intelligence engines operate as strictly deterministic projections ($A \equiv B$). No LLMs were introduced, no architectural invariants were altered, and no working tests or historical records were removed.
 
@@ -117,16 +117,16 @@ GET /api/projects/{project_id}/context
 
 ## 7. Verification Matrix
 
-| Verification Check        | Target / Command                       | Status | Notes                                                      |
-| ------------------------- | -------------------------------------- | ------ | ---------------------------------------------------------- |
-| **Backend Pytest Suite**  | `cd apps/api && uv run pytest`         | `PASS` | **348 / 348 tests passed** (including new regression test) |
-| **Daemon Vitest Suite**   | `pnpm --filter @vibepulse/daemon test` | `PASS` | **130 / 130 tests passed**                                 |
-| **TypeScript Typecheck**  | `pnpm typecheck`                       | `PASS` | **5 / 5 workspace packages passed (0 errors)**             |
-| **ESLint & Ruff Linting** | `pnpm lint`                            | `PASS` | **5 / 5 workspace packages passed (0 errors)**             |
-| **Prettier Formatting**   | `pnpm format --check`                  | `PASS` | **100% formatted**                                         |
-| **Seminar Doctor**        | `node scripts/seminar-doctor.mjs`      | `PASS` | **All static, database, and AST checks passed**            |
-| **Sprint 12 E2E Suite**   | `node scripts/test-sprint12-e2e.mjs`   | `PASS` | **14 / 14 acceptance criteria passed**                     |
-| **Git Diff Check**        | `git diff --check`                     | `PASS` | **0 whitespace or syntax errors**                          |
+| Verification Check        | Target / Command                      | Status | Notes                                                      |
+| ------------------------- | ------------------------------------- | ------ | ---------------------------------------------------------- |
+| **Backend Pytest Suite**  | `cd apps/api && uv run pytest`        | `PASS` | **348 / 348 tests passed** (including new regression test) |
+| **Daemon Vitest Suite**   | `pnpm --filter @depradar/daemon test` | `PASS` | **130 / 130 tests passed**                                 |
+| **TypeScript Typecheck**  | `pnpm typecheck`                      | `PASS` | **5 / 5 workspace packages passed (0 errors)**             |
+| **ESLint & Ruff Linting** | `pnpm lint`                           | `PASS` | **5 / 5 workspace packages passed (0 errors)**             |
+| **Prettier Formatting**   | `pnpm format --check`                 | `PASS` | **100% formatted**                                         |
+| **Seminar Doctor**        | `node scripts/seminar-doctor.mjs`     | `PASS` | **All static, database, and AST checks passed**            |
+| **Sprint 12 E2E Suite**   | `node scripts/test-sprint12-e2e.mjs`  | `PASS` | **14 / 14 acceptance criteria passed**                     |
+| **Git Diff Check**        | `git diff --check`                    | `PASS` | **0 whitespace or syntax errors**                          |
 
 ---
 

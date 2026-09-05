@@ -214,7 +214,7 @@ async function runDemo() {
     // Trust & Explainability Drill-Down
     step(
       5,
-      "TRUST & EXPLAINABILITY: Why Does VibePulse Believe This?",
+      "TRUST & EXPLAINABILITY: Why Does DepRadar Believe This?",
       "Querying causal evidence chain and mathematical score decomposition",
     );
     const expRes = await request("GET", `/api/projects/${projectId}/evidence/health/overall`);
@@ -257,7 +257,7 @@ async function runDemo() {
     // AI Engineering Copilot Foundation Drill-Down
     step(
       7,
-      "AI ENGINEERING COPILOT: Ask VibePulse Anything (Zero Hallucination)",
+      "AI ENGINEERING COPILOT: Ask DepRadar Anything (Zero Hallucination)",
       "Asking grounded engineering queries with tri-state factual decomposition",
     );
     const copilotQ1 = await request("POST", `/api/projects/${projectId}/copilot/query`, {

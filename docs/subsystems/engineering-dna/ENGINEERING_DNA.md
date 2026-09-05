@@ -2,13 +2,13 @@
 
 ## Architecture Concept
 
-VibePulse is an Engineering Memory Platform. Rather than fabricating summaries, we build deterministic records of how software evolved over time.
+DepRadar is an Engineering Memory Platform. Rather than fabricating summaries, we build deterministic records of how software evolved over time.
 
 **Engineering DNA** shifts this paradigm to the file level. For any given file in a repository, the Engineering DNA provides a complete, math-backed biography of its entire observed lifecycle. Every node in the DNA Strand directly correlates to a specific engineering event captured by the underlying passive observation daemon.
 
 ## Truth Boundary
 
-Engineering DNA strictly enforces the VibePulse Truth Boundary:
+Engineering DNA strictly enforces the DepRadar Truth Boundary:
 
 1.  **No Hallucinations**: We do not use LLMs to guess what a developer did. If a function was added, it was mathematically verified via AST diffing (`code_evolution` analyzer).
 2.  **Deterministic Aggregation**: Velocity totals (e.g., functions added, TODOs resolved, security alerts triggered) are raw aggregates of time-series observations.
@@ -39,7 +39,7 @@ The `EngineeringDNAPage` listens to WebSocket `ANALYSIS_COMPLETE` messages. When
 
 ### 4. Presentation Mode Integration
 
-A dedicated stop is placed on the Presentation Mode Tour, highlighting the Engineering DNA interface to demonstrate to viewers the depth of VibePulse's granular file-level observability.
+A dedicated stop is placed on the Presentation Mode Tour, highlighting the Engineering DNA interface to demonstrate to viewers the depth of DepRadar's granular file-level observability.
 
 ## Future Evolution
 

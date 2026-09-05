@@ -1,6 +1,6 @@
-# VibePulse AI Insights Experience
+# DepRadar AI Insights Experience
 
-This document defines the conceptual framework, behaviors, and visual integration rules of artificial intelligence within VibePulse. It serves as the design specification for AI-generated text, summary panels, and pattern recognitions, ensuring that AI exists strictly to support developer reflection and self-awareness.
+This document defines the conceptual framework, behaviors, and visual integration rules of artificial intelligence within DepRadar. It serves as the design specification for AI-generated text, summary panels, and pattern recognitions, ensuring that AI exists strictly to support developer reflection and self-awareness.
 
 This system defines conversational personality, category models, and data relationships, not technical implementation. It contains no language model names, prompts, API parameters, backend schemas, or web frameworks.
 
@@ -10,7 +10,7 @@ This system defines conversational personality, category models, and data relati
 
 AI is not the product; AI enhances the product.
 
-In VibePulse, the timeline event stream, replay logs, and workspace metrics remain the absolute source of truth. AI does not replace observable facts. Instead, its purpose is to analyze the compressed event stream and discover patterns that a developer may not notice on their own. It answers a single question:
+In DepRadar, the timeline event stream, replay logs, and workspace metrics remain the absolute source of truth. AI does not replace observable facts. Instead, its purpose is to analyze the compressed event stream and discover patterns that a developer may not notice on their own. It answers a single question:
 
 > **"What is interesting about today's engineering session?"**
 
@@ -113,7 +113,7 @@ AI enriches Replay by explaining transitions during playback.
 Before enough observations are registered, the AI remains silent.
 
 - **Silence Over Speculation**: The system does not generate generic advice, hollow placeholders, or speculative suggestions when data is scarce. Silence is always preferable to weak, inaccurate insights.
-- **Instructive Guidance**: The empty state explains how VibePulse uses telemetry to understand patterns, encouraging the user to open the observation gate.
+- **Instructive Guidance**: The empty state explains how DepRadar uses telemetry to understand patterns, encouraging the user to open the observation gate.
 
 ---
 
@@ -144,7 +144,7 @@ The AI Insights experience is successful if:
 
 1.  **Genuinely Useful**: The developer discovers a pattern or habit they had genuinely overlooked.
 2.  **Traced Easily**: The developer can instantly verify the timeline events that generated the summary.
-3.  **Out-of-Flow Interaction**: The developer returns to review insights _after_ coding, ensuring VibePulse never interrupts active work.
+3.  **Out-of-Flow Interaction**: The developer returns to review insights _after_ coding, ensuring DepRadar never interrupts active work.
 4.  **Complete Trust**: The AI text feels objective, helpful, and grounded in reality.
 
 ---
@@ -154,7 +154,7 @@ The AI Insights experience is successful if:
 Reviewing AI Insights guides the developer toward self-awareness and growth:
 
 ```
-Curiosity (What patterns did VibePulse notice today?)
+Curiosity (What patterns did DepRadar notice today?)
      ↓
 Recognition (Yes, I did spend 15 minutes planning before writing code)
      ↓

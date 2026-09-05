@@ -1,6 +1,6 @@
-# Engineering Guide – VibePulse
+# Engineering Guide – DepRadar
 
-This document codifies the engineering principles, conventions, and standards for VibePulse. All contributors — human and AI — are expected to follow these guidelines.
+This document codifies the engineering principles, conventions, and standards for DepRadar. All contributors — human and AI — are expected to follow these guidelines.
 
 ---
 
@@ -58,7 +58,7 @@ export default function process(data: any) {
 - Use `interface` for object shapes, `type` for unions and aliases.
 - Use `const` arrow functions for React components and utilities.
 - `async/await` everywhere — never `.then()/.catch()` chains.
-- Imports: external libraries first, then internal packages (`@vibepulse/*`), then relative imports. Always `type` imports for type-only usage.
+- Imports: external libraries first, then internal packages (`@depradar/*`), then relative imports. Always `type` imports for type-only usage.
 
 ### Python
 
@@ -221,7 +221,7 @@ HTTP for Redis Streams or another broker later is additive — see
 Every environment variable must:
 
 1. Be documented in the relevant `.env.example`.
-2. Be validated at startup (Pydantic `Settings` for Python, `requireEnv()` / `parsePort()` from `@vibepulse/config` for Node.js).
+2. Be validated at startup (Pydantic `Settings` for Python, `requireEnv()` / `parsePort()` from `@depradar/config` for Node.js).
 3. Never have a hardcoded production default — only safe development defaults.
 
 ---

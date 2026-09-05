@@ -1,7 +1,7 @@
-# VibePulse — Live Seminar Demonstration & Screen Recording Runbook
+# DepRadar — Live Seminar Demonstration & Screen Recording Runbook
 
 **Target Audience:** Academic Evaluators, Final-Year Project Viva Committee, Seminar Attendees  
-**Demo Project Name:** `VibePulse-Seminar-Demo`  
+**Demo Project Name:** `DepRadar-Seminar-Demo`  
 **Project ID:** `c95554c9-2b13-4b2d-882a-660cd2da14fe`  
 **Base URL:** `http://localhost:5183`  
 **API URL:** `http://127.0.0.1:5184`
@@ -22,27 +22,27 @@
 - **Page:** `http://localhost:5183/`
 - **Action:** Open Workspace Home.
 - **What to Point At:**
-  - Header brand: **VibePulse** wordmark with live connection indicator (`Connected :5184`).
+  - Header brand: **DepRadar** wordmark with live connection indicator (`Connected :5184`).
   - Top 3 permanent navigation anchors: **Workspace**, **Projects**, **History**.
-  - Connected Projects list showing `VibePulse-Seminar-Demo` and `Dabba`.
+  - Connected Projects list showing `DepRadar-Seminar-Demo` and `Dabba`.
   - Live observation status badge: `OBSERVING ACTIVE`.
 - **What to Say:**
-  > _"Welcome to VibePulse, the deterministic Developer Observability and Engineering Intelligence Platform for the AI coding era. Rather than relying on LLM guesswork or static vanity metrics, VibePulse continuously observes real filesystem telemetry, executes deterministic AST analysis in PostgreSQL, and synthesizes engineering intelligence across security, stability, architecture, and predictive risk."_
+  > _"Welcome to DepRadar, the deterministic Developer Observability and Engineering Intelligence Platform for the AI coding era. Rather than relying on LLM guesswork or static vanity metrics, DepRadar continuously observes real filesystem telemetry, executes deterministic AST analysis in PostgreSQL, and synthesizes engineering intelligence across security, stability, architecture, and predictive risk."_
 
 ---
 
 ## 2. Projects Directory & Project Story Cockpit
 
-- **Page:** `http://localhost:5183/projects` → Click `VibePulse-Seminar-Demo`
+- **Page:** `http://localhost:5183/projects` → Click `DepRadar-Seminar-Demo`
 - **Target URL:** `http://localhost:5183/projects/c95554c9-2b13-4b2d-882a-660cd2da14fe`
 - **Action:** Navigate to Project Story.
 - **What to Point At:**
-  - Standardized Breadcrumbs: `Workspace → Projects → VibePulse-Seminar-Demo`.
+  - Standardized Breadcrumbs: `Workspace → Projects → DepRadar-Seminar-Demo`.
   - **Primary Cockpit Hero:** "Launch Engineering Command Center" CTA button.
   - **Specialized Intelligence Hub (6 Cards):** Security Intelligence, Investigation Forensics, Predictive Center, Knowledge Graph Topology, AI Copilot, AI Provenance.
   - **Memory & Utilities Bar:** Project Memory anchor link and Markdown Context Export button.
 - **What to Say:**
-  > _"Here in the Project Story cockpit, we see the complete operational hub for VibePulse-Seminar-Demo. The architecture follows a strict 3-tier hierarchy: primary executive health launchpad at the top, a 6-card specialized intelligence grid in the center, and portable project memory utilities at the bottom."_
+  > _"Here in the Project Story cockpit, we see the complete operational hub for DepRadar-Seminar-Demo. The architecture follows a strict 3-tier hierarchy: primary executive health launchpad at the top, a 6-card specialized intelligence grid in the center, and portable project memory utilities at the bottom."_
 
 ---
 
@@ -61,7 +61,7 @@
   - **"What Should I Do Next?" Priority Action Engine:** Ranked priorities with explainable urgency scores and recommended remediation actions.
   - **Mathematical Decomposition Panel:** Exact transparency into how every point is calculated ($A \equiv B$).
 - **What to Say:**
-  > _"The Engineering Command Center unifies real-time telemetry into a single, explainable health model. VibePulse computes five orthogonal dimensions of codebase health. Notice that every score includes a mathematical decomposition breakdown—there are zero fabricated numbers."_
+  > _"The Engineering Command Center unifies real-time telemetry into a single, explainable health model. DepRadar computes five orthogonal dimensions of codebase health. Notice that every score includes a mathematical decomposition breakdown—there are zero fabricated numbers."_
 
 ---
 
@@ -90,7 +90,7 @@
     - Type `nonexistent_term_xyz` → shows `FILTERED_EMPTY` state with "Clear Filters" button.
     - Click "Clear Filters" → list restores immediately.
 - **What to Say:**
-  > _"In the Investigation Engine, VibePulse reconstructs the complete causal DAG of the incident. It traces the exact commit and file modification that introduced the vulnerability, computes the root cause, and provides step-by-step resolution recommendations."_
+  > _"In the Investigation Engine, DepRadar reconstructs the complete causal DAG of the incident. It traces the exact commit and file modification that introduced the vulnerability, computes the root cause, and provides step-by-step resolution recommendations."_
 
 ---
 
@@ -104,7 +104,7 @@
     3. `REVIEWED → RESOLVED` by _Lead Developer_ ("Secrets externalized to environment variables and DEBUG set to False").
   - Current status: **RESOLVED**.
 - **What to Say:**
-  > _"VibePulse doesn't simply discard an incident once resolved. It creates an immutable review history in PostgreSQL. This transition data feeds directly into our Resolution Health dimension and informs the AI Copilot during future investigations."_
+  > _"DepRadar doesn't simply discard an incident once resolved. It creates an immutable review history in PostgreSQL. This transition data feeds directly into our Resolution Health dimension and informs the AI Copilot during future investigations."_
 
 ---
 
@@ -118,7 +118,7 @@
   - **Focus Drift:** Velocity migration from _Core Application Setup_ to _Payment & Routing Acceleration_.
   - **7-Day Risk Velocity Trend:** Empirical trend series based on event density.
 - **What to Say:**
-  > _"Predictive Intelligence uses empirical churn velocity and modification frequency across subsystems to forecast where engineering regressions or security hotspots are likely to emerge next. If there were insufficient history, VibePulse would explicitly display an explainable Insufficient Evidence warning rather than hallucinating predictions."_
+  > _"Predictive Intelligence uses empirical churn velocity and modification frequency across subsystems to forecast where engineering regressions or security hotspots are likely to emerge next. If there were insufficient history, DepRadar would explicitly display an explainable Insufficient Evidence warning rather than hallucinating predictions."_
 
 ---
 
@@ -173,8 +173,8 @@
 ### Query 6 (Out-of-Scope Zero Hallucination Gate):
 
 - **Input:** `What is the weather today?`
-- **Expected Result:** `answerable: false` / Out-of-scope response stating that VibePulse strictly answers questions grounded in observed engineering telemetry.
-- **What to Say:** _"This is crucial: when evidence does not exist in the project telemetry, VibePulse's Answerability Gate rejects the query cleanly. It never hallucinates."_
+- **Expected Result:** `answerable: false` / Out-of-scope response stating that DepRadar strictly answers questions grounded in observed engineering telemetry.
+- **What to Say:** _"This is crucial: when evidence does not exist in the project telemetry, DepRadar's Answerability Gate rejects the query cleanly. It never hallucinates."_
 
 ---
 
@@ -187,10 +187,10 @@
   - **AI Provenance:** Validates that the endpoint returns `application/json` with 100% deterministic grounding.
   - **Context Export:** Open or download `PROJECT_CONTEXT.md` (over 15 KB). Point out **Section 21 (Copilot Context)**, the complete fact inventory, and confirmed `[REDACTED]` secret safety.
 - **What to Say:**
-  > _"Finally, VibePulse provides portable Project Memory. The exported `PROJECT_CONTEXT.md` document packages the entire verified engineering context for AI coding assistants—Cursor, Claude, or Copilot—ensuring AI tools operate with complete grounding without leaking confidential credentials."_
+  > _"Finally, DepRadar provides portable Project Memory. The exported `PROJECT_CONTEXT.md` document packages the entire verified engineering context for AI coding assistants—Cursor, Claude, or Copilot—ensuring AI tools operate with complete grounding without leaking confidential credentials."_
 
 ---
 
 ## 11. Closing Viva Statement
 
-> _"In summary, VibePulse bridges the gap between raw developer activity and high-confidence engineering intelligence. Through continuous observation, deterministic AST security analysis, explainable health decomposition, immutable incident resolution learning, empirical predictive churn modeling, semantic graph topology, and a zero-hallucination AI Copilot, VibePulse establishes a single canonical source of truth for modern software teams."_
+> _"In summary, DepRadar bridges the gap between raw developer activity and high-confidence engineering intelligence. Through continuous observation, deterministic AST security analysis, explainable health decomposition, immutable incident resolution learning, empirical predictive churn modeling, semantic graph topology, and a zero-hallucination AI Copilot, DepRadar establishes a single canonical source of truth for modern software teams."_

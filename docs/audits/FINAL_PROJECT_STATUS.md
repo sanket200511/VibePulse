@@ -1,6 +1,6 @@
 # VIBEPULSE — FINAL PROJECT STATUS
 
-**Project**: VibePulse — The Deterministic Engineering Intelligence Platform & AI Copilot Foundation
+**Project**: DepRadar — The Deterministic Engineering Intelligence Platform & AI Copilot Foundation
 **Status**: STABLE, EXPLAINABLE, DEMONSTRABLE, DEFENSIBLE, COMPLETE
 **Architecture Freeze**: ACTIVE
 **Canonical Source of Truth**: PostgreSQL 16+ Historical Telemetry
@@ -10,7 +10,7 @@
 
 ## 1. Executive Summary
 
-VibePulse is an end-to-end deterministic engineering intelligence system that converts continuous filesystem telemetry into actionable root cause analysis, mathematical project health scoring, predictive risk forecasting, semantic knowledge graphs, and zero-hallucination AI copilot interactions.
+DepRadar is an end-to-end deterministic engineering intelligence system that converts continuous filesystem telemetry into actionable root cause analysis, mathematical project health scoring, predictive risk forecasting, semantic knowledge graphs, and zero-hallucination AI copilot interactions.
 
 ### The Canonical Intelligence Pipeline
 

@@ -1,10 +1,10 @@
-# VibePulse Demonstration Guide
+# DepRadar Demonstration Guide
 
 ---
 
 ## Demo Objective
 
-This demo shows a live audience — professors, hackathon judges, or GitHub visitors — that VibePulse can observe real, unmodified development activity as it happens: a developer edits files, and within seconds the platform ingests the resulting events, classifies them, and rolls them up into a coherent development session with live metrics, all without VibePulse touching a single line of the code being written.
+This demo shows a live audience — professors, hackathon judges, or GitHub visitors — that DepRadar can observe real, unmodified development activity as it happens: a developer edits files, and within seconds the platform ingests the resulting events, classifies them, and rolls them up into a coherent development session with live metrics, all without DepRadar touching a single line of the code being written.
 
 ---
 
@@ -12,8 +12,8 @@ This demo shows a live audience — professors, hackathon judges, or GitHub visi
 
 1. Start the backend: `cd apps/api && uv run uvicorn app.main:app --reload --port 5184`
 2. Confirm the API is healthy: open `http://localhost:5184/health`
-3. Start the dashboard: `pnpm --filter @vibepulse/dashboard dev` → open `http://localhost:5183`
-4. Start the daemon against a sample project: `pnpm --filter @vibepulse/daemon dev` (point it at a throwaway repo, not VibePulse itself)
+3. Start the dashboard: `pnpm --filter @depradar/dashboard dev` → open `http://localhost:5183`
+4. Start the daemon against a sample project: `pnpm --filter @depradar/daemon dev` (point it at a throwaway repo, not DepRadar itself)
 5. Open the sample project in an editor alongside the dashboard
 6. Modify a few files — create one, edit one, delete one — across at least two languages (e.g. a `.py` and a `.ts` file)
 7. Watch the **Live Event Feed** — each file change appears within ~1 second as a badged event (Created / Modified / Deleted)
@@ -78,17 +78,17 @@ This demo shows a live audience — professors, hackathon judges, or GitHub visi
 
 ## Talking Points
 
-VibePulse exists because AI-assisted coding has changed how software actually gets written — a single developer can now produce, in an afternoon, the volume of code that used to take a team a sprint, but the tools we use to _understand_ that code haven't caught up. Version control tells you what changed; it doesn't tell you how a session unfolded, whether the pace was healthy, or whether a burst of AI-generated code introduced patterns nobody actually reviewed.
+DepRadar exists because AI-assisted coding has changed how software actually gets written — a single developer can now produce, in an afternoon, the volume of code that used to take a team a sprint, but the tools we use to _understand_ that code haven't caught up. Version control tells you what changed; it doesn't tell you how a session unfolded, whether the pace was healthy, or whether a burst of AI-generated code introduced patterns nobody actually reviewed.
 
-The problem VibePulse solves is visibility, not generation. It deliberately does not write or suggest code — it observes. That's an important distinction to make explicit to a technical audience: this is an observability platform, structurally closer to an APM tool like Datadog than to a coding assistant like Copilot.
+The problem DepRadar solves is visibility, not generation. It deliberately does not write or suggest code — it observes. That's an important distinction to make explicit to a technical audience: this is an observability platform, structurally closer to an APM tool like Datadog than to a coding assistant like Copilot.
 
-Developer observability matters for the same reason production observability does: you cannot manage what you cannot measure, and "how is this codebase actually evolving" has historically been answered by gut feel and code review, not data. As AI-assisted development accelerates the rate of change, that gap between what's happening and what's visible only widens — which is exactly the gap VibePulse's Session Engine and Analysis Pipeline are built to close.
+Developer observability matters for the same reason production observability does: you cannot manage what you cannot measure, and "how is this codebase actually evolving" has historically been answered by gut feel and code review, not data. As AI-assisted development accelerates the rate of change, that gap between what's happening and what's visible only widens — which is exactly the gap DepRadar's Session Engine and Analysis Pipeline are built to close.
 
 ---
 
 ## Questions Professors May Ask
 
-**1. What is the overall architecture of VibePulse?**
+**1. What is the overall architecture of DepRadar?**
 A daemon observes the filesystem and publishes raw events; a FastAPI backend ingests them, runs them through an analysis pipeline, and groups them into sessions via the Session Engine; a React dashboard consumes both REST and WebSocket APIs to show it live.
 
 **2. Why FastAPI instead of Django or Flask?**
@@ -112,7 +112,7 @@ Those fields are aggregate counters/sets that only the owning session ever reads
 **8. What is the Analysis Pipeline, and how is it extensible?**
 It's a pipeline of independent `Analyzer` implementations (language, file metadata, git context, activity rate) conforming to a shared Protocol. Adding a new analyzer means writing one class and registering it — the pipeline, persistence, and API surface don't change.
 
-**9. How does VibePulse decide where one coding session ends and another begins?**
+**9. How does DepRadar decide where one coding session ends and another begins?**
 The API's Session Engine — not the daemon — makes that decision, by comparing the gap between an incoming event's timestamp and the project's last known event against two configurable timeouts (idle and completion). The daemon's own session identity is stored only for debugging and is never trusted for lifecycle decisions.
 
 **10. Why not just trust the daemon's own session ID?**
@@ -188,9 +188,9 @@ Future milestones will build directly on the event, analysis, session, timeline,
 
 ## Demo Scenario
 
-A developer opens a fresh project in their editor, with the VibePulse daemon already watching the directory in the background. They start writing code — creating a new file, editing an existing one, deleting a stale one. They aren't doing anything different from a normal coding session; there is nothing to configure, no annotation to add, no extra step to remember.
+A developer opens a fresh project in their editor, with the DepRadar daemon already watching the directory in the background. They start writing code — creating a new file, editing an existing one, deleting a stale one. They aren't doing anything different from a normal coding session; there is nothing to configure, no annotation to add, no extra step to remember.
 
-The moment a file is saved, VibePulse observes it. The daemon detects the filesystem change, builds a structured event, and posts it to the API. Within about a second, that event appears live in the dashboard's event feed.
+The moment a file is saved, DepRadar observes it. The daemon detects the filesystem change, builds a structured event, and posts it to the API. Within about a second, that event appears live in the dashboard's event feed.
 
 Behind the scenes, analysis occurs automatically: the event is enriched with its detected language, file category, git branch, and activity rate — all without the developer doing anything beyond saving a file.
 
@@ -198,7 +198,7 @@ As events keep arriving, the session evolves: the API's Session Engine recognize
 
 When the developer stops — takes a break, moves to another task — the session doesn't just vanish. It transitions through IDLE and, after enough silence, to COMPLETED. At that point, a summary is generated: a short, human-readable headline describing what the session actually contained. The developer (or an observer — a teammate, a reviewer, a professor) can then open the Sessions page and see that summary sitting alongside every other session ever observed, without having written a single line of documentation themselves.
 
-From there, clicking into the session opens its Timeline: the same raw events, now rendered as an ordered narrative — repeated saves to one file grouped together, creates and deletes kept distinct, session start/idle/end markers placed inline — ending on a Session Outcome card that recaps the whole session in one glance. Above that Timeline sits the Insights panel, telling the story of the session before any raw numbers appear: which files kept coming back, whether the pace was a steady rhythm or a scattered sweep, where the developer paused and for how long — each as a plain-language headline backed by evidence and metrics, not a dashboard of counters. Nothing here is generated by an AI model or hand-written by the developer; it's a direct, deterministic projection of the events and session data VibePulse already observed.
+From there, clicking into the session opens its Timeline: the same raw events, now rendered as an ordered narrative — repeated saves to one file grouped together, creates and deletes kept distinct, session start/idle/end markers placed inline — ending on a Session Outcome card that recaps the whole session in one glance. Above that Timeline sits the Insights panel, telling the story of the session before any raw numbers appear: which files kept coming back, whether the pace was a steady rhythm or a scattered sweep, where the developer paused and for how long — each as a plain-language headline backed by evidence and metrics, not a dashboard of counters. Nothing here is generated by an AI model or hand-written by the developer; it's a direct, deterministic projection of the events and session data DepRadar already observed.
 
 Below the Timeline, once the session is COMPLETED, the Replay section lets that same recorded history be walked through again — one frame at a time, at 1×/2×/4×/8× speed, or by jumping straight to a chapter like "Session Started" or "Resumed After Idle." It's the same underlying data as the Timeline above it, just given a playback interface instead of a static list — useful for a reviewer who wants to watch how a burst of AI-assisted changes actually unfolded rather than read it as a flat log.
 
@@ -277,7 +277,7 @@ Before presenting, verify:
 - [ ] API backend has been started (`uv run uvicorn app.main:app --reload --port 5184`)
 - [ ] `GET http://localhost:5184/health` returns a healthy response
 - [ ] Dashboard is running and reachable at `http://localhost:5183`
-- [ ] Daemon is running and pointed at a throwaway sample project — **not** the VibePulse repository itself
+- [ ] Daemon is running and pointed at a throwaway sample project — **not** the DepRadar repository itself
 - [ ] The sample project is open in an editor, visible on screen alongside the dashboard
 - [ ] The sample project has no uncommitted changes from a previous rehearsal (clean starting state)
 - [ ] Network/Wi-Fi is stable if the demo is not fully local
@@ -297,7 +297,7 @@ Recovery: Verify that your local PostgreSQL instance is running on port 5432 and
 
 **Daemon disconnected**
 Symptom: file edits in the sample project stop appearing in the event feed.
-Recovery: Check the daemon's terminal for errors first — most commonly it lost the API endpoint (wrong `.env` value) or was pointed at the wrong directory. Restart it with `pnpm --filter @vibepulse/daemon dev` and re-verify against the correct sample project path.
+Recovery: Check the daemon's terminal for errors first — most commonly it lost the API endpoint (wrong `.env` value) or was pointed at the wrong directory. Restart it with `pnpm --filter @depradar/daemon dev` and re-verify against the correct sample project path.
 
 **WebSocket disconnected**
 Symptom: the dashboard stops updating live even though the daemon is still publishing events.
@@ -309,7 +309,7 @@ Recovery: The dashboard's WebSocket client reconnects automatically with exponen
 
 **5-minute demo** — Fast, impression-focused. Cover: start the 3 terminal commands (dashboard, api, daemon), make 2–3 file changes in the sample project, point out the live event feed and the Session Banner turning ACTIVE. Skip waiting for IDLE/COMPLETED — narrate that transition instead of showing it live.
 
-**10-minute demo** — Adds explanation. Cover everything in the 5-minute version, plus: point out the per-event analysis metadata (language, file category, git branch), explain briefly why VibePulse only observes and never generates code, and show the Sessions page with at least one previously-completed session and its generated summary (prepared in advance rather than waited for live).
+**10-minute demo** — Adds explanation. Cover everything in the 5-minute version, plus: point out the per-event analysis metadata (language, file category, git branch), explain briefly why DepRadar only observes and never generates code, and show the Sessions page with at least one previously-completed session and its generated summary (prepared in advance rather than waited for live).
 
 **20-minute technical walkthrough** — Full architecture discussion. Cover everything above, plus: walk through the Architecture Slide diagram, explain the three-state session lifecycle and why boundaries are decided by the API rather than the daemon, open the Analysis Pipeline code briefly to show the `Analyzer` protocol and registry pattern, and leave time for audience questions — this is the format where the "Questions Professors May Ask" section above is most likely to get used live.
 
@@ -317,10 +317,10 @@ Recovery: The dashboard's WebSocket client reconnects automatically with exponen
 
 ## Demo Tips
 
-Practical recommendations for presenting VibePulse smoothly, regardless of audience:
+Practical recommendations for presenting DepRadar smoothly, regardless of audience:
 
 - **Use a prepared sample project.** Demonstrate against a small, purpose-built throwaway project rather than improvising — a known set of files makes the live edits predictable and the resulting events easy to narrate.
-- **Do not demonstrate using the VibePulse repository itself.** Watching VibePulse observe its own repository is confusing to an audience and risks surfacing noise from editor tooling, linters, or build artifacts unrelated to the demo narrative.
+- **Do not demonstrate using the DepRadar repository itself.** Watching DepRadar observe its own repository is confusing to an audience and risks surfacing noise from editor tooling, linters, or build artifacts unrelated to the demo narrative.
 - **Increase browser zoom.** Presentation displays and video calls compress detail — raise the browser zoom level before starting so event rows, badges, and session metrics are legible from the back of a room or in a recording.
 - **Keep dashboard and editor visible together.** Arrange windows so the audience can see a file change happen in the editor and its corresponding event appear in the dashboard in the same field of view — this side-by-side correlation is the core "aha" moment of the demo.
 - **Disable notifications.** Turn off OS and application notifications before presenting; an unrelated pop-up during a live demo undermines credibility and distracts from the flow.

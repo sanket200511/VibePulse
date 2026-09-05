@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-**Project Context Memory** is VibePulse's durable, evidence-backed knowledge layer that operates across development sessions and application restarts.
+**Project Context Memory** is DepRadar's durable, evidence-backed knowledge layer that operates across development sessions and application restarts.
 
 ```
 ┌────────────────────────────────────────────────────────┐

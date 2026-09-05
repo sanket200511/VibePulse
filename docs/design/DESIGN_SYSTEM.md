@@ -1,6 +1,6 @@
-# VibePulse Design System
+# DepRadar Design System
 
-This document defines the structural composition, layout grids, spacing scales, and visual hierarchies that govern the VibePulse user interface. It acts as the structural specification for all user interface layouts, ensuring absolute visual consistency across the product.
+This document defines the structural composition, layout grids, spacing scales, and visual hierarchies that govern the DepRadar user interface. It acts as the structural specification for all user interface layouts, ensuring absolute visual consistency across the product.
 
 This document does not specify color palettes (defined in `COLOR_SYSTEM.md`) or typography scales (defined in `TYPOGRAPHY.md`). Instead, it defines the rules of composition and spatial relationships.
 
@@ -8,7 +8,7 @@ This document does not specify color palettes (defined in `COLOR_SYSTEM.md`) or 
 
 ## 1. Design Goals
 
-Consistency is the foundation of cognitive ease. In VibePulse, visual consistency is valued higher than novelty. The primary goals are:
+Consistency is the foundation of cognitive ease. In DepRadar, visual consistency is valued higher than novelty. The primary goals are:
 
 - **Reduced Cognitive Load**: Predictable structures allow developers to focus entirely on their data, not on learning new layout patterns.
 - **Visual Rhythm**: Harmonious spacing and sizing create an interface that feels calm, balanced, and premium.
@@ -30,7 +30,7 @@ Every visual and interactive concern has a single, unambiguous owner. This separ
 
 ## 3. Design Token Philosophy
 
-VibePulse translates visual designs into semantic decisions via Design Tokens. Rather than using raw, hard-coded numbers (e.g., specific pixels or animation milliseconds), components consume semantic names. This abstraction preserves long-term visual consistency and makes updates across multiple platforms frictionless.
+DepRadar translates visual designs into semantic decisions via Design Tokens. Rather than using raw, hard-coded numbers (e.g., specific pixels or animation milliseconds), components consume semantic names. This abstraction preserves long-term visual consistency and makes updates across multiple platforms frictionless.
 
 - **Spacing Tokens**: Standardize layout margins, item spacing, and container padding.
 - **Radius Tokens**: Regulate container corner styling and interactive elements.
@@ -43,7 +43,7 @@ VibePulse translates visual designs into semantic decisions via Design Tokens. R
 
 ## 4. Grid System
 
-VibePulse layouts use a clean, fluid grid that respects the widescreen monitors typical of software development environments.
+DepRadar layouts use a clean, fluid grid that respects the widescreen monitors typical of software development environments.
 
 - **Content Width**: Content is bounded to prevent line lengths from becoming uncomfortably wide. The central content container spans a maximum readable width and is horizontally centered.
 - **Page Margins**: Standard margins exist on the outer edges of the screen, expanding dynamically on wider screens to create breathing room.
@@ -94,7 +94,7 @@ Visual depth is communicated through layered elevation rather than line borders.
 
 ## 8. Alignment Philosophy
 
-Alignment is not an aesthetic choice; it is an architectural contract. In VibePulse:
+Alignment is not an aesthetic choice; it is an architectural contract. In DepRadar:
 
 - **Precise Alignment**: Related elements align to the exact pixel along their structural axes (vertical or horizontal).
 - **Intentional Separation**: Unrelated or primary/secondary groups of information are separated cleanly by designated spacing tokens.
@@ -137,7 +137,7 @@ Icons are functional visual indicators, not decorative illustrations.
 
 ## 12. Component Density
 
-VibePulse favors a comfortable, spacious reading density over compact information packing.
+DepRadar favors a comfortable, spacious reading density over compact information packing.
 
 - **Scanning Speed**: White space around text allows the eye to scan data quickly without getting bogged down in wall-to-wall characters.
 - **Reading Rhythm**: Standard sections and tables must use generous vertical padding to establish a calm reading flow. Information-dense views must remain readable with distinct row gaps.

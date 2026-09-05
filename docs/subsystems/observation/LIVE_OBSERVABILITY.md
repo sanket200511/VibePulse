@@ -2,7 +2,7 @@
 
 ## Context
 
-VibePulse observes software engineering through a combination of file system events (from the daemon) and background analysis pipelines. Prior to this, the dashboard required manual refreshes to see new sessions, architecture timeline updates, or project intelligence stats.
+DepRadar observes software engineering through a combination of file system events (from the daemon) and background analysis pipelines. Prior to this, the dashboard required manual refreshes to see new sessions, architecture timeline updates, or project intelligence stats.
 
 Sprint PX-9.5 introduced the **Live Observability Engine** to connect these capabilities seamlessly, rendering the platform a living, breathing workspace that updates in real-time.
 

@@ -88,7 +88,7 @@ async def generate_project_context_markdown(db: AsyncSession, project_id: uuid.U
         ", ".join(fw_names or lang_names) if (fw_names or lang_names) else "Standard Software"
     )
     exec_summary_observed = (
-        f"VibePulse observed this project as a {tech_stack_phrase} application "
+        f"DepRadar observed this project as a {tech_stack_phrase} application "
         f"with {context.activity_summary.total_events} recorded development events across "
         f"{context.activity_summary.total_sessions} continuous development sessions."
     )
@@ -111,7 +111,7 @@ async def generate_project_context_markdown(db: AsyncSession, project_id: uuid.U
     lines: list[str] = [
         f"# Project Context — {project.display_name}",
         "",
-        "> Generated deterministically by VibePulse Project Intelligence & Context Memory",
+        "> Generated deterministically by DepRadar Project Intelligence & Context Memory",
         "",
         "## 1. Project Identity",
         "",
@@ -553,7 +553,7 @@ async def generate_project_context_markdown(db: AsyncSession, project_id: uuid.U
         [
             "## 19. Trust, Explainability & Evidence Intelligence",
             "",
-            "- **Central Principle**: *Why Does VibePulse Believe This?*",
+            "- **Central Principle**: *Why Does DepRadar Believe This?*",
             "- **Provenance Standard**:",
             (
                 "  - `[OBSERVED]`: Directly supported by canonical PostgreSQL "
@@ -574,7 +574,7 @@ async def generate_project_context_markdown(db: AsyncSession, project_id: uuid.U
             "## 20. Engineering Knowledge Graph & Project Memory 2.0",
             "",
             (
-                "- **Central Principle**: *What Does VibePulse Know About This Project, "
+                "- **Central Principle**: *What Does DepRadar Know About This Project, "
                 "and How Are Its Parts Connected?*"
             ),
             (
@@ -604,7 +604,7 @@ async def generate_project_context_markdown(db: AsyncSession, project_id: uuid.U
             "## 21. AI Engineering Copilot Context",
             "",
             (
-                "- **Central Principle**: *Ask VibePulse Anything About This Project "
+                "- **Central Principle**: *Ask DepRadar Anything About This Project "
                 "(Evidence-First, Zero Hallucination)*"
             ),
             (
@@ -664,13 +664,13 @@ async def generate_project_context_markdown(db: AsyncSession, project_id: uuid.U
             "",
             "# AI Handoff Context",
             "",
-            "## What VibePulse Knows",
+            "## What DepRadar Knows",
             f"1. Verified repository root path is `{project.root_path}`.",
             f"2. Verified active language ecosystem: {lang_summary_str}.",
             f"3. Verified project structure: {file_count} files across {src_dir_count} roots.",
             f"4. Verified {sec.total_findings} security events analyzed with AST guardrails.",
             "",
-            "## What VibePulse Inferred",
+            "## What DepRadar Inferred",
             f"1. Current engineering focus: {context.development_focus.focus}.",
             f"2. Application topology: {arch.project_type}.",
             "",

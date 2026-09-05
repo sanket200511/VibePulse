@@ -1,4 +1,4 @@
-# VibePulse System Architecture Diagram
+# DepRadar System Architecture Diagram
 
 ```mermaid
 flowchart TB

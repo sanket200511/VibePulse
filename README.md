@@ -1,14 +1,14 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/sanket200511/VibePulse/main/docs/assets/logo-placeholder.png" alt="VibePulse Logo" width="120" />
+  <img src="https://raw.githubusercontent.com/sanket200511/Vortex-DepRadar/main/docs/assets/logo-placeholder.png" alt="DepRadar Logo" width="120" />
 
   <br />
 
-  <h1>VibePulse</h1>
+  <h1>DepRadar</h1>
   <p><strong>The Deterministic Engineering Intelligence Platform & AI Copilot Foundation</strong></p>
   <p><em>Observe First. Derive Carefully. Never Invent.</em></p>
 
   <div>
-    <a href="https://github.com/sanket200511/VibePulse/releases"><img src="https://img.shields.io/github/v/release/sanket200511/VibePulse?color=10b981&label=Version" alt="Version" /></a>
+    <a href="https://github.com/sanket200511/Vortex-DepRadar/releases"><img src="https://img.shields.io/github/v/release/sanket200511/Vortex-DepRadar?color=10b981&label=Version" alt="Version" /></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-6366f1.svg" alt="License" /></a>
     <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome" /></a>
     <a href="docs/DOCUMENTATION_INDEX.md"><img src="https://img.shields.io/badge/Docs-Index-blue.svg" alt="Docs Index" /></a>
@@ -16,7 +16,7 @@
   <br />
 </div>
 
-**VibePulse** is a deterministic, event-driven engineering intelligence and investigation platform. It provides an end-to-end continuous loop from filesystem telemetry to causal root cause investigation, predictive risk forecasting, semantic knowledge graph traversal, and zero-hallucination AI Copilot assistance.
+**DepRadar** is a deterministic, event-driven engineering intelligence and investigation platform. It provides an end-to-end continuous loop from filesystem telemetry to causal root cause investigation, predictive risk forecasting, semantic knowledge graph traversal, and zero-hallucination AI Copilot assistance.
 
 ```
 OBSERVE ──▶ DETECT ──▶ UNDERSTAND ──▶ INVESTIGATE ──▶ RESOLVE ──▶ LEARN ──▶ PREDICT ──▶ ASK ──▶ ACT ──▶ MEMORY
@@ -87,7 +87,7 @@ flowchart TD
 - **Zero Hallucination**: Pure deterministic projections ($A \equiv B$).
 - **Secret Redaction**: Raw tokens and credentials matching token patterns are strictly masked to `[REDACTED]`.
 - **Multi-Project Isolation**: Telemetry and context for Project A are completely segregated from Project B.
-- **Safe Project Deletion**: Removing a project from VibePulse deletes only telemetry records; user code remains untouched on disk.
+- **Safe Project Deletion**: Removing a project from DepRadar deletes only telemetry records; user code remains untouched on disk.
 
 ---
 
@@ -124,7 +124,7 @@ pnpm dev:status
 ## 🧪 Verification & Quality Baselines
 
 - **Backend Pytest**: 349 / 349 passed (`cd apps/api && uv run pytest`)
-- **Daemon Vitest**: 130 / 130 passed (`pnpm --filter @vibepulse/daemon test`)
+- **Daemon Vitest**: 130 / 130 passed (`pnpm --filter @depradar/daemon test`)
 - **Total Automated Tests**: 479 / 479 passed
 - **TypeScript Typecheck**: 5 / 5 packages passed (0 errors) (`pnpm typecheck`)
 - **Lint & Ruff**: 5 / 5 packages passed (0 errors) (`pnpm lint`)

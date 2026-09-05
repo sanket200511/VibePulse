@@ -11,7 +11,7 @@ const mockNodes: KnowledgeGraphNode[] = [
     node_id: "project-1",
     node_type: "Project",
     project_id: "334351d3-4aeb-4bc4-9387-f22e236acda8",
-    label: "VibePulse-Seminar-Demo",
+    label: "DepRadar-Seminar-Demo",
     subsystem: null,
     metadata: { overall_health_score: 95 },
     provenance: "OBSERVED",

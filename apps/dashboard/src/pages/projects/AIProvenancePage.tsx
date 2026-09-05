@@ -3,7 +3,7 @@ import { useProjectAIProvenance } from "./useAIProvenance";
 import { LoadingState } from "../../components/states/LoadingState";
 import { ErrorState } from "../../components/states/ErrorState";
 import { ArrowLeft, Bot, Sparkles } from "lucide-react";
-import { Badge } from "@vibepulse/ui";
+import { Badge } from "@depradar/ui";
 import { TimelineCard } from "../../components/timeline";
 import { mapAIProvenanceToViewModel } from "../../lib/events/mappers";
 

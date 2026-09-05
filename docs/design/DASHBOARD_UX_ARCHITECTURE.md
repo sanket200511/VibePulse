@@ -1,6 +1,6 @@
-# VibePulse Dashboard UX Architecture
+# DepRadar Dashboard UX Architecture
 
-This document defines the structural architecture, layout goals, progressive disclosure tiers, and interaction states of the VibePulse Dashboard before implementation. It explains what information belongs on the dashboard and why, ensuring the interface remains a calm, functional Mission Control for the developer's workday.
+This document defines the structural architecture, layout goals, progressive disclosure tiers, and interaction states of the DepRadar Dashboard before implementation. It explains what information belongs on the dashboard and why, ensuring the interface remains a calm, functional Mission Control for the developer's workday.
 
 This document focus entirely on UX architecture, information design, and user experience flow. It contains no React code, CSS definitions, Tailwind utility structures, backend routing logic, or framework imports.
 
@@ -34,7 +34,7 @@ The visual hierarchy is structured to guide the user's focus from high-level und
 
 ### Why this order exists:
 
-Developers scan interfaces from general-to-specific. Placing the narrative summary and observation gates at the top ensures they immediately establish _state awareness_ (e.g., _"Is VibePulse recording?"_ and _"What have I done?"_). Supporting details (timeline events and project configurations) sit lower on the page, as they are consulted only after the developer decides to dive deeper.
+Developers scan interfaces from general-to-specific. Placing the narrative summary and observation gates at the top ensures they immediately establish _state awareness_ (e.g., _"Is DepRadar recording?"_ and _"What have I done?"_). Supporting details (timeline events and project configurations) sit lower on the page, as they are consulted only after the developer decides to dive deeper.
 
 ---
 

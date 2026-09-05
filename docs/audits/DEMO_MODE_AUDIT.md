@@ -1,4 +1,4 @@
-# VibePulse — Demo Mode Architecture & Scenario Audit
+# DepRadar — Demo Mode Architecture & Scenario Audit
 
 **Document Status**: AUTHORITATIVE AUDIT & BLUEPRINT  
 **Audit Timestamp**: August 2026  
@@ -21,7 +21,7 @@
 
 ## 2. Current Demo Scenario
 
-The current demonstration follows a realistic fintech/banking domain story (_"VibePulse Core Banking System"_ / _"Nexus Payment Gateway"_):
+The current demonstration follows a realistic fintech/banking domain story (_"DepRadar Core Banking System"_ / _"Nexus Payment Gateway"_):
 
 1. **Baseline Prototyping**: Developer creates module files across multiple subsystems (`auth/jwt_service.py`, `database/connection.py`, `api/routes.py`).
 2. **Security Injection**: A sensitive change is introduced containing a hardcoded API credential (`sk_live_...`) and `DEBUG = True` in `config/settings.py`.
@@ -86,7 +86,7 @@ $$\text{OBSERVE} \to \text{DETECT} \to \text{UNDERSTAND} \to \text{INVESTIGATE} 
 
 1. **Subprocess Management**: Older demo scripts used un-tree-killed `serverProcess.kill()` which hangs on Windows when spawned with `shell: true`.
 2. **Missing Watchdogs**: Older scripts lacked global execution watchdog timers and per-request HTTP timeouts.
-3. **Hardcoded Directory Paths**: `simulate-demo-activity.mjs` contained hardcoded `D:\VibePulse-Seminar-Demo` instead of using dynamic temporary directories.
+3. **Hardcoded Directory Paths**: `simulate-demo-activity.mjs` contained hardcoded `D:\DepRadar-Seminar-Demo` instead of using dynamic temporary directories.
 4. **Metric Triad Clarity**: Need to ensure the UI strictly distinguishes:
    - **Health Score** (0-100, Higher = Better)
    - **Security Risk Score** (0-100, Higher = Worse)

@@ -1,4 +1,4 @@
-# VibePulse Product Principles
+# DepRadar Product Principles
 
 Version: 1.0
 
@@ -6,7 +6,7 @@ Version: 1.0
 
 # Purpose
 
-VibePulse exists to help developers understand their software development journey.
+DepRadar exists to help developers understand their software development journey.
 
 It transforms raw development activity into meaningful stories, replayable sessions, and thoughtful reflections.
 
@@ -16,7 +16,7 @@ The product should make developers feel more aware of how they work, not more an
 
 # Vision
 
-VibePulse is a Developer Workspace.
+DepRadar is a Developer Workspace.
 
 It is not an analytics dashboard.
 
@@ -26,7 +26,7 @@ It is not a productivity tracker.
 
 It is not an AI wrapper.
 
-VibePulse helps developers:
+DepRadar helps developers:
 
 - Observe
 - Understand
@@ -48,7 +48,7 @@ A sequence of discoveries.
 
 A sequence of problem-solving moments.
 
-VibePulse exists to preserve and explain those moments.
+DepRadar exists to preserve and explain those moments.
 
 The product should always tell the story behind the work rather than simply reporting statistics.
 
@@ -56,7 +56,7 @@ The product should always tell the story behind the work rather than simply repo
 
 # Core Values
 
-Every feature inside VibePulse must reinforce at least one of these values.
+Every feature inside DepRadar must reinforce at least one of these values.
 
 ## 1. Clarity
 
@@ -74,7 +74,7 @@ Reflection creates awareness.
 
 Judgement creates anxiety.
 
-VibePulse reflects sessions.
+DepRadar reflects sessions.
 
 It never evaluates developers.
 
@@ -82,7 +82,7 @@ It never evaluates developers.
 
 ## 3. Trust
 
-Everything displayed inside VibePulse must originate from real project data.
+Everything displayed inside DepRadar must originate from real project data.
 
 The system never fabricates:
 
@@ -99,7 +99,7 @@ Trust is more valuable than impressive visuals.
 
 Every insight must be explainable.
 
-If VibePulse presents a conclusion, the user should always be able to understand where that conclusion came from.
+If DepRadar presents a conclusion, the user should always be able to understand where that conclusion came from.
 
 Opaque systems reduce trust.
 
@@ -223,7 +223,7 @@ Artificial Intelligence is an enhancement.
 
 It is not the foundation of the product.
 
-The core VibePulse experience must remain useful even if every AI provider is unavailable.
+The core DepRadar experience must remain useful even if every AI provider is unavailable.
 
 AI should:
 
@@ -245,7 +245,7 @@ The user must always understand when information originates from deterministic a
 
 # Developer Experience
 
-VibePulse is built for developers.
+DepRadar is built for developers.
 
 Every feature should answer at least one question developers naturally ask after coding.
 
@@ -263,7 +263,7 @@ If a feature cannot answer a meaningful developer question, it should be reconsi
 
 # Long-Term Vision
 
-VibePulse should become a trusted companion throughout the software development lifecycle.
+DepRadar should become a trusted companion throughout the software development lifecycle.
 
 It should support:
 
@@ -298,9 +298,9 @@ If the answer to multiple questions is "No", the feature should be redesigned or
 
 ---
 
-# What VibePulse Is Not
+# What DepRadar Is Not
 
-VibePulse is NOT:
+DepRadar is NOT:
 
 - an admin dashboard
 - an employee surveillance tool
@@ -316,14 +316,14 @@ The product exists to improve understanding, not measure worth.
 
 # Product Promise
 
-Every feature added to VibePulse should leave developers with a better understanding of their work than they had before opening the application.
+Every feature added to DepRadar should leave developers with a better understanding of their work than they had before opening the application.
 
-If a feature increases complexity without increasing understanding, it does not belong in VibePulse.
+If a feature increases complexity without increasing understanding, it does not belong in DepRadar.
 
 ---
 
-# VibePulse Design Manifesto
+# DepRadar Design Manifesto
 
 Every design decision should help developers understand their work more clearly.
 
-If a feature, interaction, animation, insight, or sentence does not improve understanding, it does not belong in VibePulse.
+If a feature, interaction, animation, insight, or sentence does not improve understanding, it does not belong in DepRadar.

@@ -1,6 +1,6 @@
-# VibePulse Dashboard Wireframe Architecture
+# DepRadar Dashboard Wireframe Architecture
 
-This document defines the layout organization, visual spacing, responsive behavior, and ASCII structural wireframes for the VibePulse Dashboard. It translates the UX architecture into physical layouts, ensuring that every visual zone has a predictable, balanced location on the screen.
+This document defines the layout organization, visual spacing, responsive behavior, and ASCII structural wireframes for the DepRadar Dashboard. It translates the UX architecture into physical layouts, ensuring that every visual zone has a predictable, balanced location on the screen.
 
 This specification focus entirely on physical layout, visual hierarchy, and structural wireframes. It contains no React, CSS layouts, Tailwind styles, or viewport pixel constraints.
 
@@ -8,7 +8,7 @@ This specification focus entirely on physical layout, visual hierarchy, and stru
 
 ## 1. Overall Layout Philosophy
 
-The VibePulse Dashboard is structured as an asymmetrical layout designed to protect developer attention:
+The DepRadar Dashboard is structured as an asymmetrical layout designed to protect developer attention:
 
 - **Asymmetry for Focus**: The layout separates primary narratives from secondary support telemetry. By utilizing a wide primary column for today’s story alongside a narrow rail for secondary metrics, the developer's eye naturally defaults to the narrative.
 - **Structured Breathing Room**: Grids and spacing enforce vertical rhythm. Information is presented in clear blocks that follow the natural scanning directions of software developers, ensuring visual calm under all conditions.
@@ -225,7 +225,7 @@ By structuring information to match this flow, the interface eliminates diagonal
 
 The Dashboard's visual signature is the **Narrative Summary Card**.
 
-- **Why**: It is the conceptual anchor of VibePulse. By elevating conversational prose over charts and metrics, this card defines the product’s identity. If all logos are removed, the narrative card instantly identifies VibePulse.
+- **Why**: It is the conceptual anchor of DepRadar. By elevating conversational prose over charts and metrics, this card defines the product’s identity. If all logos are removed, the narrative card instantly identifies DepRadar.
 
 ---
 

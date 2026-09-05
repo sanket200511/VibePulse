@@ -1,4 +1,4 @@
-# VibePulse — Final Whole-Platform Live Acceptance & Demonstration Audit
+# DepRadar — Final Whole-Platform Live Acceptance & Demonstration Audit
 
 **Document Version:** 1.0.0  
 **Audit Timestamp:** 2026-08-22T16:50:00+05:30  
@@ -9,7 +9,7 @@
 
 ## 1. Executive Summary
 
-A comprehensive, live end-to-end acceptance audit was conducted across the entire **VibePulse** platform to validate that real software engineering workflows produce deterministic, grounded, and explainable intelligence without metric fabrication or hallucination.
+A comprehensive, live end-to-end acceptance audit was conducted across the entire **DepRadar** platform to validate that real software engineering workflows produce deterministic, grounded, and explainable intelligence without metric fabrication or hallucination.
 
 The evaluation verified all ten core stages of the authoritative architecture:
 $$\text{OBSERVE} \to \text{DETECT} \to \text{UNDERSTAND} \to \text{INVESTIGATE} \to \text{RESOLVE} \to \text{LEARN} \to \text{PREDICT} \to \text{ASK} \to \text{ACT} \to \text{MEMORY}$$
@@ -49,7 +49,7 @@ Before demonstration execution, the database state was queried directly:
 
 A disposable test project was provisioned using dynamic OS temporary directories to ensure complete multi-tenant isolation and prevent contamination of real workspaces:
 
-- **Display Name:** `VibePulse Core Banking System` / `VibePulse-Final-Live-Demo`
+- **Display Name:** `DepRadar Core Banking System` / `DepRadar-Final-Live-Demo`
 - **Temporary Root Directory:** `C:\Users\ASUS\AppData\Local\Temp\vp-demo-*`
 - **Tracking Parameters:** Project ID, Session UUID, AST violation files (`config/settings.py`, `src/auth.py`), and test processes.
 
@@ -136,7 +136,7 @@ Tested all canonical query families through `POST /api/projects/:id/copilot/quer
 ### Global Navigation Anchors
 
 - Top navigation strictly restricted to: **Workspace Home (`/`)**, **Projects (`/projects`)**, and **History (`/history`)**.
-- Brand logo wrapped in accessible `<Link to="/" aria-label="VibePulse Workspace Home">`.
+- Brand logo wrapped in accessible `<Link to="/" aria-label="DepRadar Workspace Home">`.
 - Subpage Breadcrumbs established universally: `Workspace → Projects → [Project Name] → [Feature]`.
 
 ### Search & Filter Acceptance
@@ -158,8 +158,8 @@ Tested all canonical query families through `POST /api/projects/:id/copilot/quer
 | Test Suite                                  | Command                                             | Tests Passed                | Duration | Status                |
 | :------------------------------------------ | :-------------------------------------------------- | :-------------------------- | :------- | :-------------------- |
 | **Backend Pytest Suite**                    | `uv run pytest` (apps/api)                          | **349 / 349**               | 24.30s   | **PASS (100%)**       |
-| **Daemon Vitest Suite**                     | `pnpm --filter @vibepulse/daemon test`              | **130 / 130**               | 1.66s    | **PASS (100%)**       |
-| **Dashboard Vitest & Regression**           | `pnpm --filter @vibepulse/dashboard test`           | **All Suites Passed**       | 3.50s    | **PASS (100%)**       |
+| **Daemon Vitest Suite**                     | `pnpm --filter @depradar/daemon test`               | **130 / 130**               | 1.66s    | **PASS (100%)**       |
+| **Dashboard Vitest & Regression**           | `pnpm --filter @depradar/dashboard test`            | **All Suites Passed**       | 3.50s    | **PASS (100%)**       |
 | **Sprint 3 Security Intelligence E2E**      | `node scripts/test-security-intelligence-e2e.mjs`   | **All Checks Passed**       | 4.80s    | **PASS (100%)**       |
 | **Sprint 4 Investigation Engine E2E**       | `node scripts/test-investigation-e2e.mjs`           | **8 / 8 Steps Passed**      | 2.10s    | **PASS (100%)**       |
 | **Sprint 5 Incident Resolution E2E**        | `node scripts/test-resolution-e2e.mjs`              | **9 / 9 Steps Passed**      | 2.40s    | **PASS (100%)**       |
@@ -255,6 +255,6 @@ Changes not staged for commit:
 
 ## 11. Conclusion
 
-VibePulse is fully operational, mathematically consistent, and validated against all product invariants. Ground truth telemetry directly drives real-time AST security analysis, health recalculation, incident causal graphs, predictive hotspots, semantic knowledge graphs, and AI copilot interactions with zero metric fabrication.
+DepRadar is fully operational, mathematically consistent, and validated against all product invariants. Ground truth telemetry directly drives real-time AST security analysis, health recalculation, incident causal graphs, predictive hotspots, semantic knowledge graphs, and AI copilot interactions with zero metric fabrication.
 
 **Execution has been halted before commit or push per instructions.**

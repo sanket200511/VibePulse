@@ -2,7 +2,7 @@
 
 ## 1. Architecture Understanding
 
-VibePulse is a deterministic engineering observability platform built on an event-sourced architecture.
+DepRadar is a deterministic engineering observability platform built on an event-sourced architecture.
 
 - **Event Pipeline:** `development_events` acts as the system's ledger, storing immutable `DevelopmentEvent` records (file creations, modifications, deletions, AI tool executions, etc.).
 - **Analysis Pipeline:** Asynchronous `Analyzer` plugins (Static Analysis, Security, Code Evolution) process each event and store results as JSONB in `event_analyses`.
@@ -91,6 +91,6 @@ VibePulse is a deterministic engineering observability platform built on an even
 
 ## 9. Final Verdict
 
-The architecture is sound and perfectly aligned with VibePulse's principles. Integrating a hybrid search mechanism respects the Truth Boundary as long as we constrain the text search to deterministic observation records.
+The architecture is sound and perfectly aligned with DepRadar's principles. Integrating a hybrid search mechanism respects the Truth Boundary as long as we constrain the text search to deterministic observation records.
 
 Awaiting your approval to proceed with **PHASE 2 — Engineering Search Engine**.

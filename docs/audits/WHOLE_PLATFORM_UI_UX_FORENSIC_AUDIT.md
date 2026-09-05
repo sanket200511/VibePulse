@@ -2,13 +2,13 @@
 
 **Date**: August 2026  
 **Status**: COMPLETE & VERIFIED  
-**Scope**: Whole VibePulse Engineering Intelligence Platform (FastAPI, React Dashboard, TypeScript Daemon, PostgreSQL)
+**Scope**: Whole DepRadar Engineering Intelligence Platform (FastAPI, React Dashboard, TypeScript Daemon, PostgreSQL)
 
 ---
 
 ## 1. Executive Summary
 
-A comprehensive, forensic audit and repair was conducted across the VibePulse engineering observability platform. This was not a superficial cosmetic redesign; it resolved core architectural data propagation failures, FastAPI route routing collisions, design system token drift, and navigation hierarchy breaks.
+A comprehensive, forensic audit and repair was conducted across the DepRadar engineering observability platform. This was not a superficial cosmetic redesign; it resolved core architectural data propagation failures, FastAPI route routing collisions, design system token drift, and navigation hierarchy breaks.
 
 Every screen in the application now accurately reflects truthful, canonical PostgreSQL telemetry and AST projections without fabricated metrics, broken routing, dead navigation links, or unhandled null states.
 
@@ -75,15 +75,15 @@ Every screen in the application now accurately reflects truthful, canonical Post
 
 ## 3. Verification & Test Evidence
 
-| Test Suite                         | Command                                                                                    | Result                                  |
-| :--------------------------------- | :----------------------------------------------------------------------------------------- | :-------------------------------------- |
-| **Backend Tests**                  | `uv run pytest` (apps/api)                                                                 | **349 / 349 Passed (100%)**             |
-| **Daemon Tests**                   | `pnpm --filter @vibepulse/daemon test`                                                     | **130 / 130 Passed (100%)**             |
-| **Frontend Navigation Regression** | `pnpm --filter @vibepulse/dashboard test src/pages/projects/NavigationRegression.test.tsx` | **5 / 5 Passed (100%)**                 |
-| **TypeScript Typecheck**           | `pnpm typecheck` (5 packages)                                                              | **5 / 5 Passed (0 errors)**             |
-| **ESLint Validation**              | `pnpm lint` (5 packages)                                                                   | **5 / 5 Passed (0 errors, 0 warnings)** |
-| **Prettier Formatting**            | `pnpm format:check`                                                                        | **All matched files passed**            |
-| **Database Integrity**             | `node scripts/cleanup-ephemeral-projects.mjs`                                              | **1 Persistent Project Intact (Dabba)** |
+| Test Suite                         | Command                                                                                   | Result                                  |
+| :--------------------------------- | :---------------------------------------------------------------------------------------- | :-------------------------------------- |
+| **Backend Tests**                  | `uv run pytest` (apps/api)                                                                | **349 / 349 Passed (100%)**             |
+| **Daemon Tests**                   | `pnpm --filter @depradar/daemon test`                                                     | **130 / 130 Passed (100%)**             |
+| **Frontend Navigation Regression** | `pnpm --filter @depradar/dashboard test src/pages/projects/NavigationRegression.test.tsx` | **5 / 5 Passed (100%)**                 |
+| **TypeScript Typecheck**           | `pnpm typecheck` (5 packages)                                                             | **5 / 5 Passed (0 errors)**             |
+| **ESLint Validation**              | `pnpm lint` (5 packages)                                                                  | **5 / 5 Passed (0 errors, 0 warnings)** |
+| **Prettier Formatting**            | `pnpm format:check`                                                                       | **All matched files passed**            |
+| **Database Integrity**             | `node scripts/cleanup-ephemeral-projects.mjs`                                             | **1 Persistent Project Intact (Dabba)** |
 
 ---
 

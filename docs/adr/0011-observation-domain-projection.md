@@ -10,7 +10,7 @@ Accepted
 
 Sprint PX-5 establishes the **Observation Domain**. The objective was to design the domain model representing software observation so that Replay, Reflection, Health, and AI could rely on deterministic observation periods.
 
-An initial proposal introduced a new persistence boundary (`ObservationSession` ORM model, database table, and state machine). However, this violated the core VibePulse architecture established in ADRs 0006–0009, which intentionally relies on projections over the immutable `DevelopmentEvent` stream rather than maintaining parallel state tables.
+An initial proposal introduced a new persistence boundary (`ObservationSession` ORM model, database table, and state machine). However, this violated the core DepRadar architecture established in ADRs 0006–0009, which intentionally relies on projections over the immutable `DevelopmentEvent` stream rather than maintaining parallel state tables.
 
 ## Decision
 
@@ -29,7 +29,7 @@ By injecting `OBSERVATION_STARTED` and `OBSERVATION_STOPPED` directly into the `
 
 ### Preserving the Projection-First Philosophy
 
-VibePulse is intentionally built around derivations rather than complex state mutations (ADRs 0006-0009).
+DepRadar is intentionally built around derivations rather than complex state mutations (ADRs 0006-0009).
 - **Timeline Engine:** Can inherently render "Start/Stop" blocks perfectly because they are just regular events that occurred chronologically between file edits. No JOINs required.
 - **Replay & Reflection:** Can determine exact observation bounds simply by querying the event log between these markers. They don't need to "sync" state between an `observation_sessions` table and the `development_events` table.
 - **Health:** Health metrics naturally scope to the active observation windows by filtering out events that occurred outside of a `STARTED`/`STOPPED` pair.

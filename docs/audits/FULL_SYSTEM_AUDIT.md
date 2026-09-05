@@ -1,4 +1,4 @@
-# VibePulse Full System Audit
+# DepRadar Full System Audit
 
 > **Status**: Historical Snapshot (Sprint 4 Baseline)
 > **Superseded by**: [`docs/audits/FINAL_PROJECT_STATUS.md`](FINAL_PROJECT_STATUS.md) & [`docs/history/sprints/sprint-14/SPRINT_14_TRUTH_AUDIT.md`](../history/sprints/sprint-14/SPRINT_14_TRUTH_AUDIT.md)
@@ -10,7 +10,7 @@
 
 ## 1. Executive Summary
 
-This comprehensive system audit evaluates VibePulse across all four completed sprint baselines:
+This comprehensive system audit evaluates DepRadar across all four completed sprint baselines:
 
 - **Sprint 1 — Core Observation Engine 2.0**
 - **Sprint 2 — Project Intelligence + Engineering DNA**
@@ -303,7 +303,7 @@ Tested end-to-end telemetry sequence:
 ## 20. Regression Results
 
 - `uv run pytest`: **319 passed**
-- `pnpm --filter @vibepulse/daemon test`: **130 passed**
+- `pnpm --filter @depradar/daemon test`: **130 passed**
 - `node scripts/seminar-doctor.mjs`: **PASS**
 - `verify_intelligence_projection.py`: **PASS (100% semantic identity)**
 - `verify_security_intelligence.py`: **PASS (100% semantic identity)**

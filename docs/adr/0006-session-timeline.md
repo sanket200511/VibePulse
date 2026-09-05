@@ -55,7 +55,7 @@ Beyond event/group entries, `render()` inserts marker entries for:
 
 `TimelineOutcome` (wire: `SessionOutcomeRead`) summarizes the session as a whole: `duration_seconds`, `event_count`, `distinct_file_count`, `primary_language`, `languages` (per-language event counts), `largest_change`, and `session_summary`.
 
-`largest_change` is the most-edited file by event count, and is `null` whenever no file was touched more than once — VibePulse has no file-content or line-diff signal anywhere in the pipeline (confirmed against `analysis/analyzers/file_metadata.py`), so "largest change" is defined honestly as "most-edited file," not invented from data the system doesn't have.
+`largest_change` is the most-edited file by event count, and is `null` whenever no file was touched more than once — DepRadar has no file-content or line-diff signal anywhere in the pipeline (confirmed against `analysis/analyzers/file_metadata.py`), so "largest change" is defined honestly as "most-edited file," not invented from data the system doesn't have.
 
 `session_summary` is `Session.summary` (already a plain dict produced by the Session Engine's `HeuristicSessionSummaryGenerator`, ADR 0005 §3) passed through unchanged — Timeline does not recompute or reinterpret it.
 

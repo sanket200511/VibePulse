@@ -10,7 +10,7 @@ import {
   Text,
   type LucideIcon,
 } from "lucide-react";
-import { Badge } from "@vibepulse/ui";
+import { Badge } from "@depradar/ui";
 import type { ArchitectureTimeline } from "./useSessionArchitectureTimeline";
 
 const KIND_METADATA: Record<string, { icon: LucideIcon; color: string; bg: string }> = {

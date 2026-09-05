@@ -124,7 +124,7 @@ async function ensureApiServer() {
     try {
       const res = await request("GET", "/health", null, 1500);
       if (res.status === 200) {
-        console.log("✔ Connected to active VibePulse API server on " + API_BASE);
+        console.log("✔ Connected to active DepRadar API server on " + API_BASE);
         return null;
       }
     } catch {
@@ -232,7 +232,7 @@ async function runFinalDemo() {
     // ── STAGE 1: OBSERVE ───────────────────────────────────────────────────
     console.log("▶ [01/10] STAGE 1: OBSERVE — Continuous Telemetry Observation");
     const regRes = await request("POST", "/api/projects", {
-      display_name: `VibePulse Core Banking System (${testRunId})`,
+      display_name: `DepRadar Core Banking System (${testRunId})`,
       root_path: tmpRoot,
     });
     assert(regRes.status === 200 || regRes.status === 201, "Registered demo project");
