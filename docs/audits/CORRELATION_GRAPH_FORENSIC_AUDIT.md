@@ -8,7 +8,7 @@
 
 ## 1. Executive Summary
 
-This forensic audit evaluates VibePulse's existing Knowledge Graph foundation to establish the blueprint for extending it into a **Correlation & Causality Graph**. 
+This forensic audit evaluates VibePulse's existing Knowledge Graph foundation to establish the blueprint for extending it into a **Correlation & Causality Graph**.
 
 VibePulse already possesses a deterministic graph projection engine in `apps/api/app/features/knowledge_graph` and a rich UI in `apps/dashboard/src/pages/knowledge-graph`. However, the current graph primarily models structural relationships (`CONTAINS`, `BELONGS_TO`, `ASSOCIATED_WITH`, `AFFECTS`, `RESOLVED_BY`, `SUPPORTS`, `CONTRIBUTES_TO`) in a grouped grid view.
 
@@ -16,6 +16,7 @@ To achieve complete causal traceability:
 $$\text{OBSERVED EVENT} \longrightarrow \text{FINDING} \longrightarrow \text{INCIDENT} \longrightarrow \text{ROOT CAUSE / INVESTIGATION} \longrightarrow \text{HEALTH IMPACT} \longrightarrow \text{RESOLUTION} \longrightarrow \text{PREDICTION} \longrightarrow \text{PROJECT MEMORY}$$
 
 we will extend the existing model with:
+
 1. **Interactive Node-Link Visual Graph Canvas** (SVG/Canvas force-directed layout with pan, zoom, fit, and node highlight).
 2. **Explicit Causal & Evidence-Backed Edges** with grounded "Why is this connected?" explanations.
 3. **Graph Modes** (`RELATIONSHIP`, `INVESTIGATION`, `IMPACT`, `MEMORY`).
@@ -81,17 +82,17 @@ All derivations remain 100% grounded in PostgreSQL telemetry (`development_event
 
 ## 3. Gap Analysis & Missing Capabilities
 
-| Capability | Current State | Required State |
-| :--- | :--- | :--- |
-| **Interactive Graph Visualization** | Subsystem grid grouping only | Interactive Canvas/SVG Node-Link network with force layout, zoom/pan, node dragging, and neighborhood highlight |
-| **Edge Explanation & Evidence** | Simple string label on edge | Rich "Why is this connected?" explanation panel displaying source file, finding ID, incident ID, score impact, and evidence links |
-| **Graph Modes** | None (Single all-entity view) | 4 Dedicated Modes: `RELATIONSHIP`, `INVESTIGATION`, `IMPACT`, `MEMORY` |
-| **Root Cause Traversal** | Isolated inside `/investigation` | Interactive graph traversal from Project Health / Incident / Finding walking backward to root cause events |
-| **Impact Traversal** | Not present | Forward traversal from File / Finding to Incidents, Health Dimensions, and Forecasts |
-| **Neighborhood Focus Mode** | All nodes always shown | Focus on selected node with Depth `[1]`, `[2]`, `[3]` and `[Show Full Graph]` |
-| **Timeline View** | Not integrated in KG | Toggleable `GRAPH` \| `TIMELINE` sequence backed by verified event timestamps |
-| **Before / After Resolution** | Not present in KG | Compare graph state pre-remediation vs post-remediation (resolved findings & incidents) |
-| **Deep-Linking & Routing** | No URL query synchronization | URL sync (`?node=...&mode=...&focus=...`) with seamless actions to `/investigation`, `/security`, `/predictions` |
+| Capability                          | Current State                    | Required State                                                                                                                    |
+| :---------------------------------- | :------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------- |
+| **Interactive Graph Visualization** | Subsystem grid grouping only     | Interactive Canvas/SVG Node-Link network with force layout, zoom/pan, node dragging, and neighborhood highlight                   |
+| **Edge Explanation & Evidence**     | Simple string label on edge      | Rich "Why is this connected?" explanation panel displaying source file, finding ID, incident ID, score impact, and evidence links |
+| **Graph Modes**                     | None (Single all-entity view)    | 4 Dedicated Modes: `RELATIONSHIP`, `INVESTIGATION`, `IMPACT`, `MEMORY`                                                            |
+| **Root Cause Traversal**            | Isolated inside `/investigation` | Interactive graph traversal from Project Health / Incident / Finding walking backward to root cause events                        |
+| **Impact Traversal**                | Not present                      | Forward traversal from File / Finding to Incidents, Health Dimensions, and Forecasts                                              |
+| **Neighborhood Focus Mode**         | All nodes always shown           | Focus on selected node with Depth `[1]`, `[2]`, `[3]` and `[Show Full Graph]`                                                     |
+| **Timeline View**                   | Not integrated in KG             | Toggleable `GRAPH` \| `TIMELINE` sequence backed by verified event timestamps                                                     |
+| **Before / After Resolution**       | Not present in KG                | Compare graph state pre-remediation vs post-remediation (resolved findings & incidents)                                           |
+| **Deep-Linking & Routing**          | No URL query synchronization     | URL sync (`?node=...&mode=...&focus=...`) with seamless actions to `/investigation`, `/security`, `/predictions`                  |
 
 ---
 
@@ -114,17 +115,17 @@ All derivations remain 100% grounded in PostgreSQL telemetry (`development_event
 ## 5. Risk Assessment & Mitigations
 
 1. **Performance with Large Graphs**:
-   - *Risk*: Rendering hundreds of nodes could degrade DOM performance.
-   - *Mitigation*: Canvas/SVG force layout with bounded rendering, virtualized node limits, and Subsystem Clustering mode.
+   - _Risk_: Rendering hundreds of nodes could degrade DOM performance.
+   - _Mitigation_: Canvas/SVG force layout with bounded rendering, virtualized node limits, and Subsystem Clustering mode.
 2. **Data Truthfulness**:
-   - *Risk*: Inferring relationships that don't exist in PostgreSQL.
-   - *Mitigation*: Only create edges where explicit foreign keys, file paths, rule IDs, or incident IDs match. When evidence is missing, explicitly report `"Insufficient evidence to establish this relationship."`
+   - _Risk_: Inferring relationships that don't exist in PostgreSQL.
+   - _Mitigation_: Only create edges where explicit foreign keys, file paths, rule IDs, or incident IDs match. When evidence is missing, explicitly report `"Insufficient evidence to establish this relationship."`
 3. **Secret Redaction**:
-   - *Risk*: Node labels or metadata leaking passwords/tokens.
-   - *Mitigation*: All evidence text filtered through `_mask_secret` (`[REDACTED]` / `[MASKED]`).
+   - _Risk_: Node labels or metadata leaking passwords/tokens.
+   - _Mitigation_: All evidence text filtered through `_mask_secret` (`[REDACTED]` / `[MASKED]`).
 4. **Multi-Project Isolation**:
-   - *Risk*: Project A entities appearing in Project B.
-   - *Mitigation*: Every query filtered strictly by `project_id` and normalized `project_root`.
+   - _Risk_: Project A entities appearing in Project B.
+   - _Mitigation_: Every query filtered strictly by `project_id` and normalized `project_root`.
 
 ---
 

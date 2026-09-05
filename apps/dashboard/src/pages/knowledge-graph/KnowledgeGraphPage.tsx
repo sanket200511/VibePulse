@@ -22,11 +22,7 @@ import {
   useGraphTimeline,
   useBeforeAfterComparison,
 } from "./useKnowledgeGraph";
-import type {
-  KnowledgeGraphNode,
-  KnowledgeGraphEdge,
-  GraphMode,
-} from "./types";
+import type { KnowledgeGraphNode, KnowledgeGraphEdge, GraphMode } from "./types";
 import { CorrelationGraphCanvas } from "./CorrelationGraphCanvas";
 import { CorrelationGraphInspector } from "./CorrelationGraphInspector";
 import { EvidenceInspector } from "../evidence/EvidenceInspector";
@@ -139,7 +135,7 @@ export function KnowledgeGraphPage() {
       setGraphMode(modeParam);
     }
     if (viewParam && ["CANVAS", "TIMELINE", "BEFORE_AFTER"].includes(viewParam)) {
-      setViewMode(viewParam as any);
+      setViewMode(viewParam as "CANVAS" | "TIMELINE" | "BEFORE_AFTER");
     }
     if (depthParam && !isNaN(Number(depthParam))) {
       setFocusDepth(Number(depthParam));
@@ -147,7 +143,7 @@ export function KnowledgeGraphPage() {
     if (qParam) {
       setSearchQuery(qParam);
     }
-  }, [graph]);
+  }, [graph, searchParams]);
 
   const handleSelectNode = (node: KnowledgeGraphNode | null) => {
     setSelectedNode(node);
@@ -173,7 +169,9 @@ export function KnowledgeGraphPage() {
       const allowedNodes = getNodesForMode(graph.nodes, mode);
       if (selectedNode && !allowedNodes.some((n) => n.node_id === selectedNode.node_id)) {
         const defaultNode =
-          allowedNodes.find((n) => n.node_type === "SecurityFinding" || n.node_type === "Incident") ||
+          allowedNodes.find(
+            (n) => n.node_type === "SecurityFinding" || n.node_type === "Incident",
+          ) ||
           allowedNodes[0] ||
           null;
         setSelectedNode(defaultNode);
@@ -283,7 +281,8 @@ export function KnowledgeGraphPage() {
             Correlation & Causality Graph
           </h1>
           <p className="text-secondary-text mt-0.5 text-xs">
-            Evidence-grounded engineering relationships: Observation → Finding → Incident → Root Cause → Resolution → Impact → Prediction
+            Evidence-grounded engineering relationships: Observation → Finding → Incident → Root
+            Cause → Resolution → Impact → Prediction
           </p>
         </div>
       </div>
@@ -352,7 +351,9 @@ export function KnowledgeGraphPage() {
 
           {/* DEPTH CONTROLS (1, 2, 3, All) */}
           <div className="flex items-center gap-1 border-l border-gray-800 pl-2.5">
-            <span className="text-[10px] font-semibold uppercase text-gray-500 font-mono">Depth:</span>
+            <span className="font-mono text-[10px] font-semibold uppercase text-gray-500">
+              Depth:
+            </span>
             {[
               { value: 1, label: "1" },
               { value: 2, label: "2" },
@@ -378,9 +379,11 @@ export function KnowledgeGraphPage() {
             onClick={() => refreshGraph()}
             disabled={isRefreshing}
             title="Refresh Knowledge Graph from PostgreSQL"
-            className="rounded-lg border border-gray-800 bg-gray-950 p-1.5 text-gray-400 hover:text-white disabled:opacity-50 transition"
+            className="rounded-lg border border-gray-800 bg-gray-950 p-1.5 text-gray-400 transition hover:text-white disabled:opacity-50"
           >
-            <RotateCcw className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin text-indigo-400" : ""}`} />
+            <RotateCcw
+              className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin text-indigo-400" : ""}`}
+            />
           </button>
         </div>
 
@@ -392,7 +395,7 @@ export function KnowledgeGraphPage() {
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
             placeholder="Search entities, files, rules..."
-            className="w-full rounded-lg border border-gray-800 bg-gray-950 py-1.5 pl-8 pr-7 text-xs text-white placeholder-gray-500 focus:border-indigo-500 focus:outline-none font-mono"
+            className="w-full rounded-lg border border-gray-800 bg-gray-950 py-1.5 pl-8 pr-7 font-mono text-xs text-white placeholder-gray-500 focus:border-indigo-500 focus:outline-none"
           />
           {searchQuery && (
             <button
@@ -408,15 +411,19 @@ export function KnowledgeGraphPage() {
       {/* ── TRAVERSAL STEPPER BANNER (IF ACTIVE) ─────────────────────────────── */}
       {activeTraversal && activeTraversalResponse && (
         <div className="rounded-xl border border-indigo-500/50 bg-indigo-950/70 p-3 backdrop-blur-md">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-indigo-500/30 pb-2 mb-2">
+          <div className="mb-2 flex flex-col gap-2 border-b border-indigo-500/30 pb-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
               {activeTraversal.mode === "ROOT_CAUSE" ? (
                 <Crosshair className="h-4 w-4 text-orange-400" />
               ) : (
                 <TrendingUp className="h-4 w-4 text-purple-400" />
               )}
-              <span className="text-xs font-bold text-white font-mono">
-                {activeTraversal.mode === "ROOT_CAUSE" ? "Root Cause Traversal" : "Impact Traversal"} — Step {activeTraversal.currentStepIdx + 1} of {activeTraversalResponse.steps.length}
+              <span className="font-mono text-xs font-bold text-white">
+                {activeTraversal.mode === "ROOT_CAUSE"
+                  ? "Root Cause Traversal"
+                  : "Impact Traversal"}{" "}
+                — Step {activeTraversal.currentStepIdx + 1} of{" "}
+                {activeTraversalResponse.steps.length}
               </span>
             </div>
 
@@ -424,20 +431,22 @@ export function KnowledgeGraphPage() {
               <button
                 onClick={handlePrevStep}
                 disabled={activeTraversal.currentStepIdx === 0}
-                className="inline-flex items-center gap-1 rounded bg-gray-800 px-2 py-0.5 text-xs text-gray-300 hover:bg-gray-700 disabled:opacity-40 transition"
+                className="inline-flex items-center gap-1 rounded bg-gray-800 px-2 py-0.5 text-xs text-gray-300 transition hover:bg-gray-700 disabled:opacity-40"
               >
                 <ChevronLeft className="h-3 w-3" /> Prev
               </button>
               <button
                 onClick={handleNextStep}
-                disabled={activeTraversal.currentStepIdx >= activeTraversalResponse.steps.length - 1}
-                className="inline-flex items-center gap-1 rounded bg-indigo-600 px-2 py-0.5 text-xs font-bold text-white hover:bg-indigo-500 disabled:opacity-40 transition"
+                disabled={
+                  activeTraversal.currentStepIdx >= activeTraversalResponse.steps.length - 1
+                }
+                className="inline-flex items-center gap-1 rounded bg-indigo-600 px-2 py-0.5 text-xs font-bold text-white transition hover:bg-indigo-500 disabled:opacity-40"
               >
                 Next <ChevronRight className="h-3 w-3" />
               </button>
               <button
                 onClick={() => setActiveTraversal(null)}
-                className="rounded bg-gray-800 px-2 py-0.5 text-xs text-gray-400 hover:text-white transition"
+                className="rounded bg-gray-800 px-2 py-0.5 text-xs text-gray-400 transition hover:text-white"
               >
                 Reset
               </button>
@@ -455,15 +464,15 @@ export function KnowledgeGraphPage() {
                   }}
                   className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 font-mono text-[11px] transition ${
                     activeTraversal.currentStepIdx === sIdx
-                      ? "border-indigo-400 bg-indigo-600 text-white font-bold"
+                      ? "border-indigo-400 bg-indigo-600 font-bold text-white"
                       : "border-gray-800 bg-gray-950 text-gray-300 hover:border-gray-700"
                   }`}
                 >
-                  <span className="text-indigo-400 font-bold">[{sIdx + 1}]</span>
+                  <span className="font-bold text-indigo-400">[{sIdx + 1}]</span>
                   <span>{step.label}</span>
                 </button>
                 {sIdx < activeTraversalResponse.steps.length - 1 && (
-                  <span className="text-gray-600 text-xs">→</span>
+                  <span className="text-xs text-gray-600">→</span>
                 )}
               </div>
             ))}
@@ -495,12 +504,12 @@ export function KnowledgeGraphPage() {
 
           {viewMode === "TIMELINE" && (
             <div className="rounded-2xl border border-gray-800 bg-gray-900/40 p-6 backdrop-blur-md">
-              <div className="flex items-center justify-between border-b border-gray-800 pb-4 mb-6">
+              <div className="mb-6 flex items-center justify-between border-b border-gray-800 pb-4">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-5 w-5 text-indigo-400" />
                   <h3 className="font-bold text-white">Chronological Intelligence Timeline</h3>
                 </div>
-                <Badge variant="outline" className="text-xs text-gray-400 font-mono">
+                <Badge variant="outline" className="font-mono text-xs text-gray-400">
                   {timelineData?.total_events || 0} Grounded Events
                 </Badge>
               </div>
@@ -513,7 +522,7 @@ export function KnowledgeGraphPage() {
                       const matchNode = graph?.nodes.find((n) => n.node_id === item.entity_id);
                       if (matchNode) setSelectedNode(matchNode);
                     }}
-                    className={`flex items-start gap-4 rounded-xl border p-3.5 cursor-pointer transition ${
+                    className={`flex cursor-pointer items-start gap-4 rounded-xl border p-3.5 transition ${
                       selectedNode?.node_id === item.entity_id
                         ? "border-indigo-500 bg-indigo-950/40"
                         : "border-gray-800/80 bg-gray-950/60 hover:border-gray-700 hover:bg-gray-900/60"
@@ -536,7 +545,7 @@ export function KnowledgeGraphPage() {
                           [{item.provenance}]
                         </span>
                       </div>
-                      <div className="mt-0.5 font-semibold text-xs text-white">{item.label}</div>
+                      <div className="mt-0.5 text-xs font-semibold text-white">{item.label}</div>
                       {item.subsystem && (
                         <div className="mt-0.5 text-[10px] text-gray-400">
                           Subsystem: {item.subsystem}
@@ -551,12 +560,12 @@ export function KnowledgeGraphPage() {
 
           {viewMode === "BEFORE_AFTER" && (
             <div className="rounded-2xl border border-gray-800 bg-gray-900/40 p-6 backdrop-blur-md">
-              <div className="flex items-center justify-between border-b border-gray-800 pb-4 mb-6">
+              <div className="mb-6 flex items-center justify-between border-b border-gray-800 pb-4">
                 <div className="flex items-center gap-2">
                   <GitCompare className="h-5 w-5 text-indigo-400" />
                   <h3 className="font-bold text-white">Before vs After Remediation Posture</h3>
                 </div>
-                <Badge variant="outline" className="text-xs text-emerald-400 font-mono">
+                <Badge variant="outline" className="font-mono text-xs text-emerald-400">
                   {beforeAfterData?.remediation_summary || "Remediation audit verified"}
                 </Badge>
               </div>
@@ -564,10 +573,12 @@ export function KnowledgeGraphPage() {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="rounded-xl border border-rose-500/30 bg-rose-950/20 p-4">
                   <div className="flex items-center justify-between border-b border-rose-500/20 pb-2">
-                    <span className="font-bold text-rose-400 text-xs">PRE-REMEDIATION (BEFORE)</span>
-                    <span className="text-[10px] font-mono text-rose-300">Active Risk</span>
+                    <span className="text-xs font-bold text-rose-400">
+                      PRE-REMEDIATION (BEFORE)
+                    </span>
+                    <span className="font-mono text-[10px] text-rose-300">Active Risk</span>
                   </div>
-                  <div className="mt-3 space-y-2 text-xs text-gray-300 font-mono">
+                  <div className="mt-3 space-y-2 font-mono text-xs text-gray-300">
                     <div className="flex justify-between">
                       <span>Graph Entities:</span>
                       <span className="font-bold">{beforeAfterData?.before_nodes.length || 0}</span>
@@ -587,10 +598,12 @@ export function KnowledgeGraphPage() {
 
                 <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-4">
                   <div className="flex items-center justify-between border-b border-emerald-500/20 pb-2">
-                    <span className="font-bold text-emerald-400 text-xs">POST-REMEDIATION (AFTER)</span>
-                    <span className="text-[10px] font-mono text-emerald-300">Resolved Audit</span>
+                    <span className="text-xs font-bold text-emerald-400">
+                      POST-REMEDIATION (AFTER)
+                    </span>
+                    <span className="font-mono text-[10px] text-emerald-300">Resolved Audit</span>
                   </div>
-                  <div className="mt-3 space-y-2 text-xs text-gray-300 font-mono">
+                  <div className="mt-3 space-y-2 font-mono text-xs text-gray-300">
                     <div className="flex justify-between">
                       <span>Graph Entities:</span>
                       <span className="font-bold">{beforeAfterData?.after_nodes.length || 0}</span>

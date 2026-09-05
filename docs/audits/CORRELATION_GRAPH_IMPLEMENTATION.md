@@ -21,59 +21,66 @@ Every node and edge is grounded directly in PostgreSQL historical ground truth (
 
 ### 2.1 Node Hierarchy
 
-| Node Type | Source Table / Projection | Semantic Role | Provenance |
-| :--- | :--- | :--- | :--- |
-| `Project` | `projects` | Root project entity & composite health posture | `OBSERVED` |
-| `Subsystem` | Path classifier pattern | Architectural boundary (e.g. Authentication, Configuration, Database) | `OBSERVED` |
-| `File` | `development_events` | Observed source file entity with event count | `OBSERVED` |
-| `DevelopmentEvent` | `development_events` | Granular modification or AST telemetry event with timestamp | `OBSERVED` |
-| `SecurityFinding` | `compute_security_intelligence` | AST security rule violation (e.g. SEC001 hardcoded credential) | `OBSERVED` |
-| `RootCause` | `get_incident_detail_3` | Underlying causal vulnerability triggering an incident | `OBSERVED` |
-| `Incident` | `incident_review_states` | Correlated security or stability incident | `OBSERVED` |
-| `Resolution` | `incident_review_history` | Review audit transition with note and reviewer sign-off | `OBSERVED` |
-| `Actor` | `incident_review_history` | Engineer or reviewer who executed triage/remediation | `OBSERVED` |
-| `HealthDimension` | `project_health` | 5-Dimension score decomposition (Security, Stability, Incident, etc.) | `INFERRED` |
-| `Prediction` | `predictive_intelligence` | Forward forecast signal with evidence strength | `INFERRED` |
-| `Technology` | `project_contexts` | Detected programming languages and framework dependencies | `OBSERVED` |
+| Node Type          | Source Table / Projection       | Semantic Role                                                         | Provenance |
+| :----------------- | :------------------------------ | :-------------------------------------------------------------------- | :--------- |
+| `Project`          | `projects`                      | Root project entity & composite health posture                        | `OBSERVED` |
+| `Subsystem`        | Path classifier pattern         | Architectural boundary (e.g. Authentication, Configuration, Database) | `OBSERVED` |
+| `File`             | `development_events`            | Observed source file entity with event count                          | `OBSERVED` |
+| `DevelopmentEvent` | `development_events`            | Granular modification or AST telemetry event with timestamp           | `OBSERVED` |
+| `SecurityFinding`  | `compute_security_intelligence` | AST security rule violation (e.g. SEC001 hardcoded credential)        | `OBSERVED` |
+| `RootCause`        | `get_incident_detail_3`         | Underlying causal vulnerability triggering an incident                | `OBSERVED` |
+| `Incident`         | `incident_review_states`        | Correlated security or stability incident                             | `OBSERVED` |
+| `Resolution`       | `incident_review_history`       | Review audit transition with note and reviewer sign-off               | `OBSERVED` |
+| `Actor`            | `incident_review_history`       | Engineer or reviewer who executed triage/remediation                  | `OBSERVED` |
+| `HealthDimension`  | `project_health`                | 5-Dimension score decomposition (Security, Stability, Incident, etc.) | `INFERRED` |
+| `Prediction`       | `predictive_intelligence`       | Forward forecast signal with evidence strength                        | `INFERRED` |
+| `Technology`       | `project_contexts`              | Detected programming languages and framework dependencies             | `OBSERVED` |
 
 ### 2.2 Relationship Types
 
-| Relationship Type | Source Node $\to$ Target Node | Grounded Reason / Evidence |
-| :--- | :--- | :--- |
-| `MODIFIED` | `DevelopmentEvent` $\to$ `File` | Verified telemetry event timestamp and file path |
-| `CONTAINS_FINDING` | `File` $\to$ `SecurityFinding` | AST Guardian detection with exact line number |
-| `CONTRIBUTED_TO` | `SecurityFinding` $\to$ `RootCause` / `Incident` | Risk contribution point accumulation |
-| `CAUSED` | `RootCause` $\to$ `Incident` | Root cause vulnerability trigger |
-| `RESOLVED_BY` | `Incident` $\to$ `Resolution` | PostgreSQL transition audit record |
-| `INVESTIGATED_BY` | `Actor` $\to$ `Resolution` | Verified reviewer signature in review history |
-| `AFFECTS` | `Incident` $\to$ `HealthDimension` | Degradation of Security or Incident health dimension |
-| `CONTRIBUTES_TO` | `HealthDimension` $\to$ `Project` | Mathematical score weighting ($W_i \times S_i$) |
-| `PREDICTED_AS` | `File` $\to$ `Prediction` | Velocity and AST risk concentration |
-| `BELONGS_TO` | `File` $\to$ `Subsystem` | Architectural path boundary matching |
-| `CONTAINS` | `Project` $\to$ `Subsystem` | Subsystem boundary registration |
-| `USED_BY` | `Technology` $\to$ `Project` | Language detection in project context |
+| Relationship Type  | Source Node $\to$ Target Node                    | Grounded Reason / Evidence                           |
+| :----------------- | :----------------------------------------------- | :--------------------------------------------------- |
+| `MODIFIED`         | `DevelopmentEvent` $\to$ `File`                  | Verified telemetry event timestamp and file path     |
+| `CONTAINS_FINDING` | `File` $\to$ `SecurityFinding`                   | AST Guardian detection with exact line number        |
+| `CONTRIBUTED_TO`   | `SecurityFinding` $\to$ `RootCause` / `Incident` | Risk contribution point accumulation                 |
+| `CAUSED`           | `RootCause` $\to$ `Incident`                     | Root cause vulnerability trigger                     |
+| `RESOLVED_BY`      | `Incident` $\to$ `Resolution`                    | PostgreSQL transition audit record                   |
+| `INVESTIGATED_BY`  | `Actor` $\to$ `Resolution`                       | Verified reviewer signature in review history        |
+| `AFFECTS`          | `Incident` $\to$ `HealthDimension`               | Degradation of Security or Incident health dimension |
+| `CONTRIBUTES_TO`   | `HealthDimension` $\to$ `Project`                | Mathematical score weighting ($W_i \times S_i$)      |
+| `PREDICTED_AS`     | `File` $\to$ `Prediction`                        | Velocity and AST risk concentration                  |
+| `BELONGS_TO`       | `File` $\to$ `Subsystem`                         | Architectural path boundary matching                 |
+| `CONTAINS`         | `Project` $\to$ `Subsystem`                      | Subsystem boundary registration                      |
+| `USED_BY`          | `Technology` $\to$ `Project`                     | Language detection in project context                |
 
 ---
 
 ## 3. Core Graph Intelligence Engines
 
 ### 3.1 Trace Root Cause (Backward Walk)
+
 Walks backward through grounded edges:
 $$\text{Project Health} \longleftarrow \text{Security Health} \longleftarrow \text{Incident} \longleftarrow \text{Root Cause} \longleftarrow \text{Security Finding (SEC001)} \longleftarrow \text{File (settings.py)} \longleftarrow \text{Event}$$
+
 - Returns step-by-step traversal with evidence references and terminal stopping condition.
 
 ### 3.2 Trace Impact (Forward Walk)
+
 Walks forward through downstream causal paths:
 $$\text{Development Event / File} \longrightarrow \text{Security Finding} \longrightarrow \text{Incident} \longrightarrow \text{Health Dimension} \longrightarrow \text{Project} \longrightarrow \text{Prediction}$$
+
 - Returns direct & downstream impacts, affected subsystems, and forecast risk warnings.
 
 ### 3.3 Evidence-Backed Relationship Explanations
+
 Every edge provides an explanation payload answering:
+
 - **Why is this connected?** (Grounded reason synthesized from AST AST rules and risk models)
 - **Evidence References** (Finding IDs, incident IDs, source file paths)
 - **Graceful Fallback**: If evidence is insufficient, returns `"Insufficient evidence to establish this relationship in PostgreSQL telemetry."`
 
 ### 3.4 Chronological Timeline & Before/After Comparison
+
 - **Timeline**: Chronological sequence of all events with verified timestamps.
 - **Before / After**: Side-by-side posture comparison showing pre-remediation vulnerability vs post-remediation verified resolution audit.
 
@@ -81,21 +88,21 @@ Every edge provides an explanation payload answering:
 
 ## 4. API Endpoints
 
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/projects/{id}/knowledge-graph` | Full correlation & causality graph projection |
-| `GET` | `/api/projects/{id}/knowledge-graph/nodes` | Filterable graph nodes (by type or subsystem) |
-| `GET` | `/api/projects/{id}/knowledge-graph/relationships` | Filterable graph relationships |
-| `GET` | `/api/projects/{id}/knowledge-graph/edges/{rel_id}/explain` | Grounded edge explanation and evidence |
-| `GET` | `/api/projects/{id}/knowledge-graph/trace/root-cause` | Backward root cause traversal |
-| `GET` | `/api/projects/{id}/knowledge-graph/trace/impact` | Forward downstream impact traversal |
-| `GET` | `/api/projects/{id}/knowledge-graph/timeline` | Chronological event timeline |
-| `GET` | `/api/projects/{id}/knowledge-graph/before-after` | Before vs after remediation posture comparison |
-| `GET` | `/api/projects/{id}/knowledge-graph/files/{path}` | File-centric intelligence view |
-| `GET` | `/api/projects/{id}/knowledge-graph/subsystems/{sub}` | Subsystem intelligence view |
-| `GET` | `/api/projects/{id}/knowledge-graph/memory` | Project Memory 2.0 AI context model |
-| `GET` | `/api/projects/{id}/knowledge-graph/search` | Multi-entity deterministic graph search |
-| `POST` | `/api/projects/{id}/knowledge-graph/refresh` | Force re-projection from PostgreSQL |
+| Method | Endpoint                                                    | Description                                    |
+| :----- | :---------------------------------------------------------- | :--------------------------------------------- |
+| `GET`  | `/api/projects/{id}/knowledge-graph`                        | Full correlation & causality graph projection  |
+| `GET`  | `/api/projects/{id}/knowledge-graph/nodes`                  | Filterable graph nodes (by type or subsystem)  |
+| `GET`  | `/api/projects/{id}/knowledge-graph/relationships`          | Filterable graph relationships                 |
+| `GET`  | `/api/projects/{id}/knowledge-graph/edges/{rel_id}/explain` | Grounded edge explanation and evidence         |
+| `GET`  | `/api/projects/{id}/knowledge-graph/trace/root-cause`       | Backward root cause traversal                  |
+| `GET`  | `/api/projects/{id}/knowledge-graph/trace/impact`           | Forward downstream impact traversal            |
+| `GET`  | `/api/projects/{id}/knowledge-graph/timeline`               | Chronological event timeline                   |
+| `GET`  | `/api/projects/{id}/knowledge-graph/before-after`           | Before vs after remediation posture comparison |
+| `GET`  | `/api/projects/{id}/knowledge-graph/files/{path}`           | File-centric intelligence view                 |
+| `GET`  | `/api/projects/{id}/knowledge-graph/subsystems/{sub}`       | Subsystem intelligence view                    |
+| `GET`  | `/api/projects/{id}/knowledge-graph/memory`                 | Project Memory 2.0 AI context model            |
+| `GET`  | `/api/projects/{id}/knowledge-graph/search`                 | Multi-entity deterministic graph search        |
+| `POST` | `/api/projects/{id}/knowledge-graph/refresh`                | Force re-projection from PostgreSQL            |
 
 ---
 
@@ -112,10 +119,10 @@ Every edge provides an explanation payload answering:
 
 ## 6. Acceptance & Quality Gates Verification
 
-| Verification Suite | Result | Status |
-| :--- | :--- | :--- |
-| **Backend Pytest (`apps/api/tests`)** | **352 / 352 PASSED** | **100% GREEN** |
-| **Daemon Vitest (`apps/daemon`)** | **130 / 130 PASSED** | **100% GREEN** |
-| **Dashboard Vitest (`apps/dashboard`)** | **PASSED** | **100% GREEN** |
-| **TypeScript Monorepo Typecheck** | **5 / 5 PACKAGES PASSED** | **0 ERRORS** |
-| **Seminar Doctor Live Audit** | **ALL CHECKS PASSED** | **READY FOR SEMINAR** |
+| Verification Suite                      | Result                    | Status                |
+| :-------------------------------------- | :------------------------ | :-------------------- |
+| **Backend Pytest (`apps/api/tests`)**   | **352 / 352 PASSED**      | **100% GREEN**        |
+| **Daemon Vitest (`apps/daemon`)**       | **130 / 130 PASSED**      | **100% GREEN**        |
+| **Dashboard Vitest (`apps/dashboard`)** | **PASSED**                | **100% GREEN**        |
+| **TypeScript Monorepo Typecheck**       | **5 / 5 PACKAGES PASSED** | **0 ERRORS**          |
+| **Seminar Doctor Live Audit**           | **ALL CHECKS PASSED**     | **READY FOR SEMINAR** |

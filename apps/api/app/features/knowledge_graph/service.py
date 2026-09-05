@@ -903,8 +903,7 @@ async def trace_root_cause(
             relationship_type=None,
             direction="START",
             explanation=(
-                f"Starting root-cause analysis from {current_node.node_type} "
-                f"'{current_node.label}'"
+                f"Starting root-cause analysis from {current_node.node_type} '{current_node.label}'"
             ),
             metadata=current_node.metadata,
         )
@@ -1048,8 +1047,7 @@ async def trace_impact(
             relationship_type=None,
             direction="START",
             explanation=(
-                f"Starting impact analysis from {current_node.node_type} "
-                f"'{current_node.label}'"
+                f"Starting impact analysis from {current_node.node_type} '{current_node.label}'"
             ),
             metadata=current_node.metadata,
         )

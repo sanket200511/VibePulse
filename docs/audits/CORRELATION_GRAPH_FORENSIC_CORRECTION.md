@@ -8,6 +8,7 @@
 ## 1. Forensic Audit of the Previous Implementation Failures
 
 ### Why the previous 7-layer layout failed:
+
 1. **Rigid Static Absolute Columns:**
    - The canvas assigned nodes to static columns $X = 140 + \text{layer} \times 220\text{px}$ across an artificial 1800px coordinate system.
    - In a focused neighborhood (e.g. `Depth = 1` around a finding or incident), almost all active entities belonged to layers 3, 4, and 5. This pushed all nodes to the far right edge of the screen ($X \ge 1000\text{px}$).
@@ -28,22 +29,23 @@
 
 ## 2. What Must Be Retained vs Removed
 
-| Component / Logic | Status | Action |
-| :--- | :--- | :--- |
-| **Backend API & Grounded Data** | **RETAIN** | Keep PostgreSQL grounded queries, edge explanations, root-cause walks, and impact walks. Zero mock data. |
-| **URL Parameter Synchronization** | **RETAIN** | Keep `?node=`, `?mode=`, `?view=`, `?depth=`. |
-| **Multi-Hop Traversal Engine** | **RETAIN** | Keep backward root cause walk and forward impact walk. |
-| **Rigid 7-Column Static Layout** | **REMOVE** | Replace with **Focused Causal-Radial Layout** centered on the selected entity. |
-| **Hardcoded Canvas Width / Coordinates** | **REMOVE** | Replace with **Dynamic Viewport Bounding-Box Auto-Fit** (75–85% viewport utilization). |
-| **Static Minimap & Column Headers** | **REMOVE** | Eliminate visual noise and distraction. |
-| **Oversized Empty Inspector** | **REWORK** | Compact state with instant entity selection chips when idle; high-density intelligence when active. |
-| **Unbounded Node Spreading** | **REWORK** | Strict progressive disclosure: 5–12 nodes maximum by default. |
+| Component / Logic                        | Status     | Action                                                                                                   |
+| :--------------------------------------- | :--------- | :------------------------------------------------------------------------------------------------------- |
+| **Backend API & Grounded Data**          | **RETAIN** | Keep PostgreSQL grounded queries, edge explanations, root-cause walks, and impact walks. Zero mock data. |
+| **URL Parameter Synchronization**        | **RETAIN** | Keep `?node=`, `?mode=`, `?view=`, `?depth=`.                                                            |
+| **Multi-Hop Traversal Engine**           | **RETAIN** | Keep backward root cause walk and forward impact walk.                                                   |
+| **Rigid 7-Column Static Layout**         | **REMOVE** | Replace with **Focused Causal-Radial Layout** centered on the selected entity.                           |
+| **Hardcoded Canvas Width / Coordinates** | **REMOVE** | Replace with **Dynamic Viewport Bounding-Box Auto-Fit** (75–85% viewport utilization).                   |
+| **Static Minimap & Column Headers**      | **REMOVE** | Eliminate visual noise and distraction.                                                                  |
+| **Oversized Empty Inspector**            | **REWORK** | Compact state with instant entity selection chips when idle; high-density intelligence when active.      |
+| **Unbounded Node Spreading**             | **REWORK** | Strict progressive disclosure: 5–12 nodes maximum by default.                                            |
 
 ---
 
 ## 3. Redesign Architecture & Layout Mathematics
 
 ### 3.1 Focused Causal Neighborhood Layout
+
 The selected entity is placed strictly at $(0, 0)$ as the visual anchor:
 
 ```
@@ -73,7 +75,9 @@ The selected entity is placed strictly at $(0, 0)$ as the visual anchor:
    - Symmetrically distributed along $Y$ ($Y = 0, \pm 80, \pm 160\text{px}$) to completely eliminate node or label collisions.
 
 ### 3.2 Dynamic Intelligent Viewport Auto-Fit
+
 Upon any selection, search, traversal step, or expansion:
+
 1. Compute bounding box: $[X_{\min} - 60, Y_{\min} - 50, X_{\max} + 60, Y_{\max} + 50]$.
 2. Compute `scale = min(viewportWidth / bboxWidth, viewportHeight / bboxHeight) * 0.82`.
 3. Center viewport directly on $[X_{\text{mid}}, Y_{\text{mid}}]$.
