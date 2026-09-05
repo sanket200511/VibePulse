@@ -32,13 +32,13 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: pnpm lint
+        run: pnpm lint --filter=!@depradar/api
 
       - name: Type-check
-        run: pnpm typecheck
+        run: pnpm typecheck --filter=!@depradar/api
 
       - name: Test
-        run: pnpm test
+        run: pnpm test --filter=!@depradar/api
 
       - name: Format check
         run: pnpm format:check
@@ -89,6 +89,9 @@ jobs:
 
       - name: Format check (ruff)
         run: uv run ruff format --check app/
+
+      - name: Run database migrations
+        run: uv run alembic upgrade head
 
       - name: Run tests
         run: uv run pytest --tb=short

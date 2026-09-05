@@ -16,8 +16,15 @@ export function PresentationOverlay({ step }: { step: TourStep }) {
   const observerRef = useRef<ResizeObserver | null>(null);
   const { state, targetFound, reportError, stop } = usePresentation();
 
+  const presentationRef = useRef({ targetFound, reportError, stop });
+  useEffect(() => {
+    presentationRef.current = { targetFound, reportError, stop };
+  });
+
   useEffect(() => {
     let rafId: number;
+    let attempts = 0;
+    const MAX_ATTEMPTS = 180;
     const startTime = Date.now();
     const MAX_WAIT_MS = 3000;
 
@@ -59,7 +66,7 @@ export function PresentationOverlay({ step }: { step: TourStep }) {
         // Wait a tiny bit for scrolling to settle before showing tooltip
         setTimeout(() => {
           setIsReady(true);
-          targetFound();
+          presentationRef.current.targetFound();
         }, 300);
 
         return () => {
@@ -70,9 +77,12 @@ export function PresentationOverlay({ step }: { step: TourStep }) {
           }
         };
       } else {
-        if (Date.now() - startTime > MAX_WAIT_MS) {
-          reportError(new Error(`Timeout waiting for target element: ${step.target}`));
-          stop(); // gracefully exit
+        attempts++;
+        if (attempts > MAX_ATTEMPTS || Date.now() - startTime > MAX_WAIT_MS) {
+          presentationRef.current.reportError(
+            new Error(`Timeout waiting for target element: ${step.target}`),
+          );
+          presentationRef.current.stop(); // gracefully exit
           return undefined;
         }
         // Keep polling until the route mounts the component or we timeout
@@ -91,7 +101,7 @@ export function PresentationOverlay({ step }: { step: TourStep }) {
         observerRef.current = null;
       }
     };
-  }, [step.target, targetFound, reportError, stop]);
+  }, [step.target]);
 
   // If we haven't found the target yet, we just show a dark screen
   if (!targetRect) {

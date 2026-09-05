@@ -2,17 +2,24 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, act } from "@testing-library/react";
 import { PresentationOverlay } from "./PresentationOverlay";
 
+const mockNext = vi.fn();
+const mockPrevious = vi.fn();
+const mockStop = vi.fn();
+const mockGoTo = vi.fn();
+const mockTargetFound = vi.fn();
+const mockReportError = vi.fn();
+
 // Mock out the context to provide dummy methods since PresentationTooltip depends on it
 vi.mock("./PresentationContext", () => ({
   usePresentation: () => ({
     state: "SHOWING_TOOLTIP",
     stepIndex: 0,
-    next: vi.fn(),
-    previous: vi.fn(),
-    stop: vi.fn(),
-    goTo: vi.fn(),
-    targetFound: vi.fn(),
-    reportError: vi.fn(),
+    next: mockNext,
+    previous: mockPrevious,
+    stop: mockStop,
+    goTo: mockGoTo,
+    targetFound: mockTargetFound,
+    reportError: mockReportError,
     config: {
       animationDuration: 300,
     },
@@ -42,7 +49,7 @@ describe("PresentationOverlay", () => {
   });
 
   afterEach(() => {
-    vi.runOnlyPendingTimers();
+    vi.clearAllTimers();
     vi.useRealTimers();
     vi.restoreAllMocks();
   });

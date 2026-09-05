@@ -67,11 +67,12 @@ export function getNodeFilterCategory(
     case "HealthDimension":
     case "Prediction":
     case "Resolution":
-    case "Project":
     default:
       return "impact";
   }
 }
+
+const DEFAULT_EMPTY_STEPS: GraphTraversalStep[] = [];
 
 export function CorrelationGraphCanvas({
   nodes,
@@ -83,7 +84,7 @@ export function CorrelationGraphCanvas({
   focusNodeId,
   focusDepth,
   onDepthChange,
-  traversalSteps = [],
+  traversalSteps = DEFAULT_EMPTY_STEPS,
   traversalMode = null,
 }: CorrelationGraphCanvasProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -321,7 +322,21 @@ export function CorrelationGraphCanvas({
       }
     });
 
-    setNodePositions(positions);
+    setNodePositions((prev) => {
+      const prevKeys = Object.keys(prev);
+      const newKeys = Object.keys(positions);
+      if (
+        prevKeys.length === newKeys.length &&
+        newKeys.every((k) => {
+          const p = prev[k];
+          const pos = positions[k];
+          return Boolean(p && pos && p.x === pos.x && p.y === pos.y);
+        })
+      ) {
+        return prev;
+      }
+      return positions;
+    });
   }, [visibleNodes, visibleEdges, activeAnchorId]);
 
   useEffect(() => {
@@ -362,10 +377,14 @@ export function CorrelationGraphCanvas({
     const midX = (minX + maxX) / 2;
     const midY = (minY + maxY) / 2;
 
-    setZoom(optimalScale);
-    setPan({
-      x: width / 2 - midX * optimalScale,
-      y: height / 2 - midY * optimalScale,
+    setZoom((prevZoom) => (Math.abs(prevZoom - optimalScale) < 0.001 ? prevZoom : optimalScale));
+    setPan((prevPan) => {
+      const nextX = width / 2 - midX * optimalScale;
+      const nextY = height / 2 - midY * optimalScale;
+      if (Math.abs(prevPan.x - nextX) < 0.5 && Math.abs(prevPan.y - nextY) < 0.5) {
+        return prevPan;
+      }
+      return { x: nextX, y: nextY };
     });
   }, [nodePositions]);
 
