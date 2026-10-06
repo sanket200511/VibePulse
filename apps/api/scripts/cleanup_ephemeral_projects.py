@@ -24,9 +24,15 @@ def classify_project(root_path: str | None, display_name: str | None) -> str:
         root == "d:/projects/dabba"
         or root.endswith("/projects/dabba")
         or name == "dabba"
+        or "codeforge" in root
+        or "codeforge" in name
         or root == "d:/vibepulse-seminar-demo"
         or root.endswith("/vibepulse-seminar-demo")
         or name == "vibepulse-seminar-demo"
+        or "depradar-seminar-demo" in name
+        or "depradar-seminar-demo" in root
+        or "vortex" in name
+        or "vortex" in root
     ):
         return "PERSISTENT"
 

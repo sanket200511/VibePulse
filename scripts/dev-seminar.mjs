@@ -22,13 +22,24 @@ const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, "..");
 
 // ── Environment & Ports ──────────────────────────────────────────────────────
-const API_PORT = Number(process.env.VIBEPULSE_API_PORT || process.env.API_PORT || 5184);
-const DASHBOARD_PORT = Number(
-  process.env.VIBEPULSE_DASHBOARD_PORT || process.env.DASHBOARD_PORT || 5183,
+const API_PORT = Number(
+  process.env.DEPRADAR_API_PORT || process.env.VIBEPULSE_API_PORT || process.env.API_PORT || 5184,
 );
-const DAEMON_PORT = Number(process.env.VIBEPULSE_DAEMON_PORT || process.env.DAEMON_PORT || 5185);
+const DASHBOARD_PORT = Number(
+  process.env.DEPRADAR_DASHBOARD_PORT ||
+    process.env.VIBEPULSE_DASHBOARD_PORT ||
+    process.env.DASHBOARD_PORT ||
+    5183,
+);
+const DAEMON_PORT = Number(
+  process.env.DEPRADAR_DAEMON_PORT ||
+    process.env.VIBEPULSE_DAEMON_PORT ||
+    process.env.DAEMON_PORT ||
+    5185,
+);
 
 const IS_DEBUG =
+  process.env.DEPRADAR_LOG_LEVEL === "debug" ||
   process.env.VIBEPULSE_LOG_LEVEL === "debug" ||
   process.env.LOG_LEVEL === "debug" ||
   process.env.DEBUG === "true" ||
@@ -92,9 +103,10 @@ function log(service, level, message, details = null) {
 }
 
 function printBox(lines, color = CYAN) {
+  process.stdout.write("\r\x1b[2K");
   console.log(`${color}══════════════════════════════════════════════════════════════${RESET}`);
   for (const line of lines) {
-    console.log(`${color}${line}${RESET}`);
+    console.log(`${color}${line.padEnd(62)}${RESET}`);
   }
   console.log(`${color}══════════════════════════════════════════════════════════════${RESET}`);
 }
@@ -108,7 +120,16 @@ const SERVICES = {
     url: `http://localhost:${API_PORT}/health`,
     port: API_PORT,
     command: "uv",
-    args: ["run", "uvicorn", "app.main:app", "--port", API_PORT.toString(), "--reload"],
+    args: [
+      "run",
+      "python",
+      "-m",
+      "uvicorn",
+      "app.main:app",
+      "--port",
+      API_PORT.toString(),
+      "--reload",
+    ],
     cwd: path.join(ROOT_DIR, "apps", "api"),
     status: "STARTING",
   },
@@ -227,9 +248,18 @@ const restartCounts = {
 };
 
 let isShuttingDown = false;
+const streamBuffers = {
+  api: { stdout: "", stderr: "" },
+  dashboard: { stdout: "", stderr: "" },
+  daemon: { stdout: "", stderr: "" },
+};
 
 function processChildOutput(svcKey, rawText, isStderr = false) {
-  const lines = rawText.split(/\r?\n/);
+  const channel = isStderr ? "stderr" : "stdout";
+  const buf = streamBuffers[svcKey] || { stdout: "", stderr: "" };
+  const combined = buf[channel] + rawText;
+  const lines = combined.split(/\r?\n/);
+  buf[channel] = lines.pop() || "";
 
   for (const line of lines) {
     const trimmed = line.trim();
@@ -393,7 +423,7 @@ function spawnService(key) {
     cwd: svc.cwd,
     stdio: ["ignore", "pipe", "pipe"],
     shell: true,
-    env: { ...process.env, FORCE_COLOR: "1" },
+    env: { ...process.env, FORCE_COLOR: "1", OPENBLAS_NUM_THREADS: "1", OMP_NUM_THREADS: "1" },
   });
 
   processes[key] = proc;
@@ -413,7 +443,7 @@ function spawnService(key) {
     console.log(`\n${RED}─────────────────────────────────────────────────────────────${RESET}`);
     log(svc.name, "ERROR", `${svc.displayName} process exited unexpectedly (code: ${code})`);
     console.log(
-      `  ${YELLOW}Action: Check service logs or run with VIBEPULSE_LOG_LEVEL=debug${RESET}`,
+      `  ${YELLOW}Action: Check service logs or run with DEPRADAR_LOG_LEVEL=debug${RESET}`,
     );
     console.log(`${RED}─────────────────────────────────────────────────────────────${RESET}\n`);
 
@@ -444,7 +474,7 @@ function shutdownAll(signal = "SIGINT") {
   if (isShuttingDown) return;
   isShuttingDown = true;
 
-  console.log("\n");
+  process.stdout.write("\r\x1b[2K\n");
   log("SUPERVISOR", "STOP", `Shutdown requested (${signal})`);
 
   for (const [key, proc] of Object.entries(processes)) {
@@ -465,20 +495,36 @@ function shutdownAll(signal = "SIGINT") {
   log("DATABASE", "INFO", "PostgreSQL connection pool released");
 
   setTimeout(() => {
-    printBox(["                  VIBEPULSE STOPPED CLEANLY                   "], GREEN);
+    process.stdout.write("\r\x1b[2K\n");
+    printBox(["                  DEPRADAR STOPPED CLEANLY                  "], GREEN);
     console.log("");
     process.exit(0);
-  }, 1000);
+  }, 500);
 }
 
 process.on("SIGINT", () => shutdownAll("SIGINT"));
 process.on("SIGTERM", () => shutdownAll("SIGTERM"));
 
+// Gracefully handle Ctrl+C on Windows to prevent batch prompt collisions
+if (process.platform === "win32" && process.stdin.isTTY) {
+  import("readline")
+    .then((readline) => {
+      const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+      });
+      rl.on("SIGINT", () => {
+        shutdownAll("SIGINT");
+      });
+    })
+    .catch(() => {});
+}
+
 // ── Startup & Main Orchestration ────────────────────────────────────────────
 async function main() {
   console.log(`
 ${CYAN}${BOLD}╔══════════════════════════════════════════════════════════════╗
-║                     VIBEPULSE DEV STACK                      ║
+║                     DEPRADAR DEV STACK                       ║
 ╚══════════════════════════════════════════════════════════════╝${RESET}
 `);
 
@@ -532,7 +578,7 @@ ${CYAN}${BOLD}╔═════════════════════
       );
     console.error(`\n  ${YELLOW}Please stop conflicting processes or override ports via:${RESET}`);
     console.error(
-      `    VIBEPULSE_API_PORT=<port> VIBEPULSE_DASHBOARD_PORT=<port> VIBEPULSE_DAEMON_PORT=<port>`,
+      `    DEPRADAR_API_PORT=<port> DEPRADAR_DASHBOARD_PORT=<port> DEPRADAR_DAEMON_PORT=<port>`,
     );
     console.error(
       `${RED}${BOLD}─────────────────────────────────────────────────────────────${RESET}\n`,
@@ -579,7 +625,7 @@ ${CYAN}${BOLD}╔═════════════════════
   console.log("");
   printBox(
     [
-      `                     ${BOLD}VIBEPULSE IS READY${RESET}${GREEN}                       `,
+      `                      ${BOLD}DEPRADAR IS READY${RESET}${GREEN}                       `,
       ``,
       `  Dashboard   → ${CYAN}http://localhost:${DASHBOARD_PORT}${RESET}${GREEN}`,
       `  API         → ${CYAN}http://localhost:${API_PORT}${RESET}${GREEN}`,
