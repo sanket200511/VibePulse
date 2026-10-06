@@ -96,17 +96,17 @@ const STAGES: StageConfig[] = [
 
 export function IntelligenceCascadeRibbon({ activeStage }: { activeStage: IntelligenceStage }) {
   return (
-    <div className="rounded-xl border border-gray-800 bg-gray-950/90 p-4 shadow-xl">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">
+    <div className="border-border/80 bg-card/60 shadow-xs backdrop-blur-xs rounded-lg border p-3">
+      <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
+        <span className="text-muted-foreground font-mono text-[10px] font-semibold uppercase tracking-wider">
           INTELLIGENCE CASCADE PIPELINE
         </span>
-        <span className="text-xs font-medium text-gray-400">
-          Active Stage: <span className="font-mono font-bold text-indigo-400">{activeStage}</span>
+        <span className="text-muted-foreground font-mono text-[11px]">
+          Active Stage: <span className="text-primary font-bold">{activeStage}</span>
         </span>
       </div>
 
-      <div className="mt-3 flex items-center justify-between gap-1 overflow-x-auto pb-1">
+      <div className="mt-2.5 flex items-center justify-between gap-1 overflow-x-auto pb-0.5">
         {STAGES.map((s, idx) => {
           const isActive = s.stage === activeStage;
           const Icon = s.icon;
@@ -114,21 +114,21 @@ export function IntelligenceCascadeRibbon({ activeStage }: { activeStage: Intell
           return (
             <div key={s.stage} className="flex shrink-0 items-center gap-1">
               <div
-                className={`flex items-center gap-2 rounded-lg border px-3 py-2 transition-all duration-300 ${
+                className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 transition-all duration-150 ${
                   isActive
-                    ? `${s.activeBg} ${s.activeBorder} ${s.activeText} scale-105 shadow-lg ring-2 ring-indigo-500/30`
-                    : "border-gray-800/80 bg-gray-900/40 text-gray-400 hover:border-gray-700"
+                    ? "border-primary/40 bg-secondary/80 text-foreground ring-primary/30 shadow-xs ring-1"
+                    : "border-border/70 bg-secondary/30 text-muted-foreground hover:border-border hover:text-foreground"
                 }`}
               >
-                <Icon className={`h-4 w-4 ${isActive ? s.color : "text-gray-500"}`} />
+                <Icon className={`h-3.5 w-3.5 ${isActive ? s.color : "text-muted-foreground"}`} />
                 <div className="flex flex-col text-left">
-                  <span className="text-xs font-bold leading-tight">{s.label}</span>
-                  <span className="text-[9px] text-gray-500">{s.sublabel}</span>
+                  <span className="text-[11px] font-semibold leading-tight">{s.label}</span>
+                  <span className="text-muted-foreground font-mono text-[8px]">{s.sublabel}</span>
                 </div>
               </div>
 
               {idx < STAGES.length - 1 && (
-                <ArrowRight className="mx-0.5 h-3 w-3 shrink-0 text-gray-700" />
+                <ArrowRight className="text-muted-foreground/40 mx-0.5 h-3 w-3 shrink-0" />
               )}
             </div>
           );

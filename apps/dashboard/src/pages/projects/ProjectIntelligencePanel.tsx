@@ -172,14 +172,14 @@ export function ProjectIntelligencePanel({
         className="bg-card border-border overflow-hidden rounded-xl border shadow-sm"
       >
         {/* Header Region */}
-        <div className="border-border bg-muted-color/20 flex items-center justify-between border-b p-5">
-          <div className="flex items-center gap-3">
-            <Activity className="text-accent-color h-5 w-5" />
-            <h2 className="text-primary-text text-lg font-bold tracking-tight">Project Pulse</h2>
+        <div className="border-border/60 bg-secondary/20 flex flex-wrap items-center justify-between gap-3 border-b p-3.5 sm:p-4">
+          <div className="flex items-center gap-2">
+            <Activity className="text-primary h-4 w-4" />
+            <h2 className="text-foreground text-sm font-semibold tracking-tight">Project Pulse</h2>
           </div>
-          <div className="text-secondary-text flex items-center gap-4 text-xs font-medium">
+          <div className="text-muted-foreground flex flex-wrap items-center gap-3 font-mono text-xs font-medium tabular-nums">
             <span className="flex items-center gap-1.5">
-              <Clock className="h-3.5 w-3.5" />
+              <Clock className="h-3 w-3" />
               {intelligence.observation_window.first_observed_at
                 ? formatTimestamp(intelligence.observation_window.first_observed_at)
                 : "Never"}{" "}
@@ -188,46 +188,46 @@ export function ProjectIntelligencePanel({
                 ? formatTimestamp(intelligence.observation_window.latest_observed_at)
                 : "Never"}
             </span>
-            <span className="border-border border-l pl-4">
+            <span className="border-border/60 border-l pl-3">
               {intelligence.metrics.total_sessions} sessions
             </span>
-            <span className="border-border border-l pl-4">
+            <span className="border-border/60 border-l pl-3">
               {intelligence.metrics.total_events} events
             </span>
           </div>
         </div>
 
         {/* Constellation Region */}
-        <div className="p-6">
-          <h3 className="text-muted-foreground text-[10px] font-bold uppercase tracking-wider">
+        <div className="p-4 sm:p-5">
+          <h3 className="text-muted-foreground font-mono text-[10px] font-semibold uppercase tracking-wider">
             Temporal Activity Constellation
           </h3>
           <ProjectPulse series={intelligence.activity_series} />
         </div>
       </div>
 
-      <div data-tour="project-intelligence" className="grid grid-cols-1 gap-6 md:grid-cols-3">
+      <div data-tour="project-intelligence" className="grid grid-cols-1 gap-3 md:grid-cols-3">
         {/* Language Activity */}
-        <div className="bg-card border-border rounded-xl border p-5 shadow-sm">
-          <div className="mb-4 flex items-center gap-2">
-            <Code className="text-accent-color/70 h-4 w-4" />
-            <h3 className="text-primary-text text-sm font-semibold">Observed Language Activity</h3>
+        <div className="bg-card/60 border-border/80 shadow-xs rounded-lg border p-3.5 sm:p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <Code className="text-primary h-3.5 w-3.5" />
+            <h3 className="text-foreground text-xs font-semibold">Observed Language Activity</h3>
           </div>
           {languageEntries.length === 0 ? (
-            <p className="text-secondary-text text-xs">No language telemetry observed.</p>
+            <p className="text-muted-foreground text-xs">No language telemetry observed.</p>
           ) : (
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2.5">
               {languageEntries.map(([lang, count]) => (
                 <div key={lang}>
                   <div className="mb-1 flex items-center justify-between text-xs">
-                    <span className="text-primary-text font-medium">{lang}</span>
-                    <span className="text-muted-foreground">
-                      {Math.round((count / totalLanguageEvents) * 100)}% of attributed events
+                    <span className="text-foreground font-medium">{lang}</span>
+                    <span className="text-muted-foreground font-mono text-[11px] tabular-nums">
+                      {Math.round((count / totalLanguageEvents) * 100)}%
                     </span>
                   </div>
-                  <div className="bg-muted-color/45 h-1.5 w-full overflow-hidden rounded-full">
+                  <div className="bg-muted/60 h-1.5 w-full overflow-hidden rounded-full">
                     <div
-                      className="bg-accent-color/70 h-full rounded-full"
+                      className="bg-primary/80 h-full rounded-full"
                       style={{ width: `${(count / totalLanguageEvents) * 100}%` }}
                     />
                   </div>
@@ -238,25 +238,23 @@ export function ProjectIntelligencePanel({
         </div>
 
         {/* Event Composition */}
-        <div className="bg-card border-border rounded-xl border p-5 shadow-sm">
-          <div className="mb-4 flex items-center gap-2">
-            <LayoutTemplate className="text-accent-color/70 h-4 w-4" />
-            <h3 className="text-primary-text text-sm font-semibold">Event Composition</h3>
+        <div className="bg-card/60 border-border/80 shadow-xs rounded-lg border p-3.5 sm:p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <LayoutTemplate className="text-primary h-3.5 w-3.5" />
+            <h3 className="text-foreground text-xs font-semibold">Event Composition</h3>
           </div>
           {eventEntries.length === 0 ? (
-            <p className="text-secondary-text text-xs">No specific events observed.</p>
+            <p className="text-muted-foreground text-xs">No specific events observed.</p>
           ) : (
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2">
               {eventEntries.map(([type, count]) => (
                 <div key={type} className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
-                    <div className="bg-accent-color/20 h-2 w-2 rounded-sm" />
-                    <span className="text-primary-text font-medium">
-                      {type.replace("FILE_", "")}
-                    </span>
+                    <div className="bg-primary/30 rounded-xs h-1.5 w-1.5" />
+                    <span className="text-foreground font-medium">{type.replace("FILE_", "")}</span>
                   </div>
-                  <span className="text-muted-foreground font-mono">
-                    {count} <span className="text-[10px] uppercase">events</span>
+                  <span className="text-muted-foreground font-mono text-[11px] tabular-nums">
+                    {count} <span className="text-[9px] uppercase">events</span>
                   </span>
                 </div>
               ))}
@@ -265,30 +263,33 @@ export function ProjectIntelligencePanel({
         </div>
 
         {/* Frequently Observed Files */}
-        <div className="bg-card border-border flex flex-col rounded-xl border p-5 shadow-sm">
-          <div className="mb-4 flex items-center gap-2">
-            <FileText className="text-accent-color/70 h-4 w-4" />
-            <h3 className="text-primary-text text-sm font-semibold">Frequently Observed Files</h3>
+        <div className="bg-card/60 border-border/80 shadow-xs flex flex-col rounded-lg border p-3.5 sm:p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <FileText className="text-primary h-3.5 w-3.5" />
+            <h3 className="text-foreground text-xs font-semibold">Frequently Observed Files</h3>
           </div>
           {intelligence.frequently_observed_files.length === 0 ? (
-            <p className="text-secondary-text text-xs">No file telemetry observed.</p>
+            <p className="text-muted-foreground text-xs">No file telemetry observed.</p>
           ) : (
-            <div className="flex flex-1 flex-col gap-2 overflow-y-auto pr-1">
+            <div className="flex flex-1 flex-col gap-1.5 overflow-y-auto pr-1">
               {intelligence.frequently_observed_files.slice(0, 5).map((file, i) => (
                 <div
                   key={i}
-                  className="bg-muted-color/30 flex items-center justify-between rounded p-2 text-xs"
+                  className="bg-secondary/30 border-border/60 flex items-center justify-between rounded-md border p-2 text-xs"
                 >
-                  <span className="text-primary-text truncate font-mono" title={file.path}>
+                  <span
+                    className="text-foreground truncate font-mono text-[11px]"
+                    title={file.path}
+                  >
                     {file.path.split("/").pop()}
                   </span>
-                  <span className="text-muted-foreground shrink-0 font-medium">
-                    {file.event_count} <span className="text-[9px] uppercase">events</span>
+                  <span className="text-muted-foreground shrink-0 font-mono text-[10px] tabular-nums">
+                    {file.event_count}
                   </span>
                 </div>
               ))}
               {intelligence.frequently_observed_files.length > 5 && (
-                <div className="text-secondary-text mt-1 text-center text-[10px]">
+                <div className="text-muted-foreground mt-1 text-center font-mono text-[10px]">
                   + {intelligence.frequently_observed_files.length - 5} more files observed
                 </div>
               )}

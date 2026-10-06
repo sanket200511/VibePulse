@@ -30,21 +30,23 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "border-border/60 bg-muted/20 animate-fade-in-up flex w-full flex-col items-center justify-center rounded-[16px] border border-dashed px-8 py-16 text-center",
+        "border-border/70 bg-card/30 animate-fade-in-up flex w-full flex-col items-center justify-center rounded-lg border border-dashed px-6 py-10 text-center sm:py-12",
         className,
       )}
     >
-      <div className="bg-background border-border/50 mb-6 flex h-16 w-16 items-center justify-center rounded-full border shadow-sm">
-        {icon ?? <FileQuestion className="text-muted-foreground/80 h-7 w-7" />}
+      <div className="bg-secondary/60 border-border/70 shadow-xs text-muted-foreground mb-3 flex h-10 w-10 items-center justify-center rounded-md border">
+        {icon ?? <FileQuestion className="h-5 w-5" />}
       </div>
-      <h3 className="text-foreground mb-2 text-lg font-semibold tracking-tight">{title}</h3>
-      <p className="text-muted-foreground mb-8 max-w-[420px] text-sm leading-relaxed">
+      <h3 className="text-foreground mb-1 text-sm font-semibold tracking-tight">{title}</h3>
+      <p className="text-muted-foreground mb-4 max-w-[380px] text-xs leading-relaxed">
         {description}
       </p>
 
-      {action && <div className="mb-4 flex flex-col items-center gap-4 sm:flex-row">{action}</div>}
+      {action && <div className="flex flex-wrap items-center justify-center gap-2">{action}</div>}
 
-      {footer && <div className="text-muted-foreground/80 mt-6 text-xs">{footer}</div>}
+      {footer && (
+        <div className="text-muted-foreground/70 mt-4 font-mono text-[11px]">{footer}</div>
+      )}
     </div>
   );
 }

@@ -46,21 +46,23 @@ export function WorkspaceHomePage() {
   const presentation = usePresentation();
 
   return (
-    <div className="bg-background text-foreground animate-fade-in-up flex flex-1 justify-center px-4 py-8 sm:px-6 md:py-12 lg:px-8">
-      <div className="flex w-full max-w-5xl flex-col gap-6 md:gap-8">
+    <div className="bg-background text-foreground animate-fade-in-up flex flex-1 justify-center px-4 py-4 sm:px-6 md:py-6 lg:px-8">
+      <div className="flex w-full max-w-[1400px] flex-col gap-4 md:gap-5">
         {/* Presentation Banner */}
         {isDemo && !bannerDismissed && (
           <div
             data-tour="presentation-welcome"
-            className="bg-accent-color/[0.08] border-accent-color/20 text-primary-text flex items-center justify-between gap-4 rounded-xl border p-4 shadow-sm backdrop-blur-sm transition-all duration-200"
+            className="bg-primary/5 border-primary/20 text-foreground shadow-xs backdrop-blur-xs flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3 transition-all duration-200"
           >
-            <div className="flex items-center gap-3">
-              <div className="bg-accent-color/10 flex h-7 w-7 items-center justify-center rounded-lg">
-                <Sparkles className="text-accent-color h-4 w-4 shrink-0" />
+            <div className="flex items-center gap-2.5">
+              <div className="bg-primary/10 text-primary flex h-6 w-6 items-center justify-center rounded-md">
+                <Sparkles className="h-3.5 w-3.5 shrink-0" />
               </div>
               <div>
-                <p className="text-sm font-semibold">DepRadar Engineering Observability Platform</p>
-                <p className="text-secondary-text mt-0.5 text-xs">
+                <p className="text-xs font-semibold tracking-tight">
+                  DepRadar Engineering Observability Platform
+                </p>
+                <p className="text-muted-foreground text-[11px]">
                   Using disposable demonstration telemetry to showcase continuous engineering
                   intelligence.
                 </p>
@@ -70,16 +72,16 @@ export function WorkspaceHomePage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => presentation.start()}
-                className="bg-accent-color text-background hover:bg-accent-color/90 flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wider shadow-sm transition-colors"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs flex items-center gap-1.5 rounded-md px-2.5 py-1 font-mono text-xs font-medium transition-colors"
               >
-                <Play className="h-3.5 w-3.5" /> Start Guided Demo
+                <Play className="h-3 w-3" /> Start Guided Demo
               </button>
               <button
                 onClick={() => setBannerDismissed(true)}
-                className="text-secondary-text hover:text-primary-text rounded-md p-1 transition-colors"
+                className="text-muted-foreground hover:text-foreground rounded-md p-1 transition-colors"
                 aria-label="Dismiss banner"
               >
-                <X className="h-4 w-4" />
+                <X className="h-3.5 w-3.5" />
               </button>
             </div>
           </div>
@@ -89,7 +91,7 @@ export function WorkspaceHomePage() {
 
         <main
           data-tour="presentation-summary"
-          className="grid grid-cols-1 gap-6 lg:grid-cols-[7fr_3fr] lg:gap-8"
+          className="grid grid-cols-1 gap-4 lg:grid-cols-[7fr_3fr] lg:gap-5"
         >
           <PrimaryCanvas isDemo={isDemo} />
           <SecondaryRail isDemo={isDemo} />
@@ -107,46 +109,48 @@ function LiveWorkspaceHeader() {
   const wsConnected = connectionStatus === "open";
 
   return (
-    <header className="border-border bg-card rounded-xl border p-6 shadow-sm transition-all duration-200">
-      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+    <header className="border-border/80 bg-card/60 shadow-xs backdrop-blur-xs rounded-lg border p-4 transition-all duration-200 sm:p-5">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
-            <span className="text-secondary-text text-[10px] font-bold uppercase tracking-wider">
+            <span className="text-muted-foreground font-mono text-[10px] font-semibold uppercase tracking-wider">
               Workspace
             </span>
             {wsConnected ? (
-              <span className="bg-success-color/10 border-success-color/20 text-success-color flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider">
-                <span className="bg-success-color h-1.5 w-1.5 animate-pulse rounded-full" />
-                Live
+              <span className="flex items-center gap-1 rounded-md border border-emerald-500/25 bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[10px] font-medium text-emerald-400">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+                LIVE
               </span>
             ) : (
-              <span className="bg-muted/30 text-muted-foreground rounded-full border border-transparent px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider">
-                Connecting…
+              <span className="bg-muted/40 text-muted-foreground border-border/60 rounded-md border px-1.5 py-0.5 font-mono text-[10px] font-medium">
+                CONNECTING…
               </span>
             )}
           </div>
-          <h1 className="text-primary-text text-xl font-bold tracking-tight">
+          <h1 className="text-foreground text-lg font-bold tracking-tight sm:text-xl">
             {session ? (session.project_root.split(/[/\\]/).pop() ?? "Workspace") : "DepRadar"}
           </h1>
           {session && (
-            <p className="text-secondary-text mt-0.5 font-mono text-xs">{session.project_root}</p>
+            <p className="text-muted-foreground mt-0.5 max-w-xl truncate font-mono text-xs">
+              {session.project_root}
+            </p>
           )}
         </div>
         {session && (
-          <div className="flex gap-3">
-            <div className="bg-muted-color/40 border-border min-w-[90px] rounded-lg border px-4 py-2">
-              <span className="text-secondary-text block text-[9px] font-bold uppercase tracking-wider">
+          <div className="flex flex-wrap gap-2">
+            <div className="bg-secondary/40 border-border/70 min-w-[85px] rounded-md border px-3 py-1.5">
+              <span className="text-muted-foreground block font-mono text-[9px] font-semibold uppercase tracking-wider">
                 Events
               </span>
-              <span className="text-primary-text mt-0.5 text-sm font-semibold">
+              <span className="text-foreground mt-0.5 font-mono text-xs font-semibold tabular-nums">
                 {session.event_count}
               </span>
             </div>
-            <div className="bg-muted-color/40 border-border min-w-[90px] rounded-lg border px-4 py-2">
-              <span className="text-secondary-text block text-[9px] font-bold uppercase tracking-wider">
+            <div className="bg-secondary/40 border-border/70 min-w-[85px] rounded-md border px-3 py-1.5">
+              <span className="text-muted-foreground block font-mono text-[9px] font-semibold uppercase tracking-wider">
                 Language
               </span>
-              <span className="text-primary-text mt-0.5 text-sm font-semibold">
+              <span className="text-foreground mt-0.5 font-mono text-xs font-semibold">
                 {session.primary_language ?? "—"}
               </span>
             </div>
@@ -166,72 +170,70 @@ export function WorkspaceHeader({ isDemo }: { isDemo: boolean }) {
   }
 
   return (
-    <header className="border-border bg-card hover:border-accent-color/20 relative overflow-hidden rounded-xl border p-6 shadow-sm transition-all duration-300">
-      <div className="bg-accent-color/5 pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full blur-2xl" />
-
-      <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2.5">
-            <span className="text-secondary-text text-[10px] font-bold uppercase tracking-wider">
+    <header className="border-border/80 bg-card/60 shadow-xs backdrop-blur-xs rounded-lg border p-4 transition-all duration-200 sm:p-5">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground font-mono text-[10px] font-semibold uppercase tracking-wider">
               Current Workspace
             </span>
-            <span className="bg-success-color/10 border-success-color/20 text-success-color flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider">
-              <span className="bg-success-color h-1.5 w-1.5 animate-pulse rounded-full" />
-              Daemon Connected
+            <span className="flex items-center gap-1.5 rounded-md border border-emerald-500/25 bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[10px] font-medium text-emerald-400">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+              DAEMON CONNECTED
             </span>
           </div>
-          <h1 className="text-primary-text text-2xl font-bold tracking-tight md:text-3xl">
+          <h1 className="text-foreground text-lg font-bold tracking-tight sm:text-xl">
             Workspace: VibeSync
           </h1>
-          <p className="text-secondary-text selection:bg-selection-color mt-1 font-mono text-xs">
+          <p className="text-muted-foreground max-w-xl truncate font-mono text-xs">
             Path: {demoObservation.workspacePath}
           </p>
         </div>
 
         {/* Workspace details metrics */}
-        <div className="border-border flex flex-wrap gap-4 border-t pt-4 md:border-t-0 md:pt-0">
-          <div className="bg-muted-color/40 border-border min-w-[100px] rounded-lg border px-4 py-2.5">
-            <span className="text-secondary-text block text-[9px] font-bold uppercase tracking-wider">
+        <div className="border-border/50 flex flex-wrap gap-2 border-t pt-3 md:border-t-0 md:pt-0">
+          <div className="bg-secondary/40 border-border/70 min-w-[85px] rounded-md border px-3 py-1.5">
+            <span className="text-muted-foreground block font-mono text-[9px] font-semibold uppercase tracking-wider">
               Session Start
             </span>
-            <span className="text-primary-text mt-0.5 flex items-center gap-1 text-sm font-semibold">
-              <Clock className="text-accent-color h-3.5 w-3.5" />
+            <span className="text-foreground mt-0.5 flex items-center gap-1 font-mono text-xs font-semibold tabular-nums">
+              <Clock className="text-primary h-3 w-3" />
               09:00 AM
             </span>
           </div>
-          <div className="bg-muted-color/40 border-border min-w-[100px] rounded-lg border px-4 py-2.5">
-            <span className="text-secondary-text block text-[9px] font-bold uppercase tracking-wider">
+          <div className="bg-secondary/40 border-border/70 min-w-[85px] rounded-md border px-3 py-1.5">
+            <span className="text-muted-foreground block font-mono text-[9px] font-semibold uppercase tracking-wider">
               Active Tech
             </span>
-            <span className="text-primary-text mt-0.5 flex items-center gap-1 text-sm font-semibold">
-              <Code className="text-accent-color h-3.5 w-3.5" />
+            <span className="text-foreground mt-0.5 flex items-center gap-1 font-mono text-xs font-semibold">
+              <Code className="text-primary h-3 w-3" />
               TS, CSS, HTML
             </span>
           </div>
-          <div className="bg-muted-color/40 border-border min-w-[100px] rounded-lg border px-4 py-2.5">
-            <span className="text-secondary-text block text-[9px] font-bold uppercase tracking-wider">
+          <div className="bg-secondary/40 border-border/70 min-w-[85px] rounded-md border px-3 py-1.5">
+            <span className="text-muted-foreground block font-mono text-[9px] font-semibold uppercase tracking-wider">
               Watched Files
             </span>
-            <span className="text-primary-text mt-0.5 flex items-center gap-1 text-sm font-semibold">
-              <Layers className="text-accent-color h-3.5 w-3.5" />
+            <span className="text-foreground mt-0.5 flex items-center gap-1 font-mono text-xs font-semibold tabular-nums">
+              <Layers className="text-primary h-3 w-3" />
               142 files
             </span>
           </div>
-          <div className="bg-muted-color/40 border-border min-w-[100px] rounded-lg border px-4 py-2.5">
-            <span className="text-secondary-text block text-[9px] font-bold uppercase tracking-wider">
-              Workspace Health
+          <div className="bg-secondary/40 border-border/70 min-w-[85px] rounded-md border px-3 py-1.5">
+            <span className="text-muted-foreground block font-mono text-[9px] font-semibold uppercase tracking-wider">
+              Health
             </span>
-            <span className="text-success-color mt-0.5 flex items-center gap-1 text-sm font-semibold">
-              <Activity className="text-success-color h-3.5 w-3.5" />
+            <span className="mt-0.5 flex items-center gap-1 font-mono text-xs font-semibold tabular-nums text-emerald-400">
+              <Activity className="h-3 w-3" />
               92% Optimal
             </span>
           </div>
-          <div className="bg-muted-color/40 border-border min-w-[100px] rounded-lg border px-4 py-2.5">
-            <span className="text-secondary-text block text-[9px] font-bold uppercase tracking-wider">
+          <div className="bg-secondary/40 border-border/70 min-w-[85px] rounded-md border px-3 py-1.5">
+            <span className="text-muted-foreground block font-mono text-[9px] font-semibold uppercase tracking-wider">
               Telemetry
             </span>
-            <span className="text-primary-text mt-0.5 flex items-center gap-1 text-sm font-semibold">
-              <span className="bg-success-color mr-1 h-1.5 w-1.5 animate-pulse rounded-full" />
+            <span className="mt-0.5 flex items-center gap-1 font-mono text-xs font-semibold text-emerald-400">
+              <span className="mr-1 h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
               Active
             </span>
           </div>
@@ -262,26 +264,26 @@ function LivePrimaryCanvas() {
   const recentSessions = sessions.slice(0, 5);
 
   return (
-    <div className="flex flex-col gap-6 lg:gap-8">
+    <div className="flex flex-col gap-4 lg:gap-5">
       {/* Connection Status Hero */}
       <DashboardSection title="Observation Status">
-        <div className="bg-card border-border rounded-xl border p-6 shadow-sm">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
+        <div className="bg-card/60 border-border/80 shadow-xs rounded-lg border p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
               <div
-                className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+                className={`flex h-8 w-8 items-center justify-center rounded-md ${
                   wsConnected
-                    ? "bg-success-color/10 text-success-color"
-                    : "bg-muted-foreground/10 text-muted-foreground"
+                    ? "border border-emerald-500/25 bg-emerald-500/10 text-emerald-400"
+                    : "bg-muted/40 text-muted-foreground border-border/60 border"
                 }`}
               >
-                {wsConnected ? <Wifi className="h-5 w-5" /> : <WifiOff className="h-5 w-5" />}
+                {wsConnected ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
               </div>
               <div>
-                <p className="text-primary-text text-sm font-semibold">
+                <p className="text-foreground text-xs font-semibold tracking-tight">
                   {wsConnected ? "Daemon Connected" : "Awaiting Daemon"}
                 </p>
-                <p className="text-secondary-text text-xs">
+                <p className="text-muted-foreground text-[11px]">
                   {wsConnected
                     ? "Real-time telemetry stream active"
                     : "Start the DepRadar daemon to begin observing"}
@@ -289,31 +291,31 @@ function LivePrimaryCanvas() {
               </div>
             </div>
             {wsConnected && (
-              <span className="bg-success-color/10 border-success-color/20 text-success-color flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-wider">
-                <span className="bg-success-color h-1.5 w-1.5 animate-pulse rounded-full" />
-                Live
+              <span className="flex items-center gap-1 rounded-md border border-emerald-500/25 bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[10px] font-medium text-emerald-400">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+                LIVE
               </span>
             )}
           </div>
 
           {/* Active session banner */}
           {!sessionLoading && session && (
-            <div className="bg-accent-color/5 border-accent-color/20 mt-4 rounded-lg border p-4">
-              <div className="flex items-center justify-between gap-4">
+            <div className="bg-primary/5 border-primary/20 mt-3 rounded-md border p-3">
+              <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-accent-color text-[10px] font-bold uppercase tracking-wider">
+                  <p className="text-primary font-mono text-[10px] font-semibold uppercase tracking-wider">
                     Active Session
                   </p>
-                  <p className="text-primary-text mt-0.5 truncate text-sm font-semibold">
+                  <p className="text-foreground mt-0.5 truncate text-xs font-semibold">
                     {session.summary?.headline || session.project_root.split(/[\\/]/).pop()}
                   </p>
-                  <p className="text-secondary-text mt-0.5 font-mono text-[10px]">
+                  <p className="text-muted-foreground mt-0.5 font-mono text-[10px]">
                     {session.event_count} events · {session.primary_language ?? "Unknown"}
                   </p>
                 </div>
                 <Link
                   to={`/sessions/${session.id}`}
-                  className="bg-accent-color hover:bg-accent-color/90 shrink-0 rounded-lg px-4 py-2 text-xs font-bold text-white transition-colors"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground shrink-0 rounded-md px-2.5 py-1 font-mono text-xs font-medium transition-colors"
                 >
                   View
                 </Link>
@@ -321,7 +323,7 @@ function LivePrimaryCanvas() {
             </div>
           )}
           {!sessionLoading && !session && wsConnected && (
-            <p className="text-secondary-text mt-4 text-xs">
+            <p className="text-muted-foreground mt-3 text-xs">
               No active session — start coding in an observed project to begin.
             </p>
           )}
@@ -331,19 +333,19 @@ function LivePrimaryCanvas() {
       {/* Projects */}
       <DashboardSection title="Projects">
         {projectsQuery.isLoading ? (
-          <div className="border-border bg-card rounded-xl border p-6">
-            <div className="flex items-center gap-3">
-              <div className="border-accent-color/30 h-5 w-5 animate-spin rounded-full border-2 border-t-transparent" />
-              <span className="text-secondary-text text-sm">Loading projects…</span>
+          <div className="border-border/80 bg-card/60 rounded-lg border p-4">
+            <div className="flex items-center gap-2.5">
+              <div className="border-primary h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+              <span className="text-muted-foreground font-mono text-xs">Loading projects…</span>
             </div>
           </div>
         ) : (projectsQuery.data ?? []).length === 0 ? (
-          <div className="border-border bg-card rounded-xl border p-6">
-            <div className="flex items-center gap-3">
-              <FolderKanban className="text-muted-foreground h-5 w-5" />
+          <div className="border-border/80 bg-card/60 rounded-lg border p-4">
+            <div className="flex items-center gap-2.5">
+              <FolderKanban className="text-muted-foreground h-4 w-4" />
               <div>
-                <p className="text-primary-text text-sm font-semibold">No projects observed yet</p>
-                <p className="text-secondary-text text-xs">
+                <p className="text-foreground text-xs font-semibold">No projects observed yet</p>
+                <p className="text-muted-foreground text-[11px]">
                   Start the daemon in a project directory to begin observing.
                 </p>
               </div>
@@ -352,27 +354,27 @@ function LivePrimaryCanvas() {
         ) : (
           <div
             data-tour="workspace-projects"
-            className="bg-card border-border rounded-xl border p-6 shadow-sm"
+            className="bg-card/60 border-border/80 shadow-xs rounded-lg border p-4"
           >
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
               {(projectsQuery.data ?? []).slice(0, 6).map((project) => (
                 <Link
                   key={project.id}
                   to={`/projects/${project.id}`}
-                  className="bg-muted-color/30 border-border hover:border-accent-color/30 group block rounded-xl border p-4 transition-all duration-200 hover:shadow-sm"
+                  className="bg-secondary/30 border-border/70 hover:border-primary/40 hover:bg-secondary/60 group block rounded-md border p-3 transition-all duration-150"
                 >
-                  <h4 className="text-primary-text group-hover:text-accent-color text-sm font-semibold transition-colors">
+                  <h4 className="text-foreground group-hover:text-primary truncate text-xs font-semibold transition-colors">
                     {project.display_name}
                   </h4>
                   <p
-                    className="text-secondary-text mt-1.5 truncate font-mono text-[10px]"
+                    className="text-muted-foreground mt-1 truncate font-mono text-[10px]"
                     title={project.root_path}
                   >
                     {project.root_path}
                   </p>
-                  <div className="border-border mt-4 flex items-center justify-between border-t pt-3 text-[10px]">
-                    <span className="text-secondary-text">Last active</span>
-                    <span className="text-primary-text font-medium">
+                  <div className="border-border/50 mt-3 flex items-center justify-between border-t pt-2 text-[10px]">
+                    <span className="text-muted-foreground font-mono">Last active</span>
+                    <span className="text-foreground font-mono tabular-nums">
                       {new Date(project.updated_at).toLocaleDateString(undefined, {
                         month: "short",
                         day: "numeric",
@@ -383,10 +385,10 @@ function LivePrimaryCanvas() {
               ))}
             </div>
             {(projectsQuery.data ?? []).length > 6 && (
-              <div className="mt-4 text-center">
+              <div className="mt-3 text-center">
                 <Link
                   to="/projects"
-                  className="text-accent-color hover:text-accent-color/80 text-sm font-medium transition-colors"
+                  className="text-primary font-mono text-xs font-medium transition-colors hover:underline"
                 >
                   View all {projectsQuery.data!.length} projects →
                 </Link>
@@ -399,59 +401,59 @@ function LivePrimaryCanvas() {
       {/* Recent Sessions */}
       <DashboardSection title="Recent Sessions">
         {sessionsLoading ? (
-          <div className="border-border bg-card rounded-xl border p-6">
-            <div className="flex items-center gap-3">
-              <div className="border-accent-color/30 h-5 w-5 animate-spin rounded-full border-2 border-t-transparent" />
-              <span className="text-secondary-text text-sm">Loading sessions…</span>
+          <div className="border-border/80 bg-card/60 rounded-lg border p-4">
+            <div className="flex items-center gap-2.5">
+              <div className="border-primary h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+              <span className="text-muted-foreground font-mono text-xs">Loading sessions…</span>
             </div>
           </div>
         ) : recentSessions.length === 0 ? (
-          <div className="border-border bg-card rounded-xl border p-6">
-            <div className="flex items-center gap-3">
-              <History className="text-muted-foreground h-5 w-5" />
+          <div className="border-border/80 bg-card/60 rounded-lg border p-4">
+            <div className="flex items-center gap-2.5">
+              <History className="text-muted-foreground h-4 w-4" />
               <div>
-                <p className="text-primary-text text-sm font-semibold">No sessions recorded yet</p>
-                <p className="text-secondary-text text-xs">
+                <p className="text-foreground text-xs font-semibold">No sessions recorded yet</p>
+                <p className="text-muted-foreground text-[11px]">
                   Sessions appear automatically when coding activity is detected.
                 </p>
               </div>
             </div>
           </div>
         ) : (
-          <div className="bg-card border-border divide-border divide-y rounded-xl border shadow-sm">
+          <div className="bg-card/60 border-border/80 divide-border/60 shadow-xs divide-y rounded-lg border">
             {recentSessions.map((s) => (
               <Link
                 key={s.id}
                 to={`/sessions/${s.id}`}
-                className="hover:bg-muted/30 flex items-center justify-between gap-4 p-4 transition-colors first:rounded-t-xl last:rounded-b-xl"
+                className="hover:bg-muted/40 flex items-center justify-between gap-3 p-3 transition-colors first:rounded-t-lg last:rounded-b-lg"
               >
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <span
                       className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${
                         s.status === "ACTIVE"
-                          ? "bg-success-color animate-pulse"
+                          ? "animate-pulse bg-emerald-400"
                           : s.status === "IDLE"
-                            ? "bg-warning-color"
+                            ? "bg-amber-400"
                             : "bg-muted-foreground"
                       }`}
                     />
-                    <p className="text-primary-text truncate text-sm font-semibold">
+                    <p className="text-foreground truncate text-xs font-semibold">
                       {s.summary?.headline ?? s.project_root.split(/[\\/]/).pop()}
                     </p>
                   </div>
-                  <p className="text-secondary-text mt-0.5 font-mono text-[10px]">
+                  <p className="text-muted-foreground mt-0.5 font-mono text-[10px]">
                     {s.event_count} events · {s.primary_language ?? "Unknown"} ·{" "}
                     {formatRelativeTime(s.last_event_at)}
                   </p>
                 </div>
-                <ArrowRight className="text-muted-foreground h-4 w-4 shrink-0" />
+                <ArrowRight className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
               </Link>
             ))}
-            <div className="p-4 text-center">
+            <div className="p-2.5 text-center">
               <Link
                 to="/history"
-                className="text-accent-color hover:text-accent-color/80 text-sm font-medium transition-colors"
+                className="text-primary font-mono text-xs font-medium transition-colors hover:underline"
               >
                 View all sessions →
               </Link>
@@ -472,27 +474,27 @@ export function PrimaryCanvas({ isDemo }: { isDemo: boolean }) {
   }
 
   return (
-    <div className="flex flex-col gap-6 lg:gap-8">
+    <div className="flex flex-col gap-4 lg:gap-5">
       {/* Today's Story (Hero Card) */}
       <DashboardSection title="Today's Story">
-        <div className="bg-card border-border hover:border-accent-color/30 group relative overflow-hidden rounded-xl border p-10 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md md:p-12">
-          <div className="bg-accent-color absolute bottom-0 left-0 top-0 w-[5px]" />
+        <div className="bg-card/70 border-border/80 hover:border-primary/40 shadow-xs group relative overflow-hidden rounded-lg border p-5 transition-all duration-200 sm:p-6">
+          <div className="bg-primary absolute bottom-0 left-0 top-0 w-[3px]" />
 
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="bg-accent-color/10 border-accent-color/20 text-accent-color rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider">
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="bg-primary/10 border-primary/25 text-primary rounded-md border px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider">
                 Today&apos;s Headline
               </span>
-              <span className="text-secondary-text font-mono text-xs">
+              <span className="text-muted-foreground font-mono text-xs">
                 Based on 27 commits & file evolution logs
               </span>
             </div>
 
-            <div className="flex flex-col gap-4">
-              <h3 className="text-primary-text selection:bg-selection-color max-w-4xl text-2xl font-extrabold leading-tight tracking-tight md:text-3xl lg:text-4xl">
+            <div className="flex flex-col gap-1.5">
+              <h3 className="text-foreground max-w-3xl text-base font-bold leading-snug tracking-tight sm:text-lg">
                 {demoStory.headline}
               </h3>
-              <p className="text-secondary-text selection:bg-selection-color mt-2 max-w-4xl text-base leading-relaxed md:text-lg">
+              <p className="text-muted-foreground max-w-3xl text-xs leading-relaxed sm:text-sm">
                 {demoStory.narrative}
               </p>
             </div>
@@ -502,36 +504,36 @@ export function PrimaryCanvas({ isDemo }: { isDemo: boolean }) {
 
       {/* Current Session */}
       <DashboardSection title="Current Session">
-        <div className="bg-card border-border hover:border-accent-color/30 cursor-pointer rounded-xl border p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-          <div className="flex flex-col gap-5">
-            <div className="flex items-start justify-between">
+        <div className="bg-card/60 border-border/80 hover:border-border shadow-xs cursor-pointer rounded-lg border p-4 transition-all duration-150">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="text-primary-text text-base font-semibold">
+                <h3 className="text-foreground text-sm font-semibold">
                   Active Session in {demoSession.projectName}
                 </h3>
-                <p className="text-secondary-text mt-1 text-xs">
+                <p className="text-muted-foreground mt-0.5 text-xs">
                   Passive monitoring running in workspace directory
                 </p>
               </div>
-              <span className="bg-observation-color/10 text-observation-color border-observation-color/20 animate-pulse rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+              <span className="bg-primary/10 text-primary border-primary/25 animate-pulse rounded-md border px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider">
                 {demoSession.status}
               </span>
             </div>
 
-            <div className="border-border grid grid-cols-2 gap-4 border-t pt-4">
+            <div className="border-border/50 grid grid-cols-2 gap-3 border-t pt-3">
               <div>
-                <span className="text-secondary-text block text-[10px] font-semibold uppercase tracking-wider">
+                <span className="text-muted-foreground block font-mono text-[10px] font-semibold uppercase tracking-wider">
                   Language
                 </span>
-                <span className="text-primary-text mt-1 block font-mono text-sm font-semibold">
+                <span className="text-foreground mt-0.5 block font-mono text-xs font-semibold">
                   {demoSession.primaryLanguage}
                 </span>
               </div>
               <div>
-                <span className="text-secondary-text block text-[10px] font-semibold uppercase tracking-wider">
+                <span className="text-muted-foreground block font-mono text-[10px] font-semibold uppercase tracking-wider">
                   Elapsed Duration
                 </span>
-                <span className="text-primary-text mt-1 block text-sm font-semibold">
+                <span className="text-foreground mt-0.5 block font-mono text-xs font-semibold tabular-nums">
                   {demoSession.durationMinutes} minutes
                 </span>
               </div>
@@ -542,26 +544,26 @@ export function PrimaryCanvas({ isDemo }: { isDemo: boolean }) {
 
       {/* Timeline Preview (Development Journey) */}
       <DashboardSection title="Timeline Preview">
-        <div className="bg-card border-border hover:border-accent-color/20 rounded-xl border p-6 shadow-sm transition-all duration-200">
-          <p className="text-secondary-text mb-6 text-xs leading-relaxed">
+        <div className="bg-card/60 border-border/80 shadow-xs rounded-lg border p-4 transition-all duration-150 sm:p-5">
+          <p className="text-muted-foreground mb-4 text-xs leading-relaxed">
             {"The story of software being created. A summary of today's work sessions."}
           </p>
 
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-6">
             {/* Morning Session Group */}
-            <div className="relative pl-6">
-              <div className="border-border absolute bottom-0 left-[7px] top-2 border-l-2" />
+            <div className="relative pl-5">
+              <div className="border-border/80 absolute bottom-0 left-[6px] top-2 border-l" />
 
-              <div className="mb-3 flex items-center gap-2">
-                <span className="bg-muted-color/60 text-secondary-text border-border rounded border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider">
+              <div className="mb-2 flex items-center gap-2">
+                <span className="bg-secondary/60 text-muted-foreground border-border/70 rounded-md border px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-wider">
                   09:00 - 11:00
                 </span>
-                <h4 className="text-primary-text text-xs font-bold uppercase tracking-wide">
+                <h4 className="text-foreground font-mono text-[11px] font-semibold uppercase tracking-wide">
                   Morning Setup & Daemon Initialization
                 </h4>
               </div>
 
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
                 {demoTimeline.slice(0, 3).map((item) => (
                   <TimelineItem key={item.id} item={item} />
                 ))}
@@ -569,19 +571,19 @@ export function PrimaryCanvas({ isDemo }: { isDemo: boolean }) {
             </div>
 
             {/* Midday Session Group */}
-            <div className="relative pl-6">
-              <div className="border-border absolute bottom-0 left-[7px] top-2 border-l-2" />
+            <div className="relative pl-5">
+              <div className="border-border/80 absolute bottom-0 left-[6px] top-2 border-l" />
 
-              <div className="mb-3 flex items-center gap-2">
-                <span className="bg-muted-color/60 text-secondary-text border-border rounded border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider">
+              <div className="mb-2 flex items-center gap-2">
+                <span className="bg-secondary/60 text-muted-foreground border-border/70 rounded-md border px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-wider">
                   11:00 - 13:00
                 </span>
-                <h4 className="text-primary-text text-xs font-bold uppercase tracking-wide">
+                <h4 className="text-foreground font-mono text-[11px] font-semibold uppercase tracking-wide">
                   Midday Pipeline Refactoring
                 </h4>
               </div>
 
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
                 {demoTimeline.slice(3, 6).map((item) => (
                   <TimelineItem key={item.id} item={item} />
                 ))}
@@ -589,17 +591,17 @@ export function PrimaryCanvas({ isDemo }: { isDemo: boolean }) {
             </div>
 
             {/* Afternoon Session Group */}
-            <div className="relative pl-6">
-              <div className="mb-3 flex items-center gap-2">
-                <span className="bg-muted-color/60 text-secondary-text border-border rounded border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider">
+            <div className="relative pl-5">
+              <div className="mb-2 flex items-center gap-2">
+                <span className="bg-secondary/60 text-muted-foreground border-border/70 rounded-md border px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-wider">
                   13:00 - 14:00
                 </span>
-                <h4 className="text-primary-text text-xs font-bold uppercase tracking-wide">
+                <h4 className="text-foreground font-mono text-[11px] font-semibold uppercase tracking-wide">
                   Afternoon Validation & Signing Off
                 </h4>
               </div>
 
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
                 {demoTimeline.slice(6).map((item) => (
                   <TimelineItem key={item.id} item={item} />
                 ))}
@@ -611,26 +613,26 @@ export function PrimaryCanvas({ isDemo }: { isDemo: boolean }) {
 
       {/* Today's Milestones */}
       <DashboardSection title="Today's Milestones">
-        <div className="bg-card border-border hover:border-accent-color/30 cursor-pointer rounded-xl border p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-          <div className="flex flex-col gap-4">
+        <div className="bg-card/60 border-border/80 shadow-xs rounded-lg border p-4 transition-all duration-150 sm:p-5">
+          <div className="flex flex-col gap-3">
             {demoMilestones.map((milestone) => (
               <div
                 key={milestone.id}
-                className="border-border flex items-start gap-3 border-b pb-3.5 last:border-0 last:pb-0"
+                className="border-border/50 flex items-start gap-2.5 border-b pb-2.5 last:border-0 last:pb-0"
               >
-                <div className="text-success-color bg-success-color/10 mt-0.5 rounded-full p-1">
-                  <CheckCircle className="h-4 w-4 shrink-0" />
+                <div className="mt-0.5 rounded-md border border-emerald-500/20 bg-emerald-500/10 p-1 text-emerald-400">
+                  <CheckCircle className="h-3.5 w-3.5 shrink-0" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-4">
-                    <h4 className="text-primary-text truncate text-sm font-semibold">
+                  <div className="flex items-center justify-between gap-3">
+                    <h4 className="text-foreground truncate text-xs font-semibold">
                       {milestone.title}
                     </h4>
-                    <span className="text-muted-foreground font-mono text-[10px]">
+                    <span className="text-muted-foreground font-mono text-[10px] tabular-nums">
                       {milestone.time}
                     </span>
                   </div>
-                  <p className="text-secondary-text mt-1 text-xs leading-relaxed">
+                  <p className="text-muted-foreground mt-0.5 text-[11px] leading-relaxed">
                     {milestone.description}
                   </p>
                 </div>
@@ -644,31 +646,31 @@ export function PrimaryCanvas({ isDemo }: { isDemo: boolean }) {
       <DashboardSection title="Projects">
         <div
           data-tour="workspace-projects"
-          className="bg-card border-border hover:border-accent-color/20 rounded-xl border p-6 shadow-sm transition-all duration-200"
+          className="bg-card/60 border-border/80 shadow-xs rounded-lg border p-4 transition-all duration-150 sm:p-5"
         >
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
             {demoProjects.map((project) => {
               return (
                 <Link
                   key={project.id}
                   to={`/projects/${project.id}`}
-                  className="bg-muted-color/30 border-border hover:border-accent-color/30 group flex cursor-pointer flex-col justify-between rounded-xl border p-4 transition-all duration-200 hover:shadow-sm"
+                  className="bg-secondary/30 border-border/70 hover:border-primary/40 hover:bg-secondary/60 group flex cursor-pointer flex-col justify-between rounded-md border p-3 transition-all duration-150"
                 >
                   <div>
-                    <h4 className="text-primary-text group-hover:text-accent-color text-sm font-semibold transition-colors">
+                    <h4 className="text-foreground group-hover:text-primary truncate text-xs font-semibold transition-colors">
                       {project.display_name}
                     </h4>
                     <p
-                      className="text-secondary-text selection:bg-selection-color mt-1.5 truncate font-mono text-[10px]"
+                      className="text-muted-foreground mt-1 truncate font-mono text-[10px]"
                       title={project.root_path}
                     >
                       {project.root_path}
                     </p>
                   </div>
 
-                  <div className="border-border text-secondary-text mt-6 flex items-center justify-between border-t pt-3 text-[10px]">
-                    <span>Last active</span>
-                    <span className="text-primary-text font-medium">
+                  <div className="border-border/50 text-muted-foreground mt-4 flex items-center justify-between border-t pt-2 text-[10px]">
+                    <span className="font-mono">Last active</span>
+                    <span className="text-foreground font-mono tabular-nums">
                       {new Date(project.updated_at).toLocaleDateString(undefined, {
                         month: "short",
                         day: "numeric",
@@ -692,49 +694,49 @@ export function PrimaryCanvas({ isDemo }: { isDemo: boolean }) {
  */
 function TimelineItem({ item }: { item: (typeof demoTimeline)[0] }) {
   let TypeIcon = Terminal;
-  let dotBg = "bg-muted-color border-border text-secondary-text";
-  let badgeStyles = "bg-muted-color text-secondary-text border-border";
+  let dotBg = "bg-secondary border-border/70 text-muted-foreground";
+  let badgeStyles = "bg-secondary/60 text-muted-foreground border-border/70";
 
   if (item.type === "code") {
     TypeIcon = Code;
-    dotBg = "bg-accent-color/10 border-accent-color/20 text-accent-color";
-    badgeStyles = "bg-accent-color/10 text-accent-color border-accent-color/20";
+    dotBg = "bg-primary/10 border-primary/25 text-primary";
+    badgeStyles = "bg-primary/10 text-primary border-primary/25";
   } else if (item.type === "test") {
     TypeIcon = CheckCircle2;
-    dotBg = "bg-success-color/10 border-success-color/20 text-success-color";
-    badgeStyles = "bg-success-color/10 text-success-color border-success-color/20";
+    dotBg = "bg-emerald-500/10 border-emerald-500/25 text-emerald-400";
+    badgeStyles = "bg-emerald-500/10 text-emerald-400 border-emerald-500/25";
   } else if (item.type === "docs") {
     TypeIcon = FileText;
-    dotBg = "bg-warning-color/10 border-warning-color/20 text-warning-color";
-    badgeStyles = "bg-warning-color/10 text-warning-color border-warning-color/20";
+    dotBg = "bg-amber-500/10 border-amber-500/25 text-amber-400";
+    badgeStyles = "bg-amber-500/10 text-amber-400 border-amber-500/25";
   }
 
   return (
-    <div className="hover:bg-muted-color/20 group relative flex items-start gap-4 rounded-lg p-3.5 transition-all duration-200">
+    <div className="hover:bg-muted/30 group relative flex items-start gap-3 rounded-md p-2.5 transition-all duration-150">
       {/* Node point visual indicator */}
       <div
-        className={`h-4.5 w-4.5 bg-background absolute -left-[25px] top-[18px] flex items-center justify-center rounded-full border transition-transform duration-200 group-hover:scale-110 ${dotBg}`}
+        className={`bg-background absolute -left-[20px] top-[14px] flex h-3.5 w-3.5 items-center justify-center rounded-full border transition-transform duration-150 group-hover:scale-110 ${dotBg}`}
       >
-        <span className="h-1.5 w-1.5 rounded-full bg-current" />
+        <span className="h-1 w-1 rounded-full bg-current" />
       </div>
 
-      <span className="text-secondary-text w-12 shrink-0 select-none pt-0.5 font-mono text-xs">
+      <span className="text-muted-foreground w-11 shrink-0 select-none pt-0.5 font-mono text-[11px] tabular-nums">
         {item.timestamp}
       </span>
       <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <TypeIcon className="text-secondary-text h-3.5 w-3.5 shrink-0" />
-          <span className="text-primary-text group-hover:text-accent-color truncate text-sm font-semibold transition-colors">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <TypeIcon className="text-muted-foreground h-3 w-3 shrink-0" />
+          <span className="text-foreground group-hover:text-primary truncate text-xs font-semibold transition-colors">
             {item.title}
           </span>
           <span
-            className={`py-0.2 select-none rounded border px-1.5 text-[8px] font-bold uppercase tracking-wider ${badgeStyles}`}
+            className={`py-0.2 select-none rounded border px-1 font-mono text-[8px] font-medium uppercase tracking-wider ${badgeStyles}`}
           >
             {item.type}
           </span>
         </div>
         {item.description && (
-          <p className="text-secondary-text mt-1.5 max-w-2xl text-xs leading-relaxed">
+          <p className="text-muted-foreground mt-0.5 max-w-2xl text-[11px] leading-relaxed">
             {item.description}
           </p>
         )}
@@ -751,47 +753,49 @@ function LiveSecondaryRail() {
   const wsConnected = connectionStatus === "open";
 
   return (
-    <aside className="flex flex-col gap-6 lg:gap-8">
+    <aside className="flex flex-col gap-4 lg:gap-5">
       <DashboardSection title="Daemon Status">
-        <div className="bg-card border-border rounded-xl border p-5 shadow-sm">
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-3">
+        <div className="bg-card/60 border-border/80 shadow-xs rounded-lg border p-3.5 sm:p-4">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2.5">
               <div
-                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${
                   wsConnected
-                    ? "bg-success-color/10 border-success-color/20 text-success-color animate-pulse border"
-                    : "bg-muted/30 text-muted-foreground border border-transparent"
+                    ? "animate-pulse border border-emerald-500/25 bg-emerald-500/10 text-emerald-400"
+                    : "bg-muted/40 text-muted-foreground border-border/60 border"
                 }`}
               >
-                <Activity className="h-4 w-4" />
+                <Activity className="h-3.5 w-3.5" />
               </div>
               <div>
-                <h4 className="text-primary-text text-sm font-semibold">
+                <h4 className="text-foreground text-xs font-semibold">
                   {wsConnected ? "Observing" : "Disconnected"}
                 </h4>
-                <p className="text-secondary-text text-[10px]">
+                <p className="text-muted-foreground text-[10px]">
                   {wsConnected ? "Passive telemetry active" : "Run `pnpm dev` to connect"}
                 </p>
               </div>
             </div>
 
             {session && (
-              <div className="bg-muted-color/30 border-border flex flex-col gap-2 rounded-lg border p-3 text-xs">
+              <div className="bg-secondary/30 border-border/70 flex flex-col gap-1.5 rounded-md border p-2.5 text-xs">
                 <div className="flex items-center justify-between">
-                  <span className="text-secondary-text">Events captured</span>
-                  <span className="text-primary-text font-semibold">{session.event_count}</span>
+                  <span className="text-muted-foreground text-[11px]">Events captured</span>
+                  <span className="text-foreground font-mono text-xs font-semibold tabular-nums">
+                    {session.event_count}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-secondary-text">Language</span>
-                  <span className="text-primary-text font-semibold">
+                  <span className="text-muted-foreground text-[11px]">Language</span>
+                  <span className="text-foreground font-mono text-xs font-semibold">
                     {session.primary_language ?? "—"}
                   </span>
                 </div>
-                <div className="border-border border-t pt-2">
-                  <span className="text-secondary-text block text-[9px] font-semibold uppercase tracking-wider">
+                <div className="border-border/50 border-t pt-1.5">
+                  <span className="text-muted-foreground block font-mono text-[9px] font-semibold uppercase tracking-wider">
                     Observed Path
                   </span>
-                  <span className="text-primary-text mt-1 block truncate font-mono text-[10px]">
+                  <span className="text-foreground mt-0.5 block truncate font-mono text-[10px]">
                     {session.project_root}
                   </span>
                 </div>
@@ -802,7 +806,7 @@ function LiveSecondaryRail() {
       </DashboardSection>
 
       <DashboardSection title="Quick Links">
-        <div className="bg-card border-border flex flex-col divide-y rounded-xl border shadow-sm">
+        <div className="bg-card/60 border-border/80 divide-border/60 shadow-xs flex flex-col divide-y rounded-lg border">
           {(
             [
               { label: "View All Projects", to: "/projects", icon: FolderKanban },
@@ -813,13 +817,13 @@ function LiveSecondaryRail() {
             <Link
               key={to}
               to={to}
-              className="hover:bg-muted/30 flex items-center justify-between gap-3 px-4 py-3 text-sm transition-colors first:rounded-t-xl last:rounded-b-xl"
+              className="hover:bg-muted/40 flex items-center justify-between gap-3 px-3 py-2.5 text-xs transition-colors first:rounded-t-lg last:rounded-b-lg"
             >
-              <div className="flex items-center gap-3">
-                <Icon className="text-muted-foreground h-4 w-4" />
-                <span className="text-primary-text font-medium">{label}</span>
+              <div className="flex items-center gap-2.5">
+                <Icon className="text-muted-foreground h-3.5 w-3.5" />
+                <span className="text-foreground font-medium">{label}</span>
               </div>
-              <ArrowRight className="text-muted-foreground h-3.5 w-3.5" />
+              <ArrowRight className="text-muted-foreground h-3 w-3" />
             </Link>
           ))}
         </div>
@@ -837,40 +841,42 @@ export function SecondaryRail({ isDemo }: { isDemo: boolean }) {
   }
 
   return (
-    <aside className="flex flex-col gap-6 lg:gap-8">
+    <aside className="flex flex-col gap-4 lg:gap-5">
       {/* Observation Status */}
       <DashboardSection title="Observation Status">
-        <div className="bg-card border-border hover:border-accent-color/20 overflow-hidden rounded-xl border p-5 shadow-sm transition-all duration-300">
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-3">
-              <div className="bg-success-color/10 border-success-color/20 text-success-color flex h-8 w-8 shrink-0 animate-pulse items-center justify-center rounded-lg border">
-                <Activity className="h-4 w-4" />
+        <div className="bg-card/60 border-border/80 shadow-xs overflow-hidden rounded-lg border p-3.5 transition-all duration-200 sm:p-4">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-7 w-7 shrink-0 animate-pulse items-center justify-center rounded-md border border-emerald-500/25 bg-emerald-500/10 text-emerald-400">
+                <Activity className="h-3.5 w-3.5" />
               </div>
               <div>
-                <h4 className="text-primary-text text-sm font-semibold">Active Observability</h4>
-                <p className="text-secondary-text text-[10px]">
+                <h4 className="text-foreground text-xs font-semibold">Active Observability</h4>
+                <p className="text-muted-foreground text-[10px]">
                   Passive filesystem telemetry stream running
                 </p>
               </div>
             </div>
 
-            <div className="bg-muted-color/30 border-border flex flex-col gap-2.5 rounded-lg border p-3 text-xs">
+            <div className="bg-secondary/30 border-border/70 flex flex-col gap-2 rounded-md border p-2.5 text-xs">
               <div className="flex items-center justify-between">
-                <span className="text-secondary-text">Telemetry Daemon</span>
-                <span className="text-success-color flex items-center gap-1 font-semibold">
-                  <span className="bg-success-color h-1.5 w-1.5 rounded-full" />
+                <span className="text-muted-foreground text-[11px]">Telemetry Daemon</span>
+                <span className="flex items-center gap-1 font-mono text-xs font-semibold text-emerald-400">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                   Connected
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-secondary-text">File Watchers</span>
-                <span className="text-primary-text font-medium">3 active tasks</span>
+                <span className="text-muted-foreground text-[11px]">File Watchers</span>
+                <span className="text-foreground font-mono text-xs font-medium">
+                  3 active tasks
+                </span>
               </div>
-              <div className="border-border border-t pt-2.5">
-                <span className="text-secondary-text block text-[9px] font-semibold uppercase tracking-wider">
+              <div className="border-border/50 border-t pt-2">
+                <span className="text-muted-foreground block font-mono text-[9px] font-semibold uppercase tracking-wider">
                   Observed Path
                 </span>
-                <span className="text-primary-text selection:bg-selection-color mt-1 block truncate font-mono text-[10px]">
+                <span className="text-foreground mt-0.5 block truncate font-mono text-[10px]">
                   {demoObservation.workspacePath}
                 </span>
               </div>
@@ -881,17 +887,18 @@ export function SecondaryRail({ isDemo }: { isDemo: boolean }) {
 
       {/* Focus */}
       <DashboardSection title="Focus">
-        <div className="bg-card border-border hover:border-accent-color/20 rounded-xl border p-5 shadow-sm transition-all duration-300">
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-2.5">
-              <div className="bg-accent-color/10 text-accent-color flex h-7 w-7 items-center justify-center rounded-lg">
-                <Layers className="h-4 w-4" />
+        <div className="bg-card/60 border-border/80 shadow-xs rounded-lg border p-3.5 transition-all duration-200 sm:p-4">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <div className="bg-primary/10 text-primary flex h-6 w-6 items-center justify-center rounded-md">
+                <Layers className="h-3.5 w-3.5" />
               </div>
-              <h4 className="text-primary-text text-sm font-semibold">Active Focus Rhythm</h4>
+              <h4 className="text-foreground text-xs font-semibold">Active Focus Rhythm</h4>
             </div>
-            <p className="text-secondary-text text-xs leading-relaxed">
-              Continuous focus: <span className="text-primary-text font-medium">4 hours</span>.
-              Focus rhythm is currently optimal for deep architecture improvements.
+            <p className="text-muted-foreground text-[11px] leading-relaxed">
+              Continuous focus:{" "}
+              <span className="text-foreground font-mono font-medium">4 hours</span>. Focus rhythm
+              is currently optimal for deep architecture improvements.
             </p>
           </div>
         </div>
@@ -899,22 +906,22 @@ export function SecondaryRail({ isDemo }: { isDemo: boolean }) {
 
       {/* Today's Reflection */}
       <DashboardSection title="Today's Reflection">
-        <div className="bg-card border-border hover:border-accent-color/20 relative overflow-hidden rounded-xl border p-6 shadow-sm transition-all duration-300">
-          <div className="flex flex-col gap-6">
+        <div className="bg-card/60 border-border/80 shadow-xs rounded-lg border p-4 transition-all duration-200">
+          <div className="flex flex-col gap-3">
             {demoAiInsights.map((insight) => (
               <div
                 key={insight.id}
-                className="border-border/40 border-b pb-5 last:border-0 last:pb-0"
+                className="border-border/50 border-b pb-3 last:border-0 last:pb-0"
               >
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-primary-text text-sm font-semibold tracking-tight">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-foreground text-xs font-semibold tracking-tight">
                     {insight.headline}
                   </span>
-                  <span className="text-muted-foreground/60 shrink-0 font-mono text-[9px] uppercase tracking-wider">
+                  <span className="text-muted-foreground/80 shrink-0 font-mono text-[9px] uppercase tracking-wider">
                     {insight.category.toLowerCase().replace("_", " ")}
                   </span>
                 </div>
-                <p className="text-secondary-text/95 selection:bg-selection-color mt-2.5 font-serif text-[13px] italic leading-relaxed">
+                <p className="text-muted-foreground/90 mt-1.5 font-serif text-xs italic leading-relaxed">
                   &ldquo;{insight.text}&rdquo;
                 </p>
               </div>
@@ -936,8 +943,8 @@ interface DashboardSectionProps {
  */
 export function DashboardSection({ title, children }: DashboardSectionProps) {
   return (
-    <section className="flex flex-col gap-2">
-      <h2 className="text-secondary-text text-xs font-semibold uppercase tracking-wider">
+    <section className="flex flex-col gap-1.5">
+      <h2 className="text-muted-foreground font-mono text-[10px] font-semibold uppercase tracking-wider">
         {title}
       </h2>
       {children}

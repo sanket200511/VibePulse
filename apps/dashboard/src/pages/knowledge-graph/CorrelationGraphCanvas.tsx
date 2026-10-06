@@ -711,43 +711,43 @@ export function CorrelationGraphCanvas({
       ref={wrapperRef}
       className={
         isFullscreen
-          ? "fixed inset-0 z-50 flex h-screen w-screen flex-col overflow-hidden bg-gray-950 transition-all duration-200"
-          : "relative h-[560px] w-full overflow-hidden rounded-2xl border border-gray-800 bg-gray-950 shadow-2xl backdrop-blur-md"
+          ? "bg-background fixed inset-0 z-50 flex h-screen w-screen flex-col overflow-hidden transition-all duration-200"
+          : "border-border/80 bg-card/60 relative h-[560px] w-full overflow-hidden rounded-lg border shadow-sm backdrop-blur-md"
       }
     >
       {/* ── TOP OVERLAY STRIP ──────────────────────────────────────────────── */}
-      <div className="absolute left-4 top-4 z-20 flex flex-wrap items-center gap-2">
+      <div className="absolute left-3 top-3 z-20 flex flex-wrap items-center gap-2">
         {/* Zoom, Center, Fit & Fullscreen Controls */}
-        <div className="flex items-center gap-1 rounded-xl border border-gray-800 bg-gray-900/90 p-1 shadow-lg backdrop-blur-md">
+        <div className="border-border/80 bg-background/90 flex items-center gap-0.5 rounded-md border p-0.5 shadow-sm backdrop-blur-md">
           <button
             onClick={() => setZoom((z) => Math.min(3.0, z + 0.2))}
             title="Zoom In (+ or Scroll Up)"
-            className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-800 hover:text-white"
+            className="text-muted-foreground hover:bg-secondary/60 hover:text-foreground rounded p-1 transition-colors"
           >
-            <ZoomIn className="h-4 w-4" />
+            <ZoomIn className="h-3.5 w-3.5" />
           </button>
           <button
             onClick={() => setZoom((z) => Math.max(0.3, z - 0.2))}
             title="Zoom Out (- or Scroll Down)"
-            className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-800 hover:text-white"
+            className="text-muted-foreground hover:bg-secondary/60 hover:text-foreground rounded p-1 transition-colors"
           >
-            <ZoomOut className="h-4 w-4" />
+            <ZoomOut className="h-3.5 w-3.5" />
           </button>
           <button
             onClick={fitVisibleGraph}
             title="Fit Graph to Screen (0 or Double-Click Canvas)"
-            className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-800 hover:text-white"
+            className="text-muted-foreground hover:bg-secondary/60 hover:text-foreground rounded p-1 transition-colors"
           >
-            <Maximize2 className="h-4 w-4" />
+            <Maximize2 className="h-3.5 w-3.5" />
           </button>
 
           {selectedNode && (
             <button
               onClick={() => centerOnNode(selectedNode.node_id)}
               title="Center on Selected Node (C)"
-              className="rounded-lg p-1.5 text-indigo-400 transition hover:bg-indigo-950 hover:text-indigo-200"
+              className="text-primary hover:bg-primary/10 hover:text-primary rounded p-1 transition-colors"
             >
-              <Compass className="h-4 w-4" />
+              <Compass className="h-3.5 w-3.5" />
             </button>
           )}
 
@@ -755,40 +755,44 @@ export function CorrelationGraphCanvas({
           <button
             onClick={toggleFullscreen}
             title={isFullscreen ? "Exit Fullscreen (Esc or F)" : "Enter Fullscreen Mode (F)"}
-            className={`rounded-lg p-1.5 transition ${
+            className={`rounded p-1 transition-colors ${
               isFullscreen
-                ? "bg-indigo-600/30 text-indigo-400 hover:bg-indigo-600/50 hover:text-white"
-                : "text-gray-400 hover:bg-gray-800 hover:text-white"
+                ? "bg-primary/20 text-primary hover:bg-primary/30 hover:text-foreground"
+                : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
             }`}
           >
-            {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+            {isFullscreen ? (
+              <Minimize className="h-3.5 w-3.5" />
+            ) : (
+              <Maximize className="h-3.5 w-3.5" />
+            )}
           </button>
 
-          <div className="border-l border-gray-800 px-2 font-mono text-[10px] text-gray-400">
+          <div className="border-border/80 text-muted-foreground border-l px-1.5 font-mono text-[10px] tabular-nums">
             {Math.round(zoom * 100)}%
           </div>
         </div>
 
         {/* Scope Pill */}
-        <div className="flex items-center gap-2 rounded-xl border border-gray-800 bg-gray-900/90 px-3 py-1.5 font-mono text-xs text-gray-300 shadow-lg backdrop-blur-md">
-          <span className="font-semibold text-gray-400">Neighborhood:</span>
-          <span className="font-bold text-indigo-400">
+        <div className="border-border/80 bg-background/90 text-muted-foreground flex items-center gap-1.5 rounded-md border px-2.5 py-1 font-mono text-[11px] shadow-sm backdrop-blur-md">
+          <span className="text-muted-foreground font-semibold">Neighborhood:</span>
+          <span className="text-primary font-bold tabular-nums">
             {visibleNodes.length} of {nodes.length} entities
           </span>
           {focusDepth < 4 && onDepthChange && (
             <button
               onClick={() => onDepthChange(focusDepth + 1)}
-              className="inline-flex items-center gap-1 rounded bg-indigo-600/80 px-2 py-0.5 text-[10px] font-bold text-white transition hover:bg-indigo-500"
+              className="bg-primary/20 text-primary hover:bg-primary/30 inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold transition"
             >
-              <Plus className="h-3 w-3" />
+              <Plus className="h-2.5 w-2.5" />
               Expand
             </button>
           )}
         </div>
 
         {/* Declutter / Category Filter Chips */}
-        <div className="flex items-center gap-1 rounded-xl border border-gray-800 bg-gray-900/90 p-1 font-mono text-[11px] shadow-lg backdrop-blur-md">
-          <div className="flex items-center gap-1 px-1.5 font-semibold text-gray-500">
+        <div className="border-border/80 bg-background/90 flex items-center gap-0.5 rounded-md border p-0.5 font-mono text-[11px] shadow-sm backdrop-blur-md">
+          <div className="text-muted-foreground flex items-center gap-1 px-1.5 font-semibold">
             <Filter className="h-3 w-3" />
             <span className="hidden sm:inline">Layer:</span>
           </div>
@@ -804,18 +808,18 @@ export function CorrelationGraphCanvas({
             <button
               key={cat.id}
               onClick={() => setActiveCategoryFilter(cat.id)}
-              className={`flex items-center gap-1 rounded-lg px-2 py-1 transition ${
+              className={`flex items-center gap-1 rounded px-2 py-0.5 transition-colors ${
                 activeCategoryFilter === cat.id
-                  ? "bg-indigo-600/80 font-semibold text-white shadow"
-                  : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+                  ? "bg-primary text-primary-foreground shadow-xs font-semibold"
+                  : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
               }`}
             >
               <span>{cat.label}</span>
               <span
-                className={`py-0.2 rounded-full px-1 text-[9px] ${
+                className={`rounded px-1 font-mono text-[9px] tabular-nums ${
                   activeCategoryFilter === cat.id
-                    ? "bg-indigo-800 text-indigo-100"
-                    : "bg-gray-800 text-gray-400"
+                    ? "bg-primary-foreground/20 text-primary-foreground"
+                    : "bg-secondary text-muted-foreground"
                 }`}
               >
                 {cat.count}
@@ -828,7 +832,7 @@ export function CorrelationGraphCanvas({
       {/* Traversal Mode Active Banner */}
       {traversalMode && (
         <div
-          className={`absolute right-4 top-4 z-20 flex items-center gap-2 rounded-xl border ${traversalTheme.badgeBorder} ${traversalTheme.badgeBg} px-3.5 py-1.5 shadow-lg backdrop-blur-md`}
+          className={`absolute right-3 top-3 z-20 flex items-center gap-2 rounded-md border ${traversalTheme.badgeBorder} ${traversalTheme.badgeBg} px-3 py-1 shadow-sm backdrop-blur-md`}
         >
           <div className={`h-2 w-2 animate-ping rounded-full ${traversalTheme.pingBg}`} />
           <span className={`text-xs font-semibold ${traversalTheme.badgeText} font-mono`}>
@@ -839,16 +843,16 @@ export function CorrelationGraphCanvas({
       )}
 
       {/* Gesture / Navigation Tip in Bottom Left */}
-      <div className="pointer-events-none absolute bottom-4 left-4 z-20 hidden items-center gap-2 rounded-lg border border-gray-800/80 bg-gray-950/80 px-3 py-1 font-mono text-[10px] text-gray-400 shadow backdrop-blur-md md:flex">
-        <Hand className="h-3 w-3 text-indigo-400" />
+      <div className="border-border/80 bg-background/90 text-muted-foreground pointer-events-none absolute bottom-3 left-3 z-20 hidden items-center gap-1.5 rounded-md border px-2.5 py-1 font-mono text-[10px] shadow-sm backdrop-blur-md md:flex">
+        <Hand className="text-primary h-3 w-3" />
         <span>Scroll to Zoom • Drag or Space+Drag to Pan • Double-click to Fit</span>
       </div>
 
       {/* Fullscreen Toast Prompt */}
       {isFullscreen && (
-        <div className="pointer-events-none absolute bottom-4 left-1/2 z-30 -translate-x-1/2 rounded-full border border-gray-800 bg-gray-900/80 px-4 py-1.5 font-mono text-xs text-gray-400 shadow-xl backdrop-blur-md">
-          Press <span className="font-bold text-indigo-300">Esc</span> or{" "}
-          <span className="font-bold text-indigo-300">F</span> to exit Fullscreen Mode
+        <div className="border-border/80 bg-background/90 text-muted-foreground pointer-events-none absolute bottom-3 left-1/2 z-30 -translate-x-1/2 rounded-md border px-3 py-1 font-mono text-xs shadow-lg backdrop-blur-md">
+          Press <span className="text-foreground font-bold">Esc</span> or{" "}
+          <span className="text-foreground font-bold">F</span> to exit Fullscreen Mode
         </div>
       )}
 
@@ -1081,11 +1085,19 @@ export function CorrelationGraphCanvas({
                     centerOnNode(node.node_id);
                   }}
                 >
-                  {(isNodeSelected || isTraversalNode) && (
+                  {(isNodeSelected ||
+                    isTraversalNode ||
+                    (focusDepth < 4 && node.node_id === activeAnchorId)) && (
                     <circle
                       r="22"
                       fill="none"
-                      stroke={isTraversalNode ? traversalTheme.color : "#818cf8"}
+                      stroke={
+                        isTraversalNode
+                          ? traversalTheme.color
+                          : isNodeSelected
+                            ? "#818cf8"
+                            : "#38bdf8"
+                      }
                       strokeWidth="2.5"
                       strokeDasharray="4 2"
                       filter="url(#anchor-glow)"

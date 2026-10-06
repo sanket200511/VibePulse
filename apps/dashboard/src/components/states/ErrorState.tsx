@@ -18,7 +18,7 @@ export function ErrorState({ message, className }: ErrorStateProps) {
     <div
       role="alert"
       className={cn(
-        "border-destructive/30 bg-destructive/5 text-destructive rounded-[12px] border p-8 text-center text-sm",
+        "border-destructive/30 bg-destructive/10 text-destructive rounded-md border p-4 text-center font-mono text-xs leading-relaxed",
         className,
       )}
     >

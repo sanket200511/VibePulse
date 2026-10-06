@@ -169,15 +169,15 @@ export function EventAnalysisDetails({ eventId }: { eventId: string }) {
   }
 
   return (
-    <div className="bg-muted/30 border-border flex flex-col gap-6 border-t p-4">
+    <div className="border-border/80 bg-secondary/15 flex flex-col gap-4 border-t p-3.5">
       {/* Code Evolution Panel */}
       {observations.length > 0 && (
         <div>
-          <div className="mb-4 flex items-center gap-2">
-            <FileSignature className="text-muted-foreground h-4 w-4" />
-            <span className="text-sm font-medium">Code Evolution</span>
+          <div className="text-foreground mb-2 flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider">
+            <FileSignature className="text-primary h-3.5 w-3.5" />
+            <span>Code Evolution</span>
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1.5">
             {observations.map((obs, i) => {
               const meta = KIND_METADATA[obs.kind] || {
                 label: obs.kind,
@@ -189,14 +189,16 @@ export function EventAnalysisDetails({ eventId }: { eventId: string }) {
               return (
                 <div
                   key={i}
-                  className="border-border bg-background flex items-center gap-3 rounded border p-2"
+                  className="border-border/70 bg-card/60 flex items-center gap-2.5 rounded-md border p-2"
                 >
-                  <div className={`rounded-sm p-1.5 ${meta.bg} ${meta.color}`}>
+                  <div className={`rounded p-1 ${meta.bg} ${meta.color}`}>
                     <Icon className="h-3 w-3" />
                   </div>
                   <div className="flex flex-1 items-center justify-between">
-                    <span className="text-muted-foreground text-sm">{meta.label}</span>
-                    <span className="text-foreground font-mono text-sm">{obs.symbol}</span>
+                    <span className="text-muted-foreground font-mono text-xs">{meta.label}</span>
+                    <span className="text-foreground font-mono text-xs font-semibold">
+                      {obs.symbol}
+                    </span>
                   </div>
                 </div>
               );
@@ -207,21 +209,23 @@ export function EventAnalysisDetails({ eventId }: { eventId: string }) {
 
       {/* Security Findings Panel */}
       {securityFindings.length > 0 && (
-        <div className={observations.length > 0 ? "border-border border-t pt-4" : ""}>
-          <div className="mb-3 flex items-center gap-2">
-            <ShieldAlert className="h-4 w-4 text-rose-500" />
-            <span className="text-foreground text-sm font-semibold">Security Findings</span>
-            <span className="rounded-full border border-rose-500/20 bg-rose-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-rose-500">
+        <div className={observations.length > 0 ? "border-border/60 border-t pt-3" : ""}>
+          <div className="mb-2 flex items-center gap-2">
+            <ShieldAlert className="text-destructive h-3.5 w-3.5" />
+            <span className="text-foreground font-mono text-xs font-bold uppercase tracking-wider">
+              Security Findings
+            </span>
+            <span className="border-destructive/30 bg-destructive/10 text-destructive rounded-md border px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider">
               {securityFindings.length} {securityFindings.length === 1 ? "issue" : "issues"}
             </span>
           </div>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
             {securityFindings.map((finding, i) => (
               <div
                 key={i}
-                className="border-border bg-card overflow-hidden rounded-lg border shadow-sm"
+                className="border-border/80 bg-card/60 shadow-xs overflow-hidden rounded-md border"
               >
-                <div className="border-border flex flex-wrap items-center gap-2.5 border-b bg-rose-500/5 px-3.5 py-2.5">
+                <div className="border-border/60 bg-destructive/5 flex flex-wrap items-center gap-2 border-b px-3 py-2">
                   <Badge
                     variant={
                       finding.severity === "HIGH"
@@ -234,20 +238,20 @@ export function EventAnalysisDetails({ eventId }: { eventId: string }) {
                     {finding.severity}
                   </Badge>
                   {finding.rule_id && (
-                    <span className="bg-muted text-foreground border-border rounded border px-1.5 py-0.5 font-mono text-[11px] font-bold">
+                    <span className="border-border/80 bg-secondary/50 text-foreground rounded border px-1.5 py-0.5 font-mono text-[10px] font-bold">
                       {finding.rule_id}
                     </span>
                   )}
-                  <span className="text-foreground text-sm font-medium">{finding.title}</span>
-                  <span className="text-secondary-text ml-auto font-mono text-xs">
+                  <span className="text-foreground text-xs font-semibold">{finding.title}</span>
+                  <span className="text-muted-foreground ml-auto font-mono text-[11px]">
                     {finding.file}:{finding.line_number}
                   </span>
                 </div>
-                <div className="flex flex-col gap-2 p-3.5">
-                  <div className="bg-background text-foreground border-border whitespace-pre-wrap break-all rounded-md border p-2.5 font-mono text-xs">
+                <div className="flex flex-col gap-1.5 p-3">
+                  <div className="border-border/70 bg-background text-destructive/90 whitespace-pre-wrap break-all rounded-md border p-2 font-mono text-xs">
                     {finding.evidence || finding.redacted_evidence || finding.symbol}
                   </div>
-                  <p className="text-secondary-text text-[11px] leading-relaxed">
+                  <p className="text-muted-foreground text-[11px] leading-relaxed">
                     {finding.description ||
                       "Credential-like value detected. Secret is masked to prevent credential leakage."}
                   </p>

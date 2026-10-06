@@ -20,11 +20,11 @@ export function LoadingState({ label, className }: LoadingStateProps) {
       role="status"
       aria-live="polite"
       aria-label={label}
-      className={cn("flex flex-col gap-3 p-8", className)}
+      className={cn("flex flex-col gap-2 p-4 sm:p-6", className)}
     >
       <div aria-hidden="true" className="flex flex-col gap-2">
-        <div className="bg-muted h-4 w-1/3 animate-pulse rounded-[8px]" />
-        <div className="bg-muted h-20 w-full animate-pulse rounded-[12px]" />
+        <div className="bg-muted/60 h-3.5 w-1/4 animate-pulse rounded-md" />
+        <div className="bg-muted/40 border-border/40 h-16 w-full animate-pulse rounded-md border" />
       </div>
     </div>
   );

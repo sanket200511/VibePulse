@@ -49,17 +49,17 @@ export function TimelineEntryRow({ entry }: TimelineEntryRowProps) {
     const Icon = kind ? MARKER_ICON[kind as keyof typeof MARKER_ICON] : Terminal;
 
     return (
-      <li className="group relative flex items-center gap-6 py-5 transition-all duration-200">
-        <span className="text-secondary-text w-12 shrink-0 text-right font-mono text-[10px] tabular-nums">
+      <li className="group relative flex items-center gap-4 py-3 transition-colors">
+        <span className="text-muted-foreground w-12 shrink-0 text-right font-mono text-[10px] tabular-nums">
           {formatReplayTime(entry.metadata.timestamp)}
         </span>
-        <div className="bg-accent-color/10 border-background relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 shadow-sm">
-          <Icon className="text-accent-color h-4 w-4" />
+        <div className="border-primary/30 bg-primary/10 text-primary shadow-xs relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border">
+          <Icon className="h-3 w-3" />
         </div>
         <div className="flex flex-col">
-          <span className="text-primary-text text-sm font-bold">{label}</span>
+          <span className="text-foreground text-xs font-semibold">{label}</span>
           {entry.metadata.marker_detail && (
-            <span className="text-secondary-text mt-0.5 text-xs">
+            <span className="text-muted-foreground font-mono text-[11px]">
               {entry.metadata.marker_detail}
             </span>
           )}
@@ -76,52 +76,52 @@ export function TimelineEntryRow({ entry }: TimelineEntryRowProps) {
   const findingCount = Object.keys(entry.insights.analyzer_findings).length;
 
   const typeColors = {
-    FILE_CREATED: "text-success-color bg-success-color/10 border-success-color/30",
-    FILE_MODIFIED: "text-primary-text bg-muted-color border-border",
-    FILE_DELETED: "text-destructive bg-destructive/10 border-destructive/30",
+    FILE_CREATED: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+    FILE_MODIFIED: "text-foreground bg-secondary/40 border-border/80",
+    FILE_DELETED: "text-destructive bg-destructive/10 border-destructive/20",
   };
 
   const iconClass = entry.metadata.event_type
     ? typeColors[entry.metadata.event_type as keyof typeof typeColors] ||
-      "text-primary-text bg-muted-color border-border"
-    : "text-primary-text bg-muted-color border-border";
+      "text-foreground bg-secondary/40 border-border/80"
+    : "text-foreground bg-secondary/40 border-border/80";
 
   return (
-    <li className="hover:bg-muted-color/10 group relative -mx-2 flex items-center gap-6 rounded-lg px-2 py-3 transition-all duration-200">
-      <span className="text-secondary-text w-12 shrink-0 text-right font-mono text-[10px] tabular-nums opacity-60 transition-opacity group-hover:opacity-100">
+    <li className="hover:bg-secondary/30 group relative -mx-1.5 flex items-center gap-4 rounded-md px-2 py-2 transition-colors">
+      <span className="text-muted-foreground/70 group-hover:text-foreground w-12 shrink-0 text-right font-mono text-[10px] tabular-nums transition-colors">
         {formatReplayTime(entry.metadata.timestamp)}
       </span>
 
       <div
-        className={`border-background relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 shadow-sm ${iconClass}`}
+        className={`shadow-xs relative z-10 flex h-5 w-5 shrink-0 items-center justify-center rounded border ${iconClass}`}
         aria-hidden="true"
       >
         <IconComponent className="h-3 w-3" />
       </div>
 
-      <div className="flex min-w-0 flex-1 items-center justify-between gap-3">
-        <span className="text-primary-text group-hover:text-accent-color max-w-[50%] select-all truncate font-mono text-xs font-medium transition-colors">
+      <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
+        <span className="text-foreground group-hover:text-primary max-w-[55%] select-all truncate font-mono text-xs font-medium transition-colors">
           {fileName(entry.metadata.file_path)}
         </span>
 
-        <div className="ml-auto flex shrink-0 items-center gap-2">
+        <div className="ml-auto flex shrink-0 items-center gap-1.5">
           {entry.entry_kind === "GROUP" && entry.metadata.group_size > 1 && (
             <Badge
               variant="secondary"
-              className="bg-muted-color/60 text-secondary-text rounded-md px-1.5 py-0.5 text-[9px] font-bold"
+              className="bg-secondary/50 text-muted-foreground font-mono text-[9px] font-semibold"
             >
               {entry.metadata.group_size} modifications
             </Badge>
           )}
 
           {entry.metadata.language && (
-            <span className="bg-muted-color text-secondary-text border-border/50 select-none rounded-md border px-1.5 py-0.5 font-mono text-[9px]">
+            <span className="border-border/60 bg-secondary/40 text-muted-foreground rounded-md border px-1.5 py-0.5 font-mono text-[9px]">
               {entry.metadata.language}
             </span>
           )}
 
           {findingCount > 0 && (
-            <span className="bg-warning-color/15 text-warning-color border-warning-color/30 flex select-none items-center gap-1 rounded-md border px-2 py-0.5 text-[9px] font-bold">
+            <span className="flex select-none items-center gap-1 rounded-md border border-amber-500/20 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[9px] font-bold text-amber-400">
               <AlertTriangle className="h-2.5 w-2.5 shrink-0" />
               {findingCount} {findingCount === 1 ? "finding" : "findings"}
             </span>

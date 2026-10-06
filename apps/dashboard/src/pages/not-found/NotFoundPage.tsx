@@ -8,7 +8,7 @@ export function NotFoundPage() {
       <p className="text-muted-foreground text-sm">The page you are looking for does not exist.</p>
       <Link
         to="/"
-        className="bg-secondary text-secondary-foreground hover:bg-secondary/80 inline-flex h-9 items-center justify-center rounded-[12px] px-4 text-sm font-medium transition-colors"
+        className="border-border/80 bg-secondary/40 text-foreground hover:bg-secondary/60 inline-flex items-center justify-center rounded-md border px-3.5 py-1.5 text-xs font-medium transition-colors"
       >
         Go home
       </Link>

@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getApiBaseUrl } from "../../lib/api-config";
 import type {
   ProjectKnowledgeGraph,
   FileIntelligenceView,
@@ -10,7 +11,13 @@ import type {
   BeforeAfterComparisonResponse,
 } from "./types";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:5184";
+function getApiBase(): string {
+  try {
+    return getApiBaseUrl();
+  } catch {
+    return import.meta.env.VITE_API_URL || "http://127.0.0.1:5184";
+  }
+}
 
 export function useKnowledgeGraph(projectId?: string) {
   const queryClient = useQueryClient();
@@ -19,7 +26,7 @@ export function useKnowledgeGraph(projectId?: string) {
     queryKey: ["knowledge-graph", projectId],
     queryFn: async () => {
       if (!projectId) throw new Error("Missing projectId");
-      const res = await fetch(`${API_BASE}/api/projects/${projectId}/knowledge-graph`);
+      const res = await fetch(`${getApiBase()}/api/projects/${projectId}/knowledge-graph`);
       if (!res.ok) {
         throw new Error(`Failed to fetch knowledge graph: ${res.statusText}`);
       }
@@ -32,7 +39,7 @@ export function useKnowledgeGraph(projectId?: string) {
   const refreshMutation = useMutation({
     mutationFn: async () => {
       if (!projectId) throw new Error("Missing projectId");
-      const res = await fetch(`${API_BASE}/api/projects/${projectId}/knowledge-graph/refresh`, {
+      const res = await fetch(`${getApiBase()}/api/projects/${projectId}/knowledge-graph/refresh`, {
         method: "POST",
       });
       if (!res.ok) {
@@ -60,7 +67,7 @@ export function useEdgeExplanation(projectId?: string, relationshipId?: string |
     queryFn: async () => {
       if (!projectId || !relationshipId) throw new Error("Missing params");
       const res = await fetch(
-        `${API_BASE}/api/projects/${projectId}/knowledge-graph/edges/${encodeURIComponent(relationshipId)}/explain`,
+        `${getApiBase()}/api/projects/${projectId}/knowledge-graph/edges/${encodeURIComponent(relationshipId)}/explain`,
       );
       if (!res.ok) {
         throw new Error(`Failed to fetch edge explanation: ${res.statusText}`);
@@ -77,7 +84,7 @@ export function useRootCauseTraversal(projectId?: string, startNode?: string | n
     queryFn: async () => {
       if (!projectId || !startNode) throw new Error("Missing params");
       const res = await fetch(
-        `${API_BASE}/api/projects/${projectId}/knowledge-graph/trace/root-cause?start_node=${encodeURIComponent(startNode)}`,
+        `${getApiBase()}/api/projects/${projectId}/knowledge-graph/trace/root-cause?start_node=${encodeURIComponent(startNode)}`,
       );
       if (!res.ok) {
         throw new Error(`Failed to trace root cause: ${res.statusText}`);
@@ -94,7 +101,7 @@ export function useImpactTraversal(projectId?: string, startNode?: string | null
     queryFn: async () => {
       if (!projectId || !startNode) throw new Error("Missing params");
       const res = await fetch(
-        `${API_BASE}/api/projects/${projectId}/knowledge-graph/trace/impact?start_node=${encodeURIComponent(startNode)}`,
+        `${getApiBase()}/api/projects/${projectId}/knowledge-graph/trace/impact?start_node=${encodeURIComponent(startNode)}`,
       );
       if (!res.ok) {
         throw new Error(`Failed to trace impact: ${res.statusText}`);
@@ -110,7 +117,7 @@ export function useGraphTimeline(projectId?: string) {
     queryKey: ["graph-timeline", projectId],
     queryFn: async () => {
       if (!projectId) throw new Error("Missing projectId");
-      const res = await fetch(`${API_BASE}/api/projects/${projectId}/knowledge-graph/timeline`);
+      const res = await fetch(`${getApiBase()}/api/projects/${projectId}/knowledge-graph/timeline`);
       if (!res.ok) {
         throw new Error(`Failed to fetch timeline: ${res.statusText}`);
       }
@@ -125,7 +132,9 @@ export function useBeforeAfterComparison(projectId?: string) {
     queryKey: ["graph-before-after", projectId],
     queryFn: async () => {
       if (!projectId) throw new Error("Missing projectId");
-      const res = await fetch(`${API_BASE}/api/projects/${projectId}/knowledge-graph/before-after`);
+      const res = await fetch(
+        `${getApiBase()}/api/projects/${projectId}/knowledge-graph/before-after`,
+      );
       if (!res.ok) {
         throw new Error(`Failed to fetch before-after comparison: ${res.statusText}`);
       }
@@ -141,7 +150,7 @@ export function useFileIntelligence(projectId?: string, filePath?: string | null
     queryFn: async () => {
       if (!projectId || !filePath) throw new Error("Missing params");
       const res = await fetch(
-        `${API_BASE}/api/projects/${projectId}/knowledge-graph/files/${encodeURIComponent(filePath)}`,
+        `${getApiBase()}/api/projects/${projectId}/knowledge-graph/files/${encodeURIComponent(filePath)}`,
       );
       if (!res.ok) {
         throw new Error(`Failed to fetch file intelligence: ${res.statusText}`);
@@ -158,7 +167,7 @@ export function useSubsystemIntelligence(projectId?: string, subsystemName?: str
     queryFn: async () => {
       if (!projectId || !subsystemName) throw new Error("Missing params");
       const res = await fetch(
-        `${API_BASE}/api/projects/${projectId}/knowledge-graph/subsystems/${encodeURIComponent(subsystemName)}`,
+        `${getApiBase()}/api/projects/${projectId}/knowledge-graph/subsystems/${encodeURIComponent(subsystemName)}`,
       );
       if (!res.ok) {
         throw new Error(`Failed to fetch subsystem intelligence: ${res.statusText}`);
@@ -175,7 +184,7 @@ export function useGraphSearch(projectId?: string, query?: string) {
     queryFn: async () => {
       if (!projectId || !query || !query.trim()) return [];
       const res = await fetch(
-        `${API_BASE}/api/projects/${projectId}/knowledge-graph/search?q=${encodeURIComponent(query)}`,
+        `${getApiBase()}/api/projects/${projectId}/knowledge-graph/search?q=${encodeURIComponent(query)}`,
       );
       if (!res.ok) {
         throw new Error(`Failed to search knowledge graph: ${res.statusText}`);

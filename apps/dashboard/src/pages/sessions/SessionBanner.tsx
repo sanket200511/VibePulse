@@ -19,8 +19,8 @@ export function SessionBanner() {
 
   if (!session) {
     return (
-      <div className="border-border bg-card mb-6 rounded-[12px] border px-4 py-3">
-        <p className="text-muted-foreground text-sm">No active session yet.</p>
+      <div className="border-border/80 bg-card/60 mb-4 rounded-lg border px-3.5 py-2.5">
+        <p className="text-muted-foreground font-mono text-xs">No active session yet.</p>
       </div>
     );
   }
@@ -29,14 +29,20 @@ export function SessionBanner() {
   const minutes = Math.round(session.duration_seconds / 60);
 
   return (
-    <div className="border-border bg-card mb-6 flex items-center justify-between rounded-[12px] border px-4 py-3">
-      <div className="flex items-center gap-3">
+    <div className="border-border/80 bg-card/60 mb-4 flex items-center justify-between rounded-lg border px-3.5 py-2.5">
+      <div className="flex items-center gap-2.5">
         <Badge variant={status.variant}>{status.label}</Badge>
-        <span className="text-foreground text-sm font-medium">{session.project_root}</span>
+        <span className="text-foreground font-mono text-xs font-medium">
+          {session.project_root}
+        </span>
       </div>
-      <div className="text-muted-foreground flex items-center gap-4 text-sm">
-        <span>{session.event_count} events</span>
-        <span>{session.distinct_file_count} files</span>
+      <div className="text-muted-foreground flex items-center gap-3 font-mono text-xs">
+        <span>
+          <strong className="text-foreground">{session.event_count}</strong> events
+        </span>
+        <span>
+          <strong className="text-foreground">{session.distinct_file_count}</strong> files
+        </span>
         {session.primary_language && <span>{session.primary_language}</span>}
         <span>{minutes} min</span>
       </div>

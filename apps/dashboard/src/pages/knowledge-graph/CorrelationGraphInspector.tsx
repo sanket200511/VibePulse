@@ -99,22 +99,22 @@ export function CorrelationGraphInspector({
     const suggestedNodes = allNodes.slice(0, 4);
 
     return (
-      <div className="flex h-full flex-col justify-between rounded-2xl border border-gray-800 bg-gray-900/60 p-5 shadow-xl backdrop-blur-md">
+      <div className="border-border/80 bg-card/60 flex h-full flex-col justify-between rounded-lg border p-4 shadow-sm">
         <div>
-          <div className="flex items-center gap-2 border-b border-gray-800 pb-3">
-            <Info className="h-4 w-4 text-indigo-400" />
-            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-200">
+          <div className="border-border/60 flex items-center gap-2 border-b pb-2.5">
+            <Info className="text-primary h-3.5 w-3.5" />
+            <h4 className="text-foreground font-mono text-xs font-semibold uppercase tracking-wider">
               Intelligence Inspector
             </h4>
           </div>
-          <p className="mt-3 text-xs leading-relaxed text-gray-400">
+          <p className="text-muted-foreground mt-2.5 text-xs leading-relaxed">
             Select any entity on the canvas to inspect evidence, connected relationships, root cause
             traces, and downstream impacts.
           </p>
 
           {suggestedNodes.length > 0 && (
-            <div className="mt-4">
-              <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+            <div className="mt-3.5">
+              <div className="text-muted-foreground mb-2 font-mono text-[10px] font-semibold uppercase tracking-wider">
                 Quick Focus Entities
               </div>
               <div className="space-y-1.5">
@@ -122,13 +122,13 @@ export function CorrelationGraphInspector({
                   <button
                     key={n.node_id}
                     onClick={() => onSelectNode(n)}
-                    className="flex w-full items-center justify-between rounded-lg border border-gray-800 bg-gray-950 px-2.5 py-1.5 text-xs text-gray-300 transition hover:border-indigo-500 hover:text-white"
+                    className="border-border/80 bg-secondary/30 text-muted-foreground hover:border-primary/60 hover:text-foreground flex w-full items-center justify-between rounded-md border px-2 py-1.5 text-xs transition-colors"
                   >
                     <div className="flex items-center gap-2 truncate">
                       {getNodeIcon(n.node_type)}
-                      <span className="truncate font-mono">{n.label}</span>
+                      <span className="truncate font-mono text-[11px]">{n.label}</span>
                     </div>
-                    <ChevronRight className="h-3 w-3 text-gray-600" />
+                    <ChevronRight className="text-muted-foreground h-3 w-3" />
                   </button>
                 ))}
               </div>
@@ -136,7 +136,7 @@ export function CorrelationGraphInspector({
           )}
         </div>
 
-        <div className="border-t border-gray-800 pt-3 font-mono text-[11px] text-gray-500">
+        <div className="border-border/60 text-muted-foreground border-t pt-2.5 font-mono text-[10px]">
           DepRadar 2.0 Causal Surface
         </div>
       </div>
@@ -146,13 +146,13 @@ export function CorrelationGraphInspector({
   // ── STATE B: EDGE INSPECTION ──────────────────────────────────────────────
   if (selectedEdge) {
     return (
-      <div className="space-y-4 rounded-2xl border border-indigo-500/40 bg-gray-900/80 p-5 shadow-xl backdrop-blur-md">
-        <div className="flex items-center justify-between border-b border-gray-800 pb-3">
-          <span className="font-mono text-xs font-bold text-indigo-300">
+      <div className="border-border/80 bg-card/80 space-y-3 rounded-lg border p-4 shadow-sm">
+        <div className="border-border/60 flex items-center justify-between border-b pb-2.5">
+          <span className="text-primary font-mono text-xs font-semibold">
             {selectedEdge.relationship_type}
           </span>
           <span
-            className={`rounded border px-2 py-0.5 text-[10px] font-bold ${getProvenanceBadge(
+            className={`rounded px-1.5 py-0.5 font-mono text-[9px] font-bold ${getProvenanceBadge(
               selectedEdge.provenance,
             )}`}
           >
@@ -161,28 +161,28 @@ export function CorrelationGraphInspector({
         </div>
 
         <div>
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+          <div className="text-muted-foreground font-mono text-[10px] font-semibold uppercase tracking-wider">
             Relationship Label
           </div>
-          <div className="mt-1 text-xs font-semibold text-white">{selectedEdge.label}</div>
+          <div className="text-foreground mt-0.5 text-xs font-medium">{selectedEdge.label}</div>
         </div>
 
         {/* WHY THIS CONNECTION? */}
-        <div className="rounded-xl border border-indigo-500/30 bg-indigo-950/40 p-3.5">
-          <div className="mb-1 flex items-center gap-1.5 text-xs font-bold text-indigo-300">
-            <Zap className="h-3.5 w-3.5 text-indigo-400" />
+        <div className="border-border/80 bg-secondary/30 rounded-md border p-2.5">
+          <div className="text-primary mb-1 flex items-center gap-1.5 font-mono text-[11px] font-semibold">
+            <Zap className="text-primary h-3.5 w-3.5" />
             WHY THIS CONNECTION?
           </div>
-          <div className="text-xs leading-relaxed text-gray-200">
+          <div className="text-foreground text-xs leading-relaxed">
             {edgeExplain?.reason ||
               selectedEdge.reason ||
-              "Relationship established from verified PostgreSQL telemetry."}
+              "Relationship established from verified telemetry."}
           </div>
         </div>
 
         {/* Evidence References */}
         <div>
-          <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+          <div className="text-muted-foreground mb-1.5 font-mono text-[10px] font-semibold uppercase tracking-wider">
             Grounded Telemetry References
           </div>
           {selectedEdge.evidence_references && selectedEdge.evidence_references.length > 0 ? (
@@ -190,7 +190,7 @@ export function CorrelationGraphInspector({
               {selectedEdge.evidence_references.map((ev, idx) => (
                 <span
                   key={idx}
-                  className="inline-flex items-center gap-1 rounded-md border border-gray-800 bg-gray-950 px-2 py-1 font-mono text-[10px] text-emerald-400"
+                  className="border-border/60 bg-secondary/30 inline-flex items-center gap-1 rounded border px-1.5 py-0.5 font-mono text-[10px] text-emerald-400"
                 >
                   <ShieldCheck className="h-3 w-3 text-emerald-400" />
                   {ev}
@@ -198,27 +198,27 @@ export function CorrelationGraphInspector({
               ))}
             </div>
           ) : (
-            <div className="text-xs italic text-gray-500">
+            <div className="text-muted-foreground text-xs italic">
               Direct structural relationship in project schema.
             </div>
           )}
         </div>
 
         {/* Actions */}
-        <div className="space-y-2 border-t border-gray-800 pt-3">
+        <div className="border-border/60 space-y-1.5 border-t pt-2.5">
           <button
             onClick={() => onFocusNode(selectedEdge.source_node_id)}
-            className="flex w-full items-center justify-between rounded-lg border border-gray-800 bg-gray-950 px-3 py-2 text-xs font-semibold text-gray-200 transition hover:border-indigo-500 hover:text-white"
+            className="border-border/80 bg-secondary/40 text-foreground hover:bg-secondary flex w-full items-center justify-between rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors"
           >
-            <span>Focus Source: {selectedEdge.source_node_id}</span>
-            <ChevronRight className="h-3.5 w-3.5 text-gray-500" />
+            <span className="truncate">Focus Source: {selectedEdge.source_node_id}</span>
+            <ChevronRight className="text-muted-foreground h-3.5 w-3.5" />
           </button>
           <button
             onClick={() => onFocusNode(selectedEdge.target_node_id)}
-            className="flex w-full items-center justify-between rounded-lg border border-gray-800 bg-gray-950 px-3 py-2 text-xs font-semibold text-gray-200 transition hover:border-indigo-500 hover:text-white"
+            className="border-border/80 bg-secondary/40 text-foreground hover:bg-secondary flex w-full items-center justify-between rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors"
           >
-            <span>Focus Target: {selectedEdge.target_node_id}</span>
-            <ChevronRight className="h-3.5 w-3.5 text-gray-500" />
+            <span className="truncate">Focus Target: {selectedEdge.target_node_id}</span>
+            <ChevronRight className="text-muted-foreground h-3.5 w-3.5" />
           </button>
         </div>
       </div>
@@ -236,15 +236,15 @@ export function CorrelationGraphInspector({
   );
 
   return (
-    <div className="space-y-4 rounded-2xl border border-indigo-500/40 bg-gray-900/80 p-5 shadow-xl backdrop-blur-md">
+    <div className="border-border/80 bg-card/80 space-y-3 rounded-lg border p-4 shadow-sm">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-800 pb-3">
+      <div className="border-border/60 flex items-center justify-between border-b pb-2.5">
         <div className="flex items-center gap-2">
           {getNodeIcon(node.node_type)}
-          <h3 className="text-sm font-bold text-white">{node.node_type}</h3>
+          <h3 className="text-foreground text-xs font-semibold">{node.node_type}</h3>
         </div>
         <span
-          className={`rounded border px-2 py-0.5 text-[10px] font-bold ${getProvenanceBadge(
+          className={`rounded px-1.5 py-0.5 font-mono text-[9px] font-bold ${getProvenanceBadge(
             node.provenance,
           )}`}
         >
@@ -254,12 +254,14 @@ export function CorrelationGraphInspector({
 
       {/* Entity Title */}
       <div>
-        <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+        <div className="text-muted-foreground font-mono text-[10px] font-semibold uppercase tracking-wider">
           Entity Label
         </div>
-        <div className="mt-1 break-all font-mono text-sm font-bold text-white">{node.label}</div>
+        <div className="text-foreground mt-0.5 break-all font-mono text-xs font-semibold">
+          {node.label}
+        </div>
         {node.subsystem && (
-          <div className="mt-1 inline-flex items-center gap-1 rounded border border-indigo-500/30 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-semibold text-indigo-300">
+          <div className="border-border/60 bg-secondary/30 text-muted-foreground mt-1 inline-flex items-center gap-1 rounded border px-1.5 py-0.5 font-mono text-[10px]">
             <Layers className="h-3 w-3" />
             {node.subsystem}
           </div>
@@ -267,23 +269,23 @@ export function CorrelationGraphInspector({
       </div>
 
       {/* High-Value Telemetry Overview */}
-      <div className="space-y-2 rounded-xl border border-gray-800 bg-gray-950/70 p-3.5 text-xs">
+      <div className="border-border/80 bg-secondary/20 space-y-1.5 rounded-md border p-2.5 text-xs">
         {node.node_type === "SecurityFinding" && (
           <>
             <div className="flex items-center justify-between">
-              <span className="text-gray-400">Severity:</span>
-              <span className="font-bold uppercase text-rose-400">
+              <span className="text-muted-foreground">Severity:</span>
+              <span className="font-mono font-bold uppercase text-rose-400">
                 {String(node.metadata.severity ?? "CRITICAL")}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-gray-400">Risk Contribution:</span>
-              <span className="font-bold text-rose-400">
+              <span className="text-muted-foreground">Risk Contribution:</span>
+              <span className="font-mono font-bold text-rose-400">
                 +{String(node.metadata.risk_contribution ?? "15")} points
               </span>
             </div>
             {node.metadata.evidence && (
-              <div className="mt-1 rounded border border-gray-800 bg-gray-900 p-2 font-mono text-[10px] text-gray-300">
+              <div className="border-border/80 bg-background/80 text-muted-foreground mt-1 rounded border p-2 font-mono text-[10px]">
                 {String(node.metadata.evidence)}
               </div>
             )}
@@ -293,20 +295,20 @@ export function CorrelationGraphInspector({
         {node.node_type === "Incident" && (
           <>
             <div className="flex items-center justify-between">
-              <span className="text-gray-400">Severity:</span>
-              <span className="font-bold uppercase text-amber-400">
+              <span className="text-muted-foreground">Severity:</span>
+              <span className="font-mono font-bold uppercase text-amber-400">
                 {String(node.metadata.severity ?? "CRITICAL")}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-gray-400">Status:</span>
-              <span className="font-bold text-emerald-400">
+              <span className="text-muted-foreground">Status:</span>
+              <span className="font-mono font-bold text-emerald-400">
                 {String(node.metadata.status ?? "RESOLVED")}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-gray-400">Risk Score:</span>
-              <span className="font-bold text-amber-400">
+              <span className="text-muted-foreground">Risk Score:</span>
+              <span className="font-mono font-bold tabular-nums text-amber-400">
                 {String(node.metadata.risk_score ?? "85")}/100
               </span>
             </div>
@@ -315,8 +317,8 @@ export function CorrelationGraphInspector({
 
         {node.node_type === "HealthDimension" && (
           <div className="flex items-center justify-between">
-            <span className="text-gray-400">Dimension Score:</span>
-            <span className="font-bold text-purple-400">
+            <span className="text-muted-foreground">Dimension Score:</span>
+            <span className="text-foreground font-mono font-bold tabular-nums">
               {String(node.metadata.score ?? "")}/100
             </span>
           </div>
@@ -325,14 +327,14 @@ export function CorrelationGraphInspector({
         {node.node_type === "Prediction" && (
           <>
             <div className="flex items-center justify-between">
-              <span className="text-gray-400">Evidence Strength:</span>
-              <span className="font-bold text-purple-400">
+              <span className="text-muted-foreground">Evidence Strength:</span>
+              <span className="text-foreground font-mono font-bold">
                 {String(node.metadata.evidence_strength ?? "STRONG")}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-gray-400">Time Horizon:</span>
-              <span className="text-gray-300">
+              <span className="text-muted-foreground">Time Horizon:</span>
+              <span className="text-muted-foreground font-mono">
                 {String(node.metadata.time_horizon ?? "NEXT_CYCLE")}
               </span>
             </div>
@@ -342,28 +344,30 @@ export function CorrelationGraphInspector({
         {node.node_type === "File" && (
           <>
             <div className="flex items-center justify-between">
-              <span className="text-gray-400">Activity Count:</span>
-              <span className="font-bold text-cyan-400">
+              <span className="text-muted-foreground">Activity Count:</span>
+              <span className="text-foreground font-mono font-bold tabular-nums">
                 {String(node.metadata.activity_count ?? 0)}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-gray-400">Language:</span>
-              <span className="text-gray-200">{String(node.metadata.language ?? "Python")}</span>
+              <span className="text-muted-foreground">Language:</span>
+              <span className="text-foreground font-mono">
+                {String(node.metadata.language ?? "Python")}
+              </span>
             </div>
           </>
         )}
 
-        <div className="flex items-center justify-between border-t border-gray-800/80 pt-2">
-          <span className="text-gray-400">Connected Relationships:</span>
-          <span className="font-bold text-indigo-400">{connectedEdges.length}</span>
+        <div className="border-border/60 flex items-center justify-between border-t pt-1.5 font-mono text-[11px]">
+          <span className="text-muted-foreground">Connected:</span>
+          <span className="text-foreground font-bold tabular-nums">{connectedEdges.length}</span>
         </div>
       </div>
 
       {/* Connected Entities Chips */}
       {connectedEdges.length > 0 && (
         <div>
-          <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+          <div className="text-muted-foreground mb-1.5 font-mono text-[10px] font-semibold uppercase tracking-wider">
             Directly Connected Entities
           </div>
           <div className="max-h-32 space-y-1 overflow-y-auto">
@@ -375,9 +379,9 @@ export function CorrelationGraphInspector({
                 <button
                   key={e.relationship_id}
                   onClick={() => onSelectNode(otherNode || null)}
-                  className="flex w-full items-center justify-between rounded border border-gray-800/80 bg-gray-950 px-2 py-1 text-[11px] text-gray-300 transition hover:border-indigo-500 hover:text-white"
+                  className="border-border/60 bg-secondary/30 text-muted-foreground hover:border-border hover:text-foreground flex w-full items-center justify-between rounded border px-2 py-1 text-[11px] transition-colors"
                 >
-                  <span className="font-mono text-[9px] font-bold text-indigo-400">
+                  <span className="text-primary font-mono text-[9px] font-semibold">
                     {e.relationship_type}
                   </span>
                   <span className="max-w-[120px] truncate font-mono">
@@ -391,29 +395,29 @@ export function CorrelationGraphInspector({
       )}
 
       {/* Actions */}
-      <div className="space-y-2 border-t border-gray-800 pt-3">
-        <div className="grid grid-cols-2 gap-2">
+      <div className="border-border/60 space-y-1.5 border-t pt-2.5">
+        <div className="grid grid-cols-2 gap-1.5">
           <button
             onClick={() => onTraceRootCause(node.node_id)}
-            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-orange-500/30 bg-orange-950/40 px-3 py-2 text-xs font-bold text-orange-300 transition hover:bg-orange-900/60"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md border border-orange-500/30 bg-orange-500/10 px-2.5 py-1.5 font-mono text-xs font-semibold text-orange-400 transition-colors hover:bg-orange-500/20"
           >
-            <Crosshair className="h-3.5 w-3.5" />
+            <Crosshair className="h-3 w-3" />
             Trace Root Cause
           </button>
           <button
             onClick={() => onTraceImpact(node.node_id)}
-            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-purple-500/30 bg-purple-950/40 px-3 py-2 text-xs font-bold text-purple-300 transition hover:bg-purple-900/60"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md border border-purple-500/30 bg-purple-500/10 px-2.5 py-1.5 font-mono text-xs font-semibold text-purple-400 transition-colors hover:bg-purple-500/20"
           >
-            <TrendingUp className="h-3.5 w-3.5" />
+            <TrendingUp className="h-3 w-3" />
             Trace Impact
           </button>
         </div>
 
         <button
           onClick={() => onFocusNode(node.node_id)}
-          className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-950/40 px-3 py-2 text-xs font-bold text-indigo-300 transition hover:bg-indigo-900/60"
+          className="border-border/80 bg-secondary/40 text-foreground hover:bg-secondary flex w-full items-center justify-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors"
         >
-          <Search className="h-3.5 w-3.5" />
+          <Search className="h-3 w-3" />
           Focus Neighborhood
         </button>
 
@@ -424,10 +428,10 @@ export function CorrelationGraphInspector({
                 `/projects/${projectId}/investigation?incidentId=${encodeURIComponent(incId)}`,
               );
             }}
-            className="flex w-full items-center justify-between rounded-lg border border-amber-500/30 bg-amber-950/40 px-3 py-2 text-xs font-bold text-amber-300 transition hover:bg-amber-900/60"
+            className="flex w-full items-center justify-between rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1.5 text-xs font-medium text-amber-400 transition-colors hover:bg-amber-500/20"
           >
             <span>Investigate Incident ({incId})</span>
-            <ExternalLink className="h-3.5 w-3.5" />
+            <ExternalLink className="h-3 w-3" />
           </button>
         )}
 
@@ -436,20 +440,20 @@ export function CorrelationGraphInspector({
             onClick={() => {
               void navigate(`/projects/${projectId}/security`);
             }}
-            className="flex w-full items-center justify-between rounded-lg border border-rose-500/30 bg-rose-950/40 px-3 py-2 text-xs font-bold text-rose-300 transition hover:bg-rose-900/60"
+            className="flex w-full items-center justify-between rounded-md border border-rose-500/30 bg-rose-500/10 px-2.5 py-1.5 text-xs font-medium text-rose-400 transition-colors hover:bg-rose-500/20"
           >
             <span>Open Security Command Center</span>
-            <ExternalLink className="h-3.5 w-3.5" />
+            <ExternalLink className="h-3 w-3" />
           </button>
         )}
 
         {node.node_type === "HealthDimension" && (
           <button
             onClick={() => onOpenEvidence("health", "overall")}
-            className="flex w-full items-center justify-between rounded-lg border border-gray-800 bg-gray-950 px-3 py-2 text-xs font-semibold text-gray-300 transition hover:border-gray-700 hover:text-white"
+            className="border-border/80 bg-secondary/40 text-foreground hover:bg-secondary flex w-full items-center justify-between rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors"
           >
             <span>Show Decomposition</span>
-            <ExternalLink className="h-3.5 w-3.5" />
+            <ExternalLink className="h-3 w-3" />
           </button>
         )}
       </div>

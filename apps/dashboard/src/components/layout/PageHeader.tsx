@@ -19,12 +19,17 @@ export interface PageHeaderProps {
 
 export function PageHeader({ title, description, meta, className }: PageHeaderProps) {
   return (
-    <header className={cn("mb-6 flex items-start justify-between gap-4", className)}>
-      <div>
-        <h1 className="text-foreground text-2xl font-bold tracking-tight">{title}</h1>
-        {description && <p className="text-muted-foreground text-sm">{description}</p>}
+    <header
+      className={cn(
+        "border-border/40 mb-4 flex flex-wrap items-start justify-between gap-3 border-b pb-3 sm:mb-5 sm:pb-4",
+        className,
+      )}
+    >
+      <div className="space-y-0.5">
+        <h1 className="text-foreground text-lg font-bold tracking-tight sm:text-xl">{title}</h1>
+        {description && <p className="text-muted-foreground text-xs sm:text-sm">{description}</p>}
       </div>
-      {meta && <div className="flex shrink-0 items-center gap-3">{meta}</div>}
+      {meta && <div className="flex shrink-0 items-center gap-2">{meta}</div>}
     </header>
   );
 }

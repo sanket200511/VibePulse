@@ -32,48 +32,50 @@ function InsightCard({ insight }: { insight: DeveloperInsight }) {
 
   let label = "REFLECTION";
   let Icon = Brain;
-  let colorClass = "text-secondary-text";
-  let bgClass = "bg-muted-color/10";
+  let colorClass = "text-muted-foreground";
+  let bgClass = "bg-secondary/30";
 
   if (isObservation) {
     label = "OBSERVATION";
     Icon = FileSearch;
-    colorClass = "text-accent-color";
-    bgClass = "bg-accent-color/5";
+    colorClass = "text-primary";
+    bgClass = "bg-primary/5";
   } else if (isPattern) {
     label = "PATTERN";
     Icon = LineChart;
-    colorClass = "text-warning-color";
-    bgClass = "bg-warning-color/5";
+    colorClass = "text-amber-500";
+    bgClass = "bg-amber-500/5";
   }
 
   return (
     <div
-      className={`border-border rounded-xl border p-5 ${bgClass} flex flex-col items-start gap-5 md:flex-row`}
+      className={`border-border/80 rounded-lg border p-4 ${bgClass} shadow-xs flex flex-col items-start gap-4 md:flex-row`}
     >
       <div className={`mt-0.5 shrink-0 ${colorClass}`}>
-        <Icon className="h-5 w-5" />
+        <Icon className="h-4 w-4" />
       </div>
-      <div className="flex flex-1 flex-col gap-2">
+      <div className="flex flex-1 flex-col gap-1">
         <div className="flex items-center gap-2">
-          <span className={`text-[10px] font-bold uppercase tracking-widest ${colorClass}`}>
+          <span
+            className={`font-mono text-[10px] font-bold uppercase tracking-wider ${colorClass}`}
+          >
             {label}
           </span>
-          <span className="text-secondary-text border-border border-l pl-2 text-xs uppercase tracking-wide">
+          <span className="border-border/60 text-muted-foreground border-l pl-2 font-mono text-[10px] uppercase tracking-wider">
             {CATEGORY_LABEL[insight.category]}
           </span>
         </div>
-        <h4 className="text-primary-text text-base font-bold">{insight.headline}</h4>
+        <h4 className="text-foreground text-xs font-semibold">{insight.headline}</h4>
         {insight.evidence && (
-          <p className="text-secondary-text mt-1 text-sm leading-relaxed">{insight.evidence}</p>
+          <p className="text-muted-foreground text-xs leading-relaxed">{insight.evidence}</p>
         )}
 
         {Object.keys(insight.metrics).length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-2 flex flex-wrap gap-1.5">
             {Object.entries(insight.metrics).map(([key, value]) => (
               <span
                 key={key}
-                className="bg-background border-border text-muted-foreground rounded-md border px-2.5 py-1 font-mono text-xs"
+                className="border-border/70 bg-card/60 text-foreground rounded-md border px-2 py-0.5 font-mono text-[10px] tabular-nums"
               >
                 {key}: {typeof value === "object" ? JSON.stringify(value) : String(value)}
               </span>
@@ -94,14 +96,14 @@ export function InsightsPanel({ profile }: InsightsPanelProps) {
 
   if (allInsights.length === 0) {
     return (
-      <p className="text-muted-foreground border-border rounded-xl border border-dashed p-8 text-center text-sm">
+      <p className="border-border/80 text-muted-foreground rounded-lg border border-dashed p-6 text-center font-mono text-xs">
         Not enough activity yet to generate reliable patterns for this session.
       </p>
     );
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3">
       {allInsights.map((insight) => (
         <InsightCard key={insight.id} insight={insight} />
       ))}

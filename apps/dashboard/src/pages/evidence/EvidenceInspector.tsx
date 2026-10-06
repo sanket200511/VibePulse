@@ -31,104 +31,111 @@ export function EvidenceInspector({ projectId, entityType, entityId, onClose }: 
   if (!entityType) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/80 p-4 backdrop-blur-sm">
-      <div className="relative max-h-[90vh] w-full max-w-3xl space-y-6 overflow-y-auto rounded-2xl border border-gray-800 bg-gray-950 p-6 shadow-2xl">
+    <div className="backdrop-blur-xs fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/75 p-4">
+      <div className="border-border/80 bg-background/95 relative max-h-[90vh] w-full max-w-2xl space-y-4 overflow-y-auto rounded-lg border p-5 shadow-2xl">
         {/* ── HEADER ───────────────────────────────────────────────────────── */}
-        <div className="flex items-start justify-between border-b border-gray-800/80 pb-4">
+        <div className="border-border/80 flex items-start justify-between border-b pb-3">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-400">
+              <span className="text-primary font-mono text-[10px] font-bold uppercase tracking-wider">
                 TRUST & EVIDENCE INTELLIGENCE
               </span>
               <Badge
                 variant="outline"
-                className="border-indigo-500/40 bg-indigo-950/40 font-mono text-[9px] font-bold text-indigo-300"
+                className="border-primary/30 bg-primary/10 text-primary font-mono text-[9px] font-semibold"
               >
-                WHY VIBEPULSE BELIEVES THIS
+                WHY DEPRADAR BELIEVES THIS
               </Badge>
               {explain?.provenance && (
                 <Badge
                   variant="outline"
                   className={`font-mono text-[9px] font-bold ${
                     explain.provenance === "OBSERVED"
-                      ? "border-blue-500/40 bg-blue-950/40 text-blue-300"
+                      ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400"
                       : explain.provenance === "INFERRED"
-                        ? "border-purple-500/40 bg-purple-950/40 text-purple-300"
-                        : "border-gray-600 bg-gray-900 text-gray-400"
+                        ? "border-primary/40 bg-primary/10 text-primary"
+                        : "border-border/80 bg-secondary/50 text-muted-foreground"
                   }`}
                 >
                   [{explain.provenance}]
                 </Badge>
               )}
             </div>
-            <h2 className="text-xl font-extrabold text-white">
+            <h2 className="text-foreground text-base font-bold">
               {explain?.title || "Evidence Inspector"}
             </h2>
-            <p className="text-xs text-gray-400">{explain?.summary}</p>
+            <p className="text-muted-foreground text-xs">{explain?.summary}</p>
           </div>
 
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-800 hover:text-white"
+            className="text-muted-foreground hover:bg-secondary hover:text-foreground rounded-md p-1 transition-colors"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* ── CONTENT ──────────────────────────────────────────────────────── */}
         {isLoading ? (
-          <div className="animate-pulse p-12 text-center text-xs text-gray-400">
-            Synthesizing evidence-backed explainability from PostgreSQL telemetry...
+          <div className="text-muted-foreground animate-pulse p-8 text-center font-mono text-xs">
+            Synthesizing evidence-backed explainability from telemetry...
           </div>
         ) : isError || !explain ? (
-          <div className="p-6 text-center text-xs text-rose-400">
+          <div className="text-destructive p-6 text-center font-mono text-xs">
             Failed to load explainability intelligence for this entity.
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Rationale Banner */}
-            <div className="space-y-2 rounded-xl border border-indigo-900/50 bg-indigo-950/20 p-4">
-              <span className="flex items-center gap-1.5 text-xs font-bold uppercase text-indigo-300">
-                <Sparkles className="h-4 w-4 text-indigo-400" />
+            <div className="border-primary/20 bg-primary/5 space-y-1.5 rounded-md border p-3">
+              <span className="text-primary flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase">
+                <Sparkles className="text-primary h-3.5 w-3.5" />
                 Evidence-Grounded Rationale
               </span>
-              <p className="text-xs leading-relaxed text-gray-200">{explain.why_explanation}</p>
+              <p className="text-foreground/90 text-xs leading-relaxed">
+                {explain.why_explanation}
+              </p>
             </div>
 
             {/* Score Decomposition (for Health or weighted scores) */}
             {explain.score_decomposition && explain.score_decomposition.length > 0 && (
-              <div className="space-y-3">
-                <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-300">
-                  <Calculator className="h-3.5 w-3.5 text-indigo-400" />
+              <div className="space-y-2">
+                <h3 className="text-muted-foreground flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider">
+                  <Calculator className="text-primary h-3.5 w-3.5" />
                   Score Decomposition & Contribution
                 </h3>
 
-                <div className="overflow-hidden rounded-xl border border-gray-800 bg-gray-900/40">
+                <div className="border-border/80 bg-card/60 overflow-hidden rounded-md border">
                   <table className="w-full text-left text-xs">
-                    <thead className="border-b border-gray-800 bg-gray-900/80 text-[10px] font-bold uppercase text-gray-400">
+                    <thead className="border-border/80 bg-secondary/40 text-muted-foreground border-b font-mono text-[10px] font-bold uppercase">
                       <tr>
-                        <th className="p-3">Dimension</th>
-                        <th className="p-3">Raw Score</th>
-                        <th className="p-3">Weight</th>
-                        <th className="p-3">Contribution</th>
-                        <th className="p-3">Provenance</th>
+                        <th className="p-2.5">Dimension</th>
+                        <th className="p-2.5">Raw Score</th>
+                        <th className="p-2.5">Weight</th>
+                        <th className="p-2.5">Contribution</th>
+                        <th className="p-2.5">Provenance</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-800 font-mono">
+                    <tbody className="divide-border/60 divide-y font-mono">
                       {explain.score_decomposition.map((d: ScoreDecompositionItem) => (
-                        <tr key={d.dimension_key} className="hover:bg-gray-900/50">
-                          <td className="p-3 font-sans font-medium text-white">
+                        <tr
+                          key={d.dimension_key}
+                          className="hover:bg-secondary/30 transition-colors"
+                        >
+                          <td className="text-foreground p-2.5 font-sans font-medium">
                             {d.dimension_name}
                           </td>
-                          <td className="p-3 text-indigo-300">{d.raw_score}/100</td>
-                          <td className="p-3 text-gray-400">{(d.weight * 100).toFixed(0)}%</td>
-                          <td className="p-3 font-bold text-emerald-400">
+                          <td className="text-primary p-2.5 tabular-nums">{d.raw_score}/100</td>
+                          <td className="text-muted-foreground p-2.5 tabular-nums">
+                            {(d.weight * 100).toFixed(0)}%
+                          </td>
+                          <td className="p-2.5 font-bold tabular-nums text-emerald-400">
                             +{d.weighted_contribution}
                           </td>
-                          <td className="p-3">
+                          <td className="p-2.5">
                             <Badge
                               variant="outline"
-                              className="border-blue-500/30 text-[9px] text-blue-300"
+                              className="border-primary/30 text-primary text-[9px]"
                             >
                               [{d.provenance}]
                             </Badge>
@@ -143,32 +150,32 @@ export function EvidenceInspector({ projectId, entityType, entityId, onClose }: 
 
             {/* Causal Evidence Chain */}
             {explain.evidence_chain && explain.evidence_chain.length > 0 && (
-              <div className="space-y-3">
-                <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-300">
-                  <Layers className="h-3.5 w-3.5 text-indigo-400" />
+              <div className="space-y-2">
+                <h3 className="text-muted-foreground flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider">
+                  <Layers className="text-primary h-3.5 w-3.5" />
                   Causal Evidence Chain
                 </h3>
 
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {explain.evidence_chain.map((c: EvidenceChainStep) => (
                     <div
                       key={c.step_number}
-                      className="flex items-start gap-3 rounded-lg border border-gray-800/80 bg-gray-900/40 p-3"
+                      className="border-border/70 bg-secondary/20 flex items-start gap-2.5 rounded-md border p-2.5"
                     >
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600 font-mono text-[10px] font-bold text-white">
+                      <span className="bg-primary text-primary-foreground flex h-4 w-4 shrink-0 items-center justify-center rounded font-mono text-[10px] font-bold">
                         {c.step_number}
                       </span>
                       <div className="flex-1 space-y-0.5">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-white">{c.title}</span>
+                          <span className="text-foreground text-xs font-semibold">{c.title}</span>
                           <Badge
                             variant="outline"
-                            className="border-gray-700 font-mono text-[8px] text-gray-400"
+                            className="border-border/60 text-muted-foreground font-mono text-[8px]"
                           >
                             {c.stage}
                           </Badge>
                         </div>
-                        <p className="text-[11px] text-gray-400">{c.description}</p>
+                        <p className="text-muted-foreground text-[11px]">{c.description}</p>
                       </div>
                     </div>
                   ))}
@@ -178,9 +185,9 @@ export function EvidenceInspector({ projectId, entityType, entityId, onClose }: 
 
             {/* Redacted Evidence Snippet */}
             {explain.evidence_items?.some((i) => i.redacted_evidence) && (
-              <div className="space-y-2">
-                <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-300">
-                  <FileCode className="h-3.5 w-3.5 text-rose-400" />
+              <div className="space-y-1.5">
+                <h3 className="text-muted-foreground flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider">
+                  <FileCode className="text-destructive h-3.5 w-3.5" />
                   Observed Code Snippet (Secrets Masked)
                 </h3>
                 {explain.evidence_items
@@ -188,7 +195,7 @@ export function EvidenceInspector({ projectId, entityType, entityId, onClose }: 
                   .map((i) => (
                     <pre
                       key={i.evidence_id}
-                      className="overflow-x-auto rounded-lg border border-gray-800 bg-black/60 p-3 font-mono text-[11px] text-rose-300"
+                      className="border-border/80 bg-background text-destructive/90 overflow-x-auto rounded-md border p-2.5 font-mono text-[11px]"
                     >
                       {i.redacted_evidence}
                     </pre>
@@ -197,9 +204,9 @@ export function EvidenceInspector({ projectId, entityType, entityId, onClose }: 
             )}
 
             {/* Remediation Action & Deep Link */}
-            <div className="flex flex-col justify-between gap-3 border-t border-gray-800/80 pt-4 sm:flex-row sm:items-center">
-              <div className="flex items-center gap-2 text-[10px] text-gray-400">
-                <ShieldCheck className="h-4 w-4 shrink-0 text-emerald-400" />
+            <div className="border-border/80 flex flex-col justify-between gap-3 border-t pt-3 sm:flex-row sm:items-center">
+              <div className="text-muted-foreground flex items-center gap-2 font-mono text-[10px]">
+                <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
                 <span>Zero raw credentials exposed • Redaction verified</span>
               </div>
 
@@ -209,11 +216,11 @@ export function EvidenceInspector({ projectId, entityType, entityId, onClose }: 
                     onClose();
                     void navigate(`/projects/${projectId}/investigation`);
                   }}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-md transition hover:bg-indigo-500"
+                  className="bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-semibold transition-colors"
                 >
-                  <Search className="h-3.5 w-3.5" />
+                  <Search className="h-3 w-3" />
                   Investigate in Engine 3.0
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  <ArrowRight className="h-3 w-3" />
                 </button>
               </div>
             </div>

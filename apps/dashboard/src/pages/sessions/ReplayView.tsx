@@ -46,15 +46,15 @@ export function ReplayView({ replay }: ReplayViewProps) {
 
   if (replay.frames.length === 0) {
     return (
-      <div className="text-secondary-text animate-fade-in-up border-border/50 bg-card/30 rounded-2xl border p-12 text-center text-sm font-medium motion-reduce:animate-none">
-        🎞️ Nothing to replay for this session yet.
+      <div className="animate-fade-in-up border-border/80 bg-card/40 text-muted-foreground rounded-lg border border-dashed p-8 text-center font-mono text-xs motion-reduce:animate-none">
+        Nothing to replay for this session yet.
       </div>
     );
   }
 
   return (
     <div
-      className="bg-background border-border flex w-full flex-col overflow-hidden rounded-[20px] border shadow-sm transition-all duration-300 motion-reduce:transition-none"
+      className="border-border/80 bg-card/60 shadow-xs flex w-full flex-col overflow-hidden rounded-lg border transition-colors"
       tabIndex={0}
       role="group"
       aria-label="Session replay player"
@@ -62,8 +62,8 @@ export function ReplayView({ replay }: ReplayViewProps) {
     >
       <ReplayHeader controller={controller} replay={replay} />
 
-      <div className="bg-card relative flex flex-col">
-        <div className="flex min-h-[400px] flex-1 flex-col items-center justify-center overflow-hidden p-6 md:p-8 lg:min-h-[500px] lg:p-12">
+      <div className="bg-background/50 relative flex flex-col">
+        <div className="flex min-h-[360px] flex-1 flex-col items-center justify-center overflow-hidden p-4 sm:p-6 md:p-8 lg:min-h-[440px]">
           <div className="flex w-full max-w-4xl flex-col">
             <ReplayTrail controller={controller} frames={replay.frames} />
             <ReplayFocusStage controller={controller} />
@@ -73,7 +73,7 @@ export function ReplayView({ replay }: ReplayViewProps) {
 
       <div
         data-tour="replay-scrubber"
-        className="bg-card border-border z-10 border-t p-5 pb-6 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] md:p-6"
+        className="border-border/80 bg-card/90 shadow-xs z-10 border-t p-4 sm:p-5"
       >
         <ReplayControls controller={controller} replay={replay} />
       </div>

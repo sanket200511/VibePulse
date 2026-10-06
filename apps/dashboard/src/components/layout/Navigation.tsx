@@ -27,15 +27,15 @@ export function Navigation() {
           end={end ?? false}
           className={({ isActive }) =>
             cn(
-              "flex items-center gap-2 rounded-[8px] px-3 py-2 text-sm font-medium transition-colors duration-150 ease-out",
-              "focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+              "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-all duration-150 ease-out",
+              "focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-1",
               isActive
-                ? "bg-accent text-accent-foreground"
-                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+                ? "bg-secondary text-foreground border-border/80 shadow-xs border"
+                : "text-muted-foreground hover:bg-muted/50 hover:text-foreground border border-transparent",
             )
           }
         >
-          <Icon aria-hidden="true" className="h-4 w-4 shrink-0" />
+          <Icon aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
           {/* Icons support recognition rather than replace labels (Component
               Philosophy #6). `sr-only` below `sm` keeps the label out of
               view but still in the accessibility tree, so icon-only nav on

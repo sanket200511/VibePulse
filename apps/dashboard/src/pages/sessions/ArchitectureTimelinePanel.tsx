@@ -39,7 +39,7 @@ export function ArchitectureTimelinePanel({
   projectId?: string | undefined;
 }) {
   return (
-    <div className="border-border/50 relative ml-4 flex flex-col gap-6 border-l-2 pb-6 pl-6 pt-2">
+    <div className="border-border/80 relative ml-3 flex flex-col gap-4 border-l pb-4 pl-5 pt-1">
       {timeline.entries.map((entry) => {
         const meta = KIND_METADATA[entry.kind] || {
           icon: GitCommit,
@@ -51,27 +51,27 @@ export function ArchitectureTimelinePanel({
         return (
           <div
             key={entry.id}
-            className="border-border bg-card relative flex flex-col gap-2 rounded-xl border p-4 shadow-sm transition-shadow hover:shadow-md"
+            className="border-border/80 bg-card/60 shadow-xs hover:border-primary/40 hover:bg-card/90 relative flex flex-col gap-2 rounded-lg border p-3.5 transition-colors"
           >
             {/* Timeline dot */}
             <div
-              className={`border-background absolute -left-[35px] top-6 h-4 w-4 rounded-full border-4 ${meta.bg.replace("/10", "")}`}
+              className={`border-background absolute -left-[27px] top-4 h-3 w-3 rounded-full border-2 ${meta.bg.replace("/10", "")}`}
             />
 
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className={`rounded-lg p-2 ${meta.bg} ${meta.color}`}>
-                  <Icon className="h-4 w-4" />
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className={`rounded-md p-1.5 ${meta.bg} ${meta.color}`}>
+                  <Icon className="h-3.5 w-3.5" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-sm font-semibold">{entry.title}</span>
-                  <span className="text-muted-foreground font-mono text-xs">
+                  <span className="text-foreground text-xs font-semibold">{entry.title}</span>
+                  <span className="text-muted-foreground font-mono text-[10px]">
                     {new Date(entry.timestamp).toLocaleTimeString()}
                   </span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex shrink-0 items-center gap-1.5">
                 {entry.severity && (
                   <Badge
                     variant={
@@ -88,17 +88,17 @@ export function ArchitectureTimelinePanel({
                 {entry.related_event_id && (
                   <Link
                     to={`/sessions/${timeline.session_id}/replay?event=${entry.related_event_id}`}
-                    className="text-accent-color bg-accent-color/10 flex items-center gap-1 rounded px-2 py-1 text-xs hover:underline"
+                    className="border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 flex items-center gap-1 rounded-md border px-2 py-0.5 font-mono text-[10px] font-semibold transition-colors"
                     title="Jump to Replay"
                   >
-                    <Play className="h-3 w-3" />
+                    <Play className="h-2.5 w-2.5" />
                     Replay
                   </Link>
                 )}
                 {projectId && (
                   <Link
                     to={`/projects/${projectId}`}
-                    className="text-muted-foreground hover:text-foreground flex items-center gap-1 px-2 py-1 text-xs hover:underline"
+                    className="text-muted-foreground hover:text-foreground flex items-center gap-1 font-mono text-[10px] transition-colors hover:underline"
                     title="Jump to Project"
                   >
                     Project
@@ -108,15 +108,15 @@ export function ArchitectureTimelinePanel({
             </div>
 
             {entry.description && (
-              <div className="bg-muted/30 text-muted-foreground mt-2 overflow-x-auto whitespace-pre rounded p-3 font-mono text-xs">
+              <div className="border-border/60 bg-secondary/30 text-muted-foreground mt-1 overflow-x-auto whitespace-pre rounded-md border p-2.5 font-mono text-[11px]">
                 {entry.description}
               </div>
             )}
 
             {entry.related_file && (
-              <div className="text-muted-foreground mt-1 flex items-center gap-1 text-xs">
+              <div className="text-muted-foreground mt-0.5 flex items-center gap-1.5 font-mono text-[11px]">
                 <span className="text-foreground font-medium">File:</span>
-                <span className="font-mono">{entry.related_file}</span>
+                <span>{entry.related_file}</span>
               </div>
             )}
           </div>

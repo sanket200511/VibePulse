@@ -25,48 +25,49 @@ export function ReplayHeader({ controller, replay }: ReplayHeaderProps) {
     replay.frames.length > 0 ? Math.round(((currentIndex + 1) / replay.frames.length) * 100) : 0;
 
   return (
-    <div className="border-border bg-card flex items-center justify-between border-b px-6 py-4 transition-colors">
-      <div className="flex items-center gap-4">
-        <div className="bg-accent-color/10 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg">
+    <div className="border-border/80 bg-card/80 flex items-center justify-between border-b px-4 py-2.5 transition-colors sm:px-5">
+      <div className="flex items-center gap-3">
+        <div className="bg-primary/10 flex h-7 w-7 shrink-0 items-center justify-center rounded-md">
           {isPlaying ? (
-            <PlayCircle className="text-accent-color h-4 w-4 animate-pulse" />
+            <PlayCircle className="text-primary h-4 w-4 animate-pulse" />
           ) : (
             <PauseCircle className="text-muted-foreground h-4 w-4" />
           )}
         </div>
         <div className="flex min-w-0 flex-col">
           <div className="flex items-center gap-2">
-            <span className="text-primary-text shrink-0 text-sm font-bold tracking-tight">
-              Session Replay
-            </span>
+            <span className="text-foreground shrink-0 text-xs font-bold">Session Replay</span>
             {currentChapter && (
-              <Badge variant="secondary" className="truncate text-[9px] uppercase tracking-wider">
+              <Badge
+                variant="outline"
+                className="border-border/70 bg-secondary/40 text-muted-foreground truncate font-mono text-[9px] uppercase tracking-wider"
+              >
                 {CHAPTER_KIND_LABEL[currentChapter.kind] ?? currentChapter.kind}
               </Badge>
             )}
           </div>
-          <span className="text-secondary-text mt-0.5 truncate text-xs">
+          <span className="text-muted-foreground mt-0.5 truncate font-mono text-[11px]">
             {currentChapter?.label ?? "Initializing..."}
           </span>
         </div>
       </div>
 
-      <div className="flex shrink-0 items-center gap-6">
+      <div className="flex shrink-0 items-center gap-4 font-mono text-xs sm:gap-6">
         <div className="hidden flex-col items-end md:flex">
-          <span className="text-secondary-text text-[9px] font-bold uppercase tracking-wider">
+          <span className="text-muted-foreground font-mono text-[9px] font-bold uppercase tracking-wider">
             Time
           </span>
-          <span className="text-primary-text mt-0.5 flex items-center gap-1.5 font-mono text-xs">
-            <Clock className="text-accent-color h-3.5 w-3.5" />
+          <span className="text-foreground mt-0.5 flex items-center gap-1 tabular-nums">
+            <Clock className="text-primary h-3 w-3" />
             {currentFrame ? formatReplayTime(currentFrame.timestamp) : "--:--"}
           </span>
         </div>
         <div className="hidden flex-col items-end sm:flex">
-          <span className="text-secondary-text text-[9px] font-bold uppercase tracking-wider">
+          <span className="text-muted-foreground font-mono text-[9px] font-bold uppercase tracking-wider">
             Progress
           </span>
-          <span className="text-primary-text mt-0.5 flex items-center gap-1.5 font-mono text-xs">
-            <Layers className="text-accent-color h-3.5 w-3.5" />
+          <span className="text-foreground mt-0.5 flex items-center gap-1 tabular-nums">
+            <Layers className="text-primary h-3 w-3" />
             {progressPercent}%
           </span>
         </div>

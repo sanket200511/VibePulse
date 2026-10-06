@@ -97,10 +97,10 @@ export function EngineeringCommandCenter() {
   const topEvidenceTier = predictions?.forecast_signals?.[0]?.evidence_strength ?? "MODERATE";
 
   return (
-    <div className="animate-fade-in-up bg-background flex flex-1 flex-col space-y-8 p-8">
+    <div className="animate-fade-in-up bg-background mx-auto flex w-full max-w-[1400px] flex-1 flex-col space-y-4 px-4 py-4 sm:px-6 md:py-6">
       {/* ── HEADER ─────────────────────────────────────────────────────────── */}
-      <div className="space-y-4">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="space-y-3">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <Breadcrumbs
             items={[
               { label: "Projects", to: "/projects" },
@@ -110,71 +110,73 @@ export function EngineeringCommandCenter() {
           />
           <Link
             to={`/projects/${projectId}`}
-            className="text-secondary-text hover:text-primary-text inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
+            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 font-mono text-xs font-medium transition-colors"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Back to Project Story
           </Link>
         </div>
 
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <div className="border-border/50 flex flex-wrap items-start justify-between gap-3 border-b pb-3">
           <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-primary-text flex items-center gap-2.5 text-3xl font-extrabold tracking-tight">
-                <Activity className="h-7 w-7 text-indigo-400" />
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h1 className="text-foreground flex items-center gap-2 text-lg font-bold tracking-tight sm:text-xl">
+                <Activity className="text-primary h-5 w-5" />
                 {project?.display_name || "Engineering"} Command Center
               </h1>
               <Badge
                 variant="outline"
-                className={`font-mono text-xs font-bold ${
+                className={`font-mono text-[10px] font-medium ${
                   wsStatus === "open"
-                    ? "border-emerald-500/50 bg-emerald-950/40 text-emerald-300"
-                    : "border-amber-500/50 bg-amber-950/40 text-amber-300"
+                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+                    : "border-amber-500/30 bg-amber-500/10 text-amber-400"
                 }`}
               >
                 {wsStatus === "open" ? (
-                  <span className="flex items-center gap-1.5">
+                  <span className="flex items-center gap-1">
                     <Wifi className="h-3 w-3 text-emerald-400" />
                     LIVE STREAM ACTIVE
                   </span>
                 ) : (
-                  <span className="flex items-center gap-1.5">
+                  <span className="flex items-center gap-1">
                     <WifiOff className="h-3 w-3 text-amber-400" />
                     RECONNECTING...
                   </span>
                 )}
               </Badge>
             </div>
-            <p className="text-secondary-text mt-1 font-mono text-xs">{project?.root_path}</p>
+            <p className="text-muted-foreground mt-0.5 max-w-xl truncate font-mono text-xs">
+              {project?.root_path}
+            </p>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-1.5">
             <button
               onClick={() => refreshAll()}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-700 bg-gray-800/80 px-3 py-1.5 text-xs font-semibold text-gray-200 transition hover:bg-gray-700"
+              className="border-border/70 bg-secondary/50 text-foreground hover:bg-secondary inline-flex items-center gap-1 rounded-md border px-2.5 py-1 font-mono text-xs font-medium transition"
             >
-              <RotateCcw className="h-3.5 w-3.5 text-indigo-400" />
+              <RotateCcw className="text-primary h-3 w-3" />
               Sync State
             </button>
             <Link
               to={`/projects/${projectId}/copilot`}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-500/40 bg-indigo-600/20 px-3 py-1.5 text-xs font-semibold text-indigo-300 shadow-sm transition hover:bg-indigo-600/30"
+              className="border-primary/25 bg-primary/10 text-primary shadow-xs hover:bg-primary/20 inline-flex items-center gap-1 rounded-md border px-2.5 py-1 font-mono text-xs font-medium transition"
             >
-              <Bot className="h-3.5 w-3.5 text-indigo-400" />
+              <Bot className="h-3 w-3" />
               AI Copilot
             </Link>
             <Link
               to={`/projects/${projectId}/knowledge-graph`}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-3 py-1.5 text-xs font-semibold text-indigo-300 transition hover:bg-indigo-500/20"
+              className="border-border/70 bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground inline-flex items-center gap-1 rounded-md border px-2.5 py-1 font-mono text-xs font-medium transition"
             >
-              <Layers className="h-3.5 w-3.5 text-indigo-400" />
+              <Layers className="text-primary h-3 w-3" />
               Knowledge Graph
             </Link>
             <Link
               to={`/projects/${projectId}/investigation`}
-              className="border-accent-color/30 bg-accent-color/10 text-accent-color hover:bg-accent-color/20 inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition"
+              className="border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 inline-flex items-center gap-1 rounded-md border px-2.5 py-1 font-mono text-xs font-medium transition"
             >
-              <Search className="h-3.5 w-3.5" />
+              <Search className="h-3 w-3" />
               Evidence Graph
             </Link>
           </div>
@@ -185,86 +187,92 @@ export function EngineeringCommandCenter() {
       <IntelligenceCascadeRibbon activeStage={activeStage} />
 
       {/* ── METRIC TRIAD (HEALTH vs RISK vs FORECAST STRENGTH) ─────────────── */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {/* Metric 1: Health Score */}
-        <div className="flex flex-col justify-between rounded-2xl border border-gray-800/80 bg-gray-900/60 p-5 shadow-lg">
+        <div className="border-border/80 bg-card/60 shadow-xs backdrop-blur-xs flex flex-col justify-between rounded-lg border p-3.5 sm:p-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
+            <span className="text-muted-foreground font-mono text-[10px] font-semibold uppercase tracking-wider">
               Project Health
             </span>
-            <span className="text-[10px] font-semibold text-emerald-400">Higher = Better</span>
+            <span className="font-mono text-[10px] font-semibold text-emerald-400">
+              Higher = Better
+            </span>
           </div>
-          <div className="my-2 flex items-baseline gap-2">
-            <span className="font-mono text-3xl font-extrabold text-white">
+          <div className="my-1.5 flex items-baseline gap-1.5">
+            <span className="text-foreground font-mono text-2xl font-bold tabular-nums">
               {health?.overall_health_score ?? 100}
             </span>
-            <span className="font-mono text-sm text-gray-500">/ 100</span>
+            <span className="text-muted-foreground font-mono text-xs">/ 100</span>
             <Badge
               variant="outline"
-              className="ml-auto border-emerald-500/40 bg-emerald-950/40 text-xs font-bold text-emerald-300"
+              className="ml-auto border-emerald-500/30 bg-emerald-500/10 font-mono text-[10px] font-medium text-emerald-400"
             >
               {health?.grade ?? "HEALTHY"}
             </Badge>
           </div>
-          <p className="text-xs text-gray-400">
+          <p className="text-muted-foreground text-[11px]">
             5-Dimension weighted composite derived from historical telemetry.
           </p>
         </div>
 
         {/* Metric 2: Risk Score */}
-        <div className="flex flex-col justify-between rounded-2xl border border-gray-800/80 bg-gray-900/60 p-5 shadow-lg">
+        <div className="border-border/80 bg-card/60 shadow-xs backdrop-blur-xs flex flex-col justify-between rounded-lg border p-3.5 sm:p-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
+            <span className="text-muted-foreground font-mono text-[10px] font-semibold uppercase tracking-wider">
               Security Risk Score
             </span>
-            <span className="text-[10px] font-semibold text-rose-400">Higher = Worse</span>
+            <span className="font-mono text-[10px] font-semibold text-rose-400">
+              Higher = Worse
+            </span>
           </div>
-          <div className="my-2 flex items-baseline gap-2">
+          <div className="my-1.5 flex items-baseline gap-1.5">
             <span
-              className={`font-mono text-3xl font-extrabold ${
+              className={`font-mono text-2xl font-bold tabular-nums ${
                 totalRiskScore > 0 ? "text-rose-400" : "text-emerald-400"
               }`}
             >
               +{totalRiskScore}
             </span>
-            <span className="font-mono text-sm text-gray-500">pts</span>
+            <span className="text-muted-foreground font-mono text-xs">pts</span>
             <Badge
               variant="outline"
-              className={`ml-auto text-xs font-bold ${
+              className={`ml-auto font-mono text-[10px] font-medium ${
                 totalRiskScore > 0
-                  ? "border-rose-500/40 bg-rose-950/40 text-rose-300"
-                  : "border-emerald-500/40 bg-emerald-950/40 text-emerald-300"
+                  ? "border-rose-500/30 bg-rose-500/10 text-rose-400"
+                  : "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
               }`}
             >
               {securityPostureLabel}
             </Badge>
           </div>
-          <p className="text-xs text-gray-400">
+          <p className="text-muted-foreground text-[11px]">
             Active unmitigated AST security rules and credential violations.
           </p>
         </div>
 
         {/* Metric 3: Forecast Strength */}
-        <div className="flex flex-col justify-between rounded-2xl border border-gray-800/80 bg-gray-900/60 p-5 shadow-lg">
+        <div className="border-border/80 bg-card/60 shadow-xs backdrop-blur-xs flex flex-col justify-between rounded-lg border p-3.5 sm:p-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
+            <span className="text-muted-foreground font-mono text-[10px] font-semibold uppercase tracking-wider">
               Forecast Strength
             </span>
-            <span className="text-[10px] font-semibold text-indigo-400">Empirical Baseline</span>
+            <span className="text-primary font-mono text-[10px] font-semibold">
+              Empirical Baseline
+            </span>
           </div>
-          <div className="my-2 flex items-baseline gap-2">
-            <span className="font-mono text-3xl font-extrabold text-indigo-300">
+          <div className="my-1.5 flex items-baseline gap-1.5">
+            <span className="text-primary font-mono text-2xl font-bold tabular-nums">
               {topForecastScore}
             </span>
-            <span className="font-mono text-sm text-gray-500">/ 100</span>
+            <span className="text-muted-foreground font-mono text-xs">/ 100</span>
             <Badge
               variant="outline"
-              className="ml-auto border-indigo-500/40 bg-indigo-950/40 text-xs font-bold text-indigo-300"
+              className="border-primary/30 bg-primary/10 text-primary ml-auto font-mono text-[10px] font-medium"
             >
               {topEvidenceTier}
             </Badge>
           </div>
-          <p className="text-xs text-gray-400">
+          <p className="text-muted-foreground text-[11px]">
             Statistical confidence based on observed commit frequency and drift.
           </p>
         </div>
@@ -275,102 +283,108 @@ export function EngineeringCommandCenter() {
 
       {/* ── SECTION 2: SECURITY & ACTIVE INCIDENTS COCKPIT ──────────────────── */}
       {security && (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
           {/* Active Security Findings */}
-          <div className="space-y-4 rounded-2xl border border-gray-800/80 bg-gray-950 p-6 shadow-xl lg:col-span-6">
+          <div className="border-border/80 bg-card/60 shadow-xs space-y-3 rounded-lg border p-4 lg:col-span-6">
             <div className="flex items-center justify-between">
-              <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-white">
-                <Shield className="h-4 w-4 text-rose-400" />
+              <h3 className="text-foreground flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider">
+                <Shield className="text-destructive h-3.5 w-3.5" />
                 Security Intelligence 2.0
               </h3>
               <Link
                 to={`/projects/${projectId}/investigate`}
-                className="text-xs font-semibold text-indigo-400 hover:text-indigo-300"
+                className="text-primary font-mono text-[11px] font-semibold hover:underline"
               >
                 Investigate All →
               </Link>
             </div>
 
             {security.security_findings && security.security_findings.length > 0 ? (
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 {security.security_findings.slice(0, 3).map((f) => (
                   <div
                     key={f.finding_id}
-                    className="flex items-start justify-between rounded-lg border border-gray-800/80 bg-gray-900/40 p-3"
+                    className="border-border/70 bg-secondary/20 flex items-start justify-between rounded-md border p-2.5"
                   >
                     <div className="space-y-1">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         <Badge
                           variant="outline"
-                          className="border-rose-500/40 bg-rose-950/40 text-[10px] font-bold text-rose-300"
+                          className="border-destructive/40 bg-destructive/10 text-destructive font-mono text-[10px] font-bold"
                         >
                           {f.severity}
                         </Badge>
-                        <span className="font-mono text-xs font-bold text-white">{f.rule_id}</span>
+                        <span className="text-foreground font-mono text-xs font-semibold">
+                          {f.rule_id}
+                        </span>
                       </div>
-                      <p className="font-mono text-xs text-gray-300">{f.file_path}</p>
-                      <p className="text-[11px] text-gray-400">{f.description || f.title}</p>
+                      <p className="text-muted-foreground font-mono text-[11px]">{f.file_path}</p>
+                      <p className="text-muted-foreground/80 text-[11px]">
+                        {f.description || f.title}
+                      </p>
                     </div>
-                    <span className="font-mono text-xs font-bold text-rose-400">
+                    <span className="text-destructive font-mono text-xs font-bold tabular-nums">
                       +{f.risk_contribution} pts
                     </span>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="flex items-center gap-2 rounded-lg border border-gray-800/60 bg-gray-900/20 p-4 text-xs text-emerald-400">
-                <CheckCircle2 className="h-4 w-4" />
-                <span>Zero unmitigated security vulnerabilities in observed telemetry.</span>
+              <div className="flex items-center gap-2 rounded-md border border-emerald-500/20 bg-emerald-500/5 p-3 text-xs text-emerald-500">
+                <CheckCircle2 className="h-4 w-4 shrink-0" />
+                <span className="font-mono text-[11px]">
+                  Zero unmitigated security vulnerabilities in observed telemetry.
+                </span>
               </div>
             )}
           </div>
 
           {/* Active Correlated Incidents */}
-          <div className="space-y-4 rounded-2xl border border-gray-800/80 bg-gray-950 p-6 shadow-xl lg:col-span-6">
+          <div className="border-border/80 bg-card/60 shadow-xs space-y-3 rounded-lg border p-4 lg:col-span-6">
             <div className="flex items-center justify-between">
-              <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-white">
-                <AlertTriangle className="h-4 w-4 text-amber-400" />
+              <h3 className="text-foreground flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider">
+                <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
                 Active Correlated Incidents
               </h3>
               <Link
                 to={`/projects/${projectId}/investigate`}
-                className="text-xs font-semibold text-indigo-400 hover:text-indigo-300"
+                className="text-primary font-mono text-[11px] font-semibold hover:underline"
               >
                 Triage & Resolve →
               </Link>
             </div>
 
             {security.correlated_incidents && security.correlated_incidents.length > 0 ? (
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 {security.correlated_incidents.slice(0, 3).map((inc) => (
                   <div
                     key={inc.incident_id}
-                    className="flex items-start justify-between rounded-lg border border-gray-800/80 bg-gray-900/40 p-3"
+                    className="border-border/70 bg-secondary/20 flex items-start justify-between rounded-md border p-2.5"
                   >
                     <div className="space-y-1">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         <Badge
                           variant="outline"
-                          className="border-amber-500/40 bg-amber-950/40 text-[10px] font-bold text-amber-300"
+                          className="border-amber-500/40 bg-amber-500/10 font-mono text-[10px] font-bold text-amber-500"
                         >
                           {inc.severity}
                         </Badge>
-                        <span className="font-mono text-xs font-bold text-white">
+                        <span className="text-foreground font-mono text-xs font-semibold">
                           {inc.incident_id}
                         </span>
                       </div>
-                      <p className="text-xs font-semibold text-gray-200">{inc.title}</p>
-                      <p className="text-[10px] text-gray-400">
+                      <p className="text-foreground text-xs font-medium">{inc.title}</p>
+                      <p className="text-muted-foreground font-mono text-[10px]">
                         Affected: {inc.affected_files?.join(", ") || "Configuration"}
                       </p>
                     </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <span className="font-mono text-xs font-bold text-amber-400">
+                    <div className="flex shrink-0 flex-col items-end gap-1.5">
+                      <span className="font-mono text-xs font-bold tabular-nums text-amber-500">
                         {inc.risk_score}/100 Risk
                       </span>
                       <Link
                         to={`/projects/${projectId}/investigate`}
-                        className="rounded border border-indigo-500/30 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-semibold text-indigo-300 hover:bg-indigo-500/20"
+                        className="border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 rounded-md border px-2 py-0.5 font-mono text-[10px] font-semibold transition-colors"
                       >
                         Investigate
                       </Link>
@@ -379,9 +393,11 @@ export function EngineeringCommandCenter() {
                 ))}
               </div>
             ) : (
-              <div className="flex items-center gap-2 rounded-lg border border-gray-800/60 bg-gray-900/20 p-4 text-xs text-gray-400">
-                <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                <span>No active incidents requiring immediate engineer triage.</span>
+              <div className="border-border/70 bg-secondary/20 text-muted-foreground flex items-center gap-2 rounded-md border p-3 text-xs">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
+                <span className="font-mono text-[11px]">
+                  No active incidents requiring immediate engineer triage.
+                </span>
               </div>
             )}
           </div>
@@ -389,32 +405,32 @@ export function EngineeringCommandCenter() {
       )}
 
       {/* ── SECTION 3: EMBEDDED AI COPILOT MINI-CONSOLE ────────────────────── */}
-      <div className="space-y-4 rounded-2xl border border-indigo-500/30 bg-indigo-950/20 p-6 shadow-xl">
+      <div className="border-border/80 bg-card/60 shadow-xs space-y-3.5 rounded-lg border p-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600/30 text-indigo-300">
-              <Bot className="h-4 w-4" />
+          <div className="flex items-center gap-2">
+            <div className="bg-primary/10 text-primary flex h-6 w-6 items-center justify-center rounded-md">
+              <Bot className="h-3.5 w-3.5" />
             </div>
             <div>
-              <h3 className="text-sm font-bold uppercase tracking-wider text-white">
+              <h3 className="text-foreground font-mono text-xs font-bold uppercase tracking-wider">
                 AI Engineering Copilot (Evidence-Backed)
               </h3>
-              <p className="text-xs text-gray-400">
+              <p className="text-muted-foreground text-[11px]">
                 Ask anything about project health, security, incidents, or file history.
               </p>
             </div>
           </div>
           <Link
             to={`/projects/${projectId}/copilot`}
-            className="text-xs font-semibold text-indigo-400 hover:text-indigo-300"
+            className="text-primary font-mono text-[11px] font-semibold hover:underline"
           >
-            Open Full Copilot Console →
+            Open Full Console →
           </Link>
         </div>
 
         {/* Suggestion Pills */}
         {suggestions && suggestions.length > 0 && (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {suggestions.slice(0, 4).map((s) => (
               <button
                 key={s.suggestion_id}
@@ -422,9 +438,9 @@ export function EngineeringCommandCenter() {
                   setCopilotInput(s.question);
                   void handleAskCopilot(s.question);
                 }}
-                className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/30 bg-indigo-900/40 px-3 py-1 text-xs font-semibold text-indigo-200 transition hover:bg-indigo-800/60"
+                className="border-border/70 bg-secondary/40 text-foreground/80 hover:border-primary/40 hover:bg-secondary hover:text-foreground inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[11px] font-medium transition-colors"
               >
-                <Sparkles className="h-3 w-3 text-indigo-400" />
+                <Sparkles className="text-primary h-3 w-3" />
                 {s.question}
               </button>
             ))}
@@ -443,14 +459,14 @@ export function EngineeringCommandCenter() {
               }
             }}
             placeholder="Ask DepRadar anything about this project (e.g. 'What should I fix first?')..."
-            className="flex-1 rounded-xl border border-gray-700 bg-gray-900/80 px-4 py-2 text-sm text-white placeholder-gray-500 focus:border-indigo-500 focus:outline-none"
+            className="border-border/80 bg-secondary/30 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-hidden flex-1 rounded-md border px-3 py-1.5 text-xs"
           />
           <button
             onClick={() => {
               void handleAskCopilot(copilotInput);
             }}
             disabled={isAsking || !copilotInput.trim()}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-indigo-500 disabled:opacity-50"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-semibold transition-colors disabled:opacity-50"
           >
             <Send className="h-3.5 w-3.5" />
             {isAsking ? "Querying..." : "Ask"}
@@ -459,56 +475,56 @@ export function EngineeringCommandCenter() {
 
         {/* Grounded Copilot Answer Box */}
         {lastResponse && (
-          <div className="mt-4 space-y-4 rounded-xl border border-gray-800 bg-gray-900/80 p-4">
-            <div className="flex items-center justify-between border-b border-gray-800 pb-2">
-              <div className="flex items-center gap-2">
+          <div className="border-border/70 bg-secondary/20 mt-3 space-y-3 rounded-md border p-3.5">
+            <div className="border-border/60 flex items-center justify-between border-b pb-2">
+              <div className="flex items-center gap-1.5">
                 <Badge
                   variant="outline"
-                  className={`text-[10px] font-bold ${
+                  className={`font-mono text-[10px] font-bold ${
                     lastResponse.answerable
-                      ? "border-emerald-500/40 text-emerald-300"
-                      : "border-rose-500/40 text-rose-300"
+                      ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400"
+                      : "border-destructive/40 text-destructive bg-destructive/10"
                   }`}
                 >
                   {lastResponse.answerable ? "ANSWERABLE" : "UNGROUNDED"}
                 </Badge>
                 <Badge
                   variant="outline"
-                  className="border-indigo-500/30 text-[10px] text-indigo-300"
+                  className="border-primary/30 bg-primary/5 text-primary font-mono text-[10px]"
                 >
                   {lastResponse.intent}
                 </Badge>
               </div>
-              <span className="font-mono text-[10px] text-gray-500">
+              <span className="text-muted-foreground font-mono text-[10px]">
                 Strength: {lastResponse.evidence_strength}
               </span>
             </div>
 
-            <p className="text-xs leading-relaxed text-gray-200">{lastResponse.summary}</p>
+            <p className="text-foreground/90 text-xs leading-relaxed">{lastResponse.summary}</p>
 
             {/* Tri-State Provenance Badges */}
-            <div className="grid grid-cols-1 gap-2 pt-2 sm:grid-cols-3">
-              <div className="rounded-lg border border-emerald-900/40 bg-emerald-950/20 p-2.5">
-                <span className="text-[10px] font-bold text-emerald-400">
-                  [OBSERVED] Factual Telemetry ({lastResponse.observed?.length || 0})
+            <div className="grid grid-cols-1 gap-2 pt-1 sm:grid-cols-3">
+              <div className="rounded-md border border-emerald-500/20 bg-emerald-500/5 p-2">
+                <span className="font-mono text-[10px] font-bold text-emerald-400">
+                  [OBSERVED] Telemetry ({lastResponse.observed?.length || 0})
                 </span>
-                <p className="mt-1 line-clamp-2 text-[11px] text-gray-400">
+                <p className="text-muted-foreground mt-1 line-clamp-2 font-mono text-[10px]">
                   {lastResponse.observed?.[0]?.statement || "None"}
                 </p>
               </div>
-              <div className="rounded-lg border border-indigo-900/40 bg-indigo-950/20 p-2.5">
-                <span className="text-[10px] font-bold text-indigo-400">
-                  [INFERRED] Derived Intelligence ({lastResponse.inferred?.length || 0})
+              <div className="border-primary/20 bg-primary/5 rounded-md border p-2">
+                <span className="text-primary font-mono text-[10px] font-bold">
+                  [INFERRED] Derived ({lastResponse.inferred?.length || 0})
                 </span>
-                <p className="mt-1 line-clamp-2 text-[11px] text-gray-400">
+                <p className="text-muted-foreground mt-1 line-clamp-2 font-mono text-[10px]">
                   {lastResponse.inferred?.[0]?.statement || "None"}
                 </p>
               </div>
-              <div className="rounded-lg border border-amber-900/40 bg-amber-950/20 p-2.5">
-                <span className="text-[10px] font-bold text-amber-400">
-                  [UNKNOWN] Observation Boundaries ({lastResponse.unknown?.length || 0})
+              <div className="rounded-md border border-amber-500/20 bg-amber-500/5 p-2">
+                <span className="font-mono text-[10px] font-bold text-amber-400">
+                  [UNKNOWN] Boundaries ({lastResponse.unknown?.length || 0})
                 </span>
-                <p className="mt-1 line-clamp-2 text-[11px] text-gray-400">
+                <p className="text-muted-foreground mt-1 line-clamp-2 font-mono text-[10px]">
                   {lastResponse.unknown?.[0]?.statement || "None"}
                 </p>
               </div>
@@ -518,13 +534,13 @@ export function EngineeringCommandCenter() {
             {lastResponse.recommendations &&
               lastResponse.recommendations.length > 0 &&
               lastResponse.recommendations[0] && (
-                <div className="flex items-center justify-between rounded-lg border border-indigo-500/30 bg-indigo-950/30 p-2.5">
-                  <span className="text-xs font-semibold text-indigo-200">
+                <div className="border-primary/20 bg-primary/5 flex items-center justify-between rounded-md border p-2">
+                  <span className="text-foreground text-xs font-medium">
                     {lastResponse.recommendations[0]?.title}
                   </span>
                   <button
                     onClick={() => setInspectTarget({ type: "health", id: "overall" })}
-                    className="inline-flex items-center gap-1 rounded bg-indigo-600/30 px-2 py-1 text-[10px] font-bold text-indigo-300 hover:bg-indigo-600/50"
+                    className="bg-primary/10 text-primary hover:bg-primary/20 inline-flex items-center gap-1 rounded-md px-2 py-1 font-mono text-[10px] font-semibold transition-colors"
                   >
                     <HelpCircle className="h-3 w-3" />
                     Why? (Evidence)
@@ -536,7 +552,7 @@ export function EngineeringCommandCenter() {
       </div>
 
       {/* ── SECTION 4: LIVE EVENT STREAM & CAUSAL CASCADE ─────────────────── */}
-      <div className="space-y-4 rounded-2xl border border-gray-800/80 bg-gray-900/60 p-6 shadow-xl">
+      <div className="border-border/80 bg-card/60 shadow-xs space-y-3 rounded-lg border p-4">
         <LiveEventCascadeStream
           projectId={projectId}
           events={liveEvents}
@@ -549,95 +565,97 @@ export function EngineeringCommandCenter() {
       </div>
 
       {/* ── SECTION 5: PREDICTIVE HOTSPOTS & KNOWLEDGE GRAPH SNAPSHOT ───────── */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
         {/* Predictive Hotspots */}
         {predictions && predictions.status === "READY" ? (
-          <div className="space-y-4 rounded-2xl border border-gray-800/80 bg-gray-950 p-6 shadow-xl lg:col-span-6">
+          <div className="border-border/80 bg-card/60 shadow-xs space-y-3 rounded-lg border p-4 lg:col-span-6">
             <div className="flex items-center justify-between">
-              <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-white">
-                <Flame className="h-4 w-4 text-amber-400" />
+              <h3 className="text-foreground flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider">
+                <Flame className="h-3.5 w-3.5 text-amber-500" />
                 Active Engineering Hotspots
               </h3>
               <Link
                 to={`/projects/${projectId}/predictions`}
-                className="text-xs font-semibold text-indigo-400 hover:text-indigo-300"
+                className="text-primary font-mono text-[11px] font-semibold hover:underline"
               >
                 View Predictions →
               </Link>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2">
               {predictions.hotspots.slice(0, 3).map((h: HotspotItem) => (
                 <div
                   key={h.file_path}
-                  className="space-y-2 rounded-lg border border-gray-800/80 bg-gray-900/40 p-3"
+                  className="border-border/70 bg-secondary/20 space-y-1.5 rounded-md border p-2.5"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="max-w-[240px] truncate font-mono text-xs font-bold text-white">
+                    <span className="text-foreground max-w-[240px] truncate font-mono text-xs font-semibold">
                       {h.file_path}
                     </span>
-                    <span className="font-mono text-xs font-bold text-amber-400">
+                    <span className="font-mono text-xs font-bold tabular-nums text-amber-500">
                       {h.hotspot_score}/100
                     </span>
                   </div>
-                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-800">
+                  <div className="bg-secondary h-1 w-full overflow-hidden rounded-full">
                     <div
                       className="h-full rounded-full bg-amber-500"
                       style={{ width: `${h.hotspot_score}%` }}
                     />
                   </div>
-                  <div className="flex justify-between text-[10px] text-gray-500">
+                  <div className="text-muted-foreground flex justify-between font-mono text-[10px]">
                     <span>Subsystem: {h.subsystem}</span>
-                    <span>{h.activity_count} modifications</span>
+                    <span className="tabular-nums">{h.activity_count} modifications</span>
                   </div>
                 </div>
               ))}
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-center rounded-2xl border border-gray-800/80 bg-gray-950 p-6 lg:col-span-6">
-            <span className="text-xs text-gray-500">Awaiting predictive telemetry baseline...</span>
+          <div className="border-border/80 bg-card/60 flex items-center justify-center rounded-lg border p-6 lg:col-span-6">
+            <span className="text-muted-foreground font-mono text-xs">
+              Awaiting predictive telemetry baseline...
+            </span>
           </div>
         )}
 
         {/* Knowledge Graph Snapshot */}
-        <div className="space-y-4 rounded-2xl border border-gray-800/80 bg-gray-950 p-6 shadow-xl lg:col-span-6">
+        <div className="border-border/80 bg-card/60 shadow-xs space-y-3 rounded-lg border p-4 lg:col-span-6">
           <div className="flex items-center justify-between">
-            <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-white">
-              <Layers className="h-4 w-4 text-indigo-400" />
+            <h3 className="text-foreground flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider">
+              <Layers className="text-primary h-3.5 w-3.5" />
               Knowledge Graph & Project Memory
             </h3>
             <Link
               to={`/projects/${projectId}/knowledge-graph`}
-              className="text-xs font-semibold text-indigo-400 hover:text-indigo-300"
+              className="text-primary font-mono text-[11px] font-semibold hover:underline"
             >
               Explore Full Graph →
             </Link>
           </div>
 
-          <div className="space-y-3 rounded-lg border border-gray-800/80 bg-gray-900/40 p-4">
-            <div className="flex items-center justify-between text-xs font-semibold">
-              <span className="text-gray-400">Connected Entities:</span>
-              <span className="font-mono font-bold text-white">
+          <div className="border-border/70 bg-secondary/20 space-y-2.5 rounded-md border p-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">Connected Entities:</span>
+              <span className="text-foreground font-mono font-bold tabular-nums">
                 {graph?.total_nodes ?? 0} Nodes
               </span>
             </div>
-            <div className="flex items-center justify-between text-xs font-semibold">
-              <span className="text-gray-400">Semantic Relationships:</span>
-              <span className="font-mono font-bold text-indigo-300">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">Semantic Relationships:</span>
+              <span className="text-primary font-mono font-bold tabular-nums">
                 {graph?.total_edges ?? 0} Edges
               </span>
             </div>
-            <div className="flex items-center justify-between text-xs font-semibold">
-              <span className="text-gray-400">Subsystem Clusters:</span>
-              <span className="font-mono text-gray-300">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">Subsystem Clusters:</span>
+              <span className="text-foreground/80 font-mono text-[11px]">
                 {graph?.subsystems?.join(", ") || "Configuration, Authentication, API Routes"}
               </span>
             </div>
-            <div className="pt-2">
+            <div className="pt-1.5">
               <Link
                 to={`/projects/${projectId}/knowledge-graph`}
-                className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-600/20 py-2 text-xs font-bold text-indigo-200 transition hover:bg-indigo-600/30"
+                className="border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 inline-flex w-full items-center justify-center gap-1.5 rounded-md border py-1.5 text-xs font-semibold transition-colors"
               >
                 <Layers className="h-3.5 w-3.5" />
                 Explore Knowledge Graph

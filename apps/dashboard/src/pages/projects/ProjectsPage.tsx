@@ -45,19 +45,17 @@ export function ProjectCard({
 
   return (
     <div
-      className={`bg-card border-border hover:border-accent-color/30 group relative flex flex-col rounded-xl border p-6 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md ${
-        pulse
-          ? "ring-accent-color scale-[1.02] shadow-[0_0_15px_rgba(var(--accent-color-rgb),0.2)] ring-2"
-          : ""
+      className={`bg-card/60 border-border/80 hover:border-primary/40 shadow-xs backdrop-blur-xs group relative flex flex-col rounded-lg border p-4 transition-all duration-200 ${
+        pulse ? "ring-accent-color ring-primary/40 ring-2" : ""
       }`}
     >
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-3">
         <Link to={`/projects/${project.id}`} className="min-w-0 flex-1">
-          <h3 className="text-primary-text group-hover:text-accent-color text-base font-bold tracking-tight transition-colors">
+          <h3 className="text-foreground group-hover:text-primary truncate text-sm font-semibold tracking-tight transition-colors">
             {project.display_name}
           </h3>
           <p
-            className="text-secondary-text selection:bg-selection-color mt-1.5 truncate font-mono text-[11px]"
+            className="text-muted-foreground mt-1 truncate font-mono text-[11px]"
             title={project.root_path}
           >
             {project.root_path}
@@ -73,14 +71,14 @@ export function ProjectCard({
               e.stopPropagation();
               setMenuOpen((prev) => !prev);
             }}
-            className="text-muted-foreground hover:text-primary-text hover:bg-card-subtle flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
+            className="text-muted-foreground hover:text-foreground hover:bg-muted/50 flex h-7 w-7 items-center justify-center rounded-md transition-colors"
             aria-label="Project actions"
           >
-            <MoreVertical className="h-4 w-4" />
+            <MoreVertical className="h-3.5 w-3.5" />
           </button>
 
           {menuOpen && (
-            <div className="bg-card border-border absolute right-0 top-full z-30 mt-1 w-52 overflow-hidden rounded-xl border py-1 shadow-xl">
+            <div className="bg-card/95 border-border/80 absolute right-0 top-full z-30 mt-1 w-48 overflow-hidden rounded-md border py-1 shadow-lg backdrop-blur-md">
               <button
                 type="button"
                 onClick={(e) => {
@@ -88,7 +86,7 @@ export function ProjectCard({
                   setMenuOpen(false);
                   void navigate(`/projects/${project.id}`);
                 }}
-                className="text-secondary-text hover:text-primary-text hover:bg-card-subtle flex w-full items-center gap-2.5 px-3.5 py-2 text-left text-xs font-medium transition-colors"
+                className="text-muted-foreground hover:text-foreground hover:bg-muted/50 flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs font-medium transition-colors"
               >
                 <FolderOpen className="h-3.5 w-3.5" />
                 Open Project
@@ -100,14 +98,14 @@ export function ProjectCard({
                   setMenuOpen(false);
                   exportContext();
                 }}
-                className="text-secondary-text hover:text-primary-text hover:bg-card-subtle flex w-full items-center gap-2.5 px-3.5 py-2 text-left text-xs font-medium transition-colors"
+                className="text-muted-foreground hover:text-foreground hover:bg-muted/50 flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs font-medium transition-colors"
               >
                 <FileText className="h-3.5 w-3.5" />
                 Generate Project Context
               </button>
               {onDeleteRequest && (
                 <>
-                  <div className="border-border my-1 border-t" />
+                  <div className="border-border/60 my-1 border-t" />
                   <button
                     type="button"
                     onClick={(e) => {
@@ -115,7 +113,7 @@ export function ProjectCard({
                       setMenuOpen(false);
                       onDeleteRequest(project);
                     }}
-                    className="flex w-full items-center gap-2.5 px-3.5 py-2 text-left text-xs font-medium text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300"
+                    className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs font-medium text-rose-400 transition-colors hover:bg-rose-500/10 hover:text-rose-300"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                     Remove from DepRadar
@@ -129,14 +127,14 @@ export function ProjectCard({
 
       <Link
         to={`/projects/${project.id}`}
-        className="border-border mt-auto flex flex-col gap-y-3.5 border-t pt-4 text-[11px]"
+        className="border-border/60 mt-auto flex flex-col gap-y-2 border-t pt-3 text-[11px]"
       >
         <div>
-          <span className="text-muted-foreground block text-[9px] font-semibold uppercase tracking-wider">
+          <span className="text-muted-foreground block font-mono text-[9px] font-semibold uppercase tracking-wider">
             Last Activity
           </span>
-          <span className="text-primary-text mt-1 flex items-center gap-1 font-semibold">
-            <Clock className="text-accent-color/70 h-3.5 w-3.5" />
+          <span className="text-foreground mt-0.5 flex items-center gap-1 font-mono text-xs font-semibold tabular-nums">
+            <Clock className="text-primary h-3 w-3" />
             {new Date(project.updated_at).toLocaleDateString(undefined, {
               month: "short",
               day: "numeric",
@@ -172,7 +170,7 @@ export function ProjectsPage() {
   const isError = projectsQuery.isError && (!isDemo || realProjects.length === 0);
 
   return (
-    <div className="animate-fade-in-up flex flex-1 flex-col p-8">
+    <div className="animate-fade-in-up mx-auto flex w-full max-w-[1400px] flex-1 flex-col px-4 py-4 sm:px-6 md:py-6">
       <PageHeader
         title="Projects"
         description={
@@ -184,7 +182,7 @@ export function ProjectsPage() {
 
       {isLoading ? (
         <div className="flex flex-1 items-center justify-center p-8">
-          <div className="border-accent-color/30 h-8 w-8 animate-spin rounded-full border-2 border-t-transparent" />
+          <div className="border-primary h-6 w-6 animate-spin rounded-full border-2 border-t-transparent" />
         </div>
       ) : isError ? (
         <ErrorState message={projectsQuery.error?.message || "Failed to load projects."} />
@@ -194,7 +192,7 @@ export function ProjectsPage() {
           description="DepRadar hasn't observed any development activity yet."
         />
       ) : (
-        <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {projects.map((project) => (
             <ProjectCard
               key={project.id}

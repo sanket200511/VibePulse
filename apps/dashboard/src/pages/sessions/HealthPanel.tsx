@@ -31,25 +31,25 @@ function SignalCard({ category, metric }: { category: HealthCategory; metric: He
   );
 
   return (
-    <div className="bg-card border-border hover:border-accent-color/30 rounded-xl border p-5 transition-colors">
-      <div className="flex items-start gap-4">
-        <div className="bg-muted-color/20 text-accent-color shrink-0 rounded-lg p-2">
-          <Icon className="h-5 w-5" />
+    <div className="border-border/80 bg-card/60 shadow-xs hover:border-primary/40 rounded-lg border p-4 transition-colors">
+      <div className="flex items-start gap-3">
+        <div className="bg-primary/10 text-primary shrink-0 rounded-md p-2">
+          <Icon className="h-4 w-4" />
         </div>
-        <div className="flex flex-1 flex-col gap-1.5">
-          <h4 className="text-secondary-text text-[10px] font-bold uppercase tracking-widest">
+        <div className="flex flex-1 flex-col gap-1">
+          <h4 className="text-muted-foreground font-mono text-[10px] font-bold uppercase tracking-wider">
             {CATEGORY_LABEL[category] || metric.label}
           </h4>
-          <p className="text-primary-text text-sm font-bold">{metric.headline}</p>
+          <p className="text-foreground text-xs font-semibold">{metric.headline}</p>
           {metric.evidence && (
-            <p className="text-secondary-text mt-1 text-xs leading-relaxed">{metric.evidence}</p>
+            <p className="text-muted-foreground text-xs leading-relaxed">{metric.evidence}</p>
           )}
           {metricEntries.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="mt-2 flex flex-wrap gap-1.5">
               {metricEntries.map(([key, value]) => (
                 <span
                   key={key}
-                  className="bg-muted-color/10 border-border text-muted-foreground rounded border px-2 py-1 font-mono text-[10px]"
+                  className="border-border/70 bg-secondary/30 text-foreground rounded-md border px-1.5 py-0.5 font-mono text-[10px] tabular-nums"
                 >
                   {key}: {formatMetricValue(value)}
                 </span>
@@ -71,21 +71,21 @@ export function HealthPanel({ health }: HealthPanelProps) {
 
   if (populatedCategories.length === 0) {
     return (
-      <p className="text-muted-foreground border-border rounded-xl border border-dashed p-8 text-center text-sm">
+      <p className="border-border/80 text-muted-foreground rounded-lg border border-dashed p-6 text-center font-mono text-xs">
         Not enough activity in this session to extract deterministic signals.
       </p>
     );
   }
 
   return (
-    <section className="flex flex-col gap-6">
-      <div className="bg-muted-color/10 border-accent-color rounded-r-xl border-l-2 p-4">
-        <p className="text-primary-text text-sm font-medium leading-relaxed">
+    <section className="flex flex-col gap-4">
+      <div className="border-primary bg-primary/5 rounded-r-lg border-l-2 p-3.5">
+        <p className="text-foreground text-xs font-medium leading-relaxed">
           {health.summary.narrative}
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {populatedCategories.map((category) => {
           const metric = health.metrics[category];
           if (!metric) return null;
@@ -94,18 +94,18 @@ export function HealthPanel({ health }: HealthPanelProps) {
       </div>
 
       {health.summary.guidance.length > 0 && (
-        <div className="mt-2">
-          <h3 className="text-secondary-text mb-3 text-xs font-bold uppercase tracking-widest">
+        <div className="mt-1">
+          <h3 className="text-muted-foreground mb-2 font-mono text-[10px] font-bold uppercase tracking-wider">
             Observed Guidance
           </h3>
-          <ul className="flex flex-col gap-2">
+          <ul className="flex flex-col gap-1.5">
             {health.summary.guidance.map((item) => (
               <li
                 key={item}
-                className="bg-background border-border flex items-start gap-3 rounded-lg border p-3"
+                className="border-border/70 bg-secondary/20 flex items-start gap-2.5 rounded-md border p-2.5"
               >
-                <div className="bg-accent-color mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" />
-                <span className="text-secondary-text text-sm">{item}</span>
+                <div className="bg-primary mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" />
+                <span className="text-muted-foreground text-xs">{item}</span>
               </li>
             ))}
           </ul>

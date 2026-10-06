@@ -34,20 +34,22 @@ export function LiveEventCascadeStream({
     : [];
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
       {/* ── LEFT: LIVE EVENT STREAM ────────────────────────────────────────── */}
-      <div className="space-y-3 lg:col-span-6">
+      <div className="space-y-2 lg:col-span-6">
         <div className="flex items-center justify-between">
-          <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-white">
-            <Radio className="h-4 w-4 animate-pulse text-emerald-400" />
+          <h3 className="text-foreground flex items-center gap-1.5 font-mono text-xs font-semibold uppercase tracking-wider">
+            <Radio className="h-3.5 w-3.5 animate-pulse text-emerald-400" />
             Live Event Stream
           </h3>
-          <span className="font-mono text-xs text-gray-500">{events.length} events observed</span>
+          <span className="text-muted-foreground font-mono text-[11px]">
+            {events.length} events observed
+          </span>
         </div>
 
-        <div className="max-h-[460px] space-y-2 overflow-y-auto pr-1">
+        <div className="max-h-[440px] space-y-1.5 overflow-y-auto pr-1">
           {events.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-gray-800 bg-gray-950/40 p-6 text-center text-xs text-gray-500">
+            <div className="border-border/80 bg-card/40 text-muted-foreground rounded-lg border border-dashed p-5 text-center font-mono text-xs">
               Awaiting live filesystem events from Telemetry Daemon...
             </div>
           ) : (
@@ -62,34 +64,34 @@ export function LiveEventCascadeStream({
                 <button
                   key={ev.id}
                   onClick={() => onSelectEvent(ev.id)}
-                  className={`w-full rounded-lg border p-3 text-left transition-all duration-200 ${
+                  className={`w-full rounded-md border p-2.5 text-left transition-all duration-150 ${
                     isSelected
-                      ? "border-indigo-500/80 bg-indigo-950/40 shadow-md ring-1 ring-indigo-500/30"
-                      : "border-gray-800 bg-gray-950/70 hover:border-gray-700 hover:bg-gray-900/60"
+                      ? "border-primary/50 bg-secondary/80 shadow-xs ring-primary/30 ring-1"
+                      : "border-border/70 bg-secondary/30 hover:border-border hover:bg-secondary/60"
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <FileCode className="h-3.5 w-3.5 shrink-0 text-indigo-400" />
-                      <span className="max-w-[220px] truncate font-mono text-xs font-bold text-white">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex min-w-0 items-center gap-1.5">
+                      <FileCode className="text-primary h-3.5 w-3.5 shrink-0" />
+                      <span className="text-foreground truncate font-mono text-xs font-semibold">
                         {ev.file_path || "System Session"}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex shrink-0 items-center gap-1.5">
                       {hasFindings && (
-                        <span className="flex h-2 w-2 animate-ping rounded-full bg-rose-500" />
+                        <span className="flex h-1.5 w-1.5 animate-ping rounded-full bg-rose-500" />
                       )}
                       <Badge
                         variant="outline"
-                        className="border-gray-700 font-mono text-[9px] text-gray-400"
+                        className="border-border/70 text-muted-foreground font-mono text-[9px]"
                       >
                         {ev.event_type}
                       </Badge>
                     </div>
                   </div>
 
-                  <div className="mt-2 flex items-center justify-between text-[10px] text-gray-500">
+                  <div className="text-muted-foreground mt-1.5 flex items-center justify-between font-mono text-[10px]">
                     <span className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />
                       {new Date(ev.timestamp).toLocaleTimeString()}
@@ -104,47 +106,47 @@ export function LiveEventCascadeStream({
       </div>
 
       {/* ── RIGHT: INTELLIGENCE CASCADE INSPECTOR ─────────────────────────── */}
-      <div className="space-y-3 lg:col-span-6">
+      <div className="space-y-2 lg:col-span-6">
         <div className="flex items-center justify-between">
-          <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-white">
-            <Sparkles className="h-4 w-4 text-indigo-400" />
+          <h3 className="text-foreground flex items-center gap-1.5 font-mono text-xs font-semibold uppercase tracking-wider">
+            <Sparkles className="text-primary h-3.5 w-3.5" />
             Causal Intelligence Cascade
           </h3>
-          <Badge variant="outline" className="border-indigo-500/30 text-[10px] text-indigo-300">
+          <Badge variant="outline" className="border-primary/25 text-primary font-mono text-[10px]">
             EVIDENCE-BACKED
           </Badge>
         </div>
 
         {selectedEvent ? (
-          <div className="space-y-3.5 rounded-xl border border-gray-800 bg-gray-950/80 p-4">
+          <div className="border-border/80 bg-card/60 shadow-xs backdrop-blur-xs space-y-2.5 rounded-lg border p-3.5">
             {/* Step 1: Observation */}
-            <div className="space-y-1 rounded-lg border border-blue-900/40 bg-blue-950/20 p-3">
+            <div className="space-y-0.5 rounded-md border border-sky-500/20 bg-sky-500/5 p-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase text-blue-400">
+                <span className="font-mono text-[10px] font-semibold uppercase text-sky-400">
                   1. Raw Observation
                 </span>
                 <Badge
                   variant="outline"
-                  className="border-blue-700/60 bg-blue-950 text-[9px] text-blue-300"
+                  className="border-sky-500/30 bg-sky-500/10 font-mono text-[9px] text-sky-400"
                 >
                   OBSERVED
                 </Badge>
               </div>
-              <p className="font-mono text-xs font-bold text-white">
+              <p className="text-foreground truncate font-mono text-xs font-semibold">
                 {selectedEvent.file_path || "Session Observation"}
               </p>
-              <p className="text-[10px] text-gray-400">
+              <p className="text-muted-foreground font-mono text-[10px] tabular-nums">
                 Timestamp: {new Date(selectedEvent.timestamp).toISOString()}
               </p>
             </div>
 
             {/* Step 2: AST Detection */}
-            <div className="space-y-1 rounded-lg border border-rose-900/40 bg-rose-950/20 p-3">
+            <div className="space-y-1 rounded-md border border-rose-500/20 bg-rose-500/5 p-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase text-rose-400">
+                <span className="font-mono text-[10px] font-semibold uppercase text-rose-400">
                   2. AST & Security Guardian
                 </span>
-                <span className="font-mono text-xs font-bold text-rose-300">
+                <span className="font-mono text-xs font-semibold text-rose-400">
                   {relatedFindings.length} Finding(s)
                 </span>
               </div>
@@ -152,77 +154,77 @@ export function LiveEventCascadeStream({
                 relatedFindings.map((f: SecurityFinding) => (
                   <div
                     key={f.finding_id}
-                    className="mt-1 space-y-0.5 border-t border-rose-900/30 pt-1"
+                    className="mt-1 space-y-0.5 border-t border-rose-500/20 pt-1"
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono text-xs font-bold text-white">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-foreground truncate font-mono text-xs font-semibold">
                         {f.title} ({f.rule_id})
                       </span>
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex shrink-0 items-center gap-1.5">
                         {onInspectWhy && (
                           <button
                             onClick={() => onInspectWhy("security", f.finding_id)}
-                            className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300"
+                            className="text-primary font-mono text-[10px] font-medium hover:underline"
                           >
                             Why?
                           </button>
                         )}
                         <Badge
                           variant="outline"
-                          className="border-rose-600/50 text-[9px] font-bold text-rose-400"
+                          className="border-rose-500/30 bg-rose-500/10 font-mono text-[9px] font-bold text-rose-400"
                         >
                           {f.severity}
                         </Badge>
                       </div>
                     </div>
                     {f.redacted_evidence && (
-                      <pre className="overflow-x-auto rounded bg-black/50 p-1.5 font-mono text-[10px] text-rose-300">
+                      <pre className="overflow-x-auto rounded-md border border-rose-500/20 bg-black/60 p-1.5 font-mono text-[10px] text-rose-300">
                         {f.redacted_evidence}
                       </pre>
                     )}
                   </div>
                 ))
               ) : (
-                <p className="text-xs text-gray-400">
+                <p className="text-muted-foreground text-xs">
                   Zero static analysis violations detected in this event.
                 </p>
               )}
             </div>
 
             {/* Step 3: Project Health Impact */}
-            <div className="space-y-1 rounded-lg border border-indigo-900/40 bg-indigo-950/20 p-3">
+            <div className="border-primary/20 bg-primary/5 space-y-0.5 rounded-md border p-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase text-indigo-400">
+                <span className="text-primary font-mono text-[10px] font-semibold uppercase">
                   3. Health & Priority Synthesis
                 </span>
-                <span className="font-mono text-xs font-bold text-indigo-300">
+                <span className="text-foreground font-mono text-xs font-bold tabular-nums">
                   {health?.overall_health_score ?? "--"}/100
                 </span>
               </div>
-              <p className="text-xs text-gray-300">
-                Security Health: {health?.security_health.score}/100 | Stability:{" "}
+              <p className="text-muted-foreground font-mono text-xs">
+                Security: {health?.security_health.score}/100 | Stability:{" "}
                 {health?.engineering_stability.score}/100
               </p>
             </div>
 
             {/* Step 4: Action / Investigation Link */}
-            <div className="pt-2 text-right">
+            <div className="pt-1.5 text-right">
               <button
                 onClick={() => {
                   void navigate(
                     `/projects/${projectId}/investigation?incidentId=${encodeURIComponent(selectedEvent.id)}`,
                   );
                 }}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-indigo-500"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 font-mono text-xs font-medium transition"
               >
-                <Search className="h-3.5 w-3.5" />
+                <Search className="h-3 w-3" />
                 Investigate in Engine 3.0
-                <ArrowRight className="h-3.5 w-3.5" />
+                <ArrowRight className="h-3 w-3" />
               </button>
             </div>
           </div>
         ) : (
-          <div className="rounded-xl border border-dashed border-gray-800 bg-gray-950/40 p-8 text-center text-xs text-gray-500">
+          <div className="border-border/80 bg-card/40 text-muted-foreground rounded-lg border border-dashed p-6 text-center font-mono text-xs">
             Select an event from the stream to inspect its causal downstream intelligence.
           </div>
         )}

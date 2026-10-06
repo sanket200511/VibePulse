@@ -67,19 +67,19 @@ export function TimelineScrubber() {
   return (
     <div
       data-tour="time-machine-scrubber"
-      className={`w-full py-4 ${disabled ? "pointer-events-none opacity-50" : ""}`}
+      className={`w-full py-3 ${disabled ? "pointer-events-none opacity-40" : ""}`}
     >
-      <div className="text-secondary-text mb-4 flex items-center justify-between text-xs font-medium">
-        <span className="font-mono">{new Date(minTime).toLocaleDateString()}</span>
-        <span className="text-primary-text font-mono font-bold">
+      <div className="text-muted-foreground mb-2 flex items-center justify-between font-mono text-[11px] font-medium tabular-nums">
+        <span>{new Date(minTime).toLocaleDateString()}</span>
+        <span className="text-foreground border-border/70 bg-secondary/40 rounded-md border px-2 py-0.5 font-semibold">
           {new Date(clampedSelected).toLocaleString()}
         </span>
-        <span className="font-mono">{new Date(maxTime).toLocaleDateString()}</span>
+        <span>{new Date(maxTime).toLocaleDateString()}</span>
       </div>
 
       <div
         ref={trackRef}
-        className="group relative flex h-6 cursor-pointer items-center"
+        className="group relative flex h-5 cursor-pointer items-center"
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -93,10 +93,10 @@ export function TimelineScrubber() {
         aria-label="Engineering Time Machine Scrubber"
       >
         {/* Baseline Track */}
-        <div className="bg-border absolute left-0 right-0 h-1 overflow-hidden rounded-full">
+        <div className="bg-muted/60 border-border/60 absolute left-0 right-0 h-1.5 overflow-hidden rounded-sm border">
           {/* Active Fill */}
           <div
-            className="bg-accent-color/50 absolute bottom-0 left-0 top-0 transition-none"
+            className="bg-primary/50 absolute bottom-0 left-0 top-0 transition-none"
             style={{ width: `${cursorPct}%` }}
           />
         </div>
@@ -108,13 +108,13 @@ export function TimelineScrubber() {
           const isPast = mTime <= clampedSelected;
 
           let color = "bg-muted-foreground";
-          if (m.kind === "SECURITY_FINDING") color = "bg-red-500";
-          else if (m.kind === "SESSION_START") color = "bg-blue-400";
+          if (m.kind === "SECURITY_FINDING") color = "bg-rose-500";
+          else if (m.kind === "SESSION_START") color = "bg-primary";
 
           return (
             <div
               key={m.id}
-              className={`absolute top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full ${color} ${isPast ? "opacity-100" : "opacity-30"} transition-opacity`}
+              className={`rounded-xs absolute top-1/2 h-2.5 w-1 -translate-x-1/2 -translate-y-1/2 ${color} ${isPast ? "opacity-100" : "opacity-30"} transition-opacity`}
               style={{ left: `${mPct}%` }}
               title={m.title}
             />
@@ -123,15 +123,15 @@ export function TimelineScrubber() {
 
         {/* Cursor / Handle */}
         <div
-          className="bg-background border-accent-color group-focus-visible:ring-accent-color group-focus-visible:ring-offset-background absolute top-1/2 flex h-4 w-4 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 shadow-[0_0_10px_rgba(var(--accent-color-rgb),0.5)] transition-none focus:outline-none group-focus-visible:ring-2 group-focus-visible:ring-offset-2 motion-reduce:transition-none"
+          className="bg-background border-primary group-focus-visible:ring-primary/40 rounded-xs shadow-xs absolute top-1/2 flex h-4 w-2.5 -translate-x-1/2 -translate-y-1/2 items-center justify-center border-2 transition-none focus:outline-none group-focus-visible:ring-2 motion-reduce:transition-none"
           style={{ left: `${cursorPct}%` }}
         >
-          <div className="bg-accent-color h-1.5 w-1.5 rounded-full" />
+          <div className="bg-primary rounded-xs h-1.5 w-0.5" />
         </div>
       </div>
 
       {!disabled && (
-        <div className="text-muted-foreground mt-2 text-center text-[10px] font-bold uppercase tracking-widest">
+        <div className="text-muted-foreground mt-1.5 text-center font-mono text-[10px] font-semibold uppercase tracking-wider">
           Historical Reconstruction Active
         </div>
       )}

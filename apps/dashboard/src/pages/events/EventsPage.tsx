@@ -16,7 +16,7 @@ export function EventsPage() {
   const status = STATUS_BADGE[connectionStatus];
 
   return (
-    <div className="flex flex-1 flex-col p-8">
+    <div className="animate-fade-in-up mx-auto flex w-full max-w-[1400px] flex-1 flex-col space-y-4 px-4 py-4 sm:px-6 md:py-6">
       <PageHeader
         title="Live Event Feed"
         description="Real-time file activity observed across your project."
@@ -25,16 +25,16 @@ export function EventsPage() {
 
       <SessionBanner />
 
-      <div className="border-border bg-card overflow-hidden rounded-[16px] border">
+      <div className="border-border/80 bg-card/60 shadow-xs overflow-hidden rounded-lg border">
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-left">
             <thead>
-              <tr className="border-border text-muted-foreground border-b text-xs uppercase">
-                <th className="w-8 px-4 py-3 font-medium"></th>
-                <th className="px-4 py-3 font-medium">Time</th>
-                <th className="px-4 py-3 font-medium">Event</th>
-                <th className="px-4 py-3 font-medium">File</th>
-                <th className="px-4 py-3 font-medium">Language</th>
+              <tr className="border-border/80 bg-secondary/40 text-muted-foreground border-b font-mono text-[10px] font-bold uppercase tracking-wider">
+                <th className="w-8 px-3 py-2.5"></th>
+                <th className="px-3 py-2.5">Time</th>
+                <th className="px-3 py-2.5">Event</th>
+                <th className="px-3 py-2.5">File</th>
+                <th className="px-3 py-2.5">Language</th>
               </tr>
             </thead>
             <tbody>
@@ -50,11 +50,15 @@ export function EventsPage() {
         {isError && <ErrorState message="We couldn't reach the API. Retrying in the background…" />}
 
         {!isLoading && !isError && events.length === 0 && (
-          <div className="p-8">
+          <div className="p-6">
             <EmptyState
               title="No events yet"
               description="Save a file in an observed project and it will appear here instantly."
-              footer={<span>Tip: Ensure the DepRadar Daemon is running in your terminal.</span>}
+              footer={
+                <span className="font-mono text-[11px]">
+                  Tip: Ensure the DepRadar Daemon is running in your terminal.
+                </span>
+              }
             />
           </div>
         )}

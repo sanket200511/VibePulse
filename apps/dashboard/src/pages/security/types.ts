@@ -27,6 +27,12 @@ export interface SecurityFinding {
   where?: string | null;
   remediation: string;
   risk_contribution: number;
+  detection_source?: "deterministic" | "ml" | "hybrid";
+  ml_classification?: "REAL_SECRET" | "PLACEHOLDER_OR_EXAMPLE" | "NOT_SECRET" | null;
+  ml_confidence?: number | null;
+  ml_model?: string | null;
+  ml_version?: string | null;
+  truth_state?: "OBSERVED" | "INFERRED" | "UNKNOWN";
 }
 
 export interface SensitiveFileDetail {

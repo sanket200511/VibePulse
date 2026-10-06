@@ -48,10 +48,10 @@ export function CopilotPage() {
   };
 
   return (
-    <div className="animate-fade-in-up bg-background text-foreground flex flex-1 flex-col space-y-6 p-6 md:p-8">
+    <div className="animate-fade-in-up text-foreground mx-auto flex w-full max-w-[1400px] flex-1 flex-col space-y-6 px-4 py-4 sm:px-6 md:py-6">
       {/* ── BREADCRUMB HEADER ─────────────────────────────────────────────────── */}
-      <div>
-        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="space-y-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <Breadcrumbs
             items={[
               { label: "Projects", to: "/projects" },
@@ -61,31 +61,31 @@ export function CopilotPage() {
           />
           <Link
             to={`/projects/${projectId}`}
-            className="text-secondary-text hover:text-primary-text inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
+            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-xs font-medium transition-colors"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Back to Project Story
           </Link>
         </div>
 
-        <div className="border-border flex flex-col gap-4 border-b pb-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-primary-text flex items-center gap-3 text-2xl font-extrabold tracking-tight md:text-3xl">
-              <Bot className="h-7 w-7 text-indigo-400" />
+            <h1 className="text-foreground flex items-center gap-2 text-xl font-bold tracking-tight">
+              <Bot className="text-primary h-5 w-5" />
               AI Engineering Copilot
             </h1>
-            <p className="text-secondary-text mt-1 text-xs md:text-sm">
-              Ask anything about this codebase. Evidence-first answers grounded strictly in
-              PostgreSQL historical telemetry.
+            <p className="text-muted-foreground mt-1 text-xs">
+              Ask anything about this codebase. Evidence-first answers grounded strictly in verified
+              historical telemetry.
             </p>
           </div>
 
           <div className="flex items-center gap-2">
             <Badge
               variant="outline"
-              className="border-indigo-500/30 bg-indigo-950/20 py-1 text-xs text-indigo-300"
+              className="border-border/80 bg-secondary/30 text-muted-foreground font-mono text-[10px]"
             >
-              <Sparkles className="mr-1 h-3.5 w-3.5 text-indigo-400" />
+              <Sparkles className="text-primary mr-1 h-3 w-3" />
               Zero-Hallucination Grounded
             </Badge>
           </div>
@@ -93,30 +93,30 @@ export function CopilotPage() {
       </div>
 
       {/* ── QUERY CONSOLE ─────────────────────────────────────────────────── */}
-      <div className="bg-card border-border space-y-4 rounded-2xl border p-5 shadow-xl backdrop-blur-xl">
+      <div className="border-border/80 bg-card/60 space-y-3 rounded-lg border p-4 shadow-sm">
         <form onSubmit={handleSubmit} className="relative flex items-center">
-          <Search className="text-secondary-text absolute left-4 h-5 w-5" />
+          <Search className="text-muted-foreground absolute left-3.5 h-4 w-4" />
           <input
             type="text"
             value={inputQuery}
             onChange={(e) => setInputQuery(e.target.value)}
             placeholder="Ask DepRadar anything... (e.g., 'What should I fix first?', 'Why is auth.py risky?')"
-            className="bg-card-subtle border-border text-primary-text placeholder:text-muted-foreground w-full rounded-xl border py-3.5 pl-12 pr-28 text-sm shadow-inner focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="border-border/80 bg-background/80 text-foreground placeholder:text-muted-foreground/60 focus:border-primary w-full rounded-md border py-2 pl-10 pr-24 font-mono text-xs shadow-inner focus:outline-none"
             disabled={isAsking}
           />
           <button
             type="submit"
             disabled={!inputQuery.trim() || isAsking}
-            className="absolute right-2.5 inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-md transition hover:bg-indigo-500 disabled:opacity-50"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 absolute right-1.5 inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold shadow-sm transition disabled:opacity-50"
           >
             {isAsking ? (
               <>
-                <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
                 <span>Thinking...</span>
               </>
             ) : (
               <>
-                <Send className="h-3.5 w-3.5" />
+                <Send className="h-3 w-3" />
                 <span>Ask</span>
               </>
             )}
@@ -125,21 +125,21 @@ export function CopilotPage() {
 
         {/* ── STATE-DRIVEN SUGGESTIONS ───────────────────────────────────────── */}
         {!isLoadingSuggestions && suggestions.length > 0 && (
-          <div className="space-y-2 border-t border-gray-800/60 pt-2">
+          <div className="border-border/60 space-y-1.5 border-t pt-2">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+              <span className="text-muted-foreground font-mono text-[10px] font-semibold uppercase tracking-wider">
                 Suggested for current repository state:
               </span>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5">
               {suggestions.map((sug) => (
                 <button
                   key={sug.suggestion_id}
                   onClick={() => handleSuggestionClick(sug.question)}
                   disabled={isAsking}
-                  className="group inline-flex items-center gap-2 rounded-lg border border-gray-800 bg-gray-900/50 px-3 py-1.5 text-xs text-gray-300 transition hover:border-indigo-500/40 hover:bg-gray-800/80 hover:text-white"
+                  className="border-border/70 bg-secondary/30 text-muted-foreground hover:border-primary/60 hover:bg-secondary/60 hover:text-foreground group inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs transition-colors"
                 >
-                  <span className="text-indigo-400 transition-transform group-hover:translate-x-0.5">
+                  <span className="text-primary transition-transform group-hover:translate-x-0.5">
                     ↳
                   </span>
                   <span>{sug.question}</span>
@@ -152,28 +152,28 @@ export function CopilotPage() {
 
       {/* ── ERROR DISPLAY ──────────────────────────────────────────────────── */}
       {queryError && (
-        <div className="flex items-center gap-3 rounded-xl border border-rose-500/30 bg-rose-950/20 p-4 text-xs text-rose-300">
-          <ShieldAlert className="h-5 w-5 flex-shrink-0 text-rose-400" />
+        <div className="flex items-center gap-2.5 rounded-lg border border-rose-500/30 bg-rose-950/20 p-3 text-xs text-rose-300">
+          <ShieldAlert className="h-4 w-4 flex-shrink-0 text-rose-400" />
           <div>{queryError.message}</div>
         </div>
       )}
 
       {/* ── ANSWER VIEW ────────────────────────────────────────────────────── */}
       {lastResponse && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* ── SUMMARY CARD ───────────────────────────────────────────────── */}
-          <div className="space-y-4 rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-gray-900/90 via-indigo-950/10 to-gray-900/90 p-6 shadow-xl">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-800/80 pb-4">
+          <div className="border-border/80 bg-card/60 space-y-3 rounded-lg border p-4 shadow-sm">
+            <div className="border-border/60 flex flex-wrap items-center justify-between gap-2 border-b pb-3">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-gray-400">Query:</span>
-                <span className="text-sm font-bold italic text-white">
+                <span className="text-muted-foreground font-mono text-xs">Query:</span>
+                <span className="text-foreground font-mono text-xs font-semibold">
                   &ldquo;{lastResponse.query}&rdquo;
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <Badge
                   variant="outline"
-                  className="border-gray-700 bg-gray-800 text-[11px] text-gray-300"
+                  className="border-border/80 bg-secondary/30 text-muted-foreground font-mono text-[10px]"
                 >
                   Intent: {lastResponse.intent}
                 </Badge>
@@ -181,8 +181,8 @@ export function CopilotPage() {
                   variant="outline"
                   className={
                     lastResponse.answerable
-                      ? "border-emerald-500/40 bg-emerald-950/20 text-[11px] text-emerald-300"
-                      : "border-amber-500/40 bg-amber-950/20 text-[11px] text-amber-300"
+                      ? "border-emerald-500/30 bg-emerald-500/10 font-mono text-[10px] text-emerald-400"
+                      : "border-amber-500/30 bg-amber-500/10 font-mono text-[10px] text-amber-400"
                   }
                 >
                   {lastResponse.answerable ? "Grounded in Telemetry" : "Ungrounded / Out of Scope"}
@@ -190,22 +190,22 @@ export function CopilotPage() {
               </div>
             </div>
 
-            <div className="text-sm font-medium leading-relaxed text-gray-200">
-              {lastResponse.summary}
-            </div>
+            <div className="text-foreground text-xs leading-relaxed">{lastResponse.summary}</div>
 
             {/* Next actions ribbon */}
             {lastResponse.next_actions.length > 0 && (
-              <div className="flex flex-wrap items-center gap-2 pt-2">
-                <span className="text-xs font-semibold text-gray-400">Navigate to:</span>
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <span className="text-muted-foreground font-mono text-[10px] font-semibold uppercase tracking-wider">
+                  Navigate to:
+                </span>
                 {lastResponse.next_actions.map((act, i) => (
                   <Link
                     key={i}
                     to={act.url}
-                    className="inline-flex items-center gap-1 rounded-md bg-gray-800 px-2.5 py-1 text-xs font-medium text-gray-300 transition hover:bg-gray-700 hover:text-white"
+                    className="border-border/80 bg-secondary/40 text-foreground hover:bg-secondary inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium transition-colors"
                   >
                     <span>{act.label}</span>
-                    <ChevronRight className="h-3 w-3" />
+                    <ChevronRight className="text-muted-foreground h-3 w-3" />
                   </Link>
                 ))}
               </div>
@@ -213,36 +213,38 @@ export function CopilotPage() {
           </div>
 
           {/* ── 3-COLUMN FACT DECOMPOSITION ───────────────────────────────── */}
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             {/* Column 1: OBSERVED FACTS */}
-            <div className="space-y-3 rounded-2xl border border-emerald-500/20 bg-gray-950/60 p-5">
-              <div className="flex items-center justify-between border-b border-gray-800 pb-2.5">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+            <div className="bg-card/60 space-y-2.5 rounded-lg border border-emerald-500/30 p-4">
+              <div className="border-border/60 flex items-center justify-between border-b pb-2">
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                  <span className="font-mono text-xs font-semibold uppercase tracking-wider text-emerald-400">
                     [OBSERVED] Ground Truth
                   </span>
                 </div>
                 <Badge
                   variant="outline"
-                  className="border-emerald-500/30 bg-emerald-950/20 text-[10px] text-emerald-300"
+                  className="border-emerald-500/30 bg-emerald-500/10 font-mono text-[9px] text-emerald-400"
                 >
                   {lastResponse.observed.length} facts
                 </Badge>
               </div>
 
               {lastResponse.observed.length === 0 ? (
-                <p className="text-xs italic text-gray-500">No direct raw telemetry facts.</p>
+                <p className="text-muted-foreground text-xs italic">
+                  No direct raw telemetry facts.
+                </p>
               ) : (
-                <ul className="space-y-2.5 text-xs text-gray-300">
+                <ul className="text-foreground space-y-2 text-xs">
                   {lastResponse.observed.map((fact, idx) => (
                     <li
                       key={idx}
-                      className="space-y-1 rounded-lg border border-gray-800/80 bg-gray-900/40 p-2.5"
+                      className="border-border/60 bg-secondary/20 space-y-0.5 rounded-md border p-2"
                     >
                       <div className="leading-relaxed">{fact.statement}</div>
                       {fact.source_reference && (
-                        <div className="font-mono text-[10px] text-gray-500">
+                        <div className="text-muted-foreground font-mono text-[10px]">
                           ref: {fact.source_reference}
                         </div>
                       )}
@@ -253,34 +255,34 @@ export function CopilotPage() {
             </div>
 
             {/* Column 2: INFERRED INTELLIGENCE */}
-            <div className="space-y-3 rounded-2xl border border-indigo-500/20 bg-gray-950/60 p-5">
-              <div className="flex items-center justify-between border-b border-gray-800 pb-2.5">
-                <div className="flex items-center gap-2">
-                  <Activity className="h-4 w-4 text-indigo-400" />
-                  <span className="text-xs font-bold uppercase tracking-wider text-indigo-400">
+            <div className="border-primary/30 bg-card/60 space-y-2.5 rounded-lg border p-4">
+              <div className="border-border/60 flex items-center justify-between border-b pb-2">
+                <div className="flex items-center gap-1.5">
+                  <Activity className="text-primary h-3.5 w-3.5" />
+                  <span className="text-primary font-mono text-xs font-semibold uppercase tracking-wider">
                     [INFERRED] Derived Posture
                   </span>
                 </div>
                 <Badge
                   variant="outline"
-                  className="border-indigo-500/30 bg-indigo-950/20 text-[10px] text-indigo-300"
+                  className="border-primary/30 bg-primary/10 text-primary font-mono text-[9px]"
                 >
                   {lastResponse.inferred.length} models
                 </Badge>
               </div>
 
               {lastResponse.inferred.length === 0 ? (
-                <p className="text-xs italic text-gray-500">No derived model inferences.</p>
+                <p className="text-muted-foreground text-xs italic">No derived model inferences.</p>
               ) : (
-                <ul className="space-y-2.5 text-xs text-gray-300">
+                <ul className="text-foreground space-y-2 text-xs">
                   {lastResponse.inferred.map((fact, idx) => (
                     <li
                       key={idx}
-                      className="space-y-1 rounded-lg border border-gray-800/80 bg-gray-900/40 p-2.5"
+                      className="border-border/60 bg-secondary/20 space-y-0.5 rounded-md border p-2"
                     >
                       <div className="leading-relaxed">{fact.statement}</div>
                       {fact.source_reference && (
-                        <div className="font-mono text-[10px] text-indigo-400/80">
+                        <div className="text-primary/80 font-mono text-[10px]">
                           model: {fact.source_reference}
                         </div>
                       )}
@@ -291,34 +293,34 @@ export function CopilotPage() {
             </div>
 
             {/* Column 3: UNKNOWN & GAPS */}
-            <div className="space-y-3 rounded-2xl border border-amber-500/20 bg-gray-950/60 p-5">
-              <div className="flex items-center justify-between border-b border-gray-800 pb-2.5">
-                <div className="flex items-center gap-2">
-                  <HelpCircle className="h-4 w-4 text-amber-400" />
-                  <span className="text-xs font-bold uppercase tracking-wider text-amber-400">
+            <div className="bg-card/60 space-y-2.5 rounded-lg border border-amber-500/30 p-4">
+              <div className="border-border/60 flex items-center justify-between border-b pb-2">
+                <div className="flex items-center gap-1.5">
+                  <HelpCircle className="h-3.5 w-3.5 text-amber-400" />
+                  <span className="font-mono text-xs font-semibold uppercase tracking-wider text-amber-400">
                     [UNKNOWN] Observation Gaps
                   </span>
                 </div>
                 <Badge
                   variant="outline"
-                  className="border-amber-500/30 bg-amber-950/20 text-[10px] text-amber-300"
+                  className="border-amber-500/30 bg-amber-500/10 font-mono text-[9px] text-amber-400"
                 >
                   {lastResponse.unknown.length} unknowns
                 </Badge>
               </div>
 
               {lastResponse.unknown.length === 0 ? (
-                <p className="text-xs italic text-gray-500">Zero unestablished items.</p>
+                <p className="text-muted-foreground text-xs italic">Zero unestablished items.</p>
               ) : (
-                <ul className="space-y-2.5 text-xs text-gray-300">
+                <ul className="text-foreground space-y-2 text-xs">
                   {lastResponse.unknown.map((fact, idx) => (
                     <li
                       key={idx}
-                      className="space-y-1 rounded-lg border border-gray-800/80 bg-gray-900/40 p-2.5"
+                      className="border-border/60 bg-secondary/20 space-y-0.5 rounded-md border p-2"
                     >
-                      <div className="leading-relaxed text-amber-200/90">{fact.statement}</div>
+                      <div className="leading-relaxed text-amber-300">{fact.statement}</div>
                       {fact.source_reference && (
-                        <div className="font-mono text-[10px] text-gray-500">
+                        <div className="text-muted-foreground font-mono text-[10px]">
                           boundary: {fact.source_reference}
                         </div>
                       )}
@@ -330,36 +332,36 @@ export function CopilotPage() {
           </div>
 
           {/* ── RECOMMENDATIONS & EVIDENCE INSPECTION ───────────────────────── */}
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             {/* Recommendations */}
-            <div className="space-y-3 rounded-2xl border border-gray-800 bg-gray-950/60 p-5">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white">
-                <Sparkles className="h-4 w-4 text-indigo-400" />
+            <div className="border-border/80 bg-card/60 space-y-2.5 rounded-lg border p-4">
+              <div className="text-foreground flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-wider">
+                <Sparkles className="text-primary h-3.5 w-3.5" />
                 Actionable Recommendations
               </div>
               {lastResponse.recommendations.length === 0 ? (
-                <p className="text-xs text-gray-500">No active recommendations required.</p>
+                <p className="text-muted-foreground text-xs">No active recommendations required.</p>
               ) : (
-                <div className="space-y-2.5">
+                <div className="space-y-2">
                   {lastResponse.recommendations.map((rec, i) => (
                     <div
                       key={i}
-                      className="space-y-1.5 rounded-xl border border-gray-800 bg-gray-900/50 p-3 text-xs"
+                      className="border-border/60 bg-secondary/20 space-y-1 rounded-md border p-2.5 text-xs"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-white">{rec.title}</span>
+                        <span className="text-foreground font-medium">{rec.title}</span>
                         <Badge
                           variant="outline"
                           className={
                             rec.priority === "CRITICAL"
-                              ? "border-rose-500/40 bg-rose-950/20 text-[10px] text-rose-300"
-                              : "border-indigo-500/40 bg-indigo-950/20 text-[10px] text-indigo-300"
+                              ? "border-rose-500/30 bg-rose-500/10 font-mono text-[9px] text-rose-400"
+                              : "border-border/60 bg-secondary/40 text-muted-foreground font-mono text-[9px]"
                           }
                         >
                           {rec.priority}
                         </Badge>
                       </div>
-                      <p className="text-gray-300">{rec.explanation}</p>
+                      <p className="text-muted-foreground leading-relaxed">{rec.explanation}</p>
                     </div>
                   ))}
                 </div>
@@ -367,29 +369,31 @@ export function CopilotPage() {
             </div>
 
             {/* Evidence & Deep Inspection */}
-            <div className="space-y-3 rounded-2xl border border-gray-800 bg-gray-950/60 p-5">
-              <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-white">
-                <div className="flex items-center gap-2">
-                  <Layers className="h-4 w-4 text-indigo-400" />
+            <div className="border-border/80 bg-card/60 space-y-2.5 rounded-lg border p-4">
+              <div className="text-foreground flex items-center justify-between font-mono text-xs font-semibold uppercase tracking-wider">
+                <div className="flex items-center gap-1.5">
+                  <Layers className="text-primary h-3.5 w-3.5" />
                   Evidence Grounding & Why?
                 </div>
                 <button
                   onClick={() => setInspectTarget({ type: "health", id: "overall" })}
-                  className="rounded bg-indigo-600/20 px-2 py-1 text-[11px] font-semibold text-indigo-300 transition hover:bg-indigo-600/30"
+                  className="border-border/80 bg-secondary/40 text-foreground hover:bg-secondary rounded-md border px-2 py-0.5 font-mono text-[10px] font-medium transition-colors"
                 >
-                  [Why?] Universal Evidence Inspector
+                  Universal Inspector
                 </button>
               </div>
 
               <div className="space-y-2">
-                <div className="space-y-2 rounded-xl border border-gray-800 bg-gray-900/40 p-3 text-xs text-gray-400">
+                <div className="border-border/60 bg-secondary/20 text-muted-foreground space-y-1.5 rounded-md border p-2.5 text-xs">
                   <div className="flex justify-between">
                     <span>Evidence Strength:</span>
-                    <span className="font-bold text-white">{lastResponse.evidence_strength}</span>
+                    <span className="text-foreground font-mono font-semibold">
+                      {lastResponse.evidence_strength}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Contributing Evidence IDs:</span>
-                    <span className="font-mono text-indigo-300">
+                    <span className="text-foreground font-mono">
                       {lastResponse.evidence.length} citations
                     </span>
                   </div>
@@ -398,16 +402,16 @@ export function CopilotPage() {
                 {/* Related Entities */}
                 {lastResponse.related_entities.length > 0 && (
                   <div className="space-y-1 pt-1">
-                    <span className="text-[11px] font-semibold text-gray-400">
+                    <span className="text-muted-foreground font-mono text-[10px] font-semibold uppercase tracking-wider">
                       Related Entities:
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       {lastResponse.related_entities.map((ent, i) => (
                         <span
                           key={i}
-                          className="inline-flex items-center gap-1 rounded bg-gray-800/80 px-2 py-1 font-mono text-[11px] text-gray-300"
+                          className="border-border/60 bg-secondary/30 text-muted-foreground inline-flex items-center gap-1 rounded border px-1.5 py-0.5 font-mono text-[10px]"
                         >
-                          <FileCode className="h-3 w-3 text-gray-400" />
+                          <FileCode className="text-muted-foreground h-3 w-3" />
                           <span>{ent.label}</span>
                         </span>
                       ))}

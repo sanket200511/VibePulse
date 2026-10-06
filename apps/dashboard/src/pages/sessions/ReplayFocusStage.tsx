@@ -52,40 +52,39 @@ export function ReplayFocusStage({ controller }: ReplayFocusStageProps) {
       </div>
 
       {isMarker ? (
-        <div className="border-border/40 bg-card relative flex flex-col items-center justify-center overflow-hidden rounded-[24px] border px-8 py-24 text-center shadow-sm">
-          <div className="from-accent-color/5 pointer-events-none absolute inset-0 bg-gradient-to-b to-transparent" />
+        <div className="border-border/80 bg-card/60 shadow-xs relative flex flex-col items-center justify-center overflow-hidden rounded-lg border px-6 py-10 text-center">
           <div
-            className={`bg-muted-color/30 rounded-2xl p-4 ${iconColor} relative z-10 mb-8 shadow-sm`}
+            className={`relative z-10 mb-4 rounded-lg p-3 ${iconColor} bg-secondary/50 shadow-xs`}
           >
-            <MainIcon className="h-12 w-12" />
+            <MainIcon className="h-8 w-8" />
           </div>
-          <h2 className="text-primary-text relative z-10 text-3xl font-black uppercase tracking-tight md:text-5xl">
+          <h2 className="text-foreground relative z-10 font-mono text-base font-bold uppercase tracking-wider sm:text-lg">
             {metadata.marker_kind?.replace(/_/g, " ")}
           </h2>
           {metadata.marker_detail && (
-            <p className="text-secondary-text relative z-10 mt-4 max-w-lg text-sm leading-relaxed md:text-base">
+            <p className="text-muted-foreground relative z-10 mt-2 max-w-lg font-mono text-xs leading-relaxed">
               {metadata.marker_detail}
             </p>
           )}
 
-          <div className="border-border/50 relative z-10 mt-12 flex w-full max-w-md items-center justify-center gap-6 border-t pt-8">
+          <div className="border-border/60 relative z-10 mt-6 flex w-full max-w-sm items-center justify-center gap-6 border-t pt-4">
             {metadata.timestamp && (
-              <div className="flex flex-col items-center gap-1.5">
-                <span className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest">
+              <div className="flex flex-col items-center gap-0.5">
+                <span className="text-muted-foreground font-mono text-[10px] font-bold uppercase tracking-wider">
                   Time
                 </span>
-                <span className="text-primary-text font-mono text-sm">
+                <span className="text-foreground font-mono text-xs tabular-nums">
                   {formatReplayTime(metadata.timestamp)}
                 </span>
               </div>
             )}
             {metadata.git_branch && (
-              <div className="border-border/50 flex flex-col items-center gap-1.5 border-l pl-6">
-                <span className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest">
+              <div className="border-border/60 flex flex-col items-center gap-0.5 border-l pl-6">
+                <span className="text-muted-foreground font-mono text-[10px] font-bold uppercase tracking-wider">
                   Branch
                 </span>
-                <span className="text-primary-text flex items-center gap-1.5 font-mono text-sm">
-                  <GitBranch className="h-3 w-3" />
+                <span className="text-foreground flex items-center gap-1.5 font-mono text-xs">
+                  <GitBranch className="text-primary h-3 w-3" />
                   {metadata.git_branch}
                 </span>
               </div>
@@ -93,44 +92,42 @@ export function ReplayFocusStage({ controller }: ReplayFocusStageProps) {
           </div>
         </div>
       ) : (
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-4">
           {/* 2. FILE / EVENT & CONTEXT */}
-          <div className="flex flex-col gap-5">
+          <div className="border-border/80 bg-card/60 shadow-xs flex flex-col gap-3 rounded-lg border p-4">
             {dirPath && (
-              <div className="text-secondary-text flex flex-wrap items-center gap-2 font-mono text-sm">
-                <FolderOpen className="h-4 w-4 shrink-0 opacity-70" />
+              <div className="text-muted-foreground flex flex-wrap items-center gap-1 font-mono text-[11px]">
+                <FolderOpen className="text-primary/70 h-3.5 w-3.5 shrink-0" />
                 {pathParts.map((part, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <span className="hover:text-primary-text cursor-default transition-colors">
-                      {part}
-                    </span>
+                  <div key={i} className="flex items-center gap-1">
+                    <span className="hover:text-foreground transition-colors">{part}</span>
                     {i < pathParts.length - 1 && <span className="opacity-40">/</span>}
                   </div>
                 ))}
               </div>
             )}
 
-            <div className="flex items-start gap-6">
+            <div className="flex items-start gap-3.5">
               <div
-                className={`bg-card border-border mt-2 rounded-xl border p-4 shadow-sm ${iconColor}`}
+                className={`border-border/80 bg-secondary/40 shadow-xs mt-1 rounded-md border p-2.5 ${iconColor}`}
               >
-                <MainIcon className="h-8 w-8 md:h-10 md:w-10" />
+                <MainIcon className="h-6 w-6" />
               </div>
-              <div className="flex min-w-0 flex-col">
-                <span className="text-accent-color mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-widest">
+              <div className="flex min-w-0 flex-1 flex-col">
+                <span className="text-primary mb-1 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-wider">
                   {metadata.event_type ? metadata.event_type.replace(/_/g, " ") : "ACTIVITY"}
                 </span>
-                <h2 className="text-primary-text selection:bg-selection-color break-all text-3xl font-extrabold tracking-tight md:text-4xl lg:text-5xl">
+                <h2 className="text-foreground break-all font-mono text-base font-bold tracking-tight sm:text-lg">
                   {fileName}
                 </h2>
-                <div className="mt-4 flex flex-wrap items-center gap-3">
+                <div className="mt-2 flex flex-wrap items-center gap-2 font-mono text-[10px]">
                   {metadata.language && (
-                    <span className="bg-muted-color/30 border-border text-primary-text rounded-full border px-3 py-1 text-xs font-semibold">
+                    <span className="border-border/70 bg-secondary/40 text-foreground rounded-md border px-2 py-0.5 font-semibold">
                       {metadata.language}
                     </span>
                   )}
                   {kind === "GROUP" && (
-                    <span className="bg-warning-color/10 border-warning-color/20 text-warning-color rounded-full border px-3 py-1 text-xs font-semibold">
+                    <span className="rounded-md border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 font-bold text-amber-400">
                       {metadata.group_size} Events over{" "}
                       {metadata.group_span_seconds
                         ? Math.round(metadata.group_span_seconds) + "s"
@@ -143,23 +140,23 @@ export function ReplayFocusStage({ controller }: ReplayFocusStageProps) {
           </div>
 
           {/* 3. METADATA & INSIGHTS */}
-          <div className="border-border/50 grid grid-cols-1 gap-6 border-t pt-6 md:grid-cols-4">
-            <div className="flex flex-col gap-1.5">
-              <span className="text-secondary-text text-[9px] font-bold uppercase tracking-wider">
+          <div className="border-border/80 bg-card/60 shadow-xs grid grid-cols-1 gap-4 rounded-lg border p-4 md:grid-cols-4">
+            <div className="flex flex-col gap-1">
+              <span className="text-muted-foreground font-mono text-[10px] font-bold uppercase tracking-wider">
                 Branch
               </span>
-              <span className="text-primary-text flex items-center gap-2 text-sm font-medium">
-                <GitBranch className="text-muted-foreground h-3.5 w-3.5" />
+              <span className="text-foreground flex items-center gap-1.5 font-mono text-xs font-medium">
+                <GitBranch className="text-primary h-3.5 w-3.5" />
                 <span className="truncate">{metadata.git_branch || "unknown"}</span>
               </span>
             </div>
 
             {hasInsights && (
-              <div className="flex flex-col gap-2 md:col-span-3">
-                <span className="text-secondary-text text-[9px] font-bold uppercase tracking-wider">
+              <div className="flex flex-col gap-1.5 md:col-span-3">
+                <span className="text-muted-foreground font-mono text-[10px] font-bold uppercase tracking-wider">
                   Analyzer Findings
                 </span>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5">
                   {Object.entries(currentFrame.insights.analyzer_findings).map(([key, value]) => {
                     const displayValue =
                       value && typeof value === "object"
@@ -170,10 +167,10 @@ export function ReplayFocusStage({ controller }: ReplayFocusStageProps) {
                     return (
                       <div
                         key={key}
-                        className="bg-muted-color/30 border-border text-primary-text flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs"
+                        className="border-border/70 bg-secondary/30 text-foreground flex items-center gap-1.5 rounded-md border px-2 py-1 font-mono text-[11px]"
                       >
-                        <span className="text-accent-color font-semibold capitalize">{key}:</span>
-                        <span>{displayValue}</span>
+                        <span className="text-primary font-semibold capitalize">{key}:</span>
+                        <span className="text-muted-foreground">{displayValue}</span>
                       </div>
                     );
                   })}

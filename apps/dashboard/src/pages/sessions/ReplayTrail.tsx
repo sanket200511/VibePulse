@@ -23,20 +23,20 @@ export function ReplayTrail({ controller, frames }: ReplayTrailProps) {
   if (previousFrames.length === 0) return null;
 
   return (
-    <div className="animate-fade-in mb-4 flex w-full max-w-2xl flex-col gap-2 motion-reduce:animate-none">
-      <div className="mb-2 flex items-center gap-3">
-        <span className="text-secondary-text text-[10px] font-bold uppercase tracking-wider">
+    <div className="animate-fade-in mb-3 flex w-full max-w-2xl flex-col gap-1.5 motion-reduce:animate-none">
+      <div className="mb-1 flex items-center gap-2">
+        <span className="text-muted-foreground font-mono text-[10px] font-bold uppercase tracking-wider">
           Development Trail
         </span>
-        <div className="bg-border h-px flex-1 opacity-50" />
+        <div className="bg-border/80 h-px flex-1" />
       </div>
 
       {previousFrames.map(({ frame, distance }) => {
         // Calculate opacity based on distance (1 is closest)
         const opacity =
-          distance === 1 ? "opacity-100" : distance === 2 ? "opacity-80" : "opacity-60";
+          distance === 1 ? "opacity-100" : distance === 2 ? "opacity-75" : "opacity-50";
         const scale =
-          distance === 1 ? "scale-100" : distance === 2 ? "scale-[0.98]" : "scale-[0.95]";
+          distance === 1 ? "scale-100" : distance === 2 ? "scale-[0.99]" : "scale-[0.97]";
 
         const pathParts = frame.metadata.file_path ? frame.metadata.file_path.split("/") : [];
         const fileName =
@@ -49,33 +49,33 @@ export function ReplayTrail({ controller, frames }: ReplayTrailProps) {
         return (
           <div
             key={frame.id}
-            className={`flex flex-col ${opacity} ${scale} origin-top transform-gpu transition-all duration-500 motion-reduce:transform-none motion-reduce:transition-none`}
+            className={`flex flex-col ${opacity} ${scale} origin-top transform-gpu transition-all duration-300 motion-reduce:transform-none motion-reduce:transition-none`}
           >
-            <div className="bg-card/40 hover:bg-card/60 border-border/40 flex w-full items-center gap-4 rounded-lg border p-2.5 px-4 transition-colors">
-              <span className="text-secondary-text w-12 shrink-0 font-mono text-[10px]">
+            <div className="border-border/70 bg-card/50 hover:border-primary/40 hover:bg-card/80 flex w-full items-center gap-3 rounded-md border px-3 py-1.5 transition-colors">
+              <span className="text-muted-foreground w-12 shrink-0 font-mono text-[10px] tabular-nums">
                 {formatReplayTime(frame.timestamp)}
               </span>
 
               <div className="flex min-w-0 flex-1 items-center justify-between">
-                <div className="flex items-center gap-3 truncate">
+                <div className="flex items-center gap-2 truncate">
                   {isMarker ? (
-                    <span className="text-success-color text-xs font-bold uppercase tracking-wide">
+                    <span className="font-mono text-[11px] font-bold uppercase tracking-wide text-emerald-400">
                       {fileName?.replace(/_/g, " ")}
                     </span>
                   ) : (
-                    <span className="text-primary-text truncate text-sm font-medium">
+                    <span className="text-foreground truncate font-mono text-xs font-medium">
                       {fileName}
                     </span>
                   )}
 
                   {!isMarker && frame.kind === "GROUP" && (
-                    <span className="bg-muted-color/50 text-secondary-text rounded px-1.5 py-0.5 text-[9px] font-semibold">
+                    <span className="border-border/60 bg-secondary/40 text-muted-foreground rounded border px-1 py-0.5 font-mono text-[9px] font-semibold">
                       +{frame.metadata.group_size}
                     </span>
                   )}
                 </div>
                 {!isMarker && (
-                  <span className="text-muted-foreground ml-2 shrink-0 text-[9px] font-semibold uppercase tracking-wider">
+                  <span className="text-muted-foreground ml-2 shrink-0 font-mono text-[9px] font-semibold uppercase tracking-wider">
                     {frame.metadata.event_type}
                   </span>
                 )}
@@ -84,8 +84,8 @@ export function ReplayTrail({ controller, frames }: ReplayTrailProps) {
 
             {/* Connector line */}
             {distance > 1 && (
-              <div className="ml-8 flex justify-start">
-                <div className="bg-border/60 my-0.5 h-3 w-px" />
+              <div className="ml-6 flex justify-start">
+                <div className="bg-border/60 my-0.5 h-2 w-px" />
               </div>
             )}
           </div>

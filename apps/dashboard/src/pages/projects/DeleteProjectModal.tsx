@@ -87,39 +87,41 @@ export function DeleteProjectModal({
       />
 
       {/* Modal Card */}
-      <div className="bg-card border-border relative z-10 flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border shadow-2xl transition-all">
+      <div className="border-border/80 bg-background/95 relative z-10 flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden rounded-lg border shadow-2xl backdrop-blur-md">
         {/* Header */}
-        <div className="border-border flex shrink-0 items-center justify-between border-b px-6 py-4">
+        <div className="border-border/80 flex shrink-0 items-center justify-between border-b px-4 py-3">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-500/10 text-red-500">
-              <AlertTriangle className="h-5 w-5" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-md border border-rose-500/30 bg-rose-500/10 text-rose-400">
+              <AlertTriangle className="h-4 w-4" />
             </div>
             <div>
-              <h3 id="delete-project-title" className="text-primary-text text-base font-bold">
+              <h3 id="delete-project-title" className="text-foreground text-sm font-semibold">
                 Remove from DepRadar
               </h3>
-              <p className="text-secondary-text text-xs">Safe deletion of observation history</p>
+              <p className="text-muted-foreground text-[11px]">
+                Safe deletion of observation history
+              </p>
             </div>
           </div>
           <button
             onClick={onClose}
             disabled={deleteMutation.isPending}
-            className="text-muted-foreground hover:text-primary-text rounded-lg p-1.5 transition-colors disabled:opacity-50"
+            className="text-muted-foreground hover:bg-secondary/40 hover:text-foreground rounded p-1 transition-colors disabled:opacity-50"
             aria-label="Close dialog"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="space-y-4 overflow-y-auto p-6">
+        <div className="space-y-3 overflow-y-auto p-4">
           {/* Active Conflict Banner */}
           {conflictError && (
-            <div className="border-border flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-amber-300">
-              <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
+            <div className="flex items-start gap-2.5 rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-amber-300">
+              <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
               <div className="text-xs">
                 <div className="font-semibold text-amber-200">Project Currently Active</div>
-                <p className="mt-1 leading-relaxed text-amber-300/90">{conflictError}</p>
-                <p className="mt-1 font-mono text-[11px] text-amber-400/80">
+                <p className="mt-0.5 leading-relaxed text-amber-300/90">{conflictError}</p>
+                <p className="mt-1 font-mono text-[10px] text-amber-400/80">
                   Root: {project.root_path}
                 </p>
               </div>
@@ -127,31 +129,33 @@ export function DeleteProjectModal({
           )}
 
           {/* Core Assurance Callout */}
-          <div className="border-border flex items-start gap-3 rounded-xl border border-blue-500/20 bg-blue-500/5 p-4">
-            <HardDrive className="text-accent-color mt-0.5 h-5 w-5 shrink-0" />
-            <div className="text-xs leading-relaxed text-blue-200/90">
-              <span className="font-semibold text-blue-100">Filesystem Safe:</span> Your physical
-              project directory and source files will <strong className="text-blue-100">NOT</strong>{" "}
+          <div className="flex items-start gap-2.5 rounded-md border border-cyan-500/20 bg-cyan-500/10 p-3">
+            <HardDrive className="mt-0.5 h-4 w-4 shrink-0 text-cyan-400" />
+            <div className="text-xs leading-relaxed text-cyan-200/90">
+              <span className="font-semibold text-cyan-100">Filesystem Safe:</span> Your physical
+              project directory and source files will <strong className="text-cyan-100">NOT</strong>{" "}
               be modified or deleted.
             </div>
           </div>
 
           {/* Stored Data to be Removed */}
-          <div className="bg-card-subtle/50 border-border rounded-xl border p-4 text-xs">
-            <div className="text-secondary-text mb-2.5 flex items-center gap-1.5 font-semibold">
-              <Database className="h-3.5 w-3.5" />
-              DepRadar will permanently remove its stored PostgreSQL data:
+          <div className="border-border/80 bg-secondary/15 rounded-md border p-3 text-xs">
+            <div className="text-muted-foreground mb-2 flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider">
+              <Database className="h-3 w-3" />
+              Permanent Database Removal:
             </div>
-            <ul className="text-secondary-text list-disc space-y-1.5 pl-4 marker:text-red-400">
+            <ul className="text-muted-foreground list-disc space-y-1 pl-4 marker:text-rose-400">
               <li>
-                <strong className="text-primary-text">{totalEvents}</strong> development events
+                <strong className="text-foreground font-mono">{totalEvents}</strong> development
+                events
               </li>
               <li>
-                <strong className="text-primary-text">{totalSessions}</strong> recorded sessions
+                <strong className="text-foreground font-mono">{totalSessions}</strong> recorded
+                sessions
               </li>
               <li>
-                <strong className="text-primary-text">{totalFindings}</strong> security & analyzer
-                findings
+                <strong className="text-foreground font-mono">{totalFindings}</strong> security &
+                analyzer findings
               </li>
               <li>Investigation history & timeline records</li>
               <li>Durable Project Context Memory</li>
@@ -159,13 +163,15 @@ export function DeleteProjectModal({
           </div>
 
           {/* Target Identity */}
-          <div className="bg-card border-border rounded-xl border p-3.5">
-            <div className="text-muted-foreground text-[10px] font-semibold uppercase tracking-wider">
+          <div className="border-border/80 bg-secondary/20 rounded-md border p-2.5">
+            <div className="text-muted-foreground font-mono text-[10px] font-medium uppercase tracking-wider">
               Target Project
             </div>
-            <div className="text-primary-text mt-1 text-sm font-bold">{project.display_name}</div>
+            <div className="text-foreground mt-0.5 text-xs font-semibold">
+              {project.display_name}
+            </div>
             <div
-              className="text-secondary-text mt-0.5 truncate font-mono text-[11px]"
+              className="text-muted-foreground truncate font-mono text-[10px]"
               title={project.root_path}
             >
               {project.root_path}
@@ -176,10 +182,10 @@ export function DeleteProjectModal({
           <div>
             <label
               htmlFor="confirm-project-name"
-              className="text-secondary-text block text-xs font-medium"
+              className="text-muted-foreground block font-mono text-xs"
             >
               To confirm, type{" "}
-              <strong className="text-primary-text font-mono">{project.display_name}</strong> below:
+              <strong className="text-foreground font-mono">{project.display_name}</strong> below:
             </label>
             <input
               id="confirm-project-name"
@@ -188,24 +194,24 @@ export function DeleteProjectModal({
               onChange={(e) => setConfirmName(e.target.value)}
               placeholder={project.display_name}
               disabled={deleteMutation.isPending}
-              className="border-border bg-background text-primary-text placeholder:text-muted-foreground mt-2 w-full rounded-lg border px-3.5 py-2 font-mono text-xs shadow-sm transition-all focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 disabled:opacity-50"
+              className="border-border/80 bg-secondary/30 text-foreground placeholder:text-muted-foreground mt-1.5 w-full rounded-md border px-3 py-1.5 font-mono text-xs shadow-sm transition-colors focus:border-rose-500 focus:outline-none disabled:opacity-50"
             />
           </div>
 
           {deleteMutation.isError && !conflictError && (
-            <div className="rounded-lg bg-red-500/10 p-3 text-xs text-red-400">
+            <div className="rounded-md border border-rose-500/30 bg-rose-500/10 p-2.5 font-mono text-xs text-rose-400">
               {deleteMutation.error?.message || "Failed to remove project from DepRadar."}
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="border-border bg-card-subtle/30 flex shrink-0 items-center justify-end gap-3 border-t px-6 py-4">
+        <div className="border-border/80 bg-secondary/15 flex shrink-0 items-center justify-end gap-2.5 border-t px-4 py-3">
           <button
             type="button"
             onClick={onClose}
             disabled={deleteMutation.isPending}
-            className="border-border hover:bg-card-subtle text-secondary-text hover:text-primary-text rounded-lg border px-4 py-2 text-xs font-semibold transition-colors disabled:opacity-50"
+            className="border-border/80 bg-secondary/30 text-foreground hover:bg-secondary/50 rounded-md border px-3.5 py-1.5 text-xs font-medium transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
@@ -213,12 +219,12 @@ export function DeleteProjectModal({
             type="button"
             onClick={handleDelete}
             disabled={!isConfirmed || deleteMutation.isPending}
-            className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/40 disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex items-center gap-1.5 rounded-md bg-rose-600 px-3.5 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-rose-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-40"
           >
             {deleteMutation.isPending ? (
               <>
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Removing from DepRadar...
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Removing...
               </>
             ) : (
               "Remove Project"

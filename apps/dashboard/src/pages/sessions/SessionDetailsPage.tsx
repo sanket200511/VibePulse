@@ -39,19 +39,19 @@ export function SessionDetailsPage() {
 
   if (isSessionLoading)
     return (
-      <div className="p-8">
+      <div className="py-8">
         <LoadingState label="Loading session details..." />
       </div>
     );
   if (isSessionError)
     return (
-      <div className="p-8">
+      <div className="py-8">
         <ErrorState message="We couldn't load this session." />
       </div>
     );
   if (!session)
     return (
-      <div className="p-8">
+      <div className="py-8">
         <EmptyState title="Session not found" description="The requested session does not exist." />
       </div>
     );
@@ -59,8 +59,8 @@ export function SessionDetailsPage() {
   const projectName = session.project_root.split(/[\\/]/).filter(Boolean).pop() || "Project";
 
   return (
-    <div className="animate-fade-in-up mx-auto flex w-full flex-1 flex-col gap-8 p-4 md:max-w-6xl md:p-8">
-      <header className="space-y-4">
+    <div className="animate-fade-in-up mx-auto flex w-full max-w-[1400px] flex-1 flex-col space-y-4 px-4 py-4 sm:space-y-5 sm:px-6 md:py-6">
+      <header className="border-border/80 bg-card/60 shadow-xs space-y-3 rounded-lg border p-4 sm:p-5">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <Breadcrumbs
             items={
@@ -78,34 +78,44 @@ export function SessionDetailsPage() {
           />
           <Link
             to={session.project_id ? `/projects/${session.project_id}` : "/history"}
-            className="text-secondary-text hover:text-primary-text inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
+            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 font-mono text-[11px] transition-colors"
           >
-            ← {session.project_id ? "Back to Project Story" : "Back to History"}
+            ← {session.project_id ? "Back to Project" : "Back to History"}
           </Link>
         </div>
 
-        <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+        <div className="flex flex-col items-start justify-between gap-4 pt-1 md:flex-row md:items-center">
           <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-3">
-              <span className="text-accent-color bg-accent-color/10 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest">
-                {session.status === "COMPLETED" ? "Completed Session" : "Active Session"}
+            <div className="flex items-center gap-2">
+              <span
+                className={`rounded-md px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider ${
+                  session.status === "COMPLETED"
+                    ? "bg-secondary/70 text-muted-foreground border-border/80 border"
+                    : "border border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
+                }`}
+              >
+                {session.status === "COMPLETED" ? "Completed" : "Active"}
               </span>
-              <span className="text-secondary-text font-mono text-xs">
-                {new Date(session.started_at).toLocaleDateString()}
+              <span className="text-muted-foreground font-mono text-[11px]">
+                {new Date(session.started_at).toLocaleDateString(undefined, {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
               </span>
             </div>
-            <h1 className="text-primary-text mt-2 max-w-2xl truncate text-3xl font-extrabold tracking-tight">
+            <h1 className="text-foreground mt-1 max-w-2xl truncate text-lg font-bold sm:text-xl">
               {session.summary?.headline || projectName}
             </h1>
-            <p className="text-muted-foreground mt-1 font-mono text-sm">{session.project_root}</p>
+            <p className="text-muted-foreground font-mono text-xs">{session.project_root}</p>
           </div>
 
           {isCompleted && (
             <Link
               to={`/sessions/${session.id}/replay`}
-              className="focus-visible:ring-accent-color bg-accent-color shadow-accent-color/20 hover:bg-accent-color/90 inline-flex h-11 shrink-0 items-center justify-center rounded-lg px-8 text-sm font-bold text-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-1 disabled:pointer-events-none disabled:opacity-50"
+              className="bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-md px-3 text-xs font-semibold transition-colors"
             >
-              <Play className="mr-2 h-4 w-4" />
+              <Play className="h-3 w-3 fill-current" />
               Replay Session
             </Link>
           )}
@@ -123,70 +133,73 @@ export function SessionDetailsPage() {
       )}
 
       {timeline && (
-        <div className="mt-4 flex flex-col gap-12">
+        <div className="space-y-4 sm:space-y-5">
           <SessionOutcomeCard outcome={timeline.outcome} />
 
-          <section className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-primary-text text-lg font-bold tracking-tight">
+          <section className="border-border/80 bg-card/60 shadow-xs space-y-2 rounded-lg border p-4 sm:p-5">
+            <div className="border-border/60 flex items-center justify-between border-b pb-2">
+              <h2 className="text-foreground font-mono text-xs font-bold uppercase tracking-wider">
                 Development Story
               </h2>
-              <span className="text-secondary-text font-mono text-xs">
+              <span className="text-muted-foreground font-mono text-[11px] tabular-nums">
                 {timeline.entries.length} segments
               </span>
             </div>
-            <div className="border-border bg-card rounded-[24px] border p-2 shadow-sm sm:p-6">
+            <div className="pt-2">
               <TimelineView entries={timeline.entries} />
             </div>
           </section>
 
           {profile && (
-            <section className="flex flex-col gap-4">
-              <h2 className="text-primary-text text-lg font-bold tracking-tight">
+            <section className="border-border/80 bg-card/60 shadow-xs space-y-2 rounded-lg border p-4 sm:p-5">
+              <h2 className="border-border/60 text-foreground border-b pb-2 font-mono text-xs font-bold uppercase tracking-wider">
                 Observed Patterns
               </h2>
-              <InsightsPanel profile={profile} />
+              <div className="pt-2">
+                <InsightsPanel profile={profile} />
+              </div>
             </section>
           )}
           {isProfileLoading && <LoadingState label="Analyzing behavior…" />}
 
-          <section className="flex flex-col gap-4">
-            <h2 className="text-primary-text text-lg font-bold tracking-tight">
+          <section className="border-border/80 bg-card/60 shadow-xs space-y-2 rounded-lg border p-4 sm:p-5">
+            <h2 className="border-border/60 text-foreground border-b pb-2 font-mono text-xs font-bold uppercase tracking-wider">
               Architecture Time Machine
             </h2>
             {isArchLoading && <LoadingState label="Reconstructing engineering story..." />}
             {!isArchLoading && archTimeline && (
-              <ArchitectureTimelinePanel
-                timeline={archTimeline}
-                projectId={session?.project_id || undefined}
-              />
+              <div className="pt-2">
+                <ArchitectureTimelinePanel
+                  timeline={archTimeline}
+                  projectId={session?.project_id || undefined}
+                />
+              </div>
             )}
           </section>
 
           {isCompleted && (
-            <section className="flex flex-col gap-4">
-              <h2 className="text-primary-text text-lg font-bold tracking-tight">
+            <section className="border-border/80 bg-card/60 shadow-xs space-y-3 rounded-lg border p-4 sm:p-5">
+              <h2 className="border-border/60 text-foreground border-b pb-2 font-mono text-xs font-bold uppercase tracking-wider">
                 Session Signals
               </h2>
               {isHealthLoading && <LoadingState label="Analyzing session signals…" />}
               {isHealthError && <ErrorState message="We couldn't load this session's signals." />}
               {health && <HealthPanel health={health} />}
 
-              <div className="border-border bg-card/50 mt-8 flex flex-col items-start justify-between gap-6 rounded-2xl border p-6 md:flex-row md:items-center">
+              <div className="border-border/70 bg-secondary/20 mt-4 flex flex-col items-start justify-between gap-4 rounded-md border p-3.5 sm:flex-row sm:items-center">
                 <div>
-                  <h3 className="text-primary-text text-base font-bold tracking-tight">
-                    Want to watch this session unfold?
+                  <h3 className="text-foreground text-xs font-semibold">
+                    Watch this session unfold
                   </h3>
-                  <p className="text-secondary-text mt-1 text-sm">
+                  <p className="text-muted-foreground font-mono text-[11px]">
                     Replay the observed development sequence from start to finish.
                   </p>
                 </div>
                 <Link
                   to={`/sessions/${session.id}/replay`}
-                  className="bg-accent-color hover:bg-accent-color/90 group inline-flex h-11 shrink-0 items-center justify-center rounded-lg px-8 text-sm font-bold text-white shadow-sm transition-all"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-md px-3 text-xs font-semibold transition-colors"
                 >
-                  Open Session Replay
-                  <span className="ml-2 transition-transform group-hover:translate-x-1">→</span>
+                  Open Session Replay →
                 </Link>
               </div>
             </section>

@@ -28,17 +28,19 @@ export function RecentActivityList({ items }: RecentActivityListProps) {
 
   return (
     <SectionContainer title="Recent Activity">
-      <ul className="flex flex-col gap-4">
+      <ul className="flex flex-col gap-2.5">
         {items.map((item) => (
-          <li key={item.id} className="border-border border-b pb-4 last:border-0 last:pb-0">
+          <li key={item.id} className="border-border/60 border-b pb-2.5 last:border-0 last:pb-0">
             <Link
               to={`/sessions/${item.id}`}
-              className="focus-visible:ring-ring group flex flex-col gap-0.5 rounded-[8px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+              className="focus-visible:ring-ring hover:bg-muted/40 group -m-1 flex flex-col gap-0.5 rounded-md p-1 transition-colors focus-visible:outline-none focus-visible:ring-1"
             >
-              <span className="text-muted-foreground text-xs">
+              <span className="text-muted-foreground font-mono text-[11px]">
                 {formatRelativeTime(item.occurredAt)} · {item.projectName}
               </span>
-              <span className="text-foreground text-sm group-hover:underline">{item.summary}</span>
+              <span className="text-foreground group-hover:text-primary text-xs font-medium transition-colors">
+                {item.summary}
+              </span>
             </Link>
           </li>
         ))}

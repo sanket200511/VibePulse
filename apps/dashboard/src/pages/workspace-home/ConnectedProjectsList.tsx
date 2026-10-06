@@ -30,18 +30,18 @@ export function ConnectedProjectsList({ projects }: ConnectedProjectsListProps) 
 
   return (
     <SectionContainer title="Connected Projects">
-      <ul className="flex flex-col gap-3">
+      <ul className="flex flex-col gap-2">
         {projects.map((project) => (
           <li
             key={project.id}
-            className="border-border flex flex-col gap-2 border-b pb-3 last:border-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+            className="border-border/60 flex flex-col gap-1 border-b pb-2.5 last:border-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
           >
             <div className="min-w-0">
-              <p className="text-foreground truncate text-sm font-medium">{project.name}</p>
-              <p className="text-muted-foreground truncate font-mono text-xs">{project.path}</p>
+              <p className="text-foreground truncate text-xs font-semibold">{project.name}</p>
+              <p className="text-muted-foreground truncate font-mono text-[11px]">{project.path}</p>
             </div>
-            <div className="flex shrink-0 items-center gap-3">
-              <span className="text-muted-foreground text-xs">
+            <div className="flex shrink-0 items-center gap-2.5">
+              <span className="text-muted-foreground font-mono text-[11px] tabular-nums">
                 {formatRelativeTime(project.lastActivityAt)}
               </span>
               <Badge variant={project.status === "observing" ? "success" : "secondary"}>

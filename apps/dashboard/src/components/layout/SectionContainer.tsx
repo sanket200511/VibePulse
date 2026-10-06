@@ -17,8 +17,15 @@ export interface SectionContainerProps {
 
 export function SectionContainer({ title, children, className }: SectionContainerProps) {
   return (
-    <section className={cn("border-border bg-card rounded-[16px] border p-6", className)}>
-      {title && <h2 className="text-foreground mb-4 text-lg font-semibold">{title}</h2>}
+    <section
+      className={cn(
+        "border-border/80 bg-card/60 shadow-xs backdrop-blur-xs rounded-lg border p-4 sm:p-5",
+        className,
+      )}
+    >
+      {title && (
+        <h2 className="text-foreground mb-3 text-sm font-semibold tracking-tight">{title}</h2>
+      )}
       {children}
     </section>
   );
