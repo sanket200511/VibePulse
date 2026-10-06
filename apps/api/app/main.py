@@ -5,6 +5,12 @@ Wires together FastAPI, middleware, and feature routers.
 Business logic lives exclusively inside feature modules.
 """
 
+import os
+
+os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+os.environ.setdefault("MKL_NUM_THREADS", "1")
+
 import asyncio
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager

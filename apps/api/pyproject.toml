@@ -18,6 +18,9 @@ dependencies = [
   "tree-sitter>=0.26.0",
   "tree-sitter-python>=0.25.0",
   "tree-sitter-typescript>=0.23.2",
+  "greenlet>=3.5.3",
+  "scikit-learn>=1.4.0",
+  "joblib>=1.4.0",
 ]
 
 [dependency-groups]

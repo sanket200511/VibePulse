@@ -420,16 +420,86 @@ async def build_project_knowledge_graph(
                     "evidence": clean_evidence,
                     "remediation": finding.remediation,
                     "status": finding.status,
+                    "detection_source": getattr(finding, "detection_source", "deterministic"),
+                    "ml_classification": getattr(finding, "ml_classification", None),
+                    "ml_confidence": getattr(finding, "ml_confidence", None),
+                    "ml_model": getattr(finding, "ml_model", None),
+                    "truth_state": getattr(finding, "truth_state", "OBSERVED"),
                 },
-                provenance="OBSERVED",
+                provenance=getattr(finding, "truth_state", "OBSERVED") or "OBSERVED",
             )
         )
 
         # Connect File to Finding
         file_node_id = f"file-{uuid.uuid5(uuid.NAMESPACE_DNS, file_norm).hex[:12]}"
+        target_file_node_id: str | None = None
+
         if file_node_id in nodes_dict:
+            target_file_node_id = file_node_id
+        else:
+            # Match against existing File nodes by path suffix or basename
+            f_norm_clean = file_norm.lower().lstrip("/")
+            f_base = os.path.basename(file_norm).lower()
+            file_nodes = [n for n in nodes_dict.values() if n.node_type == "File"]
+
+            # 1) Try path suffix match
+            for fn in file_nodes:
+                fn_p = fn.metadata.get("file_path", "").replace("\\", "/").lower()
+                if (
+                    fn_p.endswith("/" + f_norm_clean)
+                    or fn_p == f_norm_clean
+                    or f_norm_clean.endswith("/" + fn_p)
+                ):
+                    target_file_node_id = fn.node_id
+                    break
+
+            # 2) Try basename match
+            if not target_file_node_id and f_base:
+                for fn in file_nodes:
+                    fn_p = fn.metadata.get("file_path", "").replace("\\", "/").lower()
+                    if os.path.basename(fn_p) == f_base:
+                        target_file_node_id = fn.node_id
+                        break
+
+            # 3) If still not found, create File node on the fly and connect to Subsystem
+            if not target_file_node_id:
+                target_file_node_id = file_node_id
+                subsys_node_id = f"subsystem-{subsys.lower().replace(' ', '-')}"
+                add_node(
+                    KnowledgeGraphNode(
+                        node_id=target_file_node_id,
+                        node_type="File",
+                        project_id=project_id,
+                        label=os.path.basename(file_norm),
+                        subsystem=subsys,
+                        metadata={
+                            "file_path": file_norm,
+                            "language": "Python" if file_norm.endswith(".py") else "Text",
+                            "activity_count": 1,
+                            "first_seen": None,
+                            "last_modified": None,
+                            "sessions_count": 0,
+                        },
+                        provenance="OBSERVED",
+                    )
+                )
+                if subsys_node_id in nodes_dict:
+                    add_edge(
+                        target_file_node_id,
+                        subsys_node_id,
+                        "BELONGS_TO",
+                        f"{os.path.basename(file_norm)} belongs to {subsys}",
+                        reason=(
+                            f"File path '{file_norm}' matches architectural "
+                            f"boundary patterns for {subsys}"
+                        ),
+                        evidence=[finding.finding_id],
+                        provenance="OBSERVED",
+                    )
+
+        if target_file_node_id and target_file_node_id in nodes_dict:
             add_edge(
-                file_node_id,
+                target_file_node_id,
                 finding_node_id,
                 "CONTAINS_FINDING",
                 f"Security finding {finding.rule_id} detected in {os.path.basename(file_norm)}",
@@ -522,17 +592,29 @@ async def build_project_knowledge_graph(
 
         # Connect findings to Root Cause & Incident
         for finding in sec_intel.security_findings:
-            if finding.file_path in inc.affected_files:
+            f_norm = finding.file_path.replace("\\", "/").lower().strip()
+            f_base = os.path.basename(f_norm)
+            matches_incident = any(
+                aff.replace("\\", "/").lower().strip() == f_norm
+                or aff.replace("\\", "/").lower().strip().endswith("/" + f_norm)
+                or f_norm.endswith("/" + aff.replace("\\", "/").lower().strip())
+                or (
+                    bool(f_base)
+                    and os.path.basename(aff.replace("\\", "/").lower().strip()) == f_base
+                )
+                for aff in inc.affected_files
+            )
+            if matches_incident:
                 f_node_id = f"sec-{finding.finding_id}"
                 if f_node_id in nodes_dict:
-                    f_base = os.path.basename(finding.file_path)
+                    f_base_disp = os.path.basename(finding.file_path)
                     add_edge(
                         f_node_id,
                         rc_node_id,
                         "CONTRIBUTED_TO",
                         f"Rule {finding.rule_id} contributed to Root Cause",
                         reason=(
-                            f"Violation of {finding.rule_id} in {f_base} "
+                            f"Violation of {finding.rule_id} in {f_base_disp} "
                             "provided causal evidence for root cause"
                         ),
                         evidence=[finding.finding_id, inc.incident_id],
@@ -553,6 +635,7 @@ async def build_project_knowledge_graph(
                         ),
                         evidence=[finding.finding_id, inc.incident_id],
                         provenance="OBSERVED",
+                        metadata={"risk_contribution": finding.risk_contribution},
                     )
 
     # ── 8. RESOLUTION & ACTOR NODES ──────────────────────────────────────────

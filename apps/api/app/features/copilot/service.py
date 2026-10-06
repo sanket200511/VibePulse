@@ -76,12 +76,31 @@ def _compose_summary(
             clean_desc = _mask_secret(
                 getattr(f0, "description", getattr(f0, "title", "AST violation"))
             )
+            ml_info = ""
+            if getattr(f0, "detection_source", None) == "hybrid":
+                conf_val = getattr(f0, "ml_confidence", None)
+                ml_prob_str = f" ({conf_val * 100:.1f}%)" if conf_val is not None else ""
+                ml_info = (
+                    f" The hybrid detector combined deterministic rules with ML inference: "
+                    f"classified as {getattr(f0, 'ml_classification', 'REAL_SECRET')}{ml_prob_str} "
+                    f"by {getattr(f0, 'ml_model', 'rf-secret-classifier')} "
+                    f"(Truth: {getattr(f0, 'truth_state', 'INFERRED')}). "
+                    f"Raw value is strictly [REDACTED]."
+                )
+            elif getattr(f0, "detection_source", None) == "ml":
+                ml_info = (
+                    f" Identified via ML secret inference model "
+                    f"{getattr(f0, 'ml_model', 'rf-secret-classifier')} "
+                    f"(Truth: {getattr(f0, 'truth_state', 'INFERRED')}). "
+                    f"Raw value is [REDACTED]."
+                )
+
             return (
                 f"Security Intelligence detected {len(findings)} unmitigated findings "
                 f"(Security Posture: {sec.security_posture}, Risk Contribution: "
                 f"+{sum(f.risk_contribution for f in findings)} points). "
                 f"Most critical rule: {f0.rule_id} ({f0.severity}) in "
-                f"{f0.file_path}: {clean_desc}."
+                f"{f0.file_path}: {clean_desc}.{ml_info}"
             )
         return (
             "Security posture is clean. Zero AST security violations or "

@@ -239,10 +239,10 @@ async def test_security_pipeline_e2e_persistence(client, test_session_factory, t
 def test_aws_credentials_and_debug_detection(tmp_path):
     settings_file = tmp_path / "settings.py"
     settings_file.write_text(
-        '# Test config\n'
+        "# Test config\n"
         'AWS_ACCESS_KEY_ID = "AKIADEMO000000000000"\n'
         'AWS_SECRET_ACCESS_KEY = "DEMO_SECRET_KEY_NOT_REAL"\n'
-        'DEBUG = True\n',
+        "DEBUG = True\n",
         encoding="utf-8",
     )
 

@@ -279,6 +279,12 @@ async def compute_security_intelligence(
                         rf.get("remediation") or "Move secret to secure environment configuration."
                     ),
                     risk_contribution=int(rf.get("risk_contribution", 10)),
+                    detection_source=rf.get("detection_source", "deterministic"),
+                    ml_classification=rf.get("ml_classification"),
+                    ml_confidence=rf.get("ml_confidence"),
+                    ml_model=rf.get("ml_model"),
+                    ml_version=rf.get("ml_version"),
+                    truth_state=rf.get("truth_state", "OBSERVED"),
                 )
             )
 

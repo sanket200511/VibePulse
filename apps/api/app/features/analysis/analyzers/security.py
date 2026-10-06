@@ -30,6 +30,7 @@ Findings schema:
 
 from __future__ import annotations
 
+import logging
 import os
 import re
 from dataclasses import dataclass
@@ -37,6 +38,12 @@ from typing import ClassVar
 
 from app.core.domain.events import AnalyzableEvent
 from app.features.analysis.base import AnalysisContext, AnalysisFinding
+from app.features.analysis.security.candidate import CandidateExtractor
+from app.features.analysis.security.hybrid_engine import HybridDecisionEngine
+from app.features.analysis.security.types import DeterministicResult
+from app.ml.secret_detection.models.classical import ClassicalSecretClassifier
+
+logger = logging.getLogger("vortex.security.analyzer")
 
 
 @dataclass(frozen=True)
@@ -187,6 +194,29 @@ class SecurityAnalyzer:
     description = "Detects deterministic security risks (secrets, dangerous functions, config)."
     priority = 55
     enabled = True
+
+    def __init__(self) -> None:
+        self.candidate_extractor = CandidateExtractor()
+        self.hybrid_engine = HybridDecisionEngine()
+        self.ml_classifier: ClassicalSecretClassifier | None = None
+        self._load_ml_model()
+
+    def _load_ml_model(self) -> None:
+        if os.getenv("SECRET_ML_ENABLED", "true").lower() in ("false", "0", "no"):
+            return
+        artifact_dir = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))),
+            "ml",
+            "secret_detection",
+            "artifacts",
+            "secret-classifier",
+        )
+        try:
+            if os.path.exists(os.path.join(artifact_dir, "model.joblib")):
+                self.ml_classifier = ClassicalSecretClassifier.load(artifact_dir)
+        except Exception as err:
+            logger.warning("Could not load secret ML classifier: %s", err)
+            self.ml_classifier = None
 
     SUPPORTED_EXTENSIONS: ClassVar[set[str]] = {
         ".env",
@@ -535,6 +565,7 @@ class SecurityAnalyzer:
 
         findings: list[dict[str, object]] = []
         target_display = event.file_name or event.file_path or ""
+        matched_lines: set[int] = set()
 
         for i, line in enumerate(lines):
             line_stripped = line.strip()
@@ -556,6 +587,44 @@ class SecurityAnalyzer:
 
                     before = match.group("before")
                     redacted = redact_assignment(before)
+                    matched_lines.add(i + 1)
+
+                    # ML Hybrid evaluation
+                    det_res = DeterministicResult(
+                        rule_id=rule.id,
+                        rule_title=rule.title,
+                        severity=rule.severity,
+                        category=rule.category,
+                        is_match=True,
+                        redacted_evidence=redacted,
+                        risk_contribution=rule.risk_contribution,
+                        deterministic_score=0.90,
+                    )
+
+                    detection_source = "deterministic"
+                    ml_classification = None
+                    ml_confidence = None
+                    ml_model_name = None
+                    ml_model_version = None
+                    truth_state = "OBSERVED"
+
+                    if self.ml_classifier is not None:
+                        # Extract safe candidate for in-memory ML inference
+                        cands = self.candidate_extractor.extract_from_lines([line], target_display)
+                        if cands:
+                            cand = cands[0]
+                            ml_res = self.ml_classifier.predict_candidate(
+                                cand, deterministic_score=0.90
+                            )
+                            fused = self.hybrid_engine.fuse(cand, det_res, ml_res)
+
+                            if fused is not None:
+                                detection_source = fused.detection_source
+                                ml_classification = fused.ml_classification
+                                ml_confidence = fused.ml_confidence
+                                ml_model_name = fused.ml_model_name
+                                ml_model_version = fused.ml_model_version
+                                truth_state = fused.truth_state
 
                     findings.append(
                         {
@@ -577,12 +646,19 @@ class SecurityAnalyzer:
                             "remediation": rule.remediation,
                             "risk_contribution": rule.risk_contribution,
                             "provenance": "OBSERVED",
+                            "detection_source": detection_source,
+                            "ml_classification": ml_classification,
+                            "ml_confidence": ml_confidence,
+                            "ml_model": ml_model_name,
+                            "ml_version": ml_model_version,
+                            "truth_state": truth_state,
                         }
                     )
                 else:
                     match = rule.pattern.search(line_stripped)
                     if match:
                         matched_str = match.group(0)
+                        matched_lines.add(i + 1)
                         # Redact secret rules if matching OpenAI / AWS / Private key
                         if rule.category == "Secrets":
                             if "sk-" in matched_str:
@@ -631,8 +707,64 @@ class SecurityAnalyzer:
                                 "remediation": rule.remediation,
                                 "risk_contribution": rule.risk_contribution,
                                 "provenance": "OBSERVED",
+                                "detection_source": "deterministic",
+                                "truth_state": "OBSERVED",
                             }
                         )
+
+        # Candidate-driven ML discovery for lines not caught by deterministic rules
+        if self.ml_classifier is not None and len(lines) <= 500:
+            extracted_cands = self.candidate_extractor.extract_from_lines(lines, target_display)
+            for cand in extracted_cands:
+                if cand.line_number in matched_lines:
+                    continue
+
+                # Run ML inference
+                ml_res = self.ml_classifier.predict_candidate(cand, deterministic_score=0.0)
+                if (
+                    ml_res.is_available
+                    and ml_res.classification == "REAL_SECRET"
+                    and ml_res.confidence >= 0.88
+                    and cand.entropy >= 3.6
+                ):
+                    matched_lines.add(cand.line_number)
+                    redacted_ev = f'{cand.variable_name} = "[REDACTED]"'
+                    findings.append(
+                        {
+                            "rule_id": "SEC-ML-001",
+                            "title": "High-Entropy Credential Exposure (ML Detection)",
+                            "line_number": cand.line_number,
+                            "symbol": redacted_ev,
+                            "file": target_display,
+                            "language": lang,
+                            "timestamp": event.timestamp.isoformat(),
+                            "evidence": redacted_ev,
+                            "redacted_evidence": redacted_ev,
+                            "severity": "HIGH",
+                            "description": (
+                                "Machine learning model identified a candidate with "
+                                "high secret probability."
+                            ),
+                            "what": f"High-entropy secret detected in {target_display}",
+                            "why": (
+                                f"ML model {ml_res.model_name} estimated "
+                                f"{ml_res.confidence * 100:.1f}% likelihood of a real secret."
+                            ),
+                            "where": f"{target_display}:{cand.line_number}",
+                            "remediation": (
+                                "Review whether this variable holds sensitive production "
+                                "credentials and rotate if necessary."
+                            ),
+                            "risk_contribution": 60,
+                            "provenance": "OBSERVED",
+                            "detection_source": "ml",
+                            "ml_classification": ml_res.classification,
+                            "ml_confidence": ml_res.confidence,
+                            "ml_model": ml_res.model_name,
+                            "ml_version": ml_res.model_version,
+                            "truth_state": "INFERRED",
+                        }
+                    )
 
         if not findings:
             return None

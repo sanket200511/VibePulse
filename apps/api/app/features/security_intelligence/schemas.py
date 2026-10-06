@@ -44,6 +44,12 @@ class SecurityFinding(BaseModel):
     where: str | None = None
     remediation: str
     risk_contribution: int = 10
+    detection_source: Literal["deterministic", "ml", "hybrid"] = "deterministic"
+    ml_classification: Literal["REAL_SECRET", "PLACEHOLDER_OR_EXAMPLE", "NOT_SECRET"] | None = None
+    ml_confidence: float | None = None
+    ml_model: str | None = None
+    ml_version: str | None = None
+    truth_state: Literal["OBSERVED", "INFERRED", "UNKNOWN"] = "OBSERVED"
 
 
 class SensitiveFileDetail(BaseModel):

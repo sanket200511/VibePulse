@@ -1,0 +1,24 @@
+{
+  "model_name": "rf-secret-classifier",
+  "model_version": "1.0.0",
+  "model_type": "random_forest",
+  "feature_names": [
+    "length",
+    "entropy",
+    "digit_ratio",
+    "uppercase_ratio",
+    "lowercase_ratio",
+    "symbol_ratio",
+    "hex_char_ratio",
+    "base64_char_ratio",
+    "keyword_score",
+    "placeholder_heuristic_score",
+    "has_assignment",
+    "is_test",
+    "is_example",
+    "is_docs",
+    "is_config",
+    "deterministic_score"
+  ],
+  "classes": ["REAL_SECRET", "PLACEHOLDER_OR_EXAMPLE", "NOT_SECRET"]
+}
