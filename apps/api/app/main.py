@@ -166,6 +166,9 @@ def create_app() -> FastAPI:
 
     # ── Routers ───────────────────────────────────────────────────────────────
     # Each feature registers its own router with an appropriate prefix.
+    from app.features.auth.router import router as auth_router
+
+    app.include_router(auth_router)
     app.include_router(projects_router)
     app.include_router(health_router)
     app.include_router(events_router)

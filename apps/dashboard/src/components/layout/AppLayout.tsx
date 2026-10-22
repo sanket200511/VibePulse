@@ -13,9 +13,13 @@ import { ThemeToggle } from "../theme/ThemeToggle";
 import { PresentationToggle } from "./PresentationToggle";
 import { useLiveObservability } from "../../lib/useLiveObservability";
 import { ToastProvider } from "../ui/ToastProvider";
+import { useAuth } from "../../lib/auth-context";
+import { LogOut, User as UserIcon } from "lucide-react";
+import { BackendStatusBanner } from "../common/BackendStatusBanner";
 
 export function AppLayout() {
   useLiveObservability();
+  const { user, logout } = useAuth();
 
   return (
     <div className="bg-background text-foreground flex min-h-screen flex-col">
@@ -36,7 +40,7 @@ export function AppLayout() {
             aria-label="VibePulse Workspace Home"
           >
             <span className="bg-primary/15 text-primary flex h-5 w-5 items-center justify-center rounded font-mono text-xs font-bold">
-              D
+              V
             </span>
             <span className="text-foreground font-semibold tracking-tight">VibePulse</span>
             <span className="bg-muted/40 text-muted-foreground border-border/50 hidden items-center gap-1 rounded border px-1.5 py-0.5 font-mono text-[10px] md:inline-flex">
@@ -48,9 +52,48 @@ export function AppLayout() {
             <Navigation />
             <PresentationToggle />
             <ThemeToggle />
+            {user ? (
+              <div className="flex items-center gap-1.5">
+                <div className="border-border/60 bg-muted/30 flex items-center gap-1.5 rounded-full border px-2 py-1 text-xs">
+                  {user.avatar_url ? (
+                    <img
+                      src={user.avatar_url}
+                      alt={user.full_name || user.email}
+                      className="h-4 w-4 rounded-full object-cover"
+                    />
+                  ) : (
+                    <span className="flex h-4 w-4 items-center justify-center rounded-full bg-cyan-500/20 text-[10px] font-bold text-cyan-400">
+                      {(user.full_name || user.email || "U").charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                  <span className="hidden max-w-[120px] truncate text-xs font-medium sm:inline-block">
+                    {user.full_name || user.email.split("@")[0]}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    void logout();
+                  }}
+                  title="Sign out"
+                  className="border-border/40 text-muted-foreground hover:text-foreground hover:bg-muted/40 inline-flex h-7 w-7 items-center justify-center rounded-md border transition-colors"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="inline-flex items-center gap-1.5 rounded-md bg-gradient-to-r from-cyan-500 to-indigo-600 px-2.5 py-1 text-xs font-medium text-white shadow-sm transition-opacity hover:opacity-90"
+              >
+                <UserIcon className="h-3.5 w-3.5" />
+                <span>Sign In</span>
+              </Link>
+            )}
           </div>
         </div>
       </header>
+      <BackendStatusBanner />
 
       <main id="main-content" className="flex flex-1 flex-col">
         <Outlet />

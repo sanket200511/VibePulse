@@ -4,21 +4,25 @@ import { describe, expect, it, vi } from "vitest";
 import { AppLayout } from "./AppLayout";
 import { ThemeProvider } from "../theme/ThemeProvider";
 
+import { AuthProvider } from "../../lib/auth-context";
+
 vi.mock("../../lib/useLiveObservability", () => ({
   useLiveObservability: vi.fn(),
 }));
 
 function renderShell() {
   return render(
-    <ThemeProvider>
-      <MemoryRouter initialEntries={["/"]}>
-        <Routes>
-          <Route element={<AppLayout />}>
-            <Route path="/" element={<p>Page content</p>} />
-          </Route>
-        </Routes>
-      </MemoryRouter>
-    </ThemeProvider>,
+    <AuthProvider>
+      <ThemeProvider>
+        <MemoryRouter initialEntries={["/"]}>
+          <Routes>
+            <Route element={<AppLayout />}>
+              <Route path="/" element={<p>Page content</p>} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </ThemeProvider>
+    </AuthProvider>,
   );
 }
 

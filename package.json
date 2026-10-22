@@ -54,7 +54,7 @@
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,mjs}": [
-      "eslint --fix --no-warn-ignored",
+      "node --max-old-space-size=4096 ./node_modules/eslint/bin/eslint.js --fix --no-warn-ignored",
       "prettier --write"
     ],
     "*.{json,yaml,yml,md,css,html}": [

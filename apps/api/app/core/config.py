@@ -97,6 +97,28 @@ class Settings(BaseSettings):
     # How often the in-process sweep loop checks for expired sessions.
     session_sweep_interval_seconds: int = Field(default=30, ge=1)
 
+    # ── Authentication & Security ─────────────────────────────────────────────
+    jwt_secret_key: str = Field(
+        default="vibepulse-production-secure-jwt-signing-key-32-bytes-minimum",
+        validation_alias=AliasChoices("JWT_SECRET_KEY", "JWT_SECRET", "SECRET_KEY"),
+    )
+    jwt_algorithm: str = "HS256"
+    jwt_access_token_expire_minutes: int = Field(default=60 * 24 * 7, ge=1)
+
+    # ── Google Cloud OAuth ───────────────────────────────────────────────────
+    google_client_id: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("GOOGLE_CLIENT_ID", "GCP_CLIENT_ID"),
+    )
+
+    # ── Email Verification & SMTP ─────────────────────────────────────────────
+    email_verification_code_expire_minutes: int = Field(default=15, ge=1)
+    smtp_host: str | None = None
+    smtp_port: int = 587
+    smtp_user: str | None = None
+    smtp_password: str | None = None
+    smtp_from_email: str = "noreply@vibepulse.dev"
+
     @property
     def is_development(self) -> bool:
         return self.environment == "development"

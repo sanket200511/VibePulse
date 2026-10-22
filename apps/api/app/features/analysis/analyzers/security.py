@@ -34,14 +34,16 @@ import logging
 import os
 import re
 from dataclasses import dataclass
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
+
+if TYPE_CHECKING:
+    from app.ml.secret_detection.models.classical import ClassicalSecretClassifier
 
 from app.core.domain.events import AnalyzableEvent
 from app.features.analysis.base import AnalysisContext, AnalysisFinding
 from app.features.analysis.security.candidate import CandidateExtractor
 from app.features.analysis.security.hybrid_engine import HybridDecisionEngine
 from app.features.analysis.security.types import DeterministicResult
-from app.ml.secret_detection.models.classical import ClassicalSecretClassifier
 
 logger = logging.getLogger("vortex.security.analyzer")
 
@@ -213,6 +215,8 @@ class SecurityAnalyzer:
         )
         try:
             if os.path.exists(os.path.join(artifact_dir, "model.joblib")):
+                from app.ml.secret_detection.models.classical import ClassicalSecretClassifier
+
                 self.ml_classifier = ClassicalSecretClassifier.load(artifact_dir)
         except Exception as err:
             logger.warning("Could not load secret ML classifier: %s", err)
