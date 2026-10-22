@@ -39,7 +39,6 @@ services:
     name: vibepulse-dashboard
     runtime: static
     plan: free
-    region: oregon
     buildCommand: (corepack enable 2>/dev/null || npm install -g pnpm@9.15.4) && pnpm install && pnpm --filter @vibepulse/dashboard build
     staticPublishPath: ./apps/dashboard/dist
     routes:
@@ -50,10 +49,7 @@ services:
       - key: NODE_VERSION
         value: "20.18.0"
       - key: VITE_API_URL
-        fromService:
-          type: web
-          name: vibepulse-api
-          property: url
+        value: https://vibepulse-api.onrender.com
 
   # ── Redis-compatible Key Value Store ───────────────────────────────────────
   - type: keyvalue
