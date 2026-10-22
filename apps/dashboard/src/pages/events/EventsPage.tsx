@@ -1,4 +1,4 @@
-import { Badge } from "@depradar/ui";
+import { Badge } from "@vibepulse/ui";
 import { EventRow } from "./EventRow";
 import { useEventsFeed } from "./useEventsFeed";
 import { SessionBanner } from "../sessions/SessionBanner";
@@ -56,7 +56,7 @@ export function EventsPage() {
               description="Save a file in an observed project and it will appear here instantly."
               footer={
                 <span className="font-mono text-[11px]">
-                  Tip: Ensure the DepRadar Daemon is running in your terminal.
+                  Tip: Ensure the VibePulse Daemon is running in your terminal.
                 </span>
               }
             />

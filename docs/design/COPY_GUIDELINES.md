@@ -1,4 +1,4 @@
-# DepRadar Copy Guidelines
+# VibePulse Copy Guidelines
 
 Version: 1.0
 
@@ -6,7 +6,7 @@ Version: 1.0
 
 # Purpose
 
-Every word inside DepRadar should help developers understand their work.
+Every word inside VibePulse should help developers understand their work.
 
 The interface should feel calm, intelligent, and trustworthy.
 
@@ -18,7 +18,7 @@ Great copy makes software feel human.
 
 # Brand Voice
 
-DepRadar communicates like an experienced engineering teammate.
+VibePulse communicates like an experienced engineering teammate.
 
 It should feel:
 
@@ -479,7 +479,7 @@ Developers value honesty over hype.
 
 # Product Personality
 
-If DepRadar were a teammate, it would be:
+If VibePulse were a teammate, it would be:
 
 Thoughtful.
 
@@ -507,8 +507,8 @@ Every sentence should earn its place.
 
 ---
 
-## DepRadar Design Manifesto
+## VibePulse Design Manifesto
 
 Every design decision should help developers understand their work more clearly.
 
-If a feature, animation, interaction, or sentence does not improve understanding, it does not belong in DepRadar.
+If a feature, animation, interaction, or sentence does not improve understanding, it does not belong in VibePulse.

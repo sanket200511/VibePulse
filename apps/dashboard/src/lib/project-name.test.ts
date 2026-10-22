@@ -11,10 +11,10 @@ describe("projectDisplayName", () => {
   });
 
   it("ignores a trailing slash", () => {
-    expect(projectDisplayName("/home/dev/code/depradar-api/")).toBe("depradar-api");
+    expect(projectDisplayName("/home/dev/code/vibepulse-api/")).toBe("vibepulse-api");
   });
 
   it("falls back to the raw string when there are no path separators", () => {
-    expect(projectDisplayName("depradar-api")).toBe("depradar-api");
+    expect(projectDisplayName("vibepulse-api")).toBe("vibepulse-api");
   });
 });

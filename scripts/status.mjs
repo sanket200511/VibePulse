@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * DepRadar Instant Runtime Status Inspector
+ * VibePulse Instant Runtime Status Inspector
  *
  * Checks live stack status and prints a compact terminal status table.
  * Usage: node scripts/status.mjs (or `pnpm dev:status` / `pnpm status`)

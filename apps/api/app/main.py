@@ -1,5 +1,5 @@
 """
-DepRadar API - Application entry point.
+VibePulse API - Application entry point.
 
 Wires together FastAPI, middleware, and feature routers.
 Business logic lives exclusively inside feature modules.
@@ -140,7 +140,7 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
 
 def create_app() -> FastAPI:
     app = FastAPI(
-        title="DepRadar API",
+        title="VibePulse API",
         description="Engineering Observability & Knowledge Graph Platform for the AI Coding Era",
         version="0.1.0",
         docs_url="/docs" if settings.is_development else None,

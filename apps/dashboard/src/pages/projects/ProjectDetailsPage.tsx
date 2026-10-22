@@ -207,7 +207,7 @@ export function ProjectDetailsPage() {
         {sessions.length === 0 ? (
           <EmptyState
             title="No sessions recorded"
-            description="DepRadar has not observed any development activity for this project yet."
+            description="VibePulse has not observed any development activity for this project yet."
           />
         ) : (
           <div className="flex flex-col gap-2.5">
@@ -247,7 +247,7 @@ export function ProjectDetailsPage() {
               Danger Zone
             </h3>
             <p className="text-muted-foreground mt-1 max-w-xl text-xs leading-relaxed">
-              Remove this project from DepRadar. Permanently deletes stored telemetry, sessions,
+              Remove this project from VibePulse. Permanently deletes stored telemetry, sessions,
               investigations, and project memory. Your actual project files and directory will{" "}
               <strong className="text-foreground">NOT</strong> be deleted.
             </p>

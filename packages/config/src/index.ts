@@ -1,5 +1,5 @@
 /**
- * @depradar/config
+ * @vibepulse/config
  *
  * Shared configuration utilities:
  * - Type-safe environment variable parsing

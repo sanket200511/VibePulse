@@ -33,12 +33,12 @@ export function AppLayout() {
           <Link
             to="/"
             className="text-foreground hover:text-primary focus-visible:ring-ring inline-flex items-center gap-2 rounded-md text-sm font-semibold tracking-tight transition-colors focus-visible:outline-none focus-visible:ring-2"
-            aria-label="DepRadar Workspace Home"
+            aria-label="VibePulse Workspace Home"
           >
             <span className="bg-primary/15 text-primary flex h-5 w-5 items-center justify-center rounded font-mono text-xs font-bold">
               D
             </span>
-            <span className="text-foreground font-semibold tracking-tight">DepRadar</span>
+            <span className="text-foreground font-semibold tracking-tight">VibePulse</span>
             <span className="bg-muted/40 text-muted-foreground border-border/50 hidden items-center gap-1 rounded border px-1.5 py-0.5 font-mono text-[10px] md:inline-flex">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
               v1.0

@@ -43,7 +43,7 @@ function getBasenameCrossPlatform(p: string): string {
 }
 
 /**
- * Registers or ensures a project exists in the DepRadar backend.
+ * Registers or ensures a project exists in the VibePulse backend.
  * Idempotent: returns existing project record if already registered.
  */
 export async function ensureProject(

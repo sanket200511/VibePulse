@@ -17,7 +17,7 @@ import {
   Sparkles,
   CheckCircle2,
 } from "lucide-react";
-import { Badge } from "@depradar/ui";
+import { Badge } from "@vibepulse/ui";
 import { useQuery } from "@tanstack/react-query";
 import { getApiBaseUrl } from "../../lib/api-config";
 import type { Project } from "../projects/types";
@@ -458,7 +458,7 @@ export function EngineeringCommandCenter() {
                 void handleAskCopilot(copilotInput);
               }
             }}
-            placeholder="Ask DepRadar anything about this project (e.g. 'What should I fix first?')..."
+            placeholder="Ask VibePulse anything about this project (e.g. 'What should I fix first?')..."
             className="border-border/80 bg-secondary/30 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-hidden flex-1 rounded-md border px-3 py-1.5 text-xs"
           />
           <button

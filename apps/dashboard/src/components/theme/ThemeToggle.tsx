@@ -1,6 +1,6 @@
 import { useTheme, type Theme } from "./ThemeProvider";
 import { Sun, Moon, Monitor } from "lucide-react";
-import { cn } from "@depradar/ui";
+import { cn } from "@vibepulse/ui";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();

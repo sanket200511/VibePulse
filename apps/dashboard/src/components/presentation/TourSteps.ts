@@ -3,9 +3,9 @@ import type { TourStep } from "./types";
 export const TOUR_STEPS: TourStep[] = [
   {
     id: "welcome",
-    title: "Welcome to DepRadar",
+    title: "Welcome to VibePulse",
     description:
-      "DepRadar is an Engineering Observability Platform. It doesn't rely on self-reported status or AI-inferred productivity. Everything you see is deterministically derived from absolute reality.",
+      "VibePulse is an Engineering Observability Platform. It doesn't rely on self-reported status or AI-inferred productivity. Everything you see is deterministically derived from absolute reality.",
     routeResolver: () => "/",
     target: "presentation-welcome", // A hidden or full-screen target
     placement: "center",
@@ -14,7 +14,7 @@ export const TOUR_STEPS: TourStep[] = [
     id: "workspace-overview",
     title: "Workspace Connections",
     description:
-      "DepRadar connects directly to the repositories you are currently working on. A background daemon observes the file system in real-time.",
+      "VibePulse connects directly to the repositories you are currently working on. A background daemon observes the file system in real-time.",
     routeResolver: () => "/",
     target: "workspace-projects",
     placement: "right",
@@ -32,7 +32,7 @@ export const TOUR_STEPS: TourStep[] = [
     id: "project-pulse",
     title: "Project Pulse",
     description:
-      "The Pulse visualizes engineering momentum. Each node represents an active session. DepRadar automatically groups continuous work into logical sessions.",
+      "The Pulse visualizes engineering momentum. Each node represents an active session. VibePulse automatically groups continuous work into logical sessions.",
     routeResolver: (ctx) => `/projects/${ctx.projectId || "demo-project"}/story`,
     target: "project-pulse",
     placement: "bottom",
@@ -50,7 +50,7 @@ export const TOUR_STEPS: TourStep[] = [
     id: "architecture-timeline",
     title: "Architecture Timeline",
     description:
-      "DepRadar tells the story of your software. The Static Analysis engine detects functions added, classes removed, and structural shifts.",
+      "VibePulse tells the story of your software. The Static Analysis engine detects functions added, classes removed, and structural shifts.",
     routeResolver: (ctx) => `/projects/${ctx.projectId || "demo-project"}/story`,
     target: "architecture-timeline",
     placement: "left",
@@ -59,7 +59,7 @@ export const TOUR_STEPS: TourStep[] = [
     id: "ai-provenance",
     title: "AI Provenance Engine",
     description:
-      "DepRadar observes AI interactions—prompts, responses, and tool executions—and deterministically correlates them to the exact architectural shifts and security events that followed, without relying on AI to guess intent.",
+      "VibePulse observes AI interactions—prompts, responses, and tool executions—and deterministically correlates them to the exact architectural shifts and security events that followed, without relying on AI to guess intent.",
     routeResolver: (ctx) => `/projects/${ctx.projectId || "demo-project"}/ai-provenance`,
     target: "ai-provenance", // Can point to a header element
     placement: "bottom",
@@ -123,7 +123,7 @@ export const TOUR_STEPS: TourStep[] = [
     id: "live-observability",
     title: "Live Observability",
     description:
-      "DepRadar is entirely reactive. As soon as you save a file, the timeline patches, the pulse animates, and the story updates—live.",
+      "VibePulse is entirely reactive. As soon as you save a file, the timeline patches, the pulse animates, and the story updates—live.",
     routeResolver: (ctx) => `/projects/${ctx.projectId || "demo-project"}/story`,
     target: "live-observability-indicator",
     placement: "bottom",
@@ -132,7 +132,7 @@ export const TOUR_STEPS: TourStep[] = [
     id: "summary",
     title: "Demo Complete",
     description:
-      "You've seen the power of deterministic engineering observability. DepRadar restores truth to software development.",
+      "You've seen the power of deterministic engineering observability. VibePulse restores truth to software development.",
     routeResolver: () => `/`,
     target: "presentation-summary",
     placement: "center",

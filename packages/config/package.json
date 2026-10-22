@@ -1,8 +1,8 @@
 {
-  "name": "@depradar/config",
+  "name": "@vibepulse/config",
   "version": "0.0.1",
   "private": true,
-  "description": "Shared configuration utilities and environment parsing for DepRadar",
+  "description": "Shared configuration utilities and environment parsing for VibePulse",
   "type": "module",
   "exports": {
     ".": {

@@ -5,7 +5,7 @@
  */
 
 import { Link } from "react-router-dom";
-import { Badge } from "@depradar/ui";
+import { Badge } from "@vibepulse/ui";
 import { EmptyState } from "../../components/states";
 import type { ContinueWorkingSession } from "./types";
 import { formatRelativeTime } from "../../lib/relative-time";

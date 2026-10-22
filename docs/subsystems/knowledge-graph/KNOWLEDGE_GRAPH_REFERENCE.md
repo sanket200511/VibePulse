@@ -1,4 +1,4 @@
-# DepRadar — Canonical Knowledge Graph Reference
+# VibePulse — Canonical Knowledge Graph Reference
 
 **Status**: IMPLEMENTATION-VERIFIED GRAPH MODEL
 **Source Code**: `apps/api/app/features/knowledge_graph/service.py`, `schemas.py`

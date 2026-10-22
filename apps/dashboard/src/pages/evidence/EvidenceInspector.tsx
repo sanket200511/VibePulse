@@ -9,7 +9,7 @@ import {
   Layers,
   FileCode,
 } from "lucide-react";
-import { Badge } from "@depradar/ui";
+import { Badge } from "@vibepulse/ui";
 import { useEvidenceExplainability } from "./useEvidenceExplainability";
 import type { EntityType, ScoreDecompositionItem, EvidenceChainStep } from "./types";
 
@@ -44,7 +44,7 @@ export function EvidenceInspector({ projectId, entityType, entityId, onClose }: 
                 variant="outline"
                 className="border-primary/30 bg-primary/10 text-primary font-mono text-[9px] font-semibold"
               >
-                WHY DEPRADAR BELIEVES THIS
+                WHY VIBEPULSE BELIEVES THIS
               </Badge>
               {explain?.provenance && (
                 <Badge

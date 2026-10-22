@@ -1,13 +1,13 @@
-# DepRadar Design System
+# VibePulse Design System
 
-> This document governs the visual language of the DepRadar dashboard.
+> This document governs the visual language of the VibePulse dashboard.
 > Every UI decision should trace back to a principle here.
 
 ---
 
 ## Philosophy
 
-DepRadar is a premium developer tool. The interface must feel like it was built by engineers for engineers.
+VibePulse is a premium developer tool. The interface must feel like it was built by engineers for engineers.
 
 Every screen should communicate:
 

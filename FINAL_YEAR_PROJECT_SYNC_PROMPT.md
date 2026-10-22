@@ -1,6 +1,6 @@
 # FINAL YEAR PROJECT SYNC INSTRUCTIONS & MASTER PROMPT
 
-This document provides the exact, self-contained prompt to use whenever you want an AI assistant (in a brand new chat with zero previous context) to synchronize all new development from your **Hackathon Project (`DepRadar`)** back to your **Final Year College Project (`VibePulse`)**.
+This document provides the exact, self-contained prompt to use whenever you want an AI assistant (in a brand new chat with zero previous context) to synchronize all new development from your **Hackathon Project (`VibePulse`)** back to your **Final Year College Project (`VibePulse`)**.
 
 ---
 
@@ -26,10 +26,10 @@ You are assisting me with synchronizing development work from my Hackathon proje
 CRITICAL CONTEXT & REPOSITORIES
 ============================================================
 1. CURRENT WORKSPACE (Hackathon Project):
-   - Path: c:\Users\ASUS\OneDrive\Desktop\DepRadar
-   - Remote URL: https://github.com/sanket200511/Vortex-DepRadar.git
+   - Path: c:\Users\ASUS\OneDrive\Desktop\VibePulse
+   - Remote URL: https://github.com/sanket200511/Vortex-VibePulse.git
    - Primary Branch: main
-   - Branding in this folder: DepRadar
+   - Branding in this folder: VibePulse
 
 2. FINAL YEAR COLLEGE PROJECT (Target Repository):
    - Remote URL: https://github.com/sanket200511/VibePulse.git
@@ -78,19 +78,19 @@ STEP 3: CONFIGURE VIBEPULSE REMOTE & FETCH
 STEP 4: SAFELY INTEGRATE HACKATHON WORK ONTO FINAL YEAR PROJECT
 - Create or check out a tracking branch for the final year project:
   `git checkout -B sync-final-year vibepulse/master`
-- Bring over the latest changes/commits from `main` (from DepRadar) onto this branch while keeping `vibepulse/master`'s historical commits as the root.
+- Bring over the latest changes/commits from `main` (from VibePulse) onto this branch while keeping `vibepulse/master`'s historical commits as the root.
 - Ensure all commit messages are descriptive and attributed to Sanket Kurve.
 
 STEP 5: RUN QUALITY CHECKS & TESTS (DO NOT PUSH BROKEN CODE)
 - Run format and lint checks:
   `pnpm format:check`
-  `pnpm --filter=!@depradar/api lint`
+  `pnpm --filter=!@vibepulse/api lint`
 - Run typecheck:
-  `pnpm --filter=!@depradar/api typecheck`
+  `pnpm --filter=!@vibepulse/api typecheck`
 - Run unit/integration tests:
-  `pnpm --filter=!@depradar/api test`
+  `pnpm --filter=!@vibepulse/api test`
 - If any test hangs or times out in jsdom/Vitest, use `--pool=forks` or `--no-threads`.
-- Ensure `.github/workflows/ci.yml` is clean (including Python db migration steps if running backend tests, and excluding `@depradar/api` from JS turbo lint if `uv` is not present in Node runners).
+- Ensure `.github/workflows/ci.yml` is clean (including Python db migration steps if running backend tests, and excluding `@vibepulse/api` from JS turbo lint if `uv` is not present in Node runners).
 
 STEP 6: PUSH SAFELY TO FINAL YEAR REPO
 - Fast-forward or push the verified branch to `vibepulse`:

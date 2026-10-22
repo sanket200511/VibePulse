@@ -14,7 +14,7 @@
  */
 
 import { NavLink } from "react-router-dom";
-import { cn } from "@depradar/ui";
+import { cn } from "@vibepulse/ui";
 import { NAV_ITEMS } from "./nav-items";
 
 export function Navigation() {

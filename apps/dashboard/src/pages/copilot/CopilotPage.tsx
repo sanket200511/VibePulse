@@ -14,7 +14,7 @@ import {
   Layers,
   Search,
 } from "lucide-react";
-import { Badge } from "@depradar/ui";
+import { Badge } from "@vibepulse/ui";
 import { useCopilot } from "./useCopilot";
 import { EvidenceInspector } from "../evidence/EvidenceInspector";
 import type { EntityType } from "../evidence/types";
@@ -100,7 +100,7 @@ export function CopilotPage() {
             type="text"
             value={inputQuery}
             onChange={(e) => setInputQuery(e.target.value)}
-            placeholder="Ask DepRadar anything... (e.g., 'What should I fix first?', 'Why is auth.py risky?')"
+            placeholder="Ask VibePulse anything... (e.g., 'What should I fix first?', 'Why is auth.py risky?')"
             className="border-border/80 bg-background/80 text-foreground placeholder:text-muted-foreground/60 focus:border-primary w-full rounded-md border py-2 pl-10 pr-24 font-mono text-xs shadow-inner focus:outline-none"
             disabled={isAsking}
           />

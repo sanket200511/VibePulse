@@ -1,4 +1,4 @@
-# DepRadar — Final Demo Mode Audit & Verification Report
+# VibePulse — Final Demo Mode Audit & Verification Report
 
 **Document Status**: AUTHORITATIVE AUDIT & VERIFICATION REPORT  
 **Timestamp**: August 2026  

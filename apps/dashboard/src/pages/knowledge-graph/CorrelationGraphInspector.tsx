@@ -137,7 +137,7 @@ export function CorrelationGraphInspector({
         </div>
 
         <div className="border-border/60 text-muted-foreground border-t pt-2.5 font-mono text-[10px]">
-          DepRadar 2.0 Causal Surface
+          VibePulse 2.0 Causal Surface
         </div>
       </div>
     );

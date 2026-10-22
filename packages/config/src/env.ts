@@ -34,7 +34,7 @@ export function requireEnv(key: string): string {
   const value = process.env[key];
   if (value === undefined || value === "") {
     throw new Error(
-      `[DepRadar] Required environment variable "${key}" is not set. ` +
+      `[VibePulse] Required environment variable "${key}" is not set. ` +
         `Check your .env file or deployment configuration.`,
     );
   }
@@ -52,7 +52,7 @@ export function parsePort(key: string, defaultPort: number): number {
   const parsed = Number.parseInt(raw, 10);
   if (Number.isNaN(parsed) || parsed < 1 || parsed > 65535) {
     console.warn(
-      `[DepRadar] Invalid port value for "${key}": "${raw}". ` +
+      `[VibePulse] Invalid port value for "${key}": "${raw}". ` +
         `Falling back to default port ${defaultPort}.`,
     );
     return defaultPort;

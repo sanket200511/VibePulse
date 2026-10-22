@@ -7,7 +7,7 @@
  */
 
 import type { ReactNode } from "react";
-import { cn } from "@depradar/ui";
+import { cn } from "@vibepulse/ui";
 
 export interface PageHeaderProps {
   title: string;

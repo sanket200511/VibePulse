@@ -32,13 +32,13 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: pnpm lint --filter=!@depradar/api
+        run: pnpm lint --filter=!@vibepulse/api
 
       - name: Type-check
-        run: pnpm typecheck --filter=!@depradar/api
+        run: pnpm typecheck --filter=!@vibepulse/api
 
       - name: Test
-        run: pnpm test --filter=!@depradar/api
+        run: pnpm test --filter=!@vibepulse/api
 
       - name: Format check
         run: pnpm format:check
@@ -114,6 +114,6 @@ jobs:
           context: .
           file: ./docker/api.Dockerfile
           push: false
-          tags: depradar/api:ci
+          tags: vibepulse/api:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max

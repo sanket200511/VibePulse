@@ -1,4 +1,4 @@
-# DepRadar Motion Guidelines
+# VibePulse Motion Guidelines
 
 Version: 1.0
 
@@ -23,7 +23,7 @@ If motion does not improve understanding, it should not exist.
 
 # Motion Philosophy
 
-DepRadar should feel:
+VibePulse should feel:
 
 - Calm
 - Intentional
@@ -435,7 +435,7 @@ Will this still feel good after thousands of uses?
 
 5.
 
-Does it support the DepRadar identity?
+Does it support the VibePulse identity?
 
 If any answer is "No",
 
@@ -447,7 +447,7 @@ do not implement the animation.
 
 The best motion is often the motion users barely notice.
 
-If users describe DepRadar as
+If users describe VibePulse as
 
 "smooth",
 
@@ -461,8 +461,8 @@ then the motion system has succeeded.
 
 ---
 
-## DepRadar Design Manifesto
+## VibePulse Design Manifesto
 
 Every design decision should help developers understand their work more clearly.
 
-If a feature, animation, interaction, or sentence does not improve understanding, it does not belong in DepRadar.
+If a feature, animation, interaction, or sentence does not improve understanding, it does not belong in VibePulse.

@@ -1,5 +1,5 @@
 """
-DepRadar Ephemeral Project Cleanup Script (SQLAlchemy / Python backend)
+VibePulse Ephemeral Project Cleanup Script (SQLAlchemy / Python backend)
 
 Safely inspects and removes ephemeral/test/demo projects directly from PostgreSQL
 while strictly protecting legitimate persistent workspaces (e.g. D:\\Projects\\Dabba).
@@ -29,8 +29,8 @@ def classify_project(root_path: str | None, display_name: str | None) -> str:
         or root == "d:/vibepulse-seminar-demo"
         or root.endswith("/vibepulse-seminar-demo")
         or name == "vibepulse-seminar-demo"
-        or "depradar-seminar-demo" in name
-        or "depradar-seminar-demo" in root
+        or "vibepulse-seminar-demo" in name
+        or "vibepulse-seminar-demo" in root
         or "vortex" in name
         or "vortex" in root
     ):

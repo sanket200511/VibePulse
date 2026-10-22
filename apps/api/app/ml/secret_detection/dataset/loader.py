@@ -275,7 +275,7 @@ class SyntheticDatasetGenerator:
                 "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824",
                 "verify/checksums.txt",
             ),
-            ("cache_key_prefix", "depradar:v1:projects:active_nodes:cache", "src/cache/keys.py"),
+            ("cache_key_prefix", "vibepulse:v1:projects:active_nodes:cache", "src/cache/keys.py"),
         ]
 
         for i in range(120):
