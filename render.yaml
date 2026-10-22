@@ -16,6 +16,8 @@ services:
     dockerContext: .
     healthCheckPath: /health
     envVars:
+      - key: PORT
+        value: "5184"
       - key: ENVIRONMENT
         value: production
       - key: DEBUG
@@ -38,8 +40,7 @@ services:
   - type: web
     name: vibepulse-dashboard
     runtime: static
-    plan: free
-    buildCommand: (corepack enable 2>/dev/null || npm install -g pnpm@9.15.4) && pnpm install && pnpm --filter @vibepulse/dashboard build
+    buildCommand: (corepack enable 2>/dev/null || npm install -g pnpm@9.15.4) && pnpm install && (pnpm --filter @depradar/dashboard build || pnpm --filter ./apps/dashboard build)
     staticPublishPath: ./apps/dashboard/dist
     routes:
       - type: rewrite
