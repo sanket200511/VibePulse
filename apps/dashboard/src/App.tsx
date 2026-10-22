@@ -19,21 +19,31 @@ import { KnowledgeGraphPage } from "./pages/knowledge-graph/KnowledgeGraphPage";
 import { CopilotPage } from "./pages/copilot/CopilotPage";
 import { LoginPage } from "./pages/auth/LoginPage";
 import { AuthProvider } from "./lib/auth-context";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 /**
  * Application router.
  *
- * Every route renders inside `AppLayout`, the persistent shell that hosts
- * the Contextual Navigation model's fixed anchor set: Workspace Home, Projects, and History.
+ * Routes are protected by `ProtectedRoute`. Unauthenticated visitors are
+ * automatically redirected to `/login` to sign in or verify their account.
  */
 export default function App() {
   return (
     <AuthProvider>
       <PresentationEngine>
         <Routes>
-          <Route element={<AppLayout />}>
+          {/* Public Authentication Route */}
+          <Route path="/login" element={<LoginPage />} />
+
+          {/* Protected Application Workspace */}
+          <Route
+            element={
+              <ProtectedRoute>
+                <AppLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route path="/" element={<WorkspaceHomePage />} />
-            <Route path="/login" element={<LoginPage />} />
             <Route path="/projects" element={<ProjectsPage />} />
             <Route path="/history" element={<SessionsPage />} />
             <Route path="/events" element={<EventsPage />} />
