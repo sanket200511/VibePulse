@@ -98,11 +98,11 @@ def classify_query(query: str) -> ClassificationResult:
 
     # ── 1. CANONICAL INTENT CLASSIFICATION RULES ──────────────────────────────
 
-    # A. Evidence / Explanation ("Why does DepRadar believe this?")
+    # A. Evidence / Explanation ("Why does VibePulse believe this?")
     if any(
         k in q_low
         for k in (
-            "why does depradar believe",
+            "why does vibepulse believe",
             "why does vibepulse believe",
             "why do you believe",
             "believe this score",
@@ -409,10 +409,10 @@ def classify_query(query: str) -> ClassificationResult:
         k in q_low
         for k in (
             "what do we know about this project",
-            "what does depradar know",
+            "what does vibepulse know",
             "what does vibepulse know",
             "what do you know",
-            "what does depradar not know",
+            "what does vibepulse not know",
             "what does vibepulse not know",
             "project overview",
             "project summary",

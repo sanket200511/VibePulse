@@ -4,7 +4,7 @@
     {
       "name": "dashboard",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "@depradar/dashboard", "dev"],
+      "runtimeArgs": ["--filter", "@vibepulse/dashboard", "dev"],
       "port": 5173
     }
   ]

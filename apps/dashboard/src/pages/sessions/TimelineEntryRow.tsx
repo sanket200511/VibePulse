@@ -1,4 +1,4 @@
-import { Badge } from "@depradar/ui";
+import { Badge } from "@vibepulse/ui";
 import type { TimelineEntry } from "./timeline-types";
 import {
   FilePlus,

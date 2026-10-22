@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * DepRadar Development Supervisor & Seminar Orchestrator
+ * VibePulse Development Supervisor & Seminar Orchestrator
  *
  * Provides a professional, clean development supervisor experience:
  * - Structured log hierarchy: [TIME] [SERVICE] [LEVEL] MESSAGE
@@ -23,23 +23,23 @@ const ROOT_DIR = path.resolve(__dirname, "..");
 
 // ── Environment & Ports ──────────────────────────────────────────────────────
 const API_PORT = Number(
-  process.env.DEPRADAR_API_PORT || process.env.VIBEPULSE_API_PORT || process.env.API_PORT || 5184,
+  process.env.VIBEPULSE_API_PORT || process.env.VIBEPULSE_API_PORT || process.env.API_PORT || 5184,
 );
 const DASHBOARD_PORT = Number(
-  process.env.DEPRADAR_DASHBOARD_PORT ||
+  process.env.VIBEPULSE_DASHBOARD_PORT ||
     process.env.VIBEPULSE_DASHBOARD_PORT ||
     process.env.DASHBOARD_PORT ||
     5183,
 );
 const DAEMON_PORT = Number(
-  process.env.DEPRADAR_DAEMON_PORT ||
+  process.env.VIBEPULSE_DAEMON_PORT ||
     process.env.VIBEPULSE_DAEMON_PORT ||
     process.env.DAEMON_PORT ||
     5185,
 );
 
 const IS_DEBUG =
-  process.env.DEPRADAR_LOG_LEVEL === "debug" ||
+  process.env.VIBEPULSE_LOG_LEVEL === "debug" ||
   process.env.VIBEPULSE_LOG_LEVEL === "debug" ||
   process.env.LOG_LEVEL === "debug" ||
   process.env.DEBUG === "true" ||
@@ -140,7 +140,7 @@ const SERVICES = {
     url: `http://localhost:${DASHBOARD_PORT}`,
     port: DASHBOARD_PORT,
     command: process.platform === "win32" ? "pnpm.cmd" : "pnpm",
-    args: ["--filter", "@depradar/dashboard", "dev"],
+    args: ["--filter", "@vibepulse/dashboard", "dev"],
     cwd: ROOT_DIR,
     status: "STARTING",
   },
@@ -151,7 +151,7 @@ const SERVICES = {
     url: `http://localhost:${DAEMON_PORT}/health`,
     port: DAEMON_PORT,
     command: process.platform === "win32" ? "pnpm.cmd" : "pnpm",
-    args: ["--filter", "@depradar/daemon", "dev"],
+    args: ["--filter", "@vibepulse/daemon", "dev"],
     cwd: ROOT_DIR,
     status: "STARTING",
   },
@@ -386,7 +386,7 @@ function processChildOutput(svcKey, rawText, isStderr = false) {
       }
       if (
         trimmed.startsWith("===") ||
-        trimmed.includes("DepRadar Daemon") ||
+        trimmed.includes("VibePulse Daemon") ||
         trimmed.includes("Initial Target") ||
         trimmed.includes("Daemon port") ||
         trimmed.includes("Watcher closed") ||
@@ -443,7 +443,7 @@ function spawnService(key) {
     console.log(`\n${RED}─────────────────────────────────────────────────────────────${RESET}`);
     log(svc.name, "ERROR", `${svc.displayName} process exited unexpectedly (code: ${code})`);
     console.log(
-      `  ${YELLOW}Action: Check service logs or run with DEPRADAR_LOG_LEVEL=debug${RESET}`,
+      `  ${YELLOW}Action: Check service logs or run with VIBEPULSE_LOG_LEVEL=debug${RESET}`,
     );
     console.log(`${RED}─────────────────────────────────────────────────────────────${RESET}\n`);
 
@@ -496,7 +496,7 @@ function shutdownAll(signal = "SIGINT") {
 
   setTimeout(() => {
     process.stdout.write("\r\x1b[2K\n");
-    printBox(["                  DEPRADAR STOPPED CLEANLY                  "], GREEN);
+    printBox(["                  VIBEPULSE STOPPED CLEANLY                  "], GREEN);
     console.log("");
     process.exit(0);
   }, 500);
@@ -524,7 +524,7 @@ if (process.platform === "win32" && process.stdin.isTTY) {
 async function main() {
   console.log(`
 ${CYAN}${BOLD}╔══════════════════════════════════════════════════════════════╗
-║                     DEPRADAR DEV STACK                       ║
+║                     VIBEPULSE DEV STACK                       ║
 ╚══════════════════════════════════════════════════════════════╝${RESET}
 `);
 
@@ -578,7 +578,7 @@ ${CYAN}${BOLD}╔═════════════════════
       );
     console.error(`\n  ${YELLOW}Please stop conflicting processes or override ports via:${RESET}`);
     console.error(
-      `    DEPRADAR_API_PORT=<port> DEPRADAR_DASHBOARD_PORT=<port> DEPRADAR_DAEMON_PORT=<port>`,
+      `    VIBEPULSE_API_PORT=<port> VIBEPULSE_DASHBOARD_PORT=<port> VIBEPULSE_DAEMON_PORT=<port>`,
     );
     console.error(
       `${RED}${BOLD}─────────────────────────────────────────────────────────────${RESET}\n`,
@@ -625,7 +625,7 @@ ${CYAN}${BOLD}╔═════════════════════
   console.log("");
   printBox(
     [
-      `                      ${BOLD}DEPRADAR IS READY${RESET}${GREEN}                       `,
+      `                      ${BOLD}VIBEPULSE IS READY${RESET}${GREEN}                       `,
       ``,
       `  Dashboard   → ${CYAN}http://localhost:${DASHBOARD_PORT}${RESET}${GREEN}`,
       `  API         → ${CYAN}http://localhost:${API_PORT}${RESET}${GREEN}`,
@@ -636,7 +636,7 @@ ${CYAN}${BOLD}╔═════════════════════
       `  Database    → ${BOLD}CONNECTED${RESET}${GREEN}`,
       `  WebSocket   → ${BOLD}ws://localhost:${API_PORT}${RESET}${GREEN}`,
       ``,
-      `  ${DIM}Press Ctrl+C to stop DepRadar.${RESET}${GREEN}`,
+      `  ${DIM}Press Ctrl+C to stop VibePulse.${RESET}${GREEN}`,
     ],
     GREEN,
   );

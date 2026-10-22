@@ -1,14 +1,14 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/sanket200511/Vortex-DepRadar/main/docs/assets/logo-placeholder.png" alt="DepRadar Logo" width="120" />
+  <img src="https://raw.githubusercontent.com/sanket200511/Vortex-VibePulse/main/docs/assets/logo-placeholder.png" alt="VibePulse Logo" width="120" />
 
   <br />
 
-  <h1>DepRadar</h1>
+  <h1>VibePulse</h1>
   <p><strong>The Deterministic Engineering Intelligence Platform & AI Copilot Foundation</strong></p>
   <p><em>Observe First. Derive Carefully. Never Invent.</em></p>
 
   <div>
-    <a href="https://github.com/sanket200511/Vortex-DepRadar/releases"><img src="https://img.shields.io/github/v/release/sanket200511/Vortex-DepRadar?color=10b981&label=Version" alt="Version" /></a>
+    <a href="https://github.com/sanket200511/Vortex-VibePulse/releases"><img src="https://img.shields.io/github/v/release/sanket200511/Vortex-VibePulse?color=10b981&label=Version" alt="Version" /></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-6366f1.svg" alt="License" /></a>
     <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome" /></a>
     <a href="docs/DOCUMENTATION_INDEX.md"><img src="https://img.shields.io/badge/Docs-Index-blue.svg" alt="Docs Index" /></a>
@@ -20,7 +20,7 @@
 
 ---
 
-**DepRadar** is a local-first, deterministic, event-driven engineering intelligence and investigation platform. It provides an end-to-end continuous loop from filesystem telemetry to causal root-cause investigation, predictive risk forecasting, semantic knowledge graph traversal, and zero-hallucination AI Copilot assistance.
+**VibePulse** is a local-first, deterministic, event-driven engineering intelligence and investigation platform. It provides an end-to-end continuous loop from filesystem telemetry to causal root-cause investigation, predictive risk forecasting, semantic knowledge graph traversal, and zero-hallucination AI Copilot assistance.
 
 ```
 OBSERVE ──▶ DETECT ──▶ UNDERSTAND ──▶ INVESTIGATE ──▶ RESOLVE ──▶ LEARN ──▶ PREDICT ──▶ ASK ──▶ ACT ──▶ MEMORY
@@ -49,10 +49,10 @@ OBSERVE ──▶ DETECT ──▶ UNDERSTAND ──▶ INVESTIGATE ──▶ RE
 
 Modern software engineering environments suffer from fragmented telemetry: IDE edits, git operations, AST security issues, test breaks, and developer focus drift are scattered across isolated tools.
 
-DepRadar unifies engineering visibility into a **single, local-first cockpit** powered by three foundational invariants:
+VibePulse unifies engineering visibility into a **single, local-first cockpit** powered by three foundational invariants:
 
 - **PostgreSQL is the Sole Ground Truth**: Zero duplicate state machines, zero in-memory drift. All state is reconstructed from canonical database records.
-- **Zero Hallucination ($A \equiv B$)**: Unlike probabilistic AI tools that guess project status, DepRadar computes deterministic metric projections directly from recorded telemetry. State replay yields identical outputs every time.
+- **Zero Hallucination ($A \equiv B$)**: Unlike probabilistic AI tools that guess project status, VibePulse computes deterministic metric projections directly from recorded telemetry. State replay yields identical outputs every time.
 - **Edge Secret Redaction**: Credentials, API tokens, and secrets matching AST rules are stripped or masked to `[REDACTED]` _before_ telemetry ever leaves local memory.
 - **Strict Project Isolation**: Workspace data is partitioned cleanly; deleting a project removes telemetry cleanly without touching source files on disk.
 
@@ -109,7 +109,7 @@ flowchart TD
         Watcher -->|Debounce & Redact| EdgePipeline[Pipeline & Token Sanitizer]
     end
 
-    subgraph CoreBackend [DepRadar API Core :5184]
+    subgraph CoreBackend [VibePulse API Core :5184]
         EdgePipeline -->|HTTP POST /api/v1/events| Ingest[Event Ingestion Engine]
         Ingest -->|Append-Only| DB[(PostgreSQL Canonical Storage :5432)]
 
@@ -239,14 +239,14 @@ flowchart TD
 
 1. Go to **Project Settings / Context Memory**.
 2. Click **Export Project Context**.
-3. DepRadar generates a comprehensive `PROJECT_CONTEXT.md` markdown snapshot containing the architecture, active dependencies, telemetry state, and open incidents for downstream agents.
+3. VibePulse generates a comprehensive `PROJECT_CONTEXT.md` markdown snapshot containing the architecture, active dependencies, telemetry state, and open incidents for downstream agents.
 
 ---
 
 ## 📂 Repository Folder Structure
 
 ```text
-DepRadar/
+VibePulse/
 ├── .github/                    # CI/CD Workflows & GitHub Actions configurations
 │   └── workflows/
 │       └── ci.yml              # Multi-job quality pipeline (Lint, Typecheck, Pytest, Vitest)
@@ -322,7 +322,7 @@ DepRadar/
 
 ## 🔌 Port Namespace & Network Topology
 
-To eliminate port collision across services, DepRadar operates on a deterministic port namespace:
+To eliminate port collision across services, VibePulse operates on a deterministic port namespace:
 
 | Service              | Dedicated Port | Endpoint URL                   | Function                          |
 | -------------------- | -------------- | ------------------------------ | --------------------------------- |
@@ -343,14 +343,14 @@ To eliminate port collision across services, DepRadar operates on a deterministi
 - **PNPM**: `v9.x` or higher (`npm install -g pnpm`)
 - **Python**: `3.12+`
 - **UV**: Fast Python package manager (`pip install uv` or `curl -LsSf https://astral.sh/uv/install.ps1 | iex`)
-- **PostgreSQL**: Running on `localhost:5432` with a database named `depradar` (or configured via `.env`)
+- **PostgreSQL**: Running on `localhost:5432` with a database named `vibepulse` (or configured via `.env`)
 
 ### 2. Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/sanket200511/Vortex-DepRadar.git
-cd Vortex-DepRadar
+git clone https://github.com/sanket200511/Vortex-VibePulse.git
+cd Vortex-VibePulse
 
 # Install workspace Node dependencies
 pnpm install
@@ -374,7 +374,7 @@ Your terminal will display the orchestrated supervisor table:
 
 ```text
 ╔══════════════════════════════════════════════════════════════╗
-║                     DEPRADAR DEV STACK                       ║
+║                     VIBEPULSE DEV STACK                       ║
 ╚══════════════════════════════════════════════════════════════╝
 
 ┌───────────────┬──────────────────────────────┬───────────────┐
@@ -388,26 +388,26 @@ Your terminal will display the orchestrated supervisor table:
 └───────────────┴──────────────────────────────┴───────────────┘
 ```
 
-Open [**http://localhost:5183**](http://localhost:5183) in your browser to access the DepRadar Command Center.
+Open [**http://localhost:5183**](http://localhost:5183) in your browser to access the VibePulse Command Center.
 
 ---
 
 ## 🧪 Automated Verification & Quality Baselines
 
-DepRadar enforces strict quality standards across all modules:
+VibePulse enforces strict quality standards across all modules:
 
 ```bash
 # Run backend Python test suite (349 tests)
 cd apps/api && uv run pytest && cd ../..
 
 # Run frontend & daemon test suites (130 tests)
-pnpm --filter=!@depradar/api test
+pnpm --filter=!@vibepulse/api test
 
 # Run TypeScript typechecks across all workspace packages
-pnpm --filter=!@depradar/api typecheck
+pnpm --filter=!@vibepulse/api typecheck
 
 # Run linters (ESLint + Ruff)
-pnpm --filter=!@depradar/api lint
+pnpm --filter=!@vibepulse/api lint
 cd apps/api && uv run ruff check . && cd ../..
 
 # Clean up any disposable/ephemeral test projects

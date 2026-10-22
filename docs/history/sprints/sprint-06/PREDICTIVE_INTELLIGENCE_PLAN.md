@@ -1,10 +1,10 @@
-# DepRadar — Sprint 6 Architecture & Implementation Plan
+# VibePulse — Sprint 6 Architecture & Implementation Plan
 
 # Predictive Engineering Intelligence (Evidence-Backed Forecasting)
 
 ## 1. Architectural Context & System Topology
 
-DepRadar evolves from:
+VibePulse evolves from:
 $$\text{OBSERVE} \longrightarrow \text{DETECT} \longrightarrow \text{INVESTIGATE} \longrightarrow \text{RESOLVE} \longrightarrow \text{LEARN} \longrightarrow \text{ANTICIPATE}$$
 
 ### Intelligence Hierarchy & Reused Canonical Systems

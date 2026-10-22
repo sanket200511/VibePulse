@@ -1,4 +1,4 @@
-import { Badge } from "@depradar/ui";
+import { Badge } from "@vibepulse/ui";
 import { Clock, Layers, PlayCircle, PauseCircle } from "lucide-react";
 import type { UseReplayControllerResult } from "./useReplayController";
 import type { Replay } from "./replay-types";

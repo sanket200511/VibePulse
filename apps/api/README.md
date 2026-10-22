@@ -1,6 +1,6 @@
-# DepRadar API
+# VibePulse API
 
-FastAPI backend for the DepRadar Developer Observability Platform.
+FastAPI backend for the VibePulse Developer Observability Platform.
 
 See the repository root [README](../../README.md) and [CLAUDE.md](../../CLAUDE.md) for
 architecture and contribution guidelines.

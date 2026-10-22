@@ -1,4 +1,4 @@
-import { Badge } from "@depradar/ui";
+import { Badge } from "@vibepulse/ui";
 import { useCurrentSession } from "./useCurrentSession";
 
 const STATUS_BADGE = {

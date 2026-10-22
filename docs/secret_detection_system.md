@@ -8,7 +8,7 @@
 
 ## 1. Executive Summary & Architecture
 
-The VibePulse / DepRadar Secret Detection System implements a high-precision, high-recall hybrid detection pipeline that fuses deterministic AST/regex rule detection with machine learning probability distributions.
+The VibePulse / VibePulse Secret Detection System implements a high-precision, high-recall hybrid detection pipeline that fuses deterministic AST/regex rule detection with machine learning probability distributions.
 
 By distinguishing between:
 
@@ -167,11 +167,11 @@ uv run python -m pytest tests/test_secret_*.py tests/test_demo_security_scenario
 uv run python -m pytest
 
 # Dashboard TypeScript check and tests
-pnpm --filter @depradar/dashboard typecheck
-pnpm --filter @depradar/dashboard test
+pnpm --filter @vibepulse/dashboard typecheck
+pnpm --filter @vibepulse/dashboard test
 
 # Daemon tests
-pnpm --filter @depradar/daemon test
+pnpm --filter @vibepulse/daemon test
 ```
 
 ### 5.4 Environment Configuration

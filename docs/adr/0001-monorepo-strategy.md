@@ -10,7 +10,7 @@
 
 ## Context
 
-DepRadar is composed of multiple tightly-coupled components:
+VibePulse is composed of multiple tightly-coupled components:
 
 - **Dashboard** – React web application (end-user interface)
 - **API** – FastAPI backend (data ingestion, serving)

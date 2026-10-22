@@ -96,7 +96,7 @@ export function DeleteProjectModal({
             </div>
             <div>
               <h3 id="delete-project-title" className="text-foreground text-sm font-semibold">
-                Remove from DepRadar
+                Remove from VibePulse
               </h3>
               <p className="text-muted-foreground text-[11px]">
                 Safe deletion of observation history
@@ -200,7 +200,7 @@ export function DeleteProjectModal({
 
           {deleteMutation.isError && !conflictError && (
             <div className="rounded-md border border-rose-500/30 bg-rose-500/10 p-2.5 font-mono text-xs text-rose-400">
-              {deleteMutation.error?.message || "Failed to remove project from DepRadar."}
+              {deleteMutation.error?.message || "Failed to remove project from VibePulse."}
             </div>
           )}
         </div>

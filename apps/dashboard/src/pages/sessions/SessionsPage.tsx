@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Badge } from "@depradar/ui";
+import { Badge } from "@vibepulse/ui";
 import { SessionCard } from "./SessionRow";
 import { useSessionsData } from "./useSessionsData";
 import { PageHeader } from "../../components/layout/PageHeader";
@@ -116,11 +116,11 @@ export function SessionsPage() {
       {!isLoading && !isError && sessions.length === 0 && (
         <EmptyState
           title="No engineering sessions observed yet"
-          description="DepRadar registers sessions automatically once you begin writing code in a project folder. To get started, verify the DepRadar daemon is running in your terminal, open an observed workspace, and make edits to a file."
+          description="VibePulse registers sessions automatically once you begin writing code in a project folder. To get started, verify the VibePulse daemon is running in your terminal, open an observed workspace, and make edits to a file."
           action={
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <a
-                href="https://github.com/sanket200511/Vortex-DepRadar"
+                href="https://github.com/sanket200511/Vortex-VibePulse"
                 target="_blank"
                 rel="noreferrer"
                 className="text-primary font-mono text-xs font-medium hover:underline"

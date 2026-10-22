@@ -1,8 +1,8 @@
 {
-  "name": "@depradar/ui",
+  "name": "@vibepulse/ui",
   "version": "0.0.1",
   "private": true,
-  "description": "Shared UI component library for DepRadar",
+  "description": "Shared UI component library for VibePulse",
   "type": "module",
   "exports": {
     ".": {

@@ -1,8 +1,8 @@
-# DepRadar Sprint 10 — Engineering Knowledge Graph & Project Memory 2.0 Plan
+# VibePulse Sprint 10 — Engineering Knowledge Graph & Project Memory 2.0 Plan
 
 ## 1. Executive Mission
 
-Extend DepRadar from:
+Extend VibePulse from:
 
 $$\mathbf{OBSERVE \longrightarrow DETECT \longrightarrow INVESTIGATE \longrightarrow RESOLVE \longrightarrow LEARN \longrightarrow ANTICIPATE \longrightarrow HEALTH \longrightarrow EXPLAIN}$$
 

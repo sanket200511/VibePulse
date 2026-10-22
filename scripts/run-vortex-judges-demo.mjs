@@ -27,7 +27,7 @@ const PROJECT_NAME = "VORTEX-HACKATHON-DEMO";
 
 // Path to Python venv pytest
 const PYTEST_BIN =
-  "c:\\Users\\ASUS\\OneDrive\\Desktop\\DepRadar\\apps\\api\\.venv\\Scripts\\pytest.exe";
+  "c:\\Users\\ASUS\\OneDrive\\Desktop\\VibePulse\\apps\\api\\.venv\\Scripts\\pytest.exe";
 
 // Color formatting
 const RESET = "\x1b[0m";

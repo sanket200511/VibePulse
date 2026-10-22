@@ -25,7 +25,7 @@ import {
   Sparkles,
   HeartPulse,
 } from "lucide-react";
-import { Badge } from "@depradar/ui";
+import { Badge } from "@vibepulse/ui";
 import {
   useInvestigation,
   useIncidentDetail,

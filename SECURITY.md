@@ -1,4 +1,4 @@
-# DepRadar — Security & Privacy Architecture Policy
+# VibePulse — Security & Privacy Architecture Policy
 
 **Status**: Authoritative Security Policy
 **Classification**: Local-First, Zero-Exfiltration, Privacy-by-Design
@@ -7,11 +7,11 @@
 
 ## 🔒 Core Privacy & Security Guarantees
 
-DepRadar is designed from the ground up to observe proprietary intellectual property without compromising developer privacy or risking source code exfiltration:
+VibePulse is designed from the ground up to observe proprietary intellectual property without compromising developer privacy or risking source code exfiltration:
 
 ### 1. Zero Code Exfiltration
 
-- The DepRadar observation daemon operates strictly on your local machine and communicates solely with your configured FastAPI backend (`http://localhost:5184`).
+- The VibePulse observation daemon operates strictly on your local machine and communicates solely with your configured FastAPI backend (`http://localhost:5184`).
 - Zero telemetry, code snippets, or developer activity is transmitted to third-party cloud LLM APIs or external servers.
 
 ### 2. AST Secret Redaction by Design
@@ -32,7 +32,7 @@ DepRadar is designed from the ground up to observe proprietary intellectual prop
 
 ### 5. Safe Project Deletion Invariant
 
-- Deleting a project through the DepRadar UI or API cascades deletion exclusively to database telemetry records.
+- Deleting a project through the VibePulse UI or API cascades deletion exclusively to database telemetry records.
 - The physical directory and source code files on the developer's disk remain completely untouched.
 
 ---

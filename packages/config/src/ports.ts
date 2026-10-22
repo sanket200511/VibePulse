@@ -1,10 +1,10 @@
 /**
- * Canonical port definitions and resolution helpers for DepRadar.
+ * Canonical port definitions and resolution helpers for VibePulse.
  *
  * Dedicated Namespace Mnemonic:
- * - 5184: DepRadar FastAPI API
- * - 5183: DepRadar Dashboard / Vite
- * - 5185: DepRadar Telemetry Daemon
+ * - 5184: VibePulse FastAPI API
+ * - 5183: VibePulse Dashboard / Vite
+ * - 5185: VibePulse Telemetry Daemon
  */
 
 import { getEnv, parsePort } from "./env";

@@ -1,5 +1,5 @@
 /**
- * DepRadar Sprint 6: Predictive Engineering Intelligence E2E Acceptance Test
+ * VibePulse Sprint 6: Predictive Engineering Intelligence E2E Acceptance Test
  *
  * Verifies:
  * 1. Insufficient evidence detection on fresh projects

@@ -193,7 +193,7 @@ export function ProjectContextMemory({ projectId }: ProjectContextMemoryProps) {
 
         {!hasActivity ? (
           <div className="text-muted-foreground p-6 text-center font-mono text-xs">
-            Not enough project activity yet. DepRadar will progressively project context as files
+            Not enough project activity yet. VibePulse will progressively project context as files
             are modified.
           </div>
         ) : (
@@ -598,7 +598,7 @@ export function ProjectContextMemory({ projectId }: ProjectContextMemoryProps) {
               <div className="flex items-center gap-2">
                 <Info className="text-primary h-3.5 w-3.5" />
                 <h3 className="text-foreground text-xs font-semibold">
-                  Why DepRadar Believes This
+                  Why VibePulse Believes This
                 </h3>
               </div>
               <button

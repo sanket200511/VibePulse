@@ -1,4 +1,4 @@
-# DepRadar — Capability Roadmap & Milestone Progression
+# VibePulse — Capability Roadmap & Milestone Progression
 
 **Status**: Authoritative Milestone Map
 **Current Milestone**: Sprint 14 Final Freeze & Academic Packaging (Complete)
@@ -35,7 +35,7 @@
 
 - Monorepo structure managed via `pnpm workspaces` and `Turborepo`.
 - Feature-first backend layout (`app/features/<domain>/`).
-- Shared packages: `@depradar/ui`, `@depradar/config`.
+- Shared packages: `@vibepulse/ui`, `@vibepulse/config`.
 
 ### Phase 2 — Observation Engine 2.0 (`apps/daemon`)
 
