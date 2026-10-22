@@ -21,6 +21,8 @@ dependencies = [
   "greenlet>=3.5.3",
   "scikit-learn>=1.4.0",
   "joblib>=1.4.0",
+  "pyjwt>=2.15.1",
+  "bcrypt>=5.0.0",
 ]
 
 [dependency-groups]

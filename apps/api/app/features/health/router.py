@@ -48,6 +48,11 @@ async def _check_database() -> ServiceStatus:
     summary="Health check",
     description="Returns the operational status of the API and its backing services.",
 )
+@router.get(
+    "/api/health",
+    response_model=HealthResponse,
+    include_in_schema=False,
+)
 async def health_check() -> HealthResponse:
     """
     Liveness + readiness probe.

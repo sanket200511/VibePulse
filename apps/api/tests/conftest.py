@@ -17,6 +17,7 @@ import pytest_asyncio
 from app.core.config import get_settings
 from app.core.database import Base, get_db, get_session_factory
 from app.features.analysis.models import EventAnalysis  # noqa: F401 - registers on Base
+from app.features.auth.models import EmailVerification, User
 from app.features.events.models import DevelopmentEvent
 from app.features.investigation.models import (  # noqa: F401
     IncidentReviewHistory,
@@ -144,6 +145,8 @@ async def _clean_rows(_schema: None) -> AsyncGenerator[None, None]:
         # sessions and projects are explicitly cleaned up between tests.
         await conn.execute(Session.__table__.delete())
         await conn.execute(Project.__table__.delete())
+        await conn.execute(EmailVerification.__table__.delete())
+        await conn.execute(User.__table__.delete())
 
 
 @pytest_asyncio.fixture
