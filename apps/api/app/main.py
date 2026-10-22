@@ -149,13 +149,17 @@ def create_app() -> FastAPI:
     )
 
     # ── Middleware ────────────────────────────────────────────────────────────
+    cors_origins = [str(o).rstrip("/") for o in settings.cors_origins]
+    allow_all = "*" in cors_origins
     app.add_middleware(
         CORSMiddleware,
-        # AnyHttpUrl normalizes to a trailing slash; browser Origin headers
-        # never have one, so CORSMiddleware's exact-match check needs it
-        # stripped or every request gets silently rejected.
-        allow_origins=[str(o).rstrip("/") for o in settings.cors_origins],
-        allow_credentials=True,
+        allow_origins=["*"] if allow_all else cors_origins,
+        allow_origin_regex=(
+            r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$|^https://.*\.onrender\.com$"
+            if not allow_all
+            else None
+        ),
+        allow_credentials=False if allow_all else True,
         allow_methods=["*"],
         allow_headers=["*"],
     )

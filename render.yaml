@@ -1,0 +1,71 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Render Blueprint Specification – VibePulse
+# Official Documentation: https://render.com/docs/blueprint-spec
+# ─────────────────────────────────────────────────────────────────────────────
+
+version: "1"
+
+services:
+  # ── Backend API Service (FastAPI + SQLAlchemy) ─────────────────────────────
+  - type: web
+    name: vibepulse-api
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./docker/api.Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: LOG_LEVEL
+        value: info
+      - key: DATABASE_URL
+        fromDatabase:
+          name: vibepulse-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: vibepulse-redis
+          property: connectionString
+      - key: CORS_ORIGINS
+        value: '["http://localhost:5183","http://localhost:3000"]'
+
+  # ── Frontend Dashboard (React + Vite Single-Page Application) ──────────────
+  - type: web
+    name: vibepulse-dashboard
+    runtime: static
+    plan: free
+    region: oregon
+    buildCommand: (corepack enable 2>/dev/null || npm install -g pnpm@9.15.4) && pnpm install && pnpm --filter @vibepulse/dashboard build
+    staticPublishPath: ./apps/dashboard/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: NODE_VERSION
+        value: "20.18.0"
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: vibepulse-api
+          property: url
+
+  # ── Redis-compatible Key Value Store ───────────────────────────────────────
+  - type: keyvalue
+    name: vibepulse-redis
+    plan: free
+    region: oregon
+    ipAllowList: []
+
+databases:
+  # ── PostgreSQL Managed Database ────────────────────────────────────────────
+  - name: vibepulse-db
+    databaseName: vibepulse
+    user: vibepulse
+    plan: free
+    region: oregon
