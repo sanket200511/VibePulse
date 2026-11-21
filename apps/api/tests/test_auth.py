@@ -146,12 +146,16 @@ async def test_google_login(
         text = '{"email": "gcp_user@vibepulse.dev"}'
 
         def json(self) -> dict[str, str | bool]:
+            from app.core.config import get_settings
+
+            settings = get_settings()
             return {
                 "email": "gcp_user@vibepulse.dev",
                 "sub": "google-user-12345",
                 "name": "Google User",
                 "picture": "https://example.com/avatar.png",
                 "email_verified": True,
+                "aud": settings.google_client_id or "mock-client-id",
             }
 
     async def mock_get(self: httpx.AsyncClient, url: str, **kwargs: object) -> MockResponse:
