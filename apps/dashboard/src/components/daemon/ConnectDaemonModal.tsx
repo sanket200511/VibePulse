@@ -155,12 +155,11 @@ export function ConnectDaemonModal({ isOpen, onClose }: ConnectDaemonModalProps)
                 </div>
               </div>
               <a
-                href="/downloads/vibepulse-daemon.exe"
-                download="vibepulse-daemon.exe"
+                href="https://github.com/sanket200511/VibePulse/releases/latest/download/vibepulse-daemon.exe"
                 className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 shadow-xs inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-opacity hover:opacity-90"
               >
                 <Download className="h-3.5 w-3.5" />
-                <span>Download .exe</span>
+                <span>Download .exe (79.6 MB)</span>
               </a>
             </div>
           </div>
