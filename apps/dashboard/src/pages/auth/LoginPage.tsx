@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "../../lib/auth-context";
+import { ThemeToggle } from "../../components/theme/ThemeToggle";
+import { useTheme } from "../../components/theme/ThemeProvider";
 import {
   Mail,
   Lock,
@@ -46,6 +48,7 @@ declare global {
 
 export function LoginPage() {
   const { login, register, verifyEmail, resendCode, loginWithGoogle, isAuthenticated } = useAuth();
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -123,8 +126,14 @@ export function LoginPage() {
 
       if (googleBtnContainerRef.current) {
         googleBtnContainerRef.current.innerHTML = "";
+        const isDark =
+          theme === "dark" ||
+          (theme === "system" &&
+            typeof window !== "undefined" &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches);
+
         window.google.accounts.id.renderButton(googleBtnContainerRef.current, {
-          theme: "filled_black",
+          theme: isDark ? "filled_black" : "outline",
           size: "large",
           shape: "pill",
           width: 320,
@@ -134,7 +143,7 @@ export function LoginPage() {
     };
 
     loadGoogleScript();
-  }, [mode, loginWithGoogle]);
+  }, [mode, loginWithGoogle, theme]);
 
   // Submit password login or registration
   const handleSubmit = async (e: React.FormEvent) => {
@@ -228,7 +237,12 @@ export function LoginPage() {
   };
 
   return (
-    <div className="relative flex min-h-[calc(100vh-3rem)] items-center justify-center overflow-hidden px-4 py-12">
+    <div className="bg-background text-foreground relative flex min-h-[calc(100vh-3rem)] items-center justify-center overflow-hidden px-4 py-12">
+      {/* Theme Toggle in top-right */}
+      <div className="absolute right-4 top-4 z-20">
+        <ThemeToggle />
+      </div>
+
       {/* Dynamic background glows */}
       <div className="pointer-events-none absolute -left-40 -top-40 h-96 w-96 rounded-full bg-cyan-500/10 blur-3xl filter" />
       <div className="pointer-events-none absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-indigo-500/10 blur-3xl filter" />
@@ -240,9 +254,9 @@ export function LoginPage() {
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 font-mono text-base font-bold text-white shadow-lg shadow-cyan-500/20">
               V
             </span>
-            <span className="text-2xl font-bold tracking-tight text-white">VibePulse</span>
+            <span className="text-foreground text-2xl font-bold tracking-tight">VibePulse</span>
           </Link>
-          <p className="mt-2 text-sm text-zinc-400">
+          <p className="text-muted-foreground mt-2 text-sm">
             {mode === "verify"
               ? "Confirm your email to complete verification"
               : mode === "register"
@@ -252,18 +266,18 @@ export function LoginPage() {
         </div>
 
         {/* Card */}
-        <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/80 p-7 shadow-2xl backdrop-blur-xl">
+        <div className="border-border/80 bg-card text-card-foreground rounded-2xl border p-7 shadow-2xl backdrop-blur-xl">
           {/* Notifications */}
           {error && (
-            <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-xs text-rose-300">
+            <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-xs text-rose-400">
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-400" />
               <span>{error}</span>
             </div>
           )}
 
           {infoMessage && (
-            <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-cyan-500/20 bg-cyan-500/10 p-3 text-xs text-cyan-300">
-              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-cyan-400" />
+            <div className="border-primary/20 bg-primary/10 text-primary mb-5 flex items-start gap-2.5 rounded-xl border p-3 text-xs">
+              <CheckCircle2 className="text-primary mt-0.5 h-4 w-4 shrink-0" />
               <span>{infoMessage}</span>
             </div>
           )}
@@ -272,12 +286,13 @@ export function LoginPage() {
             /* 6-DIGIT VERIFICATION VIEW */
             <div>
               <div className="mb-6 text-center">
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-cyan-500/10 text-cyan-400">
+                <div className="bg-primary/10 text-primary mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full">
                   <ShieldCheck className="h-6 w-6" />
                 </div>
-                <h3 className="text-lg font-semibold text-white">Verify Your Email</h3>
-                <p className="mt-1 text-xs text-zinc-400">
-                  We sent a 6-digit code to <span className="font-medium text-white">{email}</span>
+                <h3 className="text-foreground text-lg font-semibold">Verify Your Email</h3>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  We sent a 6-digit code to{" "}
+                  <span className="text-foreground font-medium">{email}</span>
                 </p>
               </div>
 
@@ -293,7 +308,7 @@ export function LoginPage() {
                     value={digit}
                     onChange={(e) => handleDigitChange(idx, e.target.value)}
                     onKeyDown={(e) => handleDigitKeyDown(idx, e)}
-                    className="h-13 w-11 rounded-xl border border-zinc-700/80 bg-zinc-900/90 text-center font-mono text-xl font-bold text-white shadow-inner transition-all focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
+                    className="border-input bg-background text-foreground focus:border-primary focus:ring-primary/20 h-13 shadow-xs w-11 rounded-xl border text-center font-mono text-xl font-bold transition-all focus:outline-none focus:ring-2"
                   />
                 ))}
               </div>
@@ -304,7 +319,7 @@ export function LoginPage() {
                   void triggerVerify(digits.join(""));
                 }}
                 disabled={loading || digits.some((d) => d === "")}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-cyan-500/25 transition-all hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-50"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/25 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold shadow-lg transition-all hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {loading ? (
                   <RefreshCw className="h-4 w-4 animate-spin" />
@@ -317,14 +332,14 @@ export function LoginPage() {
               </button>
 
               {/* Resend actions */}
-              <div className="mt-5 flex items-center justify-between text-xs text-zinc-400">
+              <div className="text-muted-foreground mt-5 flex items-center justify-between text-xs">
                 <button
                   type="button"
                   onClick={() => {
                     void handleResend();
                   }}
                   disabled={loading || resendCooldown > 0}
-                  className="font-medium text-cyan-400 hover:text-cyan-300 disabled:cursor-not-allowed disabled:text-zinc-600"
+                  className="text-primary hover:text-primary/80 font-medium disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : "Resend code"}
                 </button>
@@ -335,7 +350,7 @@ export function LoginPage() {
                     setError(null);
                     setInfoMessage(null);
                   }}
-                  className="text-zinc-400 hover:text-white"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Back to Sign In
                 </button>
@@ -356,7 +371,7 @@ export function LoginPage() {
                           "To use Google Login, configure VITE_GOOGLE_CLIENT_ID in your dashboard environment.",
                         )
                       }
-                      className="flex w-full items-center justify-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900/60 px-4 py-2.5 text-xs font-medium text-zinc-300 transition-colors hover:border-zinc-700 hover:bg-zinc-900"
+                      className="border-border bg-secondary/50 hover:bg-secondary text-foreground flex w-full items-center justify-center gap-3 rounded-xl border px-4 py-2.5 text-xs font-medium transition-colors"
                     >
                       <svg className="h-4 w-4" viewBox="0 0 24 24">
                         <path
@@ -385,9 +400,9 @@ export function LoginPage() {
               {/* Divider */}
               <div className="relative mb-5 text-center">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-zinc-800" />
+                  <div className="border-border w-full border-t" />
                 </div>
-                <span className="relative bg-zinc-950 px-2.5 text-[11px] uppercase tracking-wider text-zinc-500">
+                <span className="bg-card text-muted-foreground relative px-2.5 text-[11px] uppercase tracking-wider">
                   Or with email
                 </span>
               </div>
@@ -401,44 +416,46 @@ export function LoginPage() {
               >
                 {mode === "register" && (
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-zinc-300">
+                    <label className="text-foreground mb-1.5 block text-xs font-medium">
                       Full Name
                     </label>
                     <div className="relative">
-                      <UserIcon className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-zinc-500" />
+                      <UserIcon className="text-muted-foreground pointer-events-none absolute left-3 top-3 h-4 w-4" />
                       <input
                         type="text"
                         required
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
                         placeholder="Ada Lovelace"
-                        className="w-full rounded-xl border border-zinc-800 bg-zinc-900/90 py-2.5 pl-9 pr-3 text-xs text-white placeholder-zinc-500 transition-colors focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                        className="border-input bg-background/80 text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20 w-full rounded-xl border py-2.5 pl-9 pr-3 text-xs transition-colors focus:outline-none focus:ring-1"
                       />
                     </div>
                   </div>
                 )}
 
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-zinc-300">
+                  <label className="text-foreground mb-1.5 block text-xs font-medium">
                     Email Address
                   </label>
                   <div className="relative">
-                    <Mail className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-zinc-500" />
+                    <Mail className="text-muted-foreground pointer-events-none absolute left-3 top-3 h-4 w-4" />
                     <input
                       type="email"
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="developer@vibepulse.dev"
-                      className="w-full rounded-xl border border-zinc-800 bg-zinc-900/90 py-2.5 pl-9 pr-3 text-xs text-white placeholder-zinc-500 transition-colors focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                      className="border-input bg-background/80 text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20 w-full rounded-xl border py-2.5 pl-9 pr-3 text-xs transition-colors focus:outline-none focus:ring-1"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-zinc-300">Password</label>
+                  <label className="text-foreground mb-1.5 block text-xs font-medium">
+                    Password
+                  </label>
                   <div className="relative">
-                    <Lock className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-zinc-500" />
+                    <Lock className="text-muted-foreground pointer-events-none absolute left-3 top-3 h-4 w-4" />
                     <input
                       type={showPassword ? "text" : "password"}
                       required
@@ -446,12 +463,12 @@ export function LoginPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••••••"
-                      className="w-full rounded-xl border border-zinc-800 bg-zinc-900/90 py-2.5 pl-9 pr-9 text-xs text-white placeholder-zinc-500 transition-colors focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                      className="border-input bg-background/80 text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20 w-full rounded-xl border py-2.5 pl-9 pr-9 text-xs transition-colors focus:outline-none focus:ring-1"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-3 text-zinc-500 hover:text-zinc-300"
+                      className="text-muted-foreground hover:text-foreground absolute right-3 top-3"
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
@@ -461,7 +478,7 @@ export function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 px-4 py-2.5 text-xs font-semibold text-white shadow-lg shadow-cyan-500/25 transition-all hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/25 mt-2 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-semibold shadow-lg transition-all hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {loading ? (
                     <RefreshCw className="h-4 w-4 animate-spin" />
@@ -475,7 +492,7 @@ export function LoginPage() {
               </form>
 
               {/* Mode toggle */}
-              <div className="mt-5 text-center text-xs text-zinc-400">
+              <div className="text-muted-foreground mt-5 text-center text-xs">
                 {mode === "login" ? (
                   <p>
                     Don&apos;t have an account?{" "}
@@ -486,7 +503,7 @@ export function LoginPage() {
                         setError(null);
                         setInfoMessage(null);
                       }}
-                      className="font-medium text-cyan-400 hover:text-cyan-300"
+                      className="text-primary hover:text-primary/80 font-medium hover:underline"
                     >
                       Create one
                     </button>
@@ -501,7 +518,7 @@ export function LoginPage() {
                         setError(null);
                         setInfoMessage(null);
                       }}
-                      className="font-medium text-cyan-400 hover:text-cyan-300"
+                      className="text-primary hover:text-primary/80 font-medium hover:underline"
                     >
                       Sign In
                     </button>
@@ -513,8 +530,8 @@ export function LoginPage() {
         </div>
 
         {/* Footnote */}
-        <div className="mt-6 flex items-center justify-center gap-1.5 text-xs text-zinc-500">
-          <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
+        <div className="text-muted-foreground mt-6 flex items-center justify-center gap-1.5 text-xs">
+          <Sparkles className="text-primary h-3.5 w-3.5" />
           <span>Secured with JWT & Redis Session Revocation</span>
         </div>
       </div>
