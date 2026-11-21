@@ -85,6 +85,9 @@ coverage/
 
 # Misc
 *.pem
+*.exe
+*.blob
+apps/dashboard/public/downloads/*.exe
 .cache/
 TeMpPy/
 *PROMPT*.txt

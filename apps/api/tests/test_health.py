@@ -57,3 +57,7 @@ async def test_health_reports_database_service() -> None:
     assert "database" in services
     assert services["database"]["status"] in ("healthy", "unhealthy")
     assert services["database"]["latency_ms"] is not None
+    assert "keep_alive" in services
+    assert services["keep_alive"]["status"] == "healthy"
+    assert "redis" in services
+    assert services["redis"]["status"] in ("healthy", "degraded")

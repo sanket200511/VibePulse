@@ -11,7 +11,7 @@
  *     POST /control/observe/start|stop
  */
 
-import { parsePort, getEnv } from "@vibepulse/config";
+import { parsePort } from "@vibepulse/config";
 import { loadDaemonEnv, watchEnvFile } from "./env-loader";
 import { loadConfig } from "./config";
 import { createObservationGate } from "./observation-gate";
@@ -23,6 +23,7 @@ import { createHealthServer } from "./health-server";
 import { logger } from "./logger";
 import type { DevelopmentEvent } from "./event-types";
 import { createShutdownHandler } from "./shutdown";
+import { ensureDaemonConfig } from "./interactive-setup";
 
 // Load .env and CLI flags before reading process.env
 loadDaemonEnv();
@@ -30,10 +31,12 @@ loadDaemonEnv();
 const PORT = parsePort("VIBEPULSE_DAEMON_PORT", parsePort("DAEMON_PORT", 5185));
 
 async function main(): Promise<void> {
-  // ── Configuration ─────────────────────────────────────────────────────────
+  // ── Configuration & Interactive Wizard ─────────────────────────────────────
+  const runtimeConfig = await ensureDaemonConfig();
   const config = loadConfig();
-  const rawWatchRoot = process.env["WATCH_ROOT"] ?? process.cwd();
-  const apiUrl = getEnv("VIBEPULSE_API_URL") ?? getEnv("API_URL") ?? "http://localhost:5184";
+  const rawWatchRoot = runtimeConfig.watchRoot;
+  const apiUrl = runtimeConfig.apiUrl;
+  const token = runtimeConfig.token;
 
   logger.info("=========================================");
   logger.info("           VibePulse Daemon              ");
@@ -41,12 +44,18 @@ async function main(): Promise<void> {
   logger.info(`Initial Target : ${rawWatchRoot}`);
   logger.info(`API            : ${apiUrl}`);
   logger.info(`Daemon port    : ${PORT}`);
+  if (runtimeConfig.userEmail) {
+    logger.info(`User Account   : ${runtimeConfig.userEmail}`);
+  }
+  if (token) {
+    logger.info(`Token Auth     : Configured (Bearer)`);
+  }
 
   // ── Pipeline primitives ───────────────────────────────────────────────────
   const gate = createObservationGate();
   gate.open();
 
-  const publisher = createHttpPublisher(apiUrl, config);
+  const publisher = createHttpPublisher(apiUrl, config, token);
 
   const queue = createEventQueue({
     maxSize: config.queueMaxSize,
@@ -93,6 +102,7 @@ async function main(): Promise<void> {
     apiUrl,
     gate,
     debouncer,
+    token,
   });
 
   const healthServer = createHealthServer(PORT, watchManager);

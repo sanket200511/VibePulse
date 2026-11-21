@@ -17,6 +17,8 @@ from app.features.auth.dependencies import (
 )
 from app.features.auth.models import User
 from app.features.auth.schemas import (
+    DaemonTokenResponse,
+    DaemonVerifyResponse,
     GoogleLoginRequest,
     LoginRequest,
     MessageResponse,
@@ -94,3 +96,34 @@ async def get_me(
 ) -> UserResponse:
     """Retrieve currently authenticated user profile."""
     return UserResponse.model_validate(user)
+
+
+@router.get("/daemon-token", response_model=DaemonTokenResponse)
+async def get_or_create_daemon_token(
+    user: User = Depends(get_current_user),
+    service: AuthService = Depends(get_auth_service),
+) -> DaemonTokenResponse:
+    """Generate or retrieve a dedicated long-lived token for the desktop daemon."""
+    token = await service.create_daemon_token(user)
+    from datetime import UTC, datetime
+
+    return DaemonTokenResponse(
+        token=token,
+        email=user.email,
+        user_id=user.id,
+        full_name=user.full_name,
+        created_at=datetime.now(UTC),
+    )
+
+
+@router.get("/daemon/verify", response_model=DaemonVerifyResponse)
+async def verify_daemon_token(
+    user: User = Depends(get_current_user),
+) -> DaemonVerifyResponse:
+    """Verify that a desktop daemon's credentials are valid and return user identity."""
+    return DaemonVerifyResponse(
+        valid=True,
+        email=user.email,
+        user_id=user.id,
+        full_name=user.full_name,
+    )

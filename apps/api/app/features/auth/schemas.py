@@ -70,3 +70,22 @@ class MessageResponse(BaseModel):
     """Generic status response."""
 
     message: str
+
+
+class DaemonTokenResponse(BaseModel):
+    """Token response specifically for the local Windows desktop daemon."""
+
+    token: str
+    email: str
+    user_id: uuid.UUID
+    full_name: str | None = None
+    created_at: datetime
+
+
+class DaemonVerifyResponse(BaseModel):
+    """Verification response returned to the desktop daemon."""
+
+    valid: bool
+    email: str
+    user_id: uuid.UUID
+    full_name: str | None = None

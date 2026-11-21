@@ -8,7 +8,7 @@ export function BackendStatusBanner() {
   const [wasWaking, setWasWaking] = useState(false);
 
   useEffect(() => {
-    if (status === "waking_up") {
+    if (status === "waking_up" || status === "error") {
       setWasWaking(true);
       return undefined;
     }

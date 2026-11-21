@@ -25,16 +25,21 @@ services:
       - key: LOG_LEVEL
         value: info
       - key: DATABASE_URL
-        fromDatabase:
-          name: vibepulse-db
-          property: connectionString
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
       - key: REDIS_URL
-        fromService:
-          type: keyvalue
-          name: vibepulse-redis
-          property: connectionString
+        sync: false
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false
       - key: CORS_ORIGINS
-        value: '["http://localhost:5183","http://localhost:3000"]'
+        value: '["https://vibepulse-dashboard.onrender.com","http://localhost:5183","http://localhost:3000"]'
+      - key: RENDER_KEEP_ALIVE
+        value: "false"
+      - key: KEEP_ALIVE_INTERVAL_MINUTES
+        value: "12"
 
   # ── Frontend Dashboard (React + Vite Single-Page Application) ──────────────
   - type: web
@@ -51,18 +56,5 @@ services:
         value: "20.18.0"
       - key: VITE_API_URL
         value: https://vibepulse-api.onrender.com
-
-  # ── Redis-compatible Key Value Store ───────────────────────────────────────
-  - type: keyvalue
-    name: vibepulse-redis
-    plan: free
-    region: oregon
-    ipAllowList: []
-
-databases:
-  # ── PostgreSQL Managed Database ────────────────────────────────────────────
-  - name: vibepulse-db
-    databaseName: vibepulse
-    user: vibepulse
-    plan: free
-    region: oregon
+      - key: VITE_GOOGLE_CLIENT_ID
+        sync: false

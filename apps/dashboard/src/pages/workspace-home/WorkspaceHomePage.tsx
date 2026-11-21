@@ -26,7 +26,9 @@ import {
   WifiOff,
   History,
   ArrowRight,
+  Download,
 } from "lucide-react";
+import { ConnectDaemonModal } from "../../components/daemon/ConnectDaemonModal";
 import { usePresentation } from "../../components/presentation";
 import { useCurrentSession } from "../sessions/useCurrentSession";
 import { useSessionsData } from "../sessions/useSessionsData";
@@ -43,6 +45,7 @@ import type { Project } from "../projects/types";
 export function WorkspaceHomePage() {
   const { isDemo } = useDemoMode();
   const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
   const presentation = usePresentation();
 
   return (
@@ -87,15 +90,19 @@ export function WorkspaceHomePage() {
           </div>
         )}
 
-        <WorkspaceHeader isDemo={isDemo} />
+        <WorkspaceHeader isDemo={isDemo} onOpenConnectModal={() => setIsConnectModalOpen(true)} />
 
         <main
           data-tour="presentation-summary"
           className="grid grid-cols-1 gap-4 lg:grid-cols-[7fr_3fr] lg:gap-5"
         >
-          <PrimaryCanvas isDemo={isDemo} />
-          <SecondaryRail isDemo={isDemo} />
+          <PrimaryCanvas isDemo={isDemo} onOpenConnectModal={() => setIsConnectModalOpen(true)} />
+          <SecondaryRail isDemo={isDemo} onOpenConnectModal={() => setIsConnectModalOpen(true)} />
         </main>
+        <ConnectDaemonModal
+          isOpen={isConnectModalOpen}
+          onClose={() => setIsConnectModalOpen(false)}
+        />
       </div>
     </div>
   );
@@ -104,7 +111,11 @@ export function WorkspaceHomePage() {
 /**
  * LiveWorkspaceHeader — real daemon-connected header for non-demo mode
  */
-function LiveWorkspaceHeader() {
+function LiveWorkspaceHeader({
+  onOpenConnectModal,
+}: {
+  onOpenConnectModal?: (() => void) | undefined;
+}) {
   const { session, connectionStatus } = useCurrentSession();
   const wsConnected = connectionStatus === "open";
 
@@ -122,9 +133,13 @@ function LiveWorkspaceHeader() {
                 LIVE
               </span>
             ) : (
-              <span className="bg-muted/40 text-muted-foreground border-border/60 rounded-md border px-1.5 py-0.5 font-mono text-[10px] font-medium">
-                CONNECTING…
-              </span>
+              <button
+                type="button"
+                onClick={onOpenConnectModal}
+                className="bg-primary/10 hover:bg-primary/20 border-primary/25 text-primary flex items-center gap-1 rounded-md border px-2 py-0.5 font-mono text-[10px] font-medium transition-colors"
+              >
+                <Download className="h-3 w-3" /> Connect Daemon (.exe)
+              </button>
             )}
           </div>
           <h1 className="text-foreground text-lg font-bold tracking-tight sm:text-xl">
@@ -164,9 +179,15 @@ function LiveWorkspaceHeader() {
 /**
  * WorkspaceHeader
  */
-export function WorkspaceHeader({ isDemo }: { isDemo: boolean }) {
+export function WorkspaceHeader({
+  isDemo,
+  onOpenConnectModal,
+}: {
+  isDemo: boolean;
+  onOpenConnectModal?: (() => void) | undefined;
+}) {
   if (!isDemo) {
-    return <LiveWorkspaceHeader />;
+    return <LiveWorkspaceHeader onOpenConnectModal={onOpenConnectModal} />;
   }
 
   return (
@@ -246,7 +267,11 @@ export function WorkspaceHeader({ isDemo }: { isDemo: boolean }) {
 /**
  * LivePrimaryCanvas — real workspace data for non-demo mode
  */
-function LivePrimaryCanvas() {
+function LivePrimaryCanvas({
+  onOpenConnectModal,
+}: {
+  onOpenConnectModal?: (() => void) | undefined;
+}) {
   const { session, connectionStatus, isLoading: sessionLoading } = useCurrentSession();
   const { sessions, isLoading: sessionsLoading } = useSessionsData();
 
@@ -290,11 +315,20 @@ function LivePrimaryCanvas() {
                 </p>
               </div>
             </div>
-            {wsConnected && (
+            {wsConnected ? (
               <span className="flex items-center gap-1 rounded-md border border-emerald-500/25 bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[10px] font-medium text-emerald-400">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
                 LIVE
               </span>
+            ) : (
+              <button
+                type="button"
+                onClick={onOpenConnectModal}
+                className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs flex items-center gap-1.5 rounded-md px-3 py-1.5 font-mono text-xs font-medium transition-colors"
+              >
+                <Download className="h-3.5 w-3.5" />
+                Connect Daemon (.exe)
+              </button>
             )}
           </div>
 
@@ -468,9 +502,15 @@ function LivePrimaryCanvas() {
 /**
  * PrimaryCanvas
  */
-export function PrimaryCanvas({ isDemo }: { isDemo: boolean }) {
+export function PrimaryCanvas({
+  isDemo,
+  onOpenConnectModal,
+}: {
+  isDemo: boolean;
+  onOpenConnectModal?: (() => void) | undefined;
+}) {
   if (!isDemo) {
-    return <LivePrimaryCanvas />;
+    return <LivePrimaryCanvas onOpenConnectModal={onOpenConnectModal} />;
   }
 
   return (
@@ -748,7 +788,11 @@ function TimelineItem({ item }: { item: (typeof demoTimeline)[0] }) {
 /**
  * LiveSecondaryRail — live daemon status for non-demo mode
  */
-function LiveSecondaryRail() {
+function LiveSecondaryRail({
+  onOpenConnectModal,
+}: {
+  onOpenConnectModal?: (() => void) | undefined;
+}) {
   const { session, connectionStatus } = useCurrentSession();
   const wsConnected = connectionStatus === "open";
 
@@ -757,24 +801,35 @@ function LiveSecondaryRail() {
       <DashboardSection title="Daemon Status">
         <div className="bg-card/60 border-border/80 shadow-xs rounded-lg border p-3.5 sm:p-4">
           <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-2.5">
-              <div
-                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${
-                  wsConnected
-                    ? "animate-pulse border border-emerald-500/25 bg-emerald-500/10 text-emerald-400"
-                    : "bg-muted/40 text-muted-foreground border-border/60 border"
-                }`}
-              >
-                <Activity className="h-3.5 w-3.5" />
+            <div className="flex items-center justify-between gap-2.5">
+              <div className="flex items-center gap-2.5">
+                <div
+                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${
+                    wsConnected
+                      ? "animate-pulse border border-emerald-500/25 bg-emerald-500/10 text-emerald-400"
+                      : "bg-muted/40 text-muted-foreground border-border/60 border"
+                  }`}
+                >
+                  <Activity className="h-3.5 w-3.5" />
+                </div>
+                <div>
+                  <h4 className="text-foreground text-xs font-semibold">
+                    {wsConnected ? "Observing" : "Disconnected"}
+                  </h4>
+                  <p className="text-muted-foreground text-[10px]">
+                    {wsConnected ? "Passive telemetry active" : "Daemon offline"}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h4 className="text-foreground text-xs font-semibold">
-                  {wsConnected ? "Observing" : "Disconnected"}
-                </h4>
-                <p className="text-muted-foreground text-[10px]">
-                  {wsConnected ? "Passive telemetry active" : "Run `pnpm dev` to connect"}
-                </p>
-              </div>
+              {!wsConnected && (
+                <button
+                  type="button"
+                  onClick={onOpenConnectModal}
+                  className="bg-primary/10 hover:bg-primary/20 border-primary/25 text-primary flex items-center gap-1 rounded-md border px-2 py-1 font-mono text-[11px] font-medium transition-colors"
+                >
+                  <Download className="h-3 w-3" /> Connect
+                </button>
+              )}
             </div>
 
             {session && (
@@ -835,9 +890,15 @@ function LiveSecondaryRail() {
 /**
  * SecondaryRail
  */
-export function SecondaryRail({ isDemo }: { isDemo: boolean }) {
+export function SecondaryRail({
+  isDemo,
+  onOpenConnectModal,
+}: {
+  isDemo: boolean;
+  onOpenConnectModal?: (() => void) | undefined;
+}) {
   if (!isDemo) {
-    return <LiveSecondaryRail />;
+    return <LiveSecondaryRail onOpenConnectModal={onOpenConnectModal} />;
   }
 
   return (

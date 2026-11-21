@@ -1,17 +1,35 @@
 import fs from "fs";
+import os from "os";
 import path from "path";
 import { fileURLToPath } from "url";
 import { logger } from "./logger";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+function getSafeDirname(): string {
+  if (typeof __dirname !== "undefined") return __dirname;
+  try {
+    if (
+      typeof import.meta !== "undefined" &&
+      import.meta &&
+      "url" in import.meta &&
+      import.meta.url
+    ) {
+      return path.dirname(fileURLToPath(import.meta.url));
+    }
+  } catch {
+    // ignore
+  }
+  return process.cwd();
+}
+
+const safeDir = getSafeDirname();
 
 export function getEnvCandidatePaths(): string[] {
   return [
     path.resolve(process.cwd(), "apps/daemon/.env"),
     path.resolve(process.cwd(), ".env"),
-    path.resolve(__dirname, "../.env"),
-    path.resolve(__dirname, "../../.env"),
+    path.resolve(safeDir, "../.env"),
+    path.resolve(safeDir, "../../.env"),
+    path.join(os.homedir(), ".vibepulse", ".env"),
   ];
 }
 

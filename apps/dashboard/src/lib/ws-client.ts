@@ -5,6 +5,8 @@
  * connection (API restart, network blip) recovers without a page refresh.
  */
 
+import { notifyBackendReady } from "./useBackendWakeup";
+
 export type WsStatus = "connecting" | "open" | "closed";
 
 export interface WsClientOptions {
@@ -39,6 +41,7 @@ export function connectWs({ url, onMessage, onStatusChange }: WsClientOptions): 
 
     socket.addEventListener("open", () => {
       attempt = 0;
+      notifyBackendReady();
       onStatusChange?.("open");
     });
 
