@@ -8,8 +8,8 @@ import { getCliWatchTarget } from "./env-loader";
 export interface DaemonRuntimeConfig {
   watchRoot: string;
   apiUrl: string;
-  token?: string;
-  userEmail?: string;
+  token?: string | undefined;
+  userEmail?: string | undefined;
 }
 
 const DEFAULT_API_URL = "https://vibepulse-api.onrender.com";
@@ -89,7 +89,7 @@ export function isCliResetRequested(): boolean {
 export async function verifyDaemonToken(
   apiUrl: string,
   token: string,
-): Promise<{ valid: boolean; email?: string; error?: string }> {
+): Promise<{ valid: boolean; email?: string | undefined; error?: string | undefined }> {
   const cleanUrl = apiUrl.replace(/\/+$/, "");
   try {
     const res = await fetch(`${cleanUrl}/api/auth/daemon/verify`, {

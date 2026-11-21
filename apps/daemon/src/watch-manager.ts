@@ -20,7 +20,7 @@ export interface WatchManagerOptions {
   apiUrl: string;
   gate: ObservationGate;
   debouncer: Debouncer;
-  token?: string;
+  token?: string | undefined;
 }
 
 export interface WatchManager {
