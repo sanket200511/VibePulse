@@ -146,6 +146,28 @@ export function createWatchManager({
 
     await currentWatcher.start();
 
+    // Post initial OBSERVATION_STARTED event so backend creates an ACTIVE session immediately
+    const startHeaders: Record<string, string> = { "Content-Type": "application/json" };
+    if (token) {
+      startHeaders["Authorization"] = `Bearer ${token}`;
+      startHeaders["X-Daemon-Token"] = token;
+    }
+    await fetch(`${apiUrl}/events`, {
+      method: "POST",
+      headers: startHeaders,
+      body: JSON.stringify({
+        schema_version: 1,
+        event_type: "OBSERVATION_STARTED",
+        timestamp: new Date().toISOString(),
+        session_id: newSessionId,
+        project_root: newCanonicalRoot,
+        metadata: { reason: "observation_started" },
+        daemon_seq: 1,
+      }),
+    }).catch((err) => {
+      logger.warn("[WatchManager] Failed to post initial OBSERVATION_STARTED event:", err);
+    });
+
     // Update state
     currentRoot = targetPath;
     currentCanonicalRoot = newCanonicalRoot;

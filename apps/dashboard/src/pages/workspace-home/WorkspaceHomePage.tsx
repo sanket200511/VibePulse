@@ -120,6 +120,8 @@ function LiveWorkspaceHeader({
 }) {
   const { session, connectionStatus } = useCurrentSession();
   const wsConnected = connectionStatus === "open";
+  const isDaemonActive =
+    wsConnected && session !== null && (session.status === "ACTIVE" || session.status === "IDLE");
 
   return (
     <header className="border-border/80 bg-card/60 shadow-xs backdrop-blur-xs rounded-lg border p-4 transition-all duration-200 sm:p-5">
@@ -129,7 +131,7 @@ function LiveWorkspaceHeader({
             <span className="text-muted-foreground font-mono text-[10px] font-semibold uppercase tracking-wider">
               Workspace
             </span>
-            {wsConnected ? (
+            {isDaemonActive ? (
               <span className="flex items-center gap-1 rounded-md border border-emerald-500/25 bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[10px] font-medium text-emerald-400">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
                 LIVE
@@ -288,6 +290,8 @@ function LivePrimaryCanvas({
   });
 
   const wsConnected = connectionStatus === "open";
+  const isDaemonActive =
+    wsConnected && session !== null && (session.status === "ACTIVE" || session.status === "IDLE");
   const recentSessions = sessions.slice(0, 5);
 
   return (
@@ -299,25 +303,25 @@ function LivePrimaryCanvas({
             <div className="flex items-center gap-2.5">
               <div
                 className={`flex h-8 w-8 items-center justify-center rounded-md ${
-                  wsConnected
+                  isDaemonActive
                     ? "border border-emerald-500/25 bg-emerald-500/10 text-emerald-400"
                     : "bg-muted/40 text-muted-foreground border-border/60 border"
                 }`}
               >
-                {wsConnected ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
+                {isDaemonActive ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
               </div>
               <div>
                 <p className="text-foreground text-xs font-semibold tracking-tight">
-                  {wsConnected ? "Daemon Connected" : "Awaiting Daemon"}
+                  {isDaemonActive ? "Daemon Connected" : "Awaiting Daemon"}
                 </p>
                 <p className="text-muted-foreground text-[11px]">
-                  {wsConnected
+                  {isDaemonActive
                     ? "Real-time telemetry stream active"
                     : "Start the VibePulse daemon to begin observing"}
                 </p>
               </div>
             </div>
-            {wsConnected ? (
+            {isDaemonActive ? (
               <span className="flex items-center gap-1 rounded-md border border-emerald-500/25 bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[10px] font-medium text-emerald-400">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
                 LIVE
@@ -797,6 +801,8 @@ function LiveSecondaryRail({
 }) {
   const { session, connectionStatus } = useCurrentSession();
   const wsConnected = connectionStatus === "open";
+  const isDaemonActive =
+    wsConnected && session !== null && (session.status === "ACTIVE" || session.status === "IDLE");
 
   return (
     <aside className="flex flex-col gap-4 lg:gap-5">
@@ -807,7 +813,7 @@ function LiveSecondaryRail({
               <div className="flex items-center gap-2.5">
                 <div
                   className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${
-                    wsConnected
+                    isDaemonActive
                       ? "animate-pulse border border-emerald-500/25 bg-emerald-500/10 text-emerald-400"
                       : "bg-muted/40 text-muted-foreground border-border/60 border"
                   }`}
@@ -816,14 +822,14 @@ function LiveSecondaryRail({
                 </div>
                 <div>
                   <h4 className="text-foreground text-xs font-semibold">
-                    {wsConnected ? "Observing" : "Disconnected"}
+                    {isDaemonActive ? "Observing" : "Disconnected"}
                   </h4>
                   <p className="text-muted-foreground text-[10px]">
-                    {wsConnected ? "Passive telemetry active" : "Daemon offline"}
+                    {isDaemonActive ? "Passive telemetry active" : "Daemon offline"}
                   </p>
                 </div>
               </div>
-              {!wsConnected && (
+              {!isDaemonActive && (
                 <button
                   type="button"
                   onClick={onOpenConnectModal}
