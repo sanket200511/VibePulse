@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { getApiBaseUrl } from "./api-config";
+import { notifyBackendReady } from "./useBackendWakeup";
 
 export interface User {
   id: string;
@@ -116,6 +117,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
 
         if (res.ok) {
+          notifyBackendReady();
           const userData = (await res.json()) as User;
           if (isMounted) {
             setUser(userData);
@@ -158,6 +160,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       const authData = data as AuthResponse;
+      notifyBackendReady();
       saveToken(authData.access_token);
       setUser(authData.user);
       return { success: true };
@@ -204,6 +207,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       const authData = data as AuthResponse;
+      notifyBackendReady();
       saveToken(authData.access_token);
       setUser(authData.user);
       return { success: true };
@@ -250,6 +254,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       const authData = data as AuthResponse;
+      notifyBackendReady();
       saveToken(authData.access_token);
       setUser(authData.user);
       return { success: true };

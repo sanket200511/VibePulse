@@ -45,12 +45,19 @@ async function attempt(
   maxAttempts: number,
   backoffBaseMs: number,
   priority: "NORMAL" | "CRITICAL",
+  token?: string,
 ): Promise<void> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+    headers["X-Daemon-Token"] = token;
+  }
+
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const response = await fetch(eventsEndpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(event),
       });
 
@@ -89,7 +96,11 @@ async function attempt(
   }
 }
 
-export function createHttpPublisher(apiUrl: string, config: PublisherConfig): Publisher {
+export function createHttpPublisher(
+  apiUrl: string,
+  config: PublisherConfig,
+  token?: string,
+): Publisher {
   const eventsEndpoint = new URL("/events", apiUrl).toString();
 
   return {
@@ -100,6 +111,7 @@ export function createHttpPublisher(apiUrl: string, config: PublisherConfig): Pu
         config.retryMaxNormal,
         config.retryBackoffBaseMs,
         "NORMAL",
+        token,
       );
     },
 
@@ -110,6 +122,7 @@ export function createHttpPublisher(apiUrl: string, config: PublisherConfig): Pu
         config.retryMaxCritical,
         config.retryBackoffBaseMs,
         "CRITICAL",
+        token,
       );
     },
   };

@@ -108,6 +108,39 @@ class AuthService:
             user=UserResponse.model_validate(user),
         )
 
+    async def create_daemon_token(self, user: User) -> str:
+        """Create a dedicated long-lived token for the desktop daemon."""
+        token_id = str(uuid.uuid4())
+        now = datetime.now(UTC)
+        expires_delta = timedelta(days=180)
+        exp = now + expires_delta
+
+        payload: dict[str, str | int] = {
+            "sub": str(user.id),
+            "email": user.email,
+            "session_id": f"daemon_{token_id}",
+            "type": "daemon_token",
+            "iat": int(now.timestamp()),
+            "exp": int(exp.timestamp()),
+        }
+
+        token = jwt.encode(
+            payload,
+            self.settings.jwt_secret_key,
+            algorithm=self.settings.jwt_algorithm,
+        )
+
+        session_key = f"vibepulse:session:{user.id}:daemon_{token_id}"
+        session_data = {
+            "user_id": str(user.id),
+            "email": user.email,
+            "type": "daemon_token",
+            "created_at": now.isoformat(),
+        }
+        ttl_seconds = int(expires_delta.total_seconds())
+        await self.redis.set(session_key, json.dumps(session_data), ex=ttl_seconds)
+        return token
+
     async def validate_session(self, user_id: uuid.UUID, session_id: str) -> bool:
         """Checks if a user session is active in Redis."""
         session_key = f"vibepulse:session:{user_id}:{session_id}"

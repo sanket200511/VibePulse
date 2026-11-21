@@ -50,15 +50,22 @@ export async function ensureProject(
   apiUrl: string,
   rootPath: string,
   displayName?: string,
+  token?: string,
 ): Promise<RegisteredProject> {
   const projectsEndpoint = new URL("/api/projects", apiUrl).toString();
   const name = displayName || getBasenameCrossPlatform(rootPath);
 
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+    headers["X-Daemon-Token"] = token;
+  }
+
   const response = await fetch(projectsEndpoint, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers,
     body: JSON.stringify({
       root_path: rootPath,
       display_name: name,
@@ -82,6 +89,7 @@ export async function ensureProjectWithRetry(
   rootPath: string,
   displayName?: string,
   options: RetryOptions = {},
+  token?: string,
 ): Promise<RegisteredProject> {
   const maxAttempts = options.maxAttempts ?? 10;
   const initialDelay = options.initialDelayMs ?? 500;
@@ -97,7 +105,7 @@ export async function ensureProjectWithRetry(
         throw new Error(`FastAPI is not yet reachable at ${apiUrl}`);
       }
 
-      const project = await ensureProject(apiUrl, rootPath, displayName);
+      const project = await ensureProject(apiUrl, rootPath, displayName, token);
       logger.info("[Telemetry] API connection established.");
       logger.info(
         `[Project Registration] Project registered successfully: ${project.display_name} (${project.id})`,

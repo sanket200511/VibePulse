@@ -20,6 +20,7 @@ export interface WatchManagerOptions {
   apiUrl: string;
   gate: ObservationGate;
   debouncer: Debouncer;
+  token?: string;
 }
 
 export interface WatchManager {
@@ -36,7 +37,12 @@ export interface WatchManager {
 /**
  * WatchManager owns the lifecycle of filesystem observation and runtime project switching.
  */
-export function createWatchManager({ apiUrl, gate, debouncer }: WatchManagerOptions): WatchManager {
+export function createWatchManager({
+  apiUrl,
+  gate,
+  debouncer,
+  token,
+}: WatchManagerOptions): WatchManager {
   let currentRoot: string | null = null;
   let currentCanonicalRoot: string | null = null;
   let currentProjectId: string | null = null;
@@ -110,7 +116,13 @@ export function createWatchManager({ apiUrl, gate, debouncer }: WatchManagerOpti
     const newSessionId = randomUUID();
 
     // Register project with API (resilient backoff)
-    const project = await ensureProjectWithRetry(apiUrl, newCanonicalRoot);
+    const project = await ensureProjectWithRetry(
+      apiUrl,
+      newCanonicalRoot,
+      undefined,
+      undefined,
+      token,
+    );
 
     // If another switch occurred while awaiting API, abort this one
     if (thisGeneration !== activeGeneration) {

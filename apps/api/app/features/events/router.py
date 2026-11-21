@@ -210,9 +210,9 @@ async def list_events(
 async def events_websocket(websocket: WebSocket) -> None:
     settings = get_settings()
     origin = websocket.headers.get("origin")
-    allowed_origins = [str(o).rstrip("/") for o in settings.cors_origins]
+    from app.core.config import is_origin_allowed
 
-    if origin and origin not in allowed_origins:
+    if not is_origin_allowed(origin, settings.cors_origins):
         await websocket.close(code=1008, reason="Origin not allowed")
         return
 

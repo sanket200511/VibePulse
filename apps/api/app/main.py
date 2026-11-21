@@ -119,11 +119,21 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     # additional infrastructure required for a single-instance API.
     sweep_task = asyncio.create_task(run_sweep_loop())
 
+    # Render keep-alive loop — optional self-ping to prevent inactivity dormancy
+    from app.features.health.keep_alive import run_keep_alive_loop
+
+    keep_alive_task = asyncio.create_task(run_keep_alive_loop())
+
     yield
 
     sweep_task.cancel()
+    keep_alive_task.cancel()
     try:
         await sweep_task
+    except asyncio.CancelledError:
+        pass
+    try:
+        await keep_alive_task
     except asyncio.CancelledError:
         pass
 

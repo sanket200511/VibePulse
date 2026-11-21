@@ -3,6 +3,22 @@ import { getApiBaseUrl } from "./api-config";
 
 export type BackendStatus = "idle" | "waking_up" | "ready" | "error";
 
+export const BACKEND_READY_EVENT = "vibepulse:backend_ready";
+
+/**
+ * Dispatches a global event indicating that the backend is awake and responding.
+ * Can be called by any successful API or WebSocket connection.
+ */
+export function notifyBackendReady(latencyMs?: number): void {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(
+      new CustomEvent(BACKEND_READY_EVENT, {
+        detail: { latencyMs: latencyMs ?? null },
+      }),
+    );
+  }
+}
+
 interface BackendWakeupState {
   status: BackendStatus;
   elapsedSeconds: number;
@@ -17,67 +33,124 @@ export function useBackendWakeup(): BackendWakeupState {
 
   const startTimeRef = useRef<number | null>(null);
   const isResolvedRef = useRef<boolean>(false);
+  const isProbingRef = useRef<boolean>(false);
+  const isMountedRef = useRef<boolean>(true);
+  const wakingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const markReady = useCallback((latency: number | null) => {
+    if (isResolvedRef.current) return;
+    isResolvedRef.current = true;
+    if (wakingTimeoutRef.current) {
+      clearTimeout(wakingTimeoutRef.current);
+      wakingTimeoutRef.current = null;
+    }
+    setLatencyMs(latency);
+    setStatus("ready");
+  }, []);
+
+  // Listen to ready signals dispatched across the app
+  useEffect(() => {
+    isMountedRef.current = true;
+    const handleReady = (event: Event) => {
+      const customEvent = event as CustomEvent<{ latencyMs?: number | null }>;
+      markReady(customEvent.detail?.latencyMs ?? null);
+    };
+
+    window.addEventListener(BACKEND_READY_EVENT, handleReady);
+    return () => {
+      isMountedRef.current = false;
+      window.removeEventListener(BACKEND_READY_EVENT, handleReady);
+    };
+  }, [markReady]);
 
   const probeBackend = useCallback(async () => {
-    if (isResolvedRef.current) return;
+    if (isResolvedRef.current || isProbingRef.current) return;
+    isProbingRef.current = true;
     const start = performance.now();
 
-    // Timeout controller for 4 seconds per attempt
+    // Show waking_up banner if backend takes more than 2.5s to respond
+    if (!wakingTimeoutRef.current && status === "idle") {
+      wakingTimeoutRef.current = setTimeout(() => {
+        if (!isResolvedRef.current && isMountedRef.current) {
+          setStatus("waking_up");
+          if (!startTimeRef.current) {
+            startTimeRef.current = Date.now();
+          }
+        }
+      }, 2500);
+    }
+
+    // 15-second timeout for the health fetch itself (gives Render free tier spin-up time to reply)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-      // If still pending after 2.5s and not yet marked waking up, show waking_up indicator
-      if (!isResolvedRef.current) {
+    const abortTimeout = setTimeout(() => {
+      controller.abort();
+    }, 15000);
+
+    try {
+      const baseUrl = getApiBaseUrl().replace(/\/+$/, "");
+      const res = await fetch(`${baseUrl}/health`, {
+        signal: controller.signal,
+        cache: "no-store",
+      });
+      clearTimeout(abortTimeout);
+
+      if (res.ok) {
+        const duration = Math.round(performance.now() - start);
+        markReady(duration);
+        return;
+      }
+
+      // If temporary gateway error (502, 503) during cold boot
+      if (isMountedRef.current && !isResolvedRef.current && status !== "error") {
         setStatus("waking_up");
         if (!startTimeRef.current) {
           startTimeRef.current = Date.now();
         }
       }
-      controller.abort();
-    }, 4000);
-
-    try {
-      const res = await fetch(`${getApiBaseUrl()}/health`, {
-        signal: controller.signal,
-        cache: "no-store",
-      });
-      clearTimeout(timeoutId);
-
-      if (res.ok) {
-        const duration = Math.round(performance.now() - start);
-        setLatencyMs(duration);
-        isResolvedRef.current = true;
-        setStatus("ready");
-        return;
-      }
-      // If 502, 503, or other temporary gateway error from Render during boot
-      setStatus("waking_up");
-      if (!startTimeRef.current) {
-        startTimeRef.current = Date.now();
-      }
     } catch {
-      clearTimeout(timeoutId);
-      // Fetch aborted or network connection refused while booting
-      setStatus("waking_up");
-      if (!startTimeRef.current) {
-        startTimeRef.current = Date.now();
+      clearTimeout(abortTimeout);
+      // Connection refused, timeout or network error while booting
+      if (isMountedRef.current && !isResolvedRef.current && status !== "error") {
+        setStatus("waking_up");
+        if (!startTimeRef.current) {
+          startTimeRef.current = Date.now();
+        }
       }
+    } finally {
+      isProbingRef.current = false;
     }
-  }, []);
+  }, [markReady, status]);
 
-  // Initial probe and retry interval while waking up
+  // Sequential retry loop: wait 3 seconds after each probe completes before retrying
   useEffect(() => {
-    void probeBackend();
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let cancelled = false;
 
-    const interval = setInterval(() => {
-      if (!isResolvedRef.current) {
-        void probeBackend();
+    const runProbeLoop = async () => {
+      if (cancelled || isResolvedRef.current) return;
+      if (status !== "error") {
+        await probeBackend();
       }
-    }, 3000);
+      if (!cancelled && !isResolvedRef.current && status !== "error") {
+        timeoutId = setTimeout(() => {
+          void runProbeLoop();
+        }, 3000);
+      }
+    };
 
-    return () => clearInterval(interval);
-  }, [probeBackend]);
+    void runProbeLoop();
 
-  // Timer for elapsed seconds
+    return () => {
+      cancelled = true;
+      if (timeoutId) clearTimeout(timeoutId);
+      if (wakingTimeoutRef.current) {
+        clearTimeout(wakingTimeoutRef.current);
+        wakingTimeoutRef.current = null;
+      }
+    };
+  }, [probeBackend, status]);
+
+  // Timer for elapsed seconds while waking up
   useEffect(() => {
     if (status !== "waking_up") return;
 
@@ -96,6 +169,7 @@ export function useBackendWakeup(): BackendWakeupState {
 
   const retryNow = useCallback(() => {
     isResolvedRef.current = false;
+    isProbingRef.current = false;
     startTimeRef.current = Date.now();
     setStatus("waking_up");
     setElapsedSeconds(0);

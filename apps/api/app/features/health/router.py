@@ -42,6 +42,32 @@ async def _check_database() -> ServiceStatus:
     )
 
 
+async def _check_redis() -> ServiceStatus:
+    """Verify Redis or Upstash connectivity and report client type."""
+    start = time.perf_counter()
+    try:
+        from app.core.redis import get_redis_client
+
+        client = get_redis_client()
+        await client.ping()  # type: ignore[union-attr]
+        latency = round((time.perf_counter() - start) * 1000, 3)
+        client_type = getattr(client, "client_type", "tcp")
+        is_fallback = getattr(client, "is_fallback", False)
+        return ServiceStatus(
+            name="redis",
+            status="healthy",
+            latency_ms=latency,
+            detail="In-memory fallback" if is_fallback else f"Connected ({client_type})",
+        )
+    except Exception as exc:
+        return ServiceStatus(
+            name="redis",
+            status="degraded",
+            latency_ms=round((time.perf_counter() - start) * 1000, 3),
+            detail=str(exc),
+        )
+
+
 @router.get(
     "/health",
     response_model=HealthResponse,
@@ -58,13 +84,7 @@ async def health_check() -> HealthResponse:
     Liveness + readiness probe.
 
     Always returns HTTP 200 — the response body's ``status`` field reflects
-    whether backing services are actually reachable, so callers can
-    distinguish "process is up" from "process is fully ready".
-
-    A Redis connectivity check is intentionally not included: no Redis client
-    is wired into the application yet (see docs/adr/0003-event-driven-core.md,
-    which documents the current direct-HTTP interim). Add a check here once
-    that migration introduces a Redis client to probe.
+    whether backing services are actually reachable.
     """
     services = [
         ServiceStatus(
@@ -72,7 +92,17 @@ async def health_check() -> HealthResponse:
             status="healthy",
             detail="Application process is running",
         ),
+        ServiceStatus(
+            name="keep_alive",
+            status="healthy",
+            detail=(
+                f"Active (self-pinging every {settings.keep_alive_interval_minutes}m to keep awake)"
+                if settings.render_keep_alive
+                else "Inactive (dormancy enabled to conserve Render free-tier monthly hours)"
+            ),
+        ),
         await _check_database(),
+        await _check_redis(),
     ]
     overall_status = "healthy" if all(s.status == "healthy" for s in services) else "degraded"
 

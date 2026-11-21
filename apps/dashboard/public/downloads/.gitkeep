@@ -1,0 +1,2 @@
+# Daemon Downloads Folder
+The Windows standalone executable `vibepulse-daemon.exe` is placed here by `pnpm run build:daemon:exe`.

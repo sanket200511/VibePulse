@@ -11,22 +11,23 @@
 const EXPLICIT_API_URL: string | undefined = import.meta.env.VITE_API_URL as string | undefined;
 
 export function getApiBaseUrl(): string {
-  if (EXPLICIT_API_URL) return EXPLICIT_API_URL;
+  if (EXPLICIT_API_URL) return EXPLICIT_API_URL.replace(/\/+$/, "");
   // In the browser, use the current origin so requests go through the Vite proxy.
-  if (typeof window !== "undefined") return window.location.origin;
+  if (typeof window !== "undefined") return window.location.origin.replace(/\/+$/, "");
   // Fallback for SSR / tests
   return "http://localhost:5184";
 }
 
 export function getWsUrl(path: string): string {
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
   if (EXPLICIT_API_URL) {
-    const wsBase = EXPLICIT_API_URL.replace(/^http/, "ws");
-    return new URL(path, wsBase).toString();
+    const wsBase = EXPLICIT_API_URL.replace(/\/+$/, "").replace(/^http/, "ws");
+    return new URL(cleanPath, wsBase).toString();
   }
   // In dev, derive ws:// from the current window location (proxied by Vite)
   const wsBase =
     typeof window !== "undefined"
       ? `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}`
       : "ws://localhost:5183";
-  return new URL(path, wsBase).toString();
+  return new URL(cleanPath, wsBase).toString();
 }
