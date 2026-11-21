@@ -99,10 +99,12 @@ export function WorkspaceHomePage() {
           <PrimaryCanvas isDemo={isDemo} onOpenConnectModal={() => setIsConnectModalOpen(true)} />
           <SecondaryRail isDemo={isDemo} onOpenConnectModal={() => setIsConnectModalOpen(true)} />
         </main>
-        <ConnectDaemonModal
-          isOpen={isConnectModalOpen}
-          onClose={() => setIsConnectModalOpen(false)}
-        />
+        {isConnectModalOpen && (
+          <ConnectDaemonModal
+            isOpen={isConnectModalOpen}
+            onClose={() => setIsConnectModalOpen(false)}
+          />
+        )}
       </div>
     </div>
   );

@@ -312,3 +312,7 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
+
+export const useOptionalAuth = (): AuthContextType | null => {
+  return useContext(AuthContext) ?? null;
+};
