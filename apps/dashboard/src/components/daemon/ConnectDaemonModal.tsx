@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { getApiBaseUrl } from "../../lib/api-config";
-import { useAuth } from "../../lib/auth-context";
+import { useOptionalAuth } from "../../lib/auth-context";
 import { useCurrentSession } from "../../pages/sessions/useCurrentSession";
 import {
   Download,
@@ -20,7 +20,9 @@ interface ConnectDaemonModalProps {
 }
 
 export function ConnectDaemonModal({ isOpen, onClose }: ConnectDaemonModalProps) {
-  const { user, token: authToken } = useAuth();
+  const auth = useOptionalAuth();
+  const user = auth?.user ?? null;
+  const authToken = auth?.token ?? null;
   const { connectionStatus } = useCurrentSession();
   const isDaemonConnected = connectionStatus === "open";
 
