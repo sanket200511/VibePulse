@@ -5,8 +5,13 @@ Google OAuth, JWT tokens, and Redis session lifecycle.
 
 from __future__ import annotations
 
+import json
+
 import httpx
+import jwt
 import pytest
+from app.core.config import get_settings
+from app.core.redis import get_redis_client
 from app.features.auth.models import EmailVerification, User
 from httpx import AsyncClient
 from sqlalchemy import select
@@ -182,3 +187,54 @@ async def test_google_login(
     assert user is not None
     assert user.google_id == "google-user-12345"
     assert user.is_verified is True
+
+
+@pytest.mark.asyncio
+async def test_redis_session_caching_and_instant_auth(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    """Verifies user profile is cached in Redis session and retrieved directly without DB hits."""
+    redis_client = get_redis_client()
+
+    # 1. Register & verify user
+    await client.post(
+        "/api/auth/register",
+        json={
+            "email": "fast_auth@vibepulse.dev",
+            "password": "FastPassword123!",
+            "full_name": "Fast Auth",
+        },
+    )
+    stmt = select(EmailVerification).where(EmailVerification.email == "fast_auth@vibepulse.dev")
+    res = await db_session.execute(stmt)
+    verification = res.scalar_one_or_none()
+    assert verification is not None
+
+    verify_resp = await client.post(
+        "/api/auth/verify-email",
+        json={"email": "fast_auth@vibepulse.dev", "code": verification.code},
+    )
+    token = verify_resp.json()["access_token"]
+    user_id = verify_resp.json()["user"]["id"]
+
+    # 2. Inspect session stored in Redis
+    settings = get_settings()
+    payload = jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
+    session_id = payload["session_id"]
+    redis_key = f"vibepulse:session:{user_id}:{session_id}"
+
+    cached_raw = await redis_client.get(redis_key)
+    assert cached_raw is not None
+    cached_session = json.loads(cached_raw)
+    assert cached_session["email"] == "fast_auth@vibepulse.dev"
+    assert cached_session["full_name"] == "Fast Auth"
+    assert cached_session["is_verified"] is True
+
+    # 3. Call /api/auth/me - served directly from Redis
+    me_resp = await client.get("/api/auth/me", headers={"Authorization": f"Bearer {token}"})
+    assert me_resp.status_code == 200
+    data = me_resp.json()
+    assert data["email"] == "fast_auth@vibepulse.dev"
+    assert data["full_name"] == "Fast Auth"
+    assert data["is_verified"] is True
