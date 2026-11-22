@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import uuid
 from dataclasses import dataclass
+from datetime import UTC, datetime
 
 import jwt
 from fastapi import Depends, HTTPException, status
@@ -15,10 +16,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import Settings, get_settings
 from app.core.database import get_db
+from app.core.logging import get_logger
 from app.core.redis import RedisClientType, get_redis
 from app.features.auth.models import User
 from app.features.auth.service import AuthService
 
+logger = get_logger("auth_dependencies")
 security_bearer = HTTPBearer(auto_error=False)
 
 
@@ -95,26 +98,67 @@ async def get_current_context(
             headers={"WWW-Authenticate": "Bearer"},
         ) from None
 
-    # Validate active session against Redis
-    is_active_session = await auth_service.validate_session(user_id=user_id, session_id=session_id)
-    if not is_active_session:
+    # 1. Validate active session against Redis
+    session_data = await auth_service.get_session(user_id=user_id, session_id=session_id)
+    if session_data is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Session has expired or was revoked. Please sign in again.",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # Fetch user from database
-    stmt = select(User).where(User.id == user_id)
-    result = await db.execute(stmt)
-    user = result.scalar_one_or_none()
+    # 2. Fast-path: reconstitute User directly from in-memory Redis session (0 database queries)
+    user: User | None = None
+    email_val = session_data.get("email")
+    if isinstance(email_val, str) and "is_verified" in session_data:
+        try:
+            created_at_raw = session_data.get("created_at")
+            if isinstance(created_at_raw, str):
+                try:
+                    created_at = datetime.fromisoformat(created_at_raw)
+                except ValueError:
+                    created_at = datetime.now(UTC)
+            else:
+                created_at = datetime.now(UTC)
 
+            full_name = session_data.get("full_name")
+            avatar_url = session_data.get("avatar_url")
+            provider = session_data.get("provider")
+            google_id = session_data.get("google_id")
+
+            user = User(
+                id=user_id,
+                email=email_val,
+                full_name=str(full_name) if full_name is not None else None,
+                avatar_url=str(avatar_url) if avatar_url is not None else None,
+                is_verified=bool(session_data.get("is_verified", False)),
+                provider=str(provider) if provider is not None else "local",
+                google_id=str(google_id) if google_id is not None else None,
+                created_at=created_at,
+                updated_at=created_at,
+            )
+        except Exception as exc:
+            logger.warning(
+                "user_reconstitution_from_redis_failed",
+                extra={"error": str(exc)},
+            )
+            user = None
+
+    # 3. Fallback: query PostgreSQL if session profile was incomplete, and warm up Redis
     if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User account not found.",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        stmt = select(User).where(User.id == user_id)
+        result = await db.execute(stmt)
+        user = result.scalar_one_or_none()
+
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User account not found.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        # Warm up the full session in Redis for subsequent instantaneous requests
+        await auth_service.cache_user_session(user_id=user_id, session_id=session_id, user=user)
 
     return AuthenticatedContext(user=user, session_id=session_id, token=token)
 

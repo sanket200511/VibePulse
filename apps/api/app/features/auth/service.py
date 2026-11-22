@@ -94,10 +94,20 @@ class AuthService:
 
         # Store session in Redis with TTL matching JWT expiration
         session_key = f"vibepulse:session:{user.id}:{session_id}"
+        created_at_str = (
+            user.created_at.isoformat()
+            if hasattr(user.created_at, "isoformat")
+            else str(user.created_at)
+        )
         session_data = {
             "user_id": str(user.id),
             "email": user.email,
-            "created_at": now.isoformat(),
+            "full_name": user.full_name,
+            "avatar_url": user.avatar_url,
+            "is_verified": user.is_verified,
+            "provider": user.provider,
+            "google_id": user.google_id,
+            "created_at": created_at_str,
         }
         ttl_seconds = int(expires_delta.total_seconds())
         await self.redis.set(session_key, json.dumps(session_data), ex=ttl_seconds)
@@ -131,11 +141,21 @@ class AuthService:
         )
 
         session_key = f"vibepulse:session:{user.id}:daemon_{token_id}"
+        created_at_str = (
+            user.created_at.isoformat()
+            if hasattr(user.created_at, "isoformat")
+            else str(user.created_at)
+        )
         session_data = {
             "user_id": str(user.id),
             "email": user.email,
+            "full_name": user.full_name,
+            "avatar_url": user.avatar_url,
+            "is_verified": user.is_verified,
+            "provider": user.provider,
+            "google_id": user.google_id,
             "type": "daemon_token",
-            "created_at": now.isoformat(),
+            "created_at": created_at_str,
         }
         ttl_seconds = int(expires_delta.total_seconds())
         await self.redis.set(session_key, json.dumps(session_data), ex=ttl_seconds)
@@ -146,6 +166,59 @@ class AuthService:
         session_key = f"vibepulse:session:{user_id}:{session_id}"
         exists = await self.redis.exists(session_key)
         return bool(exists)
+
+    async def get_session(self, user_id: uuid.UUID, session_id: str) -> dict[str, object] | None:
+        """Retrieves and deserializes active session data directly from Redis."""
+        session_key = f"vibepulse:session:{user_id}:{session_id}"
+        try:
+            raw = await self.redis.get(session_key)
+            if not raw:
+                return None
+            data = json.loads(raw)
+            if isinstance(data, dict):
+                return data
+            return None
+        except Exception as exc:
+            logger.warning(
+                "redis_get_session_failed",
+                extra={"key": session_key, "error": str(exc)},
+            )
+            return None
+
+    async def cache_user_session(
+        self,
+        user_id: uuid.UUID,
+        session_id: str,
+        user: User,
+        ttl_seconds: int | None = None,
+    ) -> None:
+        """Caches or warms up the full user profile inside the Redis session."""
+        session_key = f"vibepulse:session:{user_id}:{session_id}"
+        created_at_str = (
+            user.created_at.isoformat()
+            if hasattr(user.created_at, "isoformat")
+            else str(user.created_at)
+        )
+        session_data = {
+            "user_id": str(user.id),
+            "email": user.email,
+            "full_name": user.full_name,
+            "avatar_url": user.avatar_url,
+            "is_verified": user.is_verified,
+            "provider": user.provider,
+            "google_id": user.google_id,
+            "created_at": created_at_str,
+        }
+        ttl = ttl_seconds or int(
+            timedelta(minutes=self.settings.jwt_access_token_expire_minutes).total_seconds()
+        )
+        try:
+            await self.redis.set(session_key, json.dumps(session_data), ex=ttl)
+        except Exception as exc:
+            logger.warning(
+                "redis_cache_user_session_failed",
+                extra={"key": session_key, "error": str(exc)},
+            )
 
     async def revoke_session(self, user_id: uuid.UUID, session_id: str) -> None:
         """Revokes an active session by removing it from Redis."""
