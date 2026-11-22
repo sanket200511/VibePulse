@@ -1,0 +1,16 @@
+{
+  "appId": "dev.vibepulse.desktop",
+  "productName": "VibePulse Desktop",
+  "npmRebuild": false,
+  "nodeGypRebuild": false,
+  "asar": true,
+  "directories": {
+    "app": "D:\\VibeSync\\apps\\desktop",
+    "output": "D:\\VibeSync\\apps\\desktop\\dist\\release"
+  },
+  "files": ["dist/**/*", "package.json"],
+  "win": {
+    "target": ["portable"],
+    "executableName": "vibepulse-desktop"
+  }
+}

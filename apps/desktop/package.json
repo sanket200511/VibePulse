@@ -1,0 +1,21 @@
+{
+  "name": "@vibepulse/desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "VibePulse Desktop – Native Windows Application for Continuous Engineering Telemetry",
+  "author": "Sanket Kurve <sanketkurve.2005@gmail.com>",
+  "main": "dist/main/main.cjs",
+  "scripts": {
+    "build:main": "esbuild src/main/main.ts --bundle --platform=node --target=node22 --outfile=dist/main/main.cjs --external:electron",
+    "build:preload": "esbuild src/main/preload.ts --bundle --platform=node --target=node22 --outfile=dist/main/preload.cjs --external:electron",
+    "build": "pnpm run build:main && pnpm run build:preload",
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit",
+    "start": "electron dist/main/main.cjs"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "chokidar": "^4.0.3",
+    "electron": "^45.4.1"
+  }
+}

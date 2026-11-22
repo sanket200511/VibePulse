@@ -1,0 +1,887 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VibePulse Desktop</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    />
+    <style>
+      :root {
+        --bg: #0b0d13;
+        --card: #12151e;
+        --card-border: #1e2333;
+        --card-subtle: #161a26;
+        --text: #f1f5f9;
+        --text-muted: #8492a6;
+        --primary: #7c3aed;
+        --primary-hover: #6d28d9;
+        --primary-light: rgba(124, 58, 237, 0.15);
+        --emerald: #10b981;
+        --emerald-light: rgba(16, 185, 129, 0.15);
+        --amber: #f59e0b;
+        --amber-light: rgba(245, 158, 11, 0.15);
+        --rose: #ef4444;
+        --rose-light: rgba(239, 68, 68, 0.15);
+        --input-bg: #0e1017;
+        --input-border: #23283b;
+      }
+
+      body.light {
+        --bg: #f8fafc;
+        --card: #ffffff;
+        --card-border: #e2e8f0;
+        --card-subtle: #f1f5f9;
+        --text: #0f172a;
+        --text-muted: #64748b;
+        --primary: #7c3aed;
+        --primary-hover: #6d28d9;
+        --primary-light: rgba(124, 58, 237, 0.1);
+        --emerald: #059669;
+        --emerald-light: rgba(5, 150, 105, 0.1);
+        --amber: #d97706;
+        --amber-light: rgba(217, 119, 6, 0.1);
+        --rose: #dc2626;
+        --rose-light: rgba(220, 38, 38, 0.1);
+        --input-bg: #f8fafc;
+        --input-border: #cbd5e1;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family:
+          "Plus Jakarta Sans",
+          -apple-system,
+          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        overflow-x: hidden;
+        user-select: none;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Top Bar */
+      .topbar {
+        height: 52px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        border-bottom: 1px solid var(--card-border);
+        background: var(--card);
+        flex-shrink: 0;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .brand-logo {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #7c3aed, #06b6d4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 700;
+        color: white;
+        font-size: 14px;
+      }
+      .brand-title {
+        font-weight: 700;
+        font-size: 15px;
+        letter-spacing: -0.3px;
+      }
+      .badge-version {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        background: var(--primary-light);
+        color: var(--primary);
+        border: 1px solid rgba(124, 58, 237, 0.25);
+      }
+
+      .topbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .status-pill {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 9999px;
+        border: 1px solid transparent;
+      }
+      .status-pill.active {
+        background: var(--emerald-light);
+        color: var(--emerald);
+        border-color: rgba(16, 185, 129, 0.3);
+      }
+      .status-pill.standby {
+        background: var(--amber-light);
+        color: var(--amber);
+        border-color: rgba(245, 158, 11, 0.3);
+      }
+      .status-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: currentColor;
+      }
+      .status-pill.active .status-dot {
+        animation: pulse 1.5s infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.4;
+          transform: scale(0.85);
+        }
+      }
+
+      /* Tabs */
+      .nav-tabs {
+        display: flex;
+        gap: 4px;
+        padding: 8px 16px 0;
+        background: var(--card);
+        border-bottom: 1px solid var(--card-border);
+        flex-shrink: 0;
+      }
+      .tab-btn {
+        padding: 8px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: all 0.15s;
+      }
+      .tab-btn:hover {
+        color: var(--text);
+      }
+      .tab-btn.active {
+        color: var(--primary);
+        border-bottom-color: var(--primary);
+      }
+
+      /* Main Container */
+      .content-area {
+        flex: 1;
+        overflow-y: auto;
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      /* Card styling */
+      .card {
+        background: var(--card);
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      }
+      .card-title {
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .card-title span {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      /* Forms & Inputs */
+      .form-group {
+        margin-bottom: 12px;
+      }
+      .form-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin-bottom: 5px;
+        display: block;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .input-row {
+        display: flex;
+        gap: 8px;
+      }
+      .input-field {
+        flex: 1;
+        height: 36px;
+        border-radius: 8px;
+        background: var(--input-bg);
+        border: 1px solid var(--input-border);
+        color: var(--text);
+        padding: 0 12px;
+        font-size: 12px;
+        font-family: "JetBrains Mono", monospace;
+        outline: none;
+        transition: border 0.15s;
+      }
+      .input-field:focus {
+        border-color: var(--primary);
+      }
+
+      /* Buttons */
+      .btn {
+        height: 36px;
+        padding: 0 14px;
+        border-radius: 8px;
+        border: 1px solid transparent;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: all 0.15s;
+      }
+      .btn-primary {
+        background: var(--primary);
+        color: white;
+      }
+      .btn-primary:hover {
+        background: var(--primary-hover);
+      }
+      .btn-secondary {
+        background: var(--card-subtle);
+        border-color: var(--card-border);
+        color: var(--text);
+      }
+      .btn-secondary:hover {
+        background: var(--card-border);
+      }
+      .btn-success {
+        background: var(--emerald-light);
+        color: var(--emerald);
+        border-color: rgba(16, 185, 129, 0.3);
+      }
+      .btn-success:hover {
+        background: rgba(16, 185, 129, 0.25);
+      }
+
+      /* Metrics Bar */
+      .metrics-bar {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+      }
+      .metric-box {
+        background: var(--card-subtle);
+        border: 1px solid var(--card-border);
+        border-radius: 8px;
+        padding: 10px;
+      }
+      .metric-label {
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .metric-val {
+        font-size: 16px;
+        font-weight: 700;
+        font-family: "JetBrains Mono", monospace;
+        margin-top: 3px;
+        color: var(--text);
+      }
+
+      /* Telemetry Feed */
+      .feed-container {
+        height: 230px;
+        overflow-y: auto;
+        border-radius: 8px;
+        background: var(--input-bg);
+        border: 1px solid var(--input-border);
+        padding: 8px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+      }
+      .feed-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 6px;
+        border-radius: 4px;
+        transition: background 0.1s;
+      }
+      .feed-item:hover {
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .feed-time {
+        color: var(--text-muted);
+        font-size: 10px;
+        min-width: 60px;
+      }
+      .tag {
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+      .tag-modified {
+        background: rgba(59, 130, 246, 0.15);
+        color: #60a5fa;
+      }
+      .tag-created {
+        background: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+      }
+      .tag-deleted {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+      }
+      .feed-path {
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: var(--text);
+      }
+
+      /* Footer */
+      .footer {
+        height: 38px;
+        background: var(--card);
+        border-top: 1px solid var(--card-border);
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 11px;
+        color: var(--text-muted);
+        flex-shrink: 0;
+      }
+
+      .toast {
+        position: fixed;
+        bottom: 50px;
+        right: 20px;
+        background: #1e293b;
+        color: white;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-size: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        display: none;
+        animation: fadeIn 0.2s;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Top Bar -->
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-logo">V</div>
+        <div class="brand-title">VibePulse Desktop</div>
+        <span class="badge-version">v1.0.0</span>
+      </div>
+
+      <div class="topbar-actions">
+        <div id="statusPill" class="status-pill standby">
+          <span class="status-dot"></span>
+          <span id="statusText">STANDBY</span>
+        </div>
+
+        <button
+          id="btnOpenDashboard"
+          class="btn btn-secondary"
+          style="height: 30px; font-size: 11px"
+        >
+          Open Web Dashboard ↗
+        </button>
+
+        <button
+          id="btnToggleTheme"
+          class="btn btn-secondary"
+          style="height: 30px; width: 30px; padding: 0"
+        >
+          🌓
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+      <button class="tab-btn active" data-tab="tab-workspace">Observation & Stream</button>
+      <button class="tab-btn" data-tab="tab-settings">Desktop Settings</button>
+      <button class="tab-btn" data-tab="tab-logs">System & Info</button>
+    </div>
+
+    <!-- Content: Workspace & Telemetry Stream -->
+    <div id="tab-workspace" class="content-area">
+      <!-- Workspace Folder Card -->
+      <div class="card">
+        <div class="card-title">
+          <span>📂 Monitored Local Project</span>
+          <div style="display: flex; gap: 8px">
+            <button id="btnToggleObserve" class="btn btn-primary" style="height: 30px">
+              ▶ Start Observing
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0">
+          <label class="form-label">Project Directory</label>
+          <div class="input-row">
+            <input
+              type="text"
+              id="inputWatchRoot"
+              class="input-field"
+              placeholder="Select your project directory..."
+            />
+            <button id="btnBrowseFolder" class="btn btn-secondary">📁 Browse Folder...</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cloud Authentication & API Card -->
+      <div class="card">
+        <div class="card-title">
+          <span>⚡ Cloud Engine Connection</span>
+          <span id="authBadge" style="font-size: 11px; font-weight: 500; color: var(--text-muted)">
+            Unverified
+          </span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px">
+          <div class="form-group">
+            <label class="form-label">API Endpoint</label>
+            <input
+              type="text"
+              id="inputApiUrl"
+              class="input-field"
+              value="https://vibepulse-api.onrender.com"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Daemon Token (from Dashboard)</label>
+            <div class="input-row">
+              <input
+                type="password"
+                id="inputToken"
+                class="input-field"
+                placeholder="Paste vp_dt_... token"
+              />
+              <button id="btnVerifyToken" class="btn btn-success">✓ Test Token</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Metrics Bar -->
+      <div class="metrics-bar">
+        <div class="metric-box">
+          <div class="metric-label">Observed Files</div>
+          <div id="metricFiles" class="metric-val">—</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Events Captured</div>
+          <div id="metricCaptured" class="metric-val">0</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Events Published</div>
+          <div id="metricPublished" class="metric-val">0</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Observation Status</div>
+          <div id="metricStatus" class="metric-val" style="color: var(--amber)">STANDBY</div>
+        </div>
+      </div>
+
+      <!-- Telemetry Live Stream Card -->
+      <div class="card" style="flex: 1; display: flex; flex-direction: column">
+        <div class="card-title">
+          <span>📡 Real-Time Telemetry Stream</span>
+          <div style="display: flex; gap: 8px">
+            <button
+              id="btnClearFeed"
+              class="btn btn-secondary"
+              style="height: 26px; font-size: 10px; padding: 0 8px"
+            >
+              Clear Log
+            </button>
+          </div>
+        </div>
+
+        <div id="telemetryFeed" class="feed-container">
+          <div
+            class="feed-item"
+            style="
+              color: var(--text-muted);
+              justify-content: center;
+              height: 100%;
+              align-items: center;
+            "
+          >
+            Awaiting filesystem modifications in observed project...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content: Settings Tab -->
+    <div id="tab-settings" class="content-area" style="display: none">
+      <div class="card">
+        <div class="card-title"><span>⚙ Desktop Application Preferences</span></div>
+
+        <div
+          class="form-group"
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--card-border);
+          "
+        >
+          <div>
+            <div style="font-size: 13px; font-weight: 600">Launch on Windows Startup</div>
+            <div style="font-size: 11px; color: var(--text-muted)">
+              Automatically start passive observation when you log into Windows
+            </div>
+          </div>
+          <input
+            type="checkbox"
+            id="chkAutoStart"
+            style="width: 18px; height: 18px; cursor: pointer"
+          />
+        </div>
+
+        <div
+          class="form-group"
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--card-border);
+          "
+        >
+          <div>
+            <div style="font-size: 13px; font-weight: 600">Minimize to System Tray</div>
+            <div style="font-size: 11px; color: var(--text-muted)">
+              Keep observing in the background when window is closed
+            </div>
+          </div>
+          <input
+            type="checkbox"
+            id="chkMinimizeTray"
+            checked
+            style="width: 18px; height: 18px; cursor: pointer"
+          />
+        </div>
+
+        <div class="form-group" style="padding: 10px 0">
+          <label class="form-label">Debounce Burst Window (milliseconds)</label>
+          <div style="display: flex; align-items: center; gap: 12px">
+            <input
+              type="range"
+              id="rangeDebounce"
+              min="100"
+              max="1500"
+              step="50"
+              value="300"
+              style="flex: 1"
+            />
+            <span
+              id="lblDebounce"
+              style="
+                font-family: &quot;JetBrains Mono&quot;, monospace;
+                font-size: 12px;
+                min-width: 50px;
+              "
+              >300ms</span
+            >
+          </div>
+        </div>
+
+        <button id="btnSaveSettings" class="btn btn-primary" style="margin-top: 10px">
+          Save Preferences
+        </button>
+      </div>
+    </div>
+
+    <!-- Content: Logs & System Tab -->
+    <div id="tab-logs" class="content-area" style="display: none">
+      <div class="card">
+        <div class="card-title"><span>ℹ Diagnostic Information</span></div>
+        <div
+          style="
+            font-family: &quot;JetBrains Mono&quot;, monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.8;
+          "
+        >
+          <div>App Version: 1.0.0 (Windows Native)</div>
+          <div>Runtime: Node 22 / Electron Desktop</div>
+          <div>Platform: win32 x64</div>
+          <div>Storage Path: ~/.vibepulse/daemon.json</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <div id="footerStatus">Ready • Standby</div>
+      <div>VibePulse Engineering Observability</div>
+    </div>
+
+    <div id="toast" class="toast">Settings Saved</div>
+
+    <script>
+      // Tab Switching
+      document.querySelectorAll(".tab-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          const target = btn.getAttribute("data-tab");
+          document.querySelectorAll(".content-area").forEach((c) => (c.style.display = "none"));
+          document.getElementById(target).style.display = "flex";
+        });
+      });
+
+      // Theme toggle
+      const btnToggleTheme = document.getElementById("btnToggleTheme");
+      let isDark = true;
+      btnToggleTheme.addEventListener("click", () => {
+        isDark = !isDark;
+        document.body.classList.toggle("light", !isDark);
+      });
+
+      function showToast(msg) {
+        const toast = document.getElementById("toast");
+        toast.innerText = msg;
+        toast.style.display = "block";
+        setTimeout(() => {
+          toast.style.display = "none";
+        }, 2500);
+      }
+
+      // Desktop API Integration
+      const api = window.vibePulse;
+
+      if (api) {
+        // 1. Load Initial Config
+        api.getConfig().then((cfg) => {
+          if (cfg.watchRoot) document.getElementById("inputWatchRoot").value = cfg.watchRoot;
+          if (cfg.apiUrl) document.getElementById("inputApiUrl").value = cfg.apiUrl;
+          if (cfg.token) document.getElementById("inputToken").value = cfg.token;
+          if (cfg.autoStart) document.getElementById("chkAutoStart").checked = cfg.autoStart;
+          if (cfg.minimizeToTray !== undefined)
+            document.getElementById("chkMinimizeTray").checked = cfg.minimizeToTray;
+          if (cfg.debounceMs) {
+            document.getElementById("rangeDebounce").value = cfg.debounceMs;
+            document.getElementById("lblDebounce").innerText = cfg.debounceMs + "ms";
+          }
+          if (cfg.userEmail) {
+            document.getElementById("authBadge").innerText = "✓ " + cfg.userEmail;
+            document.getElementById("authBadge").style.color = "var(--emerald)";
+          }
+        });
+
+        // 2. Folder Browser
+        document.getElementById("btnBrowseFolder").addEventListener("click", async () => {
+          const folder = await api.selectFolder();
+          if (folder) {
+            document.getElementById("inputWatchRoot").value = folder;
+            showToast("Watching: " + folder.split(/[/\\\\]/).pop());
+          }
+        });
+
+        // 3. Start / Stop Observation
+        const btnToggleObserve = document.getElementById("btnToggleObserve");
+        let isObserving = false;
+
+        btnToggleObserve.addEventListener("click", async () => {
+          if (isObserving) {
+            await api.stopObserving();
+            isObserving = false;
+            btnToggleObserve.innerText = "▶ Start Observing";
+            btnToggleObserve.className = "btn btn-primary";
+          } else {
+            const root = document.getElementById("inputWatchRoot").value;
+            const res = await api.startObserving(root);
+            if (res.success) {
+              isObserving = true;
+              btnToggleObserve.innerText = "⏸ Pause Observation";
+              btnToggleObserve.className = "btn btn-secondary";
+            } else {
+              alert(res.error || "Failed to start observation");
+            }
+          }
+        });
+
+        // 4. Verify Token
+        document.getElementById("btnVerifyToken").addEventListener("click", async () => {
+          const url = document.getElementById("inputApiUrl").value;
+          const tok = document.getElementById("inputToken").value;
+          const badge = document.getElementById("authBadge");
+          badge.innerText = "Verifying...";
+          badge.style.color = "var(--text-muted)";
+
+          const res = await api.verifyToken(url, tok);
+          if (res.valid) {
+            badge.innerText = "✓ Authenticated: " + (res.email || "User");
+            badge.style.color = "var(--emerald)";
+            showToast("Token verified successfully!");
+          } else {
+            badge.innerText = "✗ " + (res.error || "Invalid token");
+            badge.style.color = "var(--rose)";
+          }
+        });
+
+        // 5. Open Web Dashboard
+        document.getElementById("btnOpenDashboard").addEventListener("click", () => {
+          const url = document.getElementById("inputApiUrl").value.includes("onrender.com")
+            ? "https://vibepulse-dashboard.onrender.com"
+            : "http://localhost:5183";
+          api.openExternal(url);
+        });
+
+        // 6. Save Settings
+        document.getElementById("btnSaveSettings").addEventListener("click", async () => {
+          await api.saveConfig({
+            autoStart: document.getElementById("chkAutoStart").checked,
+            minimizeToTray: document.getElementById("chkMinimizeTray").checked,
+            debounceMs: parseInt(document.getElementById("rangeDebounce").value, 10),
+            apiUrl: document.getElementById("inputApiUrl").value,
+            token: document.getElementById("inputToken").value,
+          });
+          showToast("Desktop settings saved!");
+        });
+
+        document.getElementById("rangeDebounce").addEventListener("input", (e) => {
+          document.getElementById("lblDebounce").innerText = e.target.value + "ms";
+        });
+
+        // 7. Status updates
+        api.onStatusChange((status) => {
+          isObserving = status.observing;
+          const pill = document.getElementById("statusPill");
+          const text = document.getElementById("statusText");
+          const metricStat = document.getElementById("metricStatus");
+          const footer = document.getElementById("footerStatus");
+
+          if (status.observing) {
+            pill.className = "status-pill active";
+            text.innerText = "OBSERVING";
+            metricStat.innerText = "ACTIVE";
+            metricStat.style.color = "var(--emerald)";
+            footer.innerText = "Observing: " + (status.projectName || "Active project");
+            btnToggleObserve.innerText = "⏸ Pause Observation";
+            btnToggleObserve.className = "btn btn-secondary";
+          } else {
+            pill.className = "status-pill standby";
+            text.innerText = "STANDBY";
+            metricStat.innerText = "STANDBY";
+            metricStat.style.color = "var(--amber)";
+            footer.innerText = "Standby • Waiting for observation start";
+            btnToggleObserve.innerText = "▶ Start Observing";
+            btnToggleObserve.className = "btn btn-primary";
+          }
+
+          document.getElementById("metricCaptured").innerText = status.eventsCaptured || 0;
+          document.getElementById("metricPublished").innerText = status.eventsPublished || 0;
+        });
+
+        // 8. Real-time Telemetry Stream
+        const feed = document.getElementById("telemetryFeed");
+        let hasEvents = false;
+
+        api.onTelemetryEvent((ev) => {
+          if (!hasEvents) {
+            feed.innerHTML = "";
+            hasEvents = true;
+          }
+
+          const row = document.createElement("div");
+          row.className = "feed-item";
+
+          const time = document.createElement("span");
+          time.className = "feed-time";
+          time.innerText = new Date(ev.timestamp).toLocaleTimeString();
+
+          const tag = document.createElement("span");
+          tag.className = "tag";
+          if (ev.eventType.includes("MODIFIED")) tag.className += " tag-modified";
+          else if (ev.eventType.includes("CREATED")) tag.className += " tag-created";
+          else tag.className += " tag-deleted";
+          tag.innerText = ev.eventType.replace("FILE_", "");
+
+          const pathEl = document.createElement("span");
+          pathEl.className = "feed-path";
+          pathEl.innerText = ev.relativePath;
+
+          row.appendChild(time);
+          row.appendChild(tag);
+          row.appendChild(pathEl);
+
+          feed.insertBefore(row, feed.firstChild);
+
+          // Keep last 100 events
+          if (feed.children.length > 100) {
+            feed.removeChild(feed.lastChild);
+          }
+
+          // Update counter
+          const curCount = parseInt(document.getElementById("metricCaptured").innerText || "0", 10);
+          document.getElementById("metricCaptured").innerText = curCount + 1;
+        });
+
+        document.getElementById("btnClearFeed").addEventListener("click", () => {
+          feed.innerHTML =
+            '<div class="feed-item" style="color: var(--text-muted); justify-content: center; height: 100%; align-items: center;">Feed cleared. Awaiting modifications...</div>';
+          hasEvents = false;
+        });
+      }
+    </script>
+  </body>
+</html>
