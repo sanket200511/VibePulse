@@ -138,29 +138,32 @@ export function ConnectDaemonModal({ isOpen, onClose }: ConnectDaemonModalProps)
 
         {/* Steps */}
         <div className="mt-5 space-y-4">
-          {/* Step 1: Download Standalone Executable */}
+          {/* Step 1: Download Native Windows GUI Application */}
           <div className="border-border/80 bg-secondary/30 rounded-xl border p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
               <div className="flex items-center gap-2.5">
                 <span className="border-primary/25 bg-primary/10 text-primary flex h-6 w-6 items-center justify-center rounded-full font-mono text-xs font-bold">
                   1
                 </span>
                 <div>
                   <h3 className="text-foreground text-xs font-semibold">
-                    Download Standalone Daemon App
+                    Download VibePulse Desktop App
                   </h3>
                   <p className="text-muted-foreground text-[11px]">
-                    Windows single-file executable. No Node.js or setup required.
+                    Native Windows GUI application with folder picker, live telemetry stream &
+                    system tray.
                   </p>
                 </div>
               </div>
-              <a
-                href="https://github.com/sanket200511/VibePulse/releases/latest/download/vibepulse-daemon.exe"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 shadow-xs inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-opacity hover:opacity-90"
-              >
-                <Download className="h-3.5 w-3.5" />
-                <span>Download .exe (79.6 MB)</span>
-              </a>
+              <div className="flex items-center gap-2">
+                <a
+                  href="https://github.com/sanket200511/VibePulse/releases/download/v1.0.0/VibePulse-Desktop-Setup-1.0.0.exe"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/20 shadow-xs inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium transition-opacity hover:opacity-90"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  <span>Download Windows App (.exe)</span>
+                </a>
+              </div>
             </div>
           </div>
 
@@ -213,17 +216,16 @@ export function ConnectDaemonModal({ isOpen, onClose }: ConnectDaemonModalProps)
             </div>
           </div>
 
-          {/* Step 3: Run Executable */}
+          {/* Step 3: Launch Application */}
           <div className="border-border/80 bg-secondary/30 rounded-xl border p-4">
             <div className="flex items-center gap-2.5">
               <span className="border-primary/25 bg-primary/10 text-primary flex h-6 w-6 items-center justify-center rounded-full font-mono text-xs font-bold">
                 3
               </span>
               <div>
-                <h3 className="text-foreground text-xs font-semibold">Launch Daemon on PC</h3>
+                <h3 className="text-foreground text-xs font-semibold">Launch App on PC</h3>
                 <p className="text-muted-foreground text-[11px]">
-                  Run <code className="text-primary">vibepulse-daemon.exe</code> and paste your
-                  token when prompted.
+                  Open VibePulse Desktop and paste your token in settings, or run via CLI.
                 </p>
               </div>
             </div>
@@ -232,7 +234,7 @@ export function ConnectDaemonModal({ isOpen, onClose }: ConnectDaemonModalProps)
               <div className="text-muted-foreground flex items-center justify-between">
                 <span className="flex items-center gap-1.5 font-mono text-[11px]">
                   <Terminal className="text-primary h-3.5 w-3.5" />
-                  Quick CLI command
+                  CLI alternative
                 </span>
                 <button
                   type="button"
