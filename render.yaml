@@ -37,7 +37,7 @@ services:
       - key: CORS_ORIGINS
         value: '["https://vibepulse-dashboard.onrender.com","http://localhost:5183","http://localhost:3000"]'
       - key: RENDER_KEEP_ALIVE
-        value: "false"
+        value: "true"
       - key: KEEP_ALIVE_INTERVAL_MINUTES
         value: "12"
 
